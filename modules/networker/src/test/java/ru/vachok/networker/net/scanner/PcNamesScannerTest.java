@@ -87,7 +87,9 @@ public class PcNamesScannerTest {
     @Test
     public void scanA() {
         String a224Scan = scanName("a224");
-        Assert.assertTrue(a224Scan.contains("a224 : ialekseeva"), a224Scan);
+        Assert.assertTrue(a224Scan.contains("a224"), a224Scan);
+        boolean isUser = a224Scan.contains(" : ialekseeva") || a224Scan.contains("n.kolodyazhnyj");
+        Assert.assertTrue(isUser, a224Scan);
     }
     
     private void scanAutoPC(String testPrefix, int countPC) {

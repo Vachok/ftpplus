@@ -61,22 +61,23 @@ public class DBMessengerTest {
     @Test
     public void testWork() {
         new DBMessenger(DBMessengerTest.class.getSimpleName()).info("test", "test", "test");
-        Future<?> checkDBFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->checkMessageExistsInDatabase());
+        Future<String> checkDBFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(this::checkMessageExistsInDatabase);
         try {
-            checkDBFuture.get(20, TimeUnit.SECONDS);
+            String s = checkDBFuture.get(20, TimeUnit.SECONDS);
+            Assert.assertEquals(s, "ok");
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
-    private void checkMessageExistsInDatabase() {
+    private String checkMessageExistsInDatabase() {
         String dbName = ConstantsFor.DBBASENAME_U0466446_WEBAPP;
-    
+        String retStr = "bad";
         Timestamp executePS;
         
         try (Connection c = dataConnectTo.getDefaultConnection("log.networker");
@@ -90,17 +91,19 @@ public class DBMessengerTest {
                     long nowMinusTenMinLong = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10);
                     Assert.assertTrue(stampLong > nowMinusTenMinLong, MessageFormat
                             .format("{0} ({1}) - stampLong\n{2}({3}) - nowMinusTenMinLong", stampLong, new Date(stampLong), nowMinusTenMinLong, new Date(nowMinusTenMinLong)));
+                    retStr = "ok";
                     break;
                 }
             }
             Assert.assertFalse(resultSet.wasNull());
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("DBMessengerTest.checkMessageExistsInDatabase says: {0}. Parameters: \n[sql]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            retStr = MessageFormat
+                .format("DBMessengerTest.checkMessageExistsInDatabase says: {0}. Parameters: \n[sql]: {1}", e.getMessage(), AbstractForms.fromArray(e));
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+    
         }
-        
+        return retStr;
     }
     
     private static long parseDate(String timeWhen) {

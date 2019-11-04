@@ -140,17 +140,19 @@ public class UserInfoTest {
     public void testGetPCLogins() {
         UserInfo instanceNull = UserInfo.getInstance(null);
         for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
-            Assert.assertEquals(nullPCLogin.split(" : ")[0], "a123");
-            Assert.assertEquals(nullPCLogin.split(" : ")[1], "i.k.romanovskii");
+            boolean contPC = nullPCLogin.split(" : ")[0].contains("a123");
+            Assert.assertTrue(contPC, nullPCLogin.split(" : ")[0]);
+            boolean contName = nullPCLogin.split(" : ")[1].contains("i.k.romanovskii") || nullPCLogin.split(" : ")[1].contains("e.v.vinokur");
+            Assert.assertTrue(contName, nullPCLogin.split(" : ")[1]);
         }
         UserInfo instanceDO0045 = UserInfo.getInstance("do0125");
         List<String> logins = instanceDO0045.getLogins("do0125", 1);
         Assert.assertEquals(logins.size(), 1);
         Assert.assertTrue(logins.get(0).contains("do0125 : vashaplova"), AbstractForms.fromArray(logins));
-        
-        UserInfo kudrInst = UserInfo.getInstance("kudr");
-        for (String kudrInstPCLogin : kudrInst.getLogins("kudr", 1)) {
-            boolean do0213Expect = kudrInstPCLogin.contains("do0213") || kudrInstPCLogin.contains("no0029");
+    
+        UserInfo kudrInst = UserInfo.getInstance("ashapl");
+        for (String kudrInstPCLogin : kudrInst.getLogins("ashapl", 1)) {
+            boolean do0213Expect = kudrInstPCLogin.contains("do0125") || kudrInstPCLogin.contains("no0029");
             Assert.assertTrue(do0213Expect, kudrInstPCLogin);
         }
     }

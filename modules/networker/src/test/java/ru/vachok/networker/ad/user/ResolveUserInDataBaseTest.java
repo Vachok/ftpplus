@@ -92,6 +92,6 @@ public class ResolveUserInDataBaseTest {
         Assert.assertTrue(do0001.size() > 0);
         String listAsStr = AbstractForms.fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());
-        Assert.assertTrue(listAsStr.contains("do0001 : "), listAsStr);
+        Assert.assertTrue(listAsStr.contains("do0001.eatmeat.ru : "), listAsStr);
     }
 }

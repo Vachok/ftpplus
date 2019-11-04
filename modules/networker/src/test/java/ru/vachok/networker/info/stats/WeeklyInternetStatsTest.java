@@ -109,7 +109,7 @@ public class WeeklyInternetStatsTest {
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
         ((WeeklyInternetStats) stats).setFileName(FileNames.INETSTATSIP_CSV);
-        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.200.55", "1");
+        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.213.114", "1");
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
@@ -121,9 +121,9 @@ public class WeeklyInternetStatsTest {
     
     @Test
     public void testDeleteFrom() {
-        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.200.55", "1");
+        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.114", "1");
         if (!Stats.isSunday()) {
-            Assert.assertTrue(i == 1, i + " rows deleted for 10.200.202.52");
+            Assert.assertTrue(i == 1, i + " rows deleted for 10.200.213.114");
         }
     }
     

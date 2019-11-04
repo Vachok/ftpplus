@@ -35,8 +35,6 @@ public class DBMessenger implements MessageToUser {
     
     private String bodyMsg;
     
-    private String sendResult = "No sends ";
-    
     private boolean isInfo = true;
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
@@ -50,6 +48,7 @@ public class DBMessenger implements MessageToUser {
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBMessenger{");
         sb.append("titleMsg='").append(titleMsg).append('\'');
+        String sendResult = "No sends ";
         sb.append(", sendResult='").append(sendResult).append('\'');
         sb.append(", isInfo=").append(isInfo);
         sb.append(", headerMsg='").append(headerMsg).append('\'');
@@ -164,6 +163,8 @@ public class DBMessenger implements MessageToUser {
             if (!e.getMessage().contains("Duplicate entry ")) {
                 notDuplicate();
             }
+        }
+        finally {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }

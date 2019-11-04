@@ -9,7 +9,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -156,6 +158,6 @@ public class ServiceInfoCtrlTest {
     @Test
     public void testTestToString() {
         String s = infoCtrl.toString();
-        Assert.assertTrue(s.contains("ServiceInfoCtrl{"), s);
+        Assert.assertTrue(s.contains("ServiceInfoCtrl["), s);
     }
 }
