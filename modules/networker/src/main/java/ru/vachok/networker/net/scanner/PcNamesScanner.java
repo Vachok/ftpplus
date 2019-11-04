@@ -246,9 +246,9 @@ public class PcNamesScanner implements NetScanService {
             closePrefix();
         }
         catch (InvokeIllegalException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".onePrefixSET", e));
             AppComponents.threadConfig().execByThreadConfig(NetScanService::writeUsersToDBFromSET);
-            FileSystemWorker.writeFile("bad.scan", MessageFormat.format("{0}:\n{1}", e.getMessage(), AbstractForms.fromArray(e)));
+            String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+            MessageToUser.getInstance(MessageToUser.DB, "PcNamesScanner").error("PcNamesScanner", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         
     }
@@ -348,7 +348,8 @@ public class PcNamesScanner implements NetScanService {
                 tryScan(startSignal, doneSignal);
             }
             catch (ConcurrentModificationException e) {
-                messageToUser.error("PcNamesScanner.sysTimeBigger", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+                MessageToUser.getInstance(MessageToUser.DB, "PcNamesScanner").error("PcNamesScanner", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             }
         }
         else {
@@ -373,6 +374,8 @@ public class PcNamesScanner implements NetScanService {
             doneSignal.await();
         }
         catch (InterruptedException | ExecutionException e) {
+            String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+            MessageToUser.getInstance(MessageToUser.DB, "PcNamesScanner").error("PcNamesScanner", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 376 ***");
             this.scheduledFuture = AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(scanTask,
                 new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
@@ -494,7 +497,8 @@ public class PcNamesScanner implements NetScanService {
                 doneSignal.countDown();
             }
             catch (InterruptedException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getExecution", e));
+                String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+                MessageToUser.getInstance(MessageToUser.DB, "ScannerUSR").error("ScannerUSR", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
@@ -544,6 +548,10 @@ public class PcNamesScanner implements NetScanService {
             messageToUser.warn(this.getClass().getSimpleName(), FileNames.SCAN_TMP, String.valueOf(scanTask.fileScanTMPCreate(false)));
             setTimesLastNext();
             showScreenMessage();
+            MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
+                .info(this.getClass().getSimpleName(), FileNames.LASTNETSCAN_TXT, FileSystemWorker.readRawFile(FileNames.LASTNETSCAN_TXT));
+            MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
+                .info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
             return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }
         
@@ -573,7 +581,8 @@ public class PcNamesScanner implements NetScanService {
                 }
             }
             catch (IOException e) {
-                FileSystemWorker.appendObjectToFile(file, AbstractForms.fromArray(e));
+                String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+                MessageToUser.getInstance(MessageToUser.DB, "ScannerUSR").error("ScannerUSR", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             }
             boolean exists = file.exists() & file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
             
