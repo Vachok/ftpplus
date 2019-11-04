@@ -13,7 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -21,6 +21,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -199,8 +200,12 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
                 System.exit(Math.toIntExact(minRun));
             }
         }
-        catch (InterruptedException | RuntimeException e) {
+        catch (InterruptedException | IllegalStateException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".killAll", e));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        finally {
             Runtime.getRuntime().halt(666);
         }
     }
@@ -211,7 +216,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return execByThreadConfig();
         }
         catch (RuntimeException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".execByThreadConfig", e));
+            String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+            MessageToUser.getInstance(MessageToUser.DB, "ThreadConfig").error("ThreadConfig", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
             return false;
         }
@@ -228,7 +234,12 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return false;
         }
         else {
-            simpleAsyncExecutor.execute(r);
+            try {
+                simpleAsyncExecutor.execute(r);
+            }
+            finally {
+                messageToUser.info(this.getClass().getSimpleName(), "complete ", r.toString());
+            }
             return true;
         }
     }
@@ -272,9 +283,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         public Executor getAsyncExecutor() {
             simpleAsyncExecutor.setConcurrencyLimit(Runtime.getRuntime().availableProcessors() - 2);
             simpleAsyncExecutor.setThreadPriority(1);
-            simpleAsyncExecutor.setConcurrencyLimit(PROCESSORS - 2);
-            simpleAsyncExecutor.setDaemon(true);
-            System.out.println("simpleAsyncExecutor.isThrottleActive() = " + simpleAsyncExecutor.isThrottleActive());
             return new ExecutorServiceAdapter(simpleAsyncExecutor);
         }
     }

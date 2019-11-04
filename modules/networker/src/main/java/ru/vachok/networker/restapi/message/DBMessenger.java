@@ -5,11 +5,10 @@ package ru.vachok.networker.restapi.message;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.LoggerFactory;
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
@@ -29,6 +28,9 @@ import java.util.concurrent.TimeUnit;
  @since 26.08.2018 (12:29) */
 public class DBMessenger implements MessageToUser {
     
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
+    
     private String headerMsg;
     
     private String titleMsg;
@@ -37,11 +39,15 @@ public class DBMessenger implements MessageToUser {
     
     private boolean isInfo = true;
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
-    
     public void setHeaderMsg(String headerMsg) {
         this.headerMsg = headerMsg;
         Thread.currentThread().setName("DBMsg-" + this.hashCode());
+    }
+    
+    @Contract(pure = true)
+    DBMessenger(String headerMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = DataConnectTo.getInstance(DataConnectTo.TESTING).toString();
     }
     
     @Override
@@ -57,18 +63,11 @@ public class DBMessenger implements MessageToUser {
         return sb.toString();
     }
     
-    @Contract(pure = true)
-    DBMessenger(String headerMsg) {
-        this.headerMsg = headerMsg;
-        this.titleMsg = DataConnectTo.getInstance(DataConnectTo.TESTING).toString();
-    }
-    
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
-        this.titleMsg = "ERROR! " + titleMsg;
+        this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
         this.isInfo = false;
         AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
@@ -139,13 +138,14 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void dbSend() {
-        final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
+        String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
         String stack = MessageFormat.format("{3}. UPTIME: {2}\n{0}\nPeak threads: {1}.",
             ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime, pc);
         if (!isInfo) {
             stack = setStack(stack);
+            sql = sql.replace(ConstantsFor.PREF_NODE_NAME, "errors");
         }
         try (Connection con = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("log")) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
@@ -159,8 +159,8 @@ public class DBMessenger implements MessageToUser {
             }
         }
         catch (SQLException | RuntimeException e) {
-            messageToUser.error("DBMessenger.dbSend", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-            if (!e.getMessage().contains("Duplicate entry ")) {
+            messageToUser.error(DBMessenger.class.getSimpleName(), e.getMessage(), " see line: 161 ***");
+            if (!e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 notDuplicate();
             }
         }
@@ -172,8 +172,8 @@ public class DBMessenger implements MessageToUser {
     
     private void notDuplicate() {
         MessageToUser msgToUsr = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
-        msgToUsr.warn(this.getClass().getSimpleName() + "->" + this.headerMsg, "SQL error...", MessageFormat
-            .format("Title: {0}\nBody: {1}", this.titleMsg, this.bodyMsg));
+        String titleBody = MessageFormat.format("Title: {0}\nBody: {1}", this.titleMsg, this.bodyMsg);
+        msgToUsr.warn(this.getClass().getSimpleName() + "->" + this.headerMsg, "send log error!", titleBody);
         this.headerMsg = "";
         this.bodyMsg = "";
         this.titleMsg = "";

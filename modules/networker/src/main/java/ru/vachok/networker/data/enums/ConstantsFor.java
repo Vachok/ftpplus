@@ -385,11 +385,7 @@ public enum ConstantsFor {
     
     public static final String DBCOL_SQUIDANS = "squidans";
     
-    public static final String DBCOL_TIMESPEND = "timespend";
-    
     public static final String DB_INETSTATS = "inetstats.";
-    
-    public static final String VARCHAR_20 = "VARCHAR(20) NOT NULL DEFAULT 'no data'";
     
     public static final String ERROR_DUPLICATEENTRY = "Duplicate entry";
     
@@ -455,6 +451,11 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_ONLINECONROL = "onlineConrol";
     
+    /**
+     sshworks.html
+     */
+    public static final String SSHWORKS_HTML = "sshworks";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final String DB_SEARCHPERMANENT = "search.permanent";
@@ -482,6 +483,8 @@ public enum ConstantsFor {
     public static final String DBFIELD_TIMEON = "timeon";
     
     public static final String DBFIELD_LASTONLINE = "lastOnLine";
+    
+    public static final String DBTABLE_LOGTEMPINET = "log.tempinet";
     
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     

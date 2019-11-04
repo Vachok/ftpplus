@@ -1,0 +1,223 @@
+Index: src/main/java/ru/vachok/networker/ad/user/UserInfo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/vachok/networker/ad/user/UserInfo.java	(date 1572878288992)
++++ src/main/java/ru/vachok/networker/ad/user/UserInfo.java	(date 1572878288992)
+@@ -269,7 +269,7 @@
+                 }
+             }
+             catch (SQLException e) {
+-                messageToUser.error(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 272 ***");
++                messageToUser.error(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 256 ***");
+             }
+         }
+     
+Index: src/main/java/ru/vachok/networker/exe/ThreadConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/vachok/networker/exe/ThreadConfig.java	(date 1572878288983)
++++ src/main/java/ru/vachok/networker/exe/ThreadConfig.java	(date 1572878288983)
+@@ -212,7 +212,7 @@
+         }
+         catch (RuntimeException e) {
+             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".execByThreadConfig", e));
+-            r.run();
++            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
+             return false;
+         }
+     }
+@@ -228,7 +228,7 @@
+             return false;
+         }
+         else {
+-            simpleAsyncExecutor.execute(r, 1);
++            simpleAsyncExecutor.execute(r);
+             return true;
+         }
+     }
+@@ -270,8 +270,10 @@
+         
+         @Override
+         public Executor getAsyncExecutor() {
+-            simpleAsyncExecutor.setConcurrencyLimit(Runtime.getRuntime().availableProcessors() - 1);
++            simpleAsyncExecutor.setConcurrencyLimit(Runtime.getRuntime().availableProcessors() - 2);
+             simpleAsyncExecutor.setThreadPriority(1);
++            simpleAsyncExecutor.setConcurrencyLimit(PROCESSORS - 2);
++            simpleAsyncExecutor.setDaemon(true);
+             System.out.println("simpleAsyncExecutor.isThrottleActive() = " + simpleAsyncExecutor.isThrottleActive());
+             return new ExecutorServiceAdapter(simpleAsyncExecutor);
+         }
+Index: src/main/java/ru/vachok/networker/net/ssh/TemporaryFullInternet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/vachok/networker/net/ssh/TemporaryFullInternet.java	(date 1572878288958)
++++ src/main/java/ru/vachok/networker/net/ssh/TemporaryFullInternet.java	(date 1572878288958)
+@@ -243,7 +243,7 @@
+         jsonObject.add("log", AbstractForms.fromArray(MINI_LOGGER));
+         try(Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBTABLE_LOGTEMPINET);
+             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `log`.`tempinet` (`upstring`, `json`) VALUES (?, ?)")){
+-            preparedStatement.setString(1, MessageFormat.format("{0} called by {1}", optionToDo, whoCalls));
++            preparedStatement.setString(1, MessageFormat.format("{0} called: {1}", optionToDo, whoCalls));
+             preparedStatement.setString(2, jsonObject.toString());
+             preparedStatement.executeUpdate();
+         }
+Index: src/main/java/ru/vachok/networker/restapi/message/DBMessenger.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/vachok/networker/restapi/message/DBMessenger.java	(date 1572878288941)
++++ src/main/java/ru/vachok/networker/restapi/message/DBMessenger.java	(date 1572878288941)
+@@ -5,10 +5,11 @@
+ 
+ import org.jetbrains.annotations.Contract;
+ import org.jetbrains.annotations.NotNull;
++import org.slf4j.LoggerFactory;
++import ru.vachok.networker.AbstractForms;
+ import ru.vachok.networker.AppComponents;
+ import ru.vachok.networker.TForms;
+ import ru.vachok.networker.componentsrepo.UsefulUtilities;
+-import ru.vachok.networker.data.enums.ConstantsFor;
+ import ru.vachok.networker.data.enums.PropertiesNames;
+ import ru.vachok.networker.restapi.database.DataConnectTo;
+ 
+@@ -36,6 +37,8 @@
+     
+     private boolean isInfo = true;
+     
++    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
++    
+     public void setHeaderMsg(String headerMsg) {
+         this.headerMsg = headerMsg;
+         Thread.currentThread().setName("DBMsg-" + this.hashCode());
+@@ -63,8 +66,9 @@
+     @Override
+     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
+         this.headerMsg = headerMsg;
+-        this.titleMsg = titleMsg;
++        this.titleMsg = "ERROR! " + titleMsg;
+         this.bodyMsg = bodyMsg;
++        LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
+         this.isInfo = false;
+         AppComponents.threadConfig().execByThreadConfig(this::dbSend);
+     }
+@@ -135,14 +139,13 @@
+     }
+     
+     private void dbSend() {
+-        String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
++        final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
+         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
+         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
+         String stack = MessageFormat.format("{3}. UPTIME: {2}\n{0}\nPeak threads: {1}.",
+             ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime, pc);
+         if (!isInfo) {
+             stack = setStack(stack);
+-            sql=sql.replace(ConstantsFor.PREF_NODE_NAME, "errors");
+         }
+         try (Connection con = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("log")) {
+             try (PreparedStatement p = con.prepareStatement(sql)) {
+@@ -155,8 +158,11 @@
+                 p.executeUpdate();
+             }
+         }
+-        catch (SQLException | RuntimeException ignore) {
+-            //04.11.2019 (14:51)
++        catch (SQLException | RuntimeException e) {
++            messageToUser.error("DBMessenger.dbSend", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
++            if (!e.getMessage().contains("Duplicate entry ")) {
++                notDuplicate();
++            }
+         }
+         finally {
+             Thread.currentThread().checkAccess();
+Index: src/main/java/ru/vachok/networker/restapi/message/MessageLocal.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/vachok/networker/restapi/message/MessageLocal.java	(date 1572878288930)
++++ src/main/java/ru/vachok/networker/restapi/message/MessageLocal.java	(date 1572878288930)
+@@ -143,7 +143,6 @@
+         if (typeLog.equals("err")) {
+             msg = MessageFormat.format("!*** {0} ERROR. {1}, used {0}, but : {2} ***!", headerMsg, titleMsg, bodyMsg);
+             logger.error(msg);
+-            MessageToUser.getInstance(MessageToUser.DB, this.titleMsg).error(headerMsg, titleMsg, bodyMsg);
+         }
+         return logger;
+     }
+Index: src/main/java/ru/vachok/networker/controller/SshActsCTRL.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/vachok/networker/controller/SshActsCTRL.java	(date 1572878288923)
++++ src/main/java/ru/vachok/networker/controller/SshActsCTRL.java	(date 1572878288923)
+@@ -123,10 +123,10 @@
+     }
+     
+     @PostMapping("/tmpfullnet")
+-    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model, HttpServletRequest request) throws UnknownHostException {
++    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws UnknownHostException {
+         this.sshActs = sshActsL;
+         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
+-        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>) new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add", request.getRemoteAddr()));
++        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>) new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add"));
+         String tempInetAnswer = "null";
+         try {
+             tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
+Index: src/main/java/ru/vachok/networker/ExitApp.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/ru/vachok/networker/ExitApp.java	(date 1572878288897)
++++ src/main/java/ru/vachok/networker/ExitApp.java	(date 1572878288897)
+@@ -14,15 +14,11 @@
+ import ru.vachok.networker.data.enums.ConstantsNet;
+ import ru.vachok.networker.data.enums.FileNames;
+ import ru.vachok.networker.exe.ThreadConfig;
+-import ru.vachok.networker.restapi.database.DataConnectTo;
+ import ru.vachok.networker.restapi.message.MessageToUser;
+ import ru.vachok.networker.restapi.props.InitProperties;
+ 
+ import java.io.*;
+ import java.nio.file.Paths;
+-import java.sql.Connection;
+-import java.sql.PreparedStatement;
+-import java.sql.SQLException;
+ import java.time.LocalDateTime;
+ import java.util.*;
+ import java.util.concurrent.BlockingDeque;
+@@ -234,7 +230,6 @@
+             FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
+             miniLoggerLast.add(FileSystemWorker.delTemp());
+             context.stop();
+-            trunkErrors();
+             System.exit(Math.toIntExact(toMinutes));
+         }
+         catch (RuntimeException e) {
+@@ -243,17 +238,6 @@
+         }
+     }
+     
+-    private void trunkErrors() {
+-        try(Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("log.errors");
+-            PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM errors where pc like ?")){
+-            preparedStatement.setString(1, String.format("%s%%", UsefulUtilities.thisPC()));
+-            preparedStatement.executeUpdate();
+-        }
+-        catch (SQLException e) {
+-            messageToUser.error(ExitApp.class.getSimpleName(), e.getMessage(), " see line: 250 ***");
+-        }
+-    }
+-    
+     @Contract(pure = true)
+     static Map<Long, Visitor> getVisitsMap() {
+         return VISITS_MAP;

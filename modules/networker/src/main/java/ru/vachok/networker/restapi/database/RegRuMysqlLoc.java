@@ -4,17 +4,26 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 
@@ -73,6 +82,11 @@ class RegRuMysqlLoc implements DataConnectTo {
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.dropTable( boolean ) at 20.09.2019 - (20:37)");
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.createTable( int ) at 04.11.2019 - (13:50)");
     }
     
     @Override

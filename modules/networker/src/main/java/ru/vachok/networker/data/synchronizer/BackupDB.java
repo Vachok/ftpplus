@@ -10,7 +10,10 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -103,8 +106,8 @@ class BackupDB extends SyncData {
                 }
             }
         }
-        catch (SQLException e) {
-            messageToUser.error("BackupDB.trySync", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+        catch (SQLException ignore) {
+            //04.11.2019 (18:19)
         }
         return retList;
     }
@@ -152,13 +155,7 @@ class BackupDB extends SyncData {
             return preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
-                return -1;
-            }
-            else {
-                messageToUser.error("BackupDB.sendJSON", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-                return -666;
-            }
+            return e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY) ? -1 : -666;
         }
     }
     

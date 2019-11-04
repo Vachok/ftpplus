@@ -55,9 +55,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
      @param additionalColumns unstandart column names <b>with type</b>
      @return executeQuery
      */
-    default int createTable(String dbPointTable, List<String> additionalColumns) {
-        return new MySqlLocalSRVInetStat().createTable(dbPointTable, additionalColumns);
-    }
+    int createTable(String dbPointTable, List<String> additionalColumns);
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {

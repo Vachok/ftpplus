@@ -3,10 +3,13 @@
 package ru.vachok.networker.net.ssh;
 
 
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -47,23 +50,25 @@ public class TemporaryFullInternetTest {
     @Test
     public void testRunCheck() {
         try {
-            new TemporaryFullInternet().run();
+            Runnable internet = new TemporaryFullInternet();
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(internet);
+            submit.get(30, TimeUnit.SECONDS);
         }
         catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
     @Test
     public void testRunAdd() {
-        Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add");
+        Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
         Future<String> submit = Executors.newSingleThreadExecutor().submit(tmpInet);
         try {
             String getStr = submit.get(35, TimeUnit.SECONDS);
             Assert.assertTrue(getStr.contains("8.8.8.8"));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }

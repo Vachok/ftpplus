@@ -10,8 +10,14 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -63,6 +69,11 @@ public abstract class SyncData implements DataConnectTo {
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.createTable( int ) at 04.11.2019 - (13:49)");
     }
     
     @Override

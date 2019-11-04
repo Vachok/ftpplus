@@ -348,11 +348,16 @@ public abstract class UsefulUtilities {
                 stringBuilder.append(runProcess("ipconfig /flushdns"));
             }
             catch (IOException e) {
-                stringBuilder.append(e.getMessage());
+                stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
             }
         }
         else {
-            stringBuilder.append(System.getProperty("os.name"));
+            try {
+                stringBuilder.append(runProcess("sudo service nscd reload"));
+            }
+            catch (IOException e) {
+                stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+            }
         }
         return stringBuilder.toString();
     }

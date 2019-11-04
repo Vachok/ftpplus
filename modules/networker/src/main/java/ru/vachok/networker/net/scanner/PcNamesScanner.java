@@ -369,11 +369,11 @@ public class PcNamesScanner implements NetScanService {
             PROPS.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
             InitProperties.getInstance(InitProperties.FILE).setProps(PROPS);
             UsefulUtilities.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-            scheduledFuture.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
+            scheduledFuture.get();
             doneSignal.await();
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".noFileExists", e));
+        catch (InterruptedException | ExecutionException e) {
+            messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 376 ***");
             this.scheduledFuture = AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(scanTask,
                 new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
             isMapSizeBigger(Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.TOTPC, "269")));
@@ -450,7 +450,8 @@ public class PcNamesScanner implements NetScanService {
                 scanIt();
             }
             catch (RuntimeException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
+                String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+                MessageToUser.getInstance(MessageToUser.DB, "ScannerUSR").error("ScannerUSR", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             }
         }
         
@@ -513,6 +514,7 @@ public class PcNamesScanner implements NetScanService {
             for (String pcNamePREFIX : ConstantsNet.getPcPrefixes()) {
                 Thread.currentThread().setName(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec");
                 setToDB.clear();
+                UsefulUtilities.ipFlushDNS();
                 NetKeeper.getPcNamesForSendToDatabase().addAll(onePrefixSET(pcNamePREFIX));
             }
             String elapsedTime = ConstantsFor.ELAPSED + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";

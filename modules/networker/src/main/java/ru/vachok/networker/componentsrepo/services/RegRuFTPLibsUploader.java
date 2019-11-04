@@ -9,6 +9,7 @@ import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -93,19 +94,20 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
     }
     
-    private String uploadLibs() throws AccessDeniedException {
+    private @NotNull String uploadLibs() throws AccessDeniedException {
         String pc = UsefulUtilities.thisPC();
         if (ftpPass != null) {
             try {
                 return makeConnectionAndStoreLibs();
             }
-            catch (IOException | NullPointerException e) {
-                return FileSystemWorker.error(getClass().getSimpleName() + ".uploadLibs", e);
+            catch (IOException | RuntimeException e) {
+                pc = e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace());
             }
         }
         else {
             throw new AccessDeniedException("Wrong Password");
         }
+        return pc;
     }
     
     private @NotNull String makeConnectionAndStoreLibs() throws IOException {

@@ -8,18 +8,21 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.net.ssh.*;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.SshActs;
+import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.UnknownHostException;
 import java.nio.file.AccessDeniedException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
@@ -63,7 +66,7 @@ public class SshActsCTRL {
             model.addAttribute(ModelAttributeNames.HEAD, pageFooter.getFooter(ModelAttributeNames.HEAD));
             model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
             model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActsL.getPcName());
-            return "sshworks";
+            return ConstantsFor.SSHWORKS_HTML;
         }
         else {
             throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
@@ -95,7 +98,7 @@ public class SshActsCTRL {
                 sshActs.setPcName(sshActs.getPcName());
             }
             model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActs.toString());
-            return "sshworks";
+            return ConstantsFor.SSHWORKS_HTML;
         }
         else {
             throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
@@ -103,7 +106,7 @@ public class SshActsCTRL {
     }
     
     @PostMapping("/allowdomain")
-    public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
+    public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) {
         this.sshActs = sshActsL;
         model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getAllowDomain() + " добавлен");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
@@ -113,7 +116,7 @@ public class SshActsCTRL {
     }
     
     @PostMapping("/deldomain")
-    public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
+    public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) {
         this.sshActs = sshActsL;
         model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getDelDomain() + " удалён");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
@@ -123,10 +126,12 @@ public class SshActsCTRL {
     }
     
     @PostMapping("/tmpfullnet")
-    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws UnknownHostException {
+    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model, HttpServletRequest request) {
         this.sshActs = sshActsL;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
-        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>) new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add"));
+        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>)
+            new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add", request.getRemoteAddr()));
+        
         String tempInetAnswer = "null";
         try {
             tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);

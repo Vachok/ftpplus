@@ -306,7 +306,9 @@ public abstract class UserInfo implements InformationFactory {
                 }
             }
             catch (SQLException | RuntimeException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
+                if (e instanceof SQLException) {
+                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
+                }
                 return false;
             }
         }

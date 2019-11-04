@@ -57,11 +57,6 @@ public class SshActs {
     
     private static final Pattern COMPILE = Pattern.compile("http://", Pattern.LITERAL);
     
-    /**
-     sshworks.html
-     */
-    private static final String PAGE_NAME = "sshworks";
-    
     private static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
     
     private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
