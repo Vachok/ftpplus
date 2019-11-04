@@ -169,7 +169,8 @@ public class DiapazonScan implements NetScanService {
     
     @Override
     public void run() {
-        startDo();
+        Thread start = new Thread(this::startDo);
+        start.run();
     }
     
     BlockingDeque<String> getAllDevLocalDeq() {

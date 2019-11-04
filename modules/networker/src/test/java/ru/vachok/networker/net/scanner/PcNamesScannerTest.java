@@ -86,8 +86,8 @@ public class PcNamesScannerTest {
     
     @Test
     public void scanA() {
-        String a156Scan = scanName("a156");
-        Assert.assertTrue(a156Scan.contains("a156 : ougp"), a156Scan);
+        String a224Scan = scanName("a224");
+        Assert.assertTrue(a224Scan.contains("a224 : ialekseeva"), a224Scan);
     }
     
     private void scanAutoPC(String testPrefix, int countPC) {
@@ -122,7 +122,7 @@ public class PcNamesScannerTest {
         return list;
     }
     
-    private void prefixToMap(String prefixPcName) {
+    private static void prefixToMap(String prefixPcName) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<h4>");
         stringBuilder.append(prefixPcName);

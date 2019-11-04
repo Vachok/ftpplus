@@ -30,8 +30,6 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     String TEST = "test";
     
-    String LIB = "lib";
-    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     static @NotNull InitProperties getInstance(@NotNull String type) {

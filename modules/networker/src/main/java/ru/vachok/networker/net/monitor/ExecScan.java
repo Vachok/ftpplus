@@ -4,7 +4,6 @@ package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -12,6 +11,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -43,17 +43,13 @@ public class ExecScan extends DiapazonScan {
     
     protected static final String PAT_IS_ONLINE = " is online";
     
-    @SuppressWarnings("StaticVariableOfConcreteClass")
-    private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
-    
     private static final String FONT_BR_CLOSE = "</font><br>";
     
     private static final int HOME_VLAN = 111;
     
     private final Properties props = AppComponents.getProps();
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ExecScan.class.getSimpleName());
     
     private File vlanFile;
     
@@ -125,6 +121,17 @@ public class ExecScan extends DiapazonScan {
     
     @Override
     public void run() {
+        Thread jobThread = new Thread(this::makeJob);
+        try {
+            jobThread.run();
+        }
+        finally {
+            jobThread.interrupt();
+        }
+    
+    }
+    
+    private void makeJob() {
         if (vlanFile != null && vlanFile.exists()) {
             String copyOldResult = MessageFormat.format("Copy {0} is: {1} ({2})", vlanFile.getAbsolutePath(), cpOldFile(), this.getClass().getSimpleName());
             messageToUser.info(copyOldResult);
@@ -132,7 +139,7 @@ public class ExecScan extends DiapazonScan {
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
             boolean execScanB = execScan();
             messageToUser.info(this.getClass().getSimpleName(), MessageFormat
-                    .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
+                .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
         }
         else {
             messageToUser.error(getExecution(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");

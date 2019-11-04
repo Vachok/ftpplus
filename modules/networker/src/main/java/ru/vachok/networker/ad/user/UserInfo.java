@@ -73,7 +73,7 @@ public abstract class UserInfo implements InformationFactory {
     }
     
     public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
-        return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
+        return new UserInfo.DatabaseWriter().uniqueUserAddToDB(pcName, lastFileUse);
     }
     
     public abstract List<String> getLogins(String pcName, int resultsLimit);
@@ -159,20 +159,19 @@ public abstract class UserInfo implements InformationFactory {
         private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
-            final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+            final String sql = "insert into pcuserauto (pcName, userName, lastmod, stamp) values(?,?,?,?)";
             StringBuilder stringBuilder = new StringBuilder();
-            final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DB_PCUSERAUTO);
     
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     stringBuilder.append(execAutoResolvedUser(preparedStatement));
                 }
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
-                stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
+                stringBuilder.append(MessageFormat.format("{4}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
                     pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
-            System.out.println(stringBuilder.toString());
+            messageToUser.info(this.getClass().getSimpleName(), "writeAutoresolvedUserToDB", stringBuilder.toString());
         }
     
         /**
@@ -192,14 +191,14 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(2, userName);
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
-            String retStr = MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
+            String retStr = MessageFormat.format("{0}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
                 .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
             uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userName);
             return retStr;
         }
-        
-        private @NotNull String manualUsersDatabaseRecord(String pcName, String userName) {
+    
+        private @NotNull String uniqueUserAddToDB(String pcName, String userName) {
             this.pcName = pcName;
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = MessageFormat.format("{0} on pc {1} is set.", userName, pcName);
@@ -225,7 +224,7 @@ public abstract class UserInfo implements InformationFactory {
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
             if (isOffline) {
                 sql = sqlOff;
-                AppComponents.threadConfig().execByThreadConfig(this::countWorkTime);
+                countWorkTime();
             }
             else {
                 sql = sqlOn;
@@ -281,9 +280,9 @@ public abstract class UserInfo implements InformationFactory {
                  PreparedStatement preparedStatement = connection.prepareStatement(sql);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    Timestamp timestamp = resultSet.getTimestamp("lastonline");
-                    retBool = timestamp.getTime() < AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
-                        .toMillis(ConstantsFor.DELAY * 3);
+                    Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
+                    retBool = timestamp.getTime() < AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN,
+                        System.currentTimeMillis()) - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2);
                 }
             }
             catch (SQLException e) {
