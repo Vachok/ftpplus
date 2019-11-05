@@ -5,8 +5,7 @@ package ru.vachok.networker.restapi.message;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
@@ -14,9 +13,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.Map;
@@ -192,7 +189,7 @@ public class DBMessenger implements MessageToUser {
         stringBuilder.append(TimeUnit.NANOSECONDS.toMillis(cpuTime)).append(" cpu time ms.").append("\n\nTraces: \n");
         Thread.currentThread().checkAccess();
         Map<Thread, StackTraceElement[]> threadStackMap = Thread.getAllStackTraces();
-        String thrStackStr = new TForms().fromArray(threadStackMap);
+        String thrStackStr = AbstractForms.fromArrayJson(threadStackMap);
         stringBuilder.append(thrStackStr).append("\n");
         return stringBuilder.toString();
     }

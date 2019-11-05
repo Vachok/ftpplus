@@ -344,7 +344,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return true;
         }
         catch (IOException e) {
-            messageToUser.errorAlert("FileSystemWorker", "writeFile", e.getMessage());
+            messageToUser.warn(FileSystemWorker.class.getSimpleName(), "writeFile", e.getMessage() + " see line: 347");
             return false;
         }
     }

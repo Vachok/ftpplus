@@ -52,7 +52,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     public String fillWebModel() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+            this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
         }
         catch (RuntimeException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));

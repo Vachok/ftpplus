@@ -20,10 +20,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -126,7 +123,9 @@ public class ExecScan extends DiapazonScan {
             jobThread.run();
         }
         finally {
+            messageToUser.warn(this.getClass().getSimpleName(), "Running finalization...", jobThread.toString());
             jobThread.interrupt();
+            Runtime.getRuntime().runFinalization();
         }
     
     }

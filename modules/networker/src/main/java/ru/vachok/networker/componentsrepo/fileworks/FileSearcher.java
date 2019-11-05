@@ -3,11 +3,13 @@
 package ru.vachok.networker.componentsrepo.fileworks;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.common.CommonSRV;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -17,7 +19,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -30,26 +31,9 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, FileSearcher.class.getSimpleName());
     
-    private final String lastTableName;
-    
     private static @NotNull DataConnectTo dataConnectInst = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
     
-    private static @NotNull List<String> getSortedTableNames() throws SQLException {
-        List<String> tableNames = new ArrayList<>();
-        try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
-            DatabaseMetaData connectionMetaData = connection.getMetaData();
-            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
-                while (rs.next()) {
-                    String tableName = rs.getString(3);
-                    tableNames.add(tableName);
-                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
-                }
-            }
-            Collections.sort(tableNames);
-            Collections.reverse(tableNames);
-        }
-        return tableNames;
-    }
+    private String lastTableName;
     
     /**
      Паттерн для поиска
@@ -71,7 +55,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private Semaphore dropSemaphore;
     
-    public static @NotNull String getSearchResultsFromDB() {
+    public @NotNull String getSearchResultsFromDB() {
         StringBuilder stringBuilder = new StringBuilder();
         List<String> tableNames = new ArrayList<>();
         try {
@@ -81,39 +65,68 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         for (String tableName : tableNames) {
-            stringBuilder.append(infoFromTable(tableName));
+            this.lastTableName = tableName;
+            if (!tableName.contains(ConstantsFor.DB_PERMANENT)) {
+                stringBuilder.append(infoFromTable());
+            }
+            else {
+                stringBuilder.append(getPermanent());
+            }
         }
         return stringBuilder.toString();
     }
     
-    public static void setDataConnectInst(@NotNull DataConnectTo dataConnectInst) {
-        FileSearcher.dataConnectInst = dataConnectInst;
+    private static @NotNull List<String> getSortedTableNames() throws SQLException {
+        List<String> tableNames = new ArrayList<>();
+        try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
+            DatabaseMetaData connectionMetaData = connection.getMetaData();
+            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
+                while (rs.next()) {
+                    String tableName = rs.getString(3);
+                    tableNames.add(tableName);
+                }
+            }
+            Collections.sort(tableNames);
+            Collections.reverse(tableNames);
+        }
+        return tableNames;
     }
     
     /**
-     @param tblName имя таблицы БД
      @return содержимое
      
      @see FileSearcherTest#testGetSearchResultsFromDB()
      */
-    private static @NotNull String infoFromTable(@NotNull String tblName) {
+    private @NotNull String infoFromTable() {
         StringBuilder stringBuilder = new StringBuilder();
-        int rowsLim = Integer.parseInt(AppComponents.getProps().getProperty("limitsearch", "300"));
-        String sql = String.format(ConstantsFor.SQL_SELECT, ConstantsFor.DB_TABLESEARCH + tblName + " limit " + rowsLim);
-        if (!tblName.equalsIgnoreCase(ConstantsFor.DB_PERMANENT)) {
-            stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
-        }
-        
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_TABLESEARCH + tblName)) {
+        int rowsLim = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.LIMITSEARCHROWS, "300"));
+        final String sql = String.format(ConstantsFor.SQL_SELECT, ConstantsFor.DB_TABLESEARCH + lastTableName + " limit " + rowsLim);
+        stringBuilder.append(lastTableName).append(" = ");
+        stringBuilder.append(connectToDatabase(sql)).append("\n");
+        return stringBuilder.toString();
+    }
+    
+    private @NotNull String getPermanent() {
+        final String sql = "select * from search.permanent limit 300";
+        return MessageFormat.format("{0} = {1}", lastTableName, connectToDatabase(sql));
+    }
+    
+    private @NotNull JsonObject connectToDatabase(String sql) {
+        JsonObject jsonObject = new JsonObject();
+        int rowsLim = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.LIMITSEARCHROWS, "300"));
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_TABLESEARCH + ConstantsFor.DB_PERMANENT)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     int rSetCounter = 0;
+                    ResultSetMetaData setMetaData = resultSet.getMetaData();
+                    int columnCount = setMetaData.getColumnCount();
                     while (resultSet.next()) {
-                        stringBuilder.append(resultSet.getString(3)).append("\n");
-                        rSetCounter += 1;
+                        for (int i = 1; i <= columnCount; i++) {
+                            jsonObject.add(setMetaData.getColumnName(i), resultSet.getString(i));
+                        }
                     }
                     if (rSetCounter >= rowsLim) {
-                        stringBuilder.append(MessageFormat.format("More results in DB. {0}. Limit {1} rows", tblName, rowsLim));
+                        jsonObject.add(ConstantsFor.RETURN_ERROR, MessageFormat.format("More results in DB. {0}. Limit {1} rows", lastTableName, rowsLim));
                     }
                     else {
                         messageToUser.info(FileSearcher.class.getSimpleName(), "infoFromTable", ": " + rSetCounter);
@@ -122,15 +135,23 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             }
         }
         catch (SQLException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+            jsonObject.add(e.getMessage(), AbstractForms.fromArray(e));
         }
-        return stringBuilder.toString();
+        return jsonObject;
+    }
+    
+    public static void setDataConnectInst(@NotNull DataConnectTo dataConnectInst) {
+        FileSearcher.dataConnectInst = dataConnectInst;
+    }
+    
+    public FileSearcher() {
+        this.patternToSearch = ":";
     }
     
     public FileSearcher(String patternToSearch) {
         this.patternToSearch = patternToSearch;
         lastTableName = ConstantsFor.DB_SEARCHS + String.valueOf(System.currentTimeMillis());
-        dropSemaphore = new Semaphore(0);
+        dropSemaphore = new Semaphore(3);
     }
     
     /**
@@ -142,9 +163,14 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         startFolder = folder;
         totalFiles = 0;
         lastTableName = ConstantsFor.DB_SEARCHS + String.valueOf(System.currentTimeMillis());
-        dropSemaphore = new Semaphore(0);
+        dropSemaphore = new Semaphore(3);
     }
     
+    /**
+     @return {@link #getSearchTablesToDrop()} or {@link SQLException}
+     
+     @see FileSearcherTest#testDropSearchTables()
+     */
     public static String dropTables() {
         try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
             for (String tableToDropName : getSearchTablesToDrop()) {
@@ -160,7 +186,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         }
     }
     
-    public static @NotNull List<String> getSearchTablesToDrop() {
+    protected static @NotNull List<String> getSearchTablesToDrop() {
         List<String> tableNames = new ArrayList<>();
         try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
             try (PreparedStatement dropStatement = connection
@@ -209,11 +235,13 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         try {
             this.startStamp = System.currentTimeMillis();
             Files.walkFileTree(startFolder, this);
-            dropSemaphore.release();
             saveToDB();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
+        }
+        finally {
+            dropSemaphore.release();
         }
         return resSet;
     }
@@ -221,14 +249,14 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     private void saveToDB() {
         DataConnectTo instanceDCT = dataConnectInst;
         if (dropSemaphore.availablePermits() > 0) {
-            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits!", dropSemaphore.drainPermits()));
+            dropSemaphore.drainPermits();
             int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);
             int fileTo = instanceDCT.uploadCollection(resSet, lastTableName);
             messageToUser.info(this.getClass().getSimpleName(), "Releasing permit!", MessageFormat.format("{0} tableCreate, {1} fileTo.", tableCreate, fileTo));
-            dropSemaphore.release();
         }
         messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
                 .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
+        dropSemaphore.release();
     }
     
     /**

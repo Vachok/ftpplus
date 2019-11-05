@@ -209,7 +209,7 @@ public class AppComponentsTest {
     public void testTemporaryFullInternet() {
         TemporaryFullInternet fullInternet = new AppComponents().temporaryFullInternet();
         String toStr = fullInternet.toString();
-        Assert.assertTrue(toStr.contains("TemporaryFullInternet{delStamp="), toStr);
+        Assert.assertTrue(toStr.contains("TemporaryFullInternet["), toStr);
     }
     
 }

@@ -11,9 +11,7 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -103,8 +101,11 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         catch (RuntimeException e) {
             messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
-        messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
-        runtime.runFinalization();
+        finally {
+            messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
+            runtime.runFinalization();
+        }
+      
     }
     
     private void findThread() {
@@ -133,12 +134,14 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             messageToUser.warn(e.getMessage() + " see line: 87 ***");
         }
         try {
-    
             OutputStream outputStream = new FileOutputStream(nameFile, true);
             this.printStream = new PrintStream(outputStream, true);
         }
         catch (IOException e) {
             messageToUser.error("TestConfigureThreadsLogMaker.writeFile", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+        }
+        finally {
+            printStream.close();
         }
         messageToUser.info(this.callingClass, nameFile, MessageFormat.format("{0} nano start ({1})", startTime, LocalDate.now()));
     }

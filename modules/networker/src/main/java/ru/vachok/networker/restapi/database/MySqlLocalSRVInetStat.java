@@ -6,21 +6,16 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -35,15 +30,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     private String dbName = ConstantsFor.STR_VELKOM;
     
     private String tableName;
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
-        sb.append("tableName='").append(tableName).append('\'');
-        sb.append(", dbName='").append(dbName).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
@@ -80,6 +66,35 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
     
     @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource retSource = new MysqlDataSource();
+        retSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
+        retSource.setPassword("1qaz@WSX");
+        retSource.setUser("it");
+        retSource.setCharacterEncoding("UTF-8");
+        retSource.setEncoding("UTF-8");
+        retSource.setDatabaseName(this.dbName);
+        retSource.setCreateDatabaseIfNotExist(true);
+        retSource.setContinueBatchOnError(true);
+        retSource.setAutoReconnect(true);
+        retSource.setReconnectAtTxEnd(true);
+        retSource.setCachePreparedStatements(true);
+        retSource.setCacheCallableStatements(true);
+        retSource.setInteractiveClient(true);
+        retSource.setUseCompression(false);
+        retSource.setUseInformationSchema(true);
+        try {
+            retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
+            retSource.setDumpQueriesOnException(true);
+            Thread.currentThread().setName(retSource.getDatabaseName());
+        }
+        catch (SQLException | FileNotFoundException e) {
+            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+        }
+        return retSource;
+    }
+    
+    @Override
     public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
         this.dbName = dbPointTableName;
         int resultsUpload = 0;
@@ -90,7 +105,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
         this.dbName = dbPointTableName.split("\\Q.\\E")[0];
         this.tableName = dbPointTableName.split("\\Q.\\E")[1];
-        final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `stamp`) VALUES (?, ?)", dbName, tableName);
+        final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `json`) VALUES (?, ?)", dbName, tableName);
         MysqlDataSource source = getDataSource();
         source.setDatabaseName(dbName);
         source.setContinueBatchOnError(true);
@@ -100,11 +115,14 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
                 for (String s : colList) {
                     String s1 = s;
-                    if (s1.length() > 259) {
-                        s1 = s1.substring(0, 259);
+                    if (s1.length() > 190) {
+                        preparedStatementInsert.setString(1, String.valueOf(s1.length()));
+                        preparedStatementInsert.setString(2, s1);
                     }
-                    preparedStatementInsert.setString(1, s1);
-                    preparedStatementInsert.setLong(2, System.currentTimeMillis());
+                    else {
+                        preparedStatementInsert.setString(1, s1);
+                        preparedStatementInsert.setString(2, this.toString());
+                    }
                     resultsUpload += preparedStatementInsert.executeUpdate();
                 }
             }
@@ -113,7 +131,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                     resultsUpload += 1;
                 }
                 else {
-                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
                 }
             }
         }
@@ -126,7 +144,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             }
             else {
                 messageToUser
-                    .error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace())));
+                        .error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
             }
         }
         return resultsUpload;
@@ -138,14 +156,25 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         this.tableName = dbPointTable.split("\\Q.\\E")[1];
         int createInt = 0;
         final String createTable = getCreateQuery(dbPointTable, additionalColumns);
-        try (PreparedStatement preparedStatementTable = getDefaultConnection(dbName + "." + tableName).prepareStatement(createTable)) {
+        try (Connection connection = getDefaultConnection(dbName + "." + tableName);
+             PreparedStatement preparedStatementTable = connection.prepareStatement(createTable)) {
             int executeUpdate = preparedStatementTable.executeUpdate();
             createInt += executeUpdate;
         }
         catch (SQLException e) {
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), "createTable", e.getMessage() + " see line: 178");
             createInt = -666;
         }
         return createInt;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
+        sb.append("\"tableName\":\"").append(tableName).append("\",");
+        sb.append("\"dbName\":\"").append(dbName).append("\"");
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override
@@ -178,56 +207,30 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             throw new IllegalArgumentException(dbTable[1]);
         }
         String engine = ConstantsFor.DBENGINE_MEMORY;
-        
-        if (!dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
+    
+        if (dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
             engine = "MyISAM";
+        }
+        else {
+            engine = "InnoDB";
         }
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("(\n")
-            .append("\t`idrec` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,\n")
-            .append("\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n")
-            .append("\t`upstring` VARCHAR(190) NOT NULL DEFAULT 'not set',\n")
-            .append("\t`json` TEXT NULL,\n");
+                .append(dbTable[0])
+                .append(".")
+                .append(dbTable[1])
+                .append("(\n")
+                .append("\t`idrec` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,\n")
+                .append("\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n")
+                .append("\t`upstring` VARCHAR(190) NOT NULL DEFAULT 'not set',\n")
+                .append("\t`json` TEXT NULL,\n");
         if (!additionalColumns.isEmpty()) {
             additionalColumns.forEach(stringBuilder::append);
         }
         stringBuilder.append("\tPRIMARY KEY (`idrec`),\n" +
-            "\tUNIQUE INDEX `upstring` (`upstring`)");
+                "\tUNIQUE INDEX `upstring` (`upstring`)");
         stringBuilder.append(") ENGINE=").append(engine).append(" MAX_ROWS=100000;\n");
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource retSource = new MysqlDataSource();
-        retSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
-        retSource.setPassword("1qaz@WSX");
-        retSource.setUser("it");
-        retSource.setCharacterEncoding("UTF-8");
-        retSource.setEncoding("UTF-8");
-        retSource.setDatabaseName(this.dbName);
-        retSource.setCreateDatabaseIfNotExist(true);
-        retSource.setContinueBatchOnError(true);
-        retSource.setAutoReconnect(true);
-        retSource.setReconnectAtTxEnd(true);
-        retSource.setCachePreparedStatements(true);
-        retSource.setCacheCallableStatements(true);
-        retSource.setInteractiveClient(true);
-        retSource.setUseCompression(false);
-        retSource.setUseInformationSchema(true);
-        try {
-            retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
-            retSource.setDumpQueriesOnException(true);
-            Thread.currentThread().setName(retSource.getDatabaseName());
-        }
-        catch (SQLException | FileNotFoundException e) {
-            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
-        }
-        return retSource;
     }
     
     

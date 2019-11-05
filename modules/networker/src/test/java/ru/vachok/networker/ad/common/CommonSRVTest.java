@@ -6,8 +6,7 @@ package ru.vachok.networker.ad.common;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -57,7 +56,8 @@ public class CommonSRVTest {
         String searchInCommonResult1 = new CommonSRV().searchByPat(":");
         assertTrue(searchInCommonResult.contains("written: true"), searchInCommonResult);
         assertTrue(searchInCommonResult.contains(FileNames.SEARCH_LAST), searchInCommonResult);
-        assertTrue(searchInCommonResult1.contains("\\\\srv-fs.eatmeat.ru\\common_new\\14_ит_служба\\общая\\График отпусков 2019г  IT.XLSX"), searchInCommonResult1);
+        assertTrue(searchInCommonResult1
+                .contains("\"stamp\":\"1572132524328\",\"upstring\":\"\\\\\\\\srv-fs.eatmeat.ru\\\\common_new\\\\14_ит_служба\\\\общая\\\\Инструкции\\\\Бицерба\\\\IMG_20181010_103105.jpg\""), searchInCommonResult1);
     }
     
     @Test
@@ -125,10 +125,10 @@ public class CommonSRVTest {
             stealingPool.invokeAll(fjList);
         }
         catch (InterruptedException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         long stopTime = System.nanoTime();
-        String execServiceStr = FileSearcher.getSearchResultsFromDB();
+        String execServiceStr = new FileSearcher().getSearchResultsFromDB();
         System.out.println("execServiceStr = " + execServiceStr);
         long differenceNANOs = stopTime - startTime;
         System.out.println(MessageFormat.format("Time difference = {0} NANOs", differenceNANOs));
@@ -136,7 +136,7 @@ public class CommonSRVTest {
     
     @Test
     public void testGetLastSearchResultFromDB() {
-        String resultFromDB = FileSearcher.getSearchResultsFromDB();
+        String resultFromDB = new FileSearcher(".txt").getSearchResultsFromDB();
         Assert.assertFalse(resultFromDB.isEmpty());
         Assert.assertTrue(resultFromDB.contains("Searching for: .txt"), resultFromDB);
     }

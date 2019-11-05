@@ -84,4 +84,6 @@ public enum PropertiesNames {
     public static final String ERROR = "Error";
     
     public static final String REALFTPPASS = "realftppass";
+    
+    public static final String LIMITSEARCHROWS = "limitsearchrows";
 }

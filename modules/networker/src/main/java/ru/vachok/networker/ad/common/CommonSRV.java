@@ -34,14 +34,16 @@ public class CommonSRV {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, CommonSRV.class.getSimpleName());
     
+    private FileSearcher fileSearcher = new FileSearcher();
+    
     /**
      Пользовательский ввод через форму на сайте
      
      @see CommonCTRL
      */
-    @NonNull private String pathToRestoreAsStr;
+    @NonNull private String pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая\\";
     
-    private String perionDays;
+    private String perionDays = "365";
     
     private @NotNull String searchPat = ":";
     
@@ -71,7 +73,7 @@ public class CommonSRV {
         return searchPat;
     }
     
-    public void setSearchPat(String searchPat) {
+    public void setSearchPat(@NotNull String searchPat) {
         this.searchPat = searchPat;
     }
     
@@ -93,7 +95,7 @@ public class CommonSRV {
         this.searchPat = searchPatParam.toLowerCase();
         StringBuilder stringBuilder = new StringBuilder();
         if (searchPat.equals(":")) {
-            stringBuilder.append(FileSearcher.getSearchResultsFromDB());
+            stringBuilder.append(fileSearcher.getSearchResultsFromDB());
         }
         else if (searchPat.equalsIgnoreCase("::")) {
             stringBuilder.append(FileSearcher.dropTables());
@@ -137,7 +139,7 @@ public class CommonSRV {
      
      @see FileSearcher
      */
-    private static @NotNull String searchInCommon(@NotNull String[] patternAndFolder) {
+    private @NotNull String searchInCommon(@NotNull String[] patternAndFolder) {
         String folderToSearch;
         try {
             folderToSearch = patternAndFolder[1];
@@ -148,10 +150,9 @@ public class CommonSRV {
         if (!folderToSearch.contains("\\\\srv-fs.eatmeat.ru\\common_new\\")) {
             folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
         }
-        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
+        this.fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
         StringBuilder stringBuilder = new StringBuilder();
         Set<String> fileSearcherRes = fileSearcher.call();
-        fileSearcherRes.add("Searched: " + new Date() + "\n");
         boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
         if (isWrite) {
             stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(true);

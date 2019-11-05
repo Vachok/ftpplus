@@ -103,7 +103,7 @@ public class FileSearcherTest {
      */
     @Test
     public void testGetSearchResultsFromDB() {
-        String fromDB = FileSearcher.getSearchResultsFromDB();
+        String fromDB = new FileSearcher().getSearchResultsFromDB();
         Assert.assertNotNull(fromDB);
         Assert.assertFalse(fromDB.isEmpty());
     }

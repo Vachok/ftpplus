@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -25,6 +26,14 @@ public abstract class AbstractForms {
     
     public static String fromArray(Map<?, ?> fromMap) {
         return T_FORMS.fromArray(fromMap);
+    }
+    
+    public static @NotNull String fromArrayJson(@NotNull Map<Thread, StackTraceElement[]> threadStackMap) {
+        JsonObject jsonObject = new JsonObject();
+        for (Map.Entry<Thread, StackTraceElement[]> threadEntry : threadStackMap.entrySet()) {
+            jsonObject.add(threadEntry.getKey().toString(), fromArray(threadEntry.getValue()));
+        }
+        return jsonObject.toString();
     }
     
     public static String fromArray(StackTraceElement[] trace) {
