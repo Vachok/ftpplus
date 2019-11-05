@@ -1,24 +1,17 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net.ssh;
+package ru.vachok.networker.ad.inet;
 
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -30,7 +23,6 @@ import java.util.regex.Pattern;
 
 /**
  @see TemporaryFullInternet */
-@SuppressWarnings("ALL")
 public class TemporaryFullInternetTest {
     
     
@@ -54,7 +46,7 @@ public class TemporaryFullInternetTest {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(internet);
             submit.get(30, TimeUnit.SECONDS);
         }
-        catch (Exception e) {
+        catch (ExecutionException | InterruptedException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
@@ -62,7 +54,7 @@ public class TemporaryFullInternetTest {
     @Test
     public void testRunAdd() {
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
-        Future<String> submit = Executors.newSingleThreadExecutor().submit(tmpInet);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(tmpInet);
         try {
             String getStr = submit.get(35, TimeUnit.SECONDS);
             Assert.assertTrue(getStr.contains("8.8.8.8"));
@@ -77,7 +69,8 @@ public class TemporaryFullInternetTest {
     /**
      @see TemporaryFullInternet#sshChecker()
      */
-    @Test(enabled = false)
+    @Test
+    @Ignore
     public void sshChecker$$Copy() {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
         final Queue<String> MINI_LOGGER = new ArrayDeque<>();
@@ -86,10 +79,9 @@ public class TemporaryFullInternetTest {
         final Pattern PAT_BR_N = Pattern.compile("<br>\n");
         final Pattern PAT_SHARP = Pattern.compile(" #");
     
-        SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
+        SSH_FACTORY.setCommandSSH(ConstantsFor.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
         MINI_LOGGER.add(tempFile);
-        Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
     
         if (tempFile.isEmpty()) {
             throw new InvokeIllegalException("File is empty");
@@ -102,7 +94,7 @@ public class TemporaryFullInternetTest {
                     chkWithList(PAT_SHARP.split(x), MINI_LOGGER, SSH_CHECKER_MAP);
                 }
                 try {
-                    Long ifAbsent = sshCheckerMap.putIfAbsent(PAT_SHARP.split(x)[0].trim(), Long.valueOf(PAT_SHARP.split(x)[1]));
+                    Long ifAbsent = SSH_CHECKER_MAP.putIfAbsent(PAT_SHARP.split(x)[0].trim(), Long.valueOf(PAT_SHARP.split(x)[1]));
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
@@ -112,12 +104,12 @@ public class TemporaryFullInternetTest {
             });
         }
         long atomicTimeLong = UsefulUtilities.getAtomicTime();
-        for (Map.Entry<String, Long> entry : sshCheckerMap.entrySet()) {
+        for (Map.Entry<String, Long> entry : SSH_CHECKER_MAP.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();
             mapEntryParse(x, y, atomicTimeLong, MINI_LOGGER, SSH_CHECKER_MAP);
         }
-        ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true));
+        ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(SSH_CHECKER_MAP, true));
         String mapStr = ConstantsNet.getSshMapStr();
         Assert.assertTrue(mapStr.contains("8.8.8.8"), mapStr);
     }
@@ -155,9 +147,9 @@ public class TemporaryFullInternetTest {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
     
         String sshC = new StringBuilder()
-                .append(SshActs.SSH_SUDO_GREP_V).append(x)
+                .append(ConstantsFor.SSH_SUDO_GREP_V).append(x)
                 .append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;")
-                .append(ConstantsNet.COM_INITPF).toString();
+                .append(ConstantsFor.SSH_INITPF).toString();
         SSH_FACTORY.setCommandSSH(sshC);
         String sshCommand = SSH_FACTORY.call();
         Long aLong = SSH_CHECKER_MAP.remove(x);
@@ -171,8 +163,8 @@ public class TemporaryFullInternetTest {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
         
         StringBuilder sshBuilder = new StringBuilder();
-        sshBuilder.append(SshActs.SUDO_ECHO).append("\"").append(ip).append(" #").append(new Date()).append("\"")
-                .append(" >> /etc/pf/").append(accList).append(";").append(ConstantsNet.COM_INITPF);
+        sshBuilder.append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(ip).append(" #").append(new Date()).append("\"")
+                .append(" >> /etc/pf/").append(accList).append(";").append(ConstantsFor.SSH_INITPF);
         SSH_FACTORY.setCommandSSH(sshBuilder.toString());
         return SSH_FACTORY.call();
     }

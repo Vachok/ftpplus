@@ -18,8 +18,6 @@ public enum ConstantsNet {
     
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
     
-    public static final String DB_FIELD_WHENQUERIED = "whenQueried";
-    
     public static final int TDPC = 15;
     
     /**
@@ -49,10 +47,6 @@ public enum ConstantsNet {
     public static final int MAX_IN_ONE_VLAN = 255;
     
     public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
-    
-    public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
-    
-    public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
     
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
     

@@ -12,7 +12,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,7 +65,7 @@ public class ConfigsReloader {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
     
-        sshFactory.setCommandSSH(ConstantsNet.COM_INITPF.replace("initpf", "1915initpf"));
+        sshFactory.setCommandSSH(ConstantsFor.SSH_INITPF.replace("initpf", "1915initpf"));
         stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(STR_BR);
         Future<String> submit = poolExecutor.submit(sshFactory);
         stringBuilder.append(submit.get(15, TimeUnit.SECONDS));

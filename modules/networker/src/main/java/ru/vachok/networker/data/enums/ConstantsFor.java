@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -456,6 +454,26 @@ public enum ConstantsFor {
      */
     public static final String SSHWORKS_HTML = "sshworks";
     
+    public static final String SSH_UNAMEA = "uname -a";
+    
+    /**
+     SSH-command
+     */
+    public static final String SSH_SUDO_ECHO = "sudo echo ";
+    
+    /**
+     SSH-command
+     */
+    public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
+    
+    public static final String SSH_ETCPF = " /etc/pf/";
+    
+    public static final String SSH_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
+    
+    public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
+    
+    public static final String DB_FIELD_WHENQUERIED = "whenQueried";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final String DB_SEARCHPERMANENT = "search.permanent";
@@ -486,7 +504,7 @@ public enum ConstantsFor {
     
     public static final String DBTABLE_LOGTEMPINET = "log.tempinet";
     
-    public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
+    public static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
     
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     

@@ -7,24 +7,16 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,19 +59,16 @@ class DBPCHTMLInfo implements HTMLInfo {
         return stringBuilder.toString();
     }
     
-    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (ResultSet resultUser = statementPCUser.executeQuery()) {
-            while (resultUser.next()) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
-                if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                    stringBuilder
-                            .append(resultUser.getString(ConstantsFor.DBFIELD_USERNAME)).append(". Resolved: ")
-                            .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
-                }
-            }
-        }
-        return stringBuilder.toString();
+    /**
+     @param attributeName {@link #pcName}
+     @return Count power on , count power off
+     
+     @see DBPCHTMLInfoTest#testFillAttribute()
+     */
+    @Override
+    public String fillAttribute(String attributeName) {
+        this.pcName = attributeName;
+        return countOnOffNew();
     }
     
     private @NotNull String getLast20UserPCs() {
@@ -150,10 +139,19 @@ class DBPCHTMLInfo implements HTMLInfo {
         return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOn);
     }
     
-    @Override
-    public String fillAttribute(String attributeName) {
-        this.pcName = attributeName;
-        return countOnOffNew();
+    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (ResultSet resultUser = statementPCUser.executeQuery()) {
+            while (resultUser.next()) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
+                if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                    stringBuilder
+                            .append(resultUser.getString(ConstantsFor.DBFIELD_USERNAME)).append(". Resolved: ")
+                            .append(dateFormat.parse(resultUser.getString(ConstantsFor.DB_FIELD_WHENQUERIED))).append(" ");
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
     
     @Override
@@ -283,6 +281,7 @@ class DBPCHTMLInfo implements HTMLInfo {
                         offLine.add(0);
                     }
                 }
+                upPcUser(onLine.size(), offLine.size());
             }
             catch (RuntimeException e) {
                 messageToUser.error(MessageFormat.format("countOnOff: executeQuery()", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
@@ -335,7 +334,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+                .getString(ConstantsFor.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
     }
     
@@ -348,11 +347,11 @@ class DBPCHTMLInfo implements HTMLInfo {
     private void rLast(@NotNull ResultSet r) throws SQLException {
         try {
             ru.vachok.messenger.MessageToUser messageToUser = new MessageToTray(this.getClass().getSimpleName());
-            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
+            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsFor.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
         }
         catch (HeadlessException e) {
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
+                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsFor.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
         }
     }
     

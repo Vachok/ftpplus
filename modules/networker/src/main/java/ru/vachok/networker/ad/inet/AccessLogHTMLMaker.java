@@ -44,7 +44,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
+    public void setClassOption(@NotNull Object classOption) {
         this.aboutWhat = (String) classOption;
     }
     

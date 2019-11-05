@@ -15,10 +15,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -96,14 +93,9 @@ class AccessLogUSER extends InternetUse {
         }
         
         AccessLogUSER user = (AccessLogUSER) o;
-        
-        if (aboutWhat != null ? !aboutWhat.equals(user.aboutWhat) : user.aboutWhat != null) {
-            return false;
-        }
-        if (!messageToUser.equals(user.messageToUser)) {
-            return false;
-        }
-        return inetDateStampSite.equals(user.inetDateStampSite);
+    
+        return (aboutWhat != null ? aboutWhat.equals(user.aboutWhat) : user.aboutWhat == null) && messageToUser.equals(user.messageToUser) && inetDateStampSite
+                .equals(user.inetDateStampSite);
     }
     
     private @NotNull String getFromDB() {

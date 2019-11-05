@@ -47,7 +47,7 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testFillAttribute() {
-        String fillAttributeStr = dbpchtmlInfo.fillAttribute("do0008");
+        String fillAttributeStr = dbpchtmlInfo.fillAttribute("no0027");
         Assert.assertTrue(fillAttributeStr.contains("Online = "), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("Offline = "), fillAttributeStr);
         Assert.assertFalse(fillAttributeStr.contains("<br>"), fillAttributeStr);

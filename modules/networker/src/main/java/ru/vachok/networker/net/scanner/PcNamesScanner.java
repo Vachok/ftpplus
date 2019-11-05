@@ -10,9 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -169,7 +167,7 @@ public class PcNamesScanner implements NetScanService {
     @Override
     public void run() {
         if (classOption == null) {
-            throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
+            throw new InvokeIllegalException(MessageFormat.format("SET CLASS OPTION: {0} in {1}", NetScanCtr.class.getSimpleName(), this.getClass().getSimpleName()));
         }
         else if (!fileTmp.exists()) {
             this.model = classOption.getModel();
@@ -608,11 +606,9 @@ public class PcNamesScanner implements NetScanService {
             String bodyMsg = MessageFormat.format("Online: {0}.\n{1} min uptime. \n{2} = scan.tmp\n", PROPS.getProperty(PropertiesNames.ONLINEPC, "0"), upTime);
             AppComponents.getMessageSwing(this.getClass().getSimpleName()).infoTimer((int) ConstantsFor.DELAY, bodyMsg);
             FileSystemWorker.appendObjectToFile(new File(FileNames.LASTNETSCAN_TXT), bodyMsg);
-            new PcNamesScanner().run();
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        
     }
     
     

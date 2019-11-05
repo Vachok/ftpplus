@@ -8,9 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
@@ -19,7 +18,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
-import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +41,8 @@ public class SshActsCTRL {
     private static final String URL_SSHACTS = "/sshacts";
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SshActsCTRL.class.getSimpleName());
     
     private PfLists pfLists;
     
@@ -71,6 +71,30 @@ public class SshActsCTRL {
         else {
             throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
         }
+    }
+    
+    public void parseReq(@NotNull String queryString) {
+        String qStr = " ";
+        try {
+            sshActs.setPcName(queryString.split("&")[0].replaceAll("pcName=", ""));
+            qStr = queryString.split("&")[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            sshActs.setAllFalse();
+        }
+        if (qStr.equalsIgnoreCase("inet=std")) {
+            sshActs.setSquid();
+        }
+        if (qStr.equalsIgnoreCase("inet=limit")) {
+            sshActs.setSquidLimited();
+        }
+        if (qStr.equalsIgnoreCase("inet=full")) {
+            sshActs.setTempFull();
+        }
+        if (qStr.equalsIgnoreCase("inet=nat")) {
+            sshActs.setVipNet();
+        }
+        String msg = toString();
     }
     
     @GetMapping(URL_SSHACTS)
@@ -105,6 +129,37 @@ public class SshActsCTRL {
         }
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActsCTRL{");
+        sb.append("sshActs=").append(sshActs.hashCode());
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @PostMapping("/tmpfullnet")
+    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model, @NotNull HttpServletRequest request) {
+        this.sshActs = sshActsL;
+        long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
+        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>)
+                new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add", request.getRemoteAddr()));
+        String tempInetAnswer = "null";
+        try {
+            String flushDNS = UsefulUtilities.ipFlushDNS();
+            tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
+            messageToUser.info(this.getClass().getSimpleName(), flushDNS, tempInetAnswer);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
+            messageToUser.error(MessageFormat.format("SshActsCTRL.tempFullInetAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getRuntime());
+        model.addAttribute("ok", tempInetAnswer);
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
+        return "ok";
+    }
+    
     @PostMapping("/allowdomain")
     public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) {
         this.sshActs = sshActsL;
@@ -123,60 +178,6 @@ public class SshActsCTRL {
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
-    }
-    
-    @PostMapping("/tmpfullnet")
-    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model, HttpServletRequest request) {
-        this.sshActs = sshActsL;
-        long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
-        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>)
-            new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add", request.getRemoteAddr()));
-        
-        String tempInetAnswer = "null";
-        try {
-            tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
-            messageToUser.error(MessageFormat.format("SshActsCTRL.tempFullInetAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getRuntime());
-        model.addAttribute("ok", tempInetAnswer);
-        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
-        return "ok";
-    }
-    
-    public void parseReq(@NotNull String queryString) {
-        String qStr = " ";
-        try {
-            sshActs.setPcName(queryString.split("&")[0].replaceAll("pcName=", ""));
-            qStr = queryString.split("&")[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            sshActs.setAllFalse();
-        }
-        if (qStr.equalsIgnoreCase("inet=std")) {
-            sshActs.setSquid();
-        }
-        if (qStr.equalsIgnoreCase("inet=limit")) {
-            sshActs.setSquidLimited();
-        }
-        if (qStr.equalsIgnoreCase("inet=full")) {
-            sshActs.setTempFull();
-        }
-        if (qStr.equalsIgnoreCase("inet=nat")) {
-            sshActs.setVipNet();
-        }
-        String msg = toString();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActsCTRL{");
-        sb.append("sshActs=").append(sshActs.hashCode());
-        sb.append('}');
-        return sb.toString();
     }
     
     private boolean getAuthentic(@NotNull String pcReq) {

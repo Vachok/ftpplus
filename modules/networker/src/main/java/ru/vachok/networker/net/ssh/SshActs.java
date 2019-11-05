@@ -8,26 +8,19 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.WhoIsWithSRV;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.data.enums.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,25 +36,7 @@ import java.util.regex.Pattern;
 public class SshActs {
     
     
-    /**
-     SSH-command
-     */
-    public static final String SUDO_ECHO = "sudo echo ";
-    
-    /**
-     SSH-command
-     */
-    public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
-    
-    public static final String SSH_ETCPF = " /etc/pf/";
-    
     private static final Pattern COMPILE = Pattern.compile("http://", Pattern.LITERAL);
-    
-    private static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
-    
-    private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
-    
-    private static final String SSH_INITPF = "sudo /etc/initpf.fw && exit;";
     
     /**
      Имя ПК для разрешения
@@ -199,20 +174,21 @@ public class SshActs {
         String resolvedIp = resolveIp(allowDomain);
         
         String commandSSH = new StringBuilder()
-            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
-            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, ConstantsFor.ANS_DNAMENULL))
+                .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
+                .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, ConstantsFor.ANS_DNAMENULL))
             .append(" #")
             .append(allowDomain)
             .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
             
             .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
             .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
-            
-            .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append("\"").append(" >> /etc/pf/allowdomain;")
-            .append(SUDO_ECHO).append("\"").append(resolvedIp).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
+        
+                .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append("\"")
+                .append(" >> /etc/pf/allowdomain;")
+                .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(resolvedIp).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
             .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
-            .append(SSH_SQUID_RECONFIGURE)
-            .append(SSH_INITPF).toString();
+                .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
+                .append(ConstantsFor.SSH_INITPF).toString();
         
         String call = "<b>" + new SSHFactory.Builder(whatSrvNeed(), commandSSH, getClass().getSimpleName()).build().call() + "</b>";
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolvedIp) + "</font>";
@@ -332,10 +308,10 @@ public class SshActs {
         delDomainOpt.ifPresent(x->{
             Optional<String> resolvedIp = Optional.of(resolveIp(x));
             StringBuilder sshComBuilder = new StringBuilder()
-                .append(SSH_SUDO_GREP_V)
+                    .append(ConstantsFor.SSH_SUDO_GREP_V)
                 .append(x)
                 .append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
-                .append(SSH_SUDO_GREP_V);
+                    .append(ConstantsFor.SSH_SUDO_GREP_V);
             resolvedIp.ifPresent(stringBuilder::append);
             sshComBuilder.append(" #")
                 .append(x)
@@ -343,8 +319,8 @@ public class SshActs {
                 .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
                 .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
                 .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
-                .append(SSH_SQUID_RECONFIGURE)
-                .append(SSH_INITPF).toString();
+                    .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
+                    .append(ConstantsFor.SSH_INITPF).toString();
             
             String resStr = new SSHFactory.Builder(whatSrvNeed(), sshComBuilder.toString(), getClass().getSimpleName()).build().call();
             
@@ -454,7 +430,7 @@ public class SshActs {
     private @NotNull String execByWhatListSwitcher(int whatList, boolean iDel) {
         if (iDel) {
             return new StringBuilder()
-                .append(SSH_SUDO_GREP_V)
+                    .append(ConstantsFor.SSH_SUDO_GREP_V)
                 .append(Objects.requireNonNull(pcName))
                 .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '")
                 .append(Objects.requireNonNull(ipAddrOnly))
@@ -469,7 +445,7 @@ public class SshActs {
         }
         else {
             this.comment = Objects.requireNonNull(ipAddrOnly) + comment;
-            String echoSudo = SUDO_ECHO;
+            String echoSudo = ConstantsFor.SSH_SUDO_ECHO;
             switch (whatList) {
                 case 1:
                     return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/vipnet;sudo /etc/initpf.fw;";

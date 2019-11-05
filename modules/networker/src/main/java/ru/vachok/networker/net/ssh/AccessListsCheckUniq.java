@@ -63,9 +63,9 @@ public class AccessListsCheckUniq implements Callable<String> {
     
     private @NotNull String connectTo() {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), "uname -a", getClass().getSimpleName());
+        SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), ConstantsFor.SSH_UNAMEA, getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
-        String[] commandsToGetList = {ConstantsNet.COM_CAT24HRSLIST, "sudo cat /etc/pf/vipnet && exit", ConstantsFor.SSH_SHOW_PFSQUID, ConstantsFor.SSH_SHOW_SQUIDLIMITED, ConstantsFor.SSH_SHOW_PROXYFULL};
+        String[] commandsToGetList = {ConstantsFor.COM_CAT24HRSLIST, "sudo cat /etc/pf/vipnet && exit", ConstantsFor.SSH_SHOW_PFSQUID, ConstantsFor.SSH_SHOW_SQUIDLIMITED, ConstantsFor.SSH_SHOW_PROXYFULL};
         for (String getList : commandsToGetList) {
             makePfListFiles(getList, sshFactory, stringBuilder);
         }

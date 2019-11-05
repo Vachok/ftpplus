@@ -12,9 +12,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -24,19 +22,12 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -57,10 +48,6 @@ class WeeklyInternetStats implements Runnable, Stats {
     
     protected String getFileName() {
         return fileName;
-    }
-    
-    protected void setFileName(String fileName) {
-        this.fileName = fileName;
     }
     
     @Override
@@ -225,7 +212,8 @@ class WeeklyInternetStats implements Runnable, Stats {
         try (OutputStream outputStream = new FileOutputStream(FileNames.INETSTATSIP_CSV)) {
             try (PrintStream printStream = new PrintStream(outputStream, true)) {
                 while (r.next()) {
-                    printStream.println(r.getString("ip"));
+                    String ip = r.getString("ip");
+                    printStream.println(ip);
                 }
             }
         }
@@ -242,7 +230,7 @@ class WeeklyInternetStats implements Runnable, Stats {
                 try (ResultSet r = p.executeQuery()) {
                     try (OutputStream outputStream = new FileOutputStream(fileName)) {
                         try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                            printToFile(r, printStream);
+                            printConcreteIPToFile(r, printStream);
                         }
                     }
                 }
@@ -258,7 +246,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
     }
     
-    private void printToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
+    private void printConcreteIPToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
         while (r.next()) {
             printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
             printStream.print(",");
