@@ -374,7 +374,7 @@ public class PcNamesScanner implements NetScanService {
             PROPS.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
             InitProperties.getInstance(InitProperties.FILE).setProps(PROPS);
             UsefulUtilities.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-            scheduledFuture.get(ConstantsFor.DELAY + 1, TimeUnit.MINUTES);
+            scheduledFuture.get();
             doneSignal.await();
         }
         catch (InterruptedException e) {
@@ -382,7 +382,7 @@ public class PcNamesScanner implements NetScanService {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        catch (ExecutionException | TimeoutException e) {
+        catch (ExecutionException e) {
             String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
             MessageToUser.getInstance(MessageToUser.DB, "PcNamesScanner").error("PcNamesScanner", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 376 ***");
