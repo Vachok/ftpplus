@@ -123,6 +123,7 @@ public class ServiceInfoCtrl {
         model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
         String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
+    
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
             .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
@@ -170,7 +171,7 @@ public class ServiceInfoCtrl {
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
-        return stringBuilder.toString();
+        return stringBuilder.toString().replace("***", "<br>");
     }
     
     private @NotNull String prepareRequest(@NotNull HttpServletRequest request) {

@@ -10,7 +10,9 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -22,7 +24,9 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -178,26 +182,25 @@ public abstract class UserInfo implements InformationFactory {
             String retStr = MessageFormat.format("{0}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
                     .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
-            uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userName);
             return retStr;
         }
     
         private @NotNull String uniqueUserAddToDB(String pcName, String userName) {
             this.pcName = pcName;
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
-            String msg = MessageFormat.format("{0} on pc {1} is set.", userName, pcName);
+            String msg = MessageFormat.format("{0} on {1} is set.", userName, pcName);
             int retIntExec = 0;
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
                  PreparedStatement p = connection.prepareStatement(sql)) {
                 p.setString(1, pcName);
                 p.setString(2, userName);
                 retIntExec = p.executeUpdate();
-                NetKeeper.getPcUser().put(pcName, msg);
+                NetKeeper.getPcUser().put(retIntExec + " executeUpdate", msg);
+                return MessageFormat.format("Setting {0} to {1} executeUpdate: {2}", userName, pcName, retIntExec);
             }
-            catch (SQLException ignore) {
-                //27.10.2019 (19:22)
+            catch (SQLException e) {
+                return MessageFormat.format("{0} already exists in database {1} on {2}", userName, ConstantsFor.DB_VELKOMPCUSER, pcName);
             }
-            return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
     
         private void updTime(String pcName, boolean isOffline) {
@@ -206,7 +209,7 @@ public abstract class UserInfo implements InformationFactory {
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                     .valueOf(LocalDateTime.now()));
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
-            countWorkTime();
+            AppComponents.threadConfig().execByThreadConfig(this::countWorkTime);
             if (isOffline) {
                 sql = sqlOff;
             }

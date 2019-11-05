@@ -94,8 +94,8 @@ public class UserInfoTest {
     @Test
     public void testUniqueUsersTableRecord() {
         InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
-        String manDBStr = UserInfo.uniqueUsersTableRecord("pc", "user");
-        Assert.assertEquals(manDBStr, "user executeUpdate 0");
+        String manDBStr = UserInfo.uniqueUsersTableRecord("pc1", "user1");
+        Assert.assertEquals(manDBStr, "user1 already exists in database velkom.pcuser on pc1");
     }
     
     private @NotNull String getCreate() {

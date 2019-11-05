@@ -146,13 +146,13 @@ class PCOn extends PCInfo {
     
     @Override
     public String getInfo() {
-        if (pcName == null | pcName.contains("unknown")) {
+        if (pcName == null || pcName.contains("unknown")) {
             return "PC is not set or on DNS record" + this.toString();
         }
         else {
             this.pcName = checkValidNameWithoutEatmeat(pcName);
             String currentName = pcNameWithHTMLLink();
-            messageToUser.warn(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, addressIp, true, userLogin));
+            messageToUser.info(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, addressIp, true, userLogin));
             NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName + "<br>", true);
             return currentName;
         }
@@ -160,6 +160,7 @@ class PCOn extends PCInfo {
     
     @NotNull String pcNameWithHTMLLink() {
         String lastUserRaw = pcName + " : " + userLogin; // pcName : userName
+        AppComponents.threadConfig().execByThreadConfig(()->UserInfo.uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userLogin));
         String lastUser = new PageGenerationHelper().setColor("#00ff69", lastUserRaw);
         if (lastUser.contains(".err") || lastUser.contains(ConstantsFor.ISNTRESOLVED)) {
             lastUser = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, UserInfo.getInstance("ResolveUserInDataBase").getLogins(pcName, 1).get(0));

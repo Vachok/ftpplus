@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -20,8 +21,10 @@ import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.testng.Assert.assertNull;
 
@@ -57,9 +60,18 @@ public class CountSizeOfWorkDirTest {
             Assert.assertTrue(result.contains("gradle"));
             Assert.assertTrue(result.contains("idea"));
         }
-        catch (Exception e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
+        catch (ExecutionException | TimeoutException e) {
+            assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        finally {
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).warn("FINAL");
+            Runtime.getRuntime().runFinalization();
+        }
+    
     }
     
     @Test

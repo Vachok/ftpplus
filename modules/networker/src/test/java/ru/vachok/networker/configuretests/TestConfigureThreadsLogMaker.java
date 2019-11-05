@@ -11,7 +11,9 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -103,7 +105,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         }
         finally {
             messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
-            runtime.runFinalization();
+            Runtime.getRuntime().runFinalization();
         }
       
     }
@@ -131,19 +133,20 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             Files.createDirectories(Paths.get(TEST_FOLDER));
         }
         catch (IOException e) {
-            messageToUser.warn(e.getMessage() + " see line: 87 ***");
+            System.out.println("AbstractForms.exceptionNetworker(e.getStackTrace()) = " + AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         try {
             OutputStream outputStream = new FileOutputStream(nameFile, true);
             this.printStream = new PrintStream(outputStream, true);
         }
         catch (IOException e) {
-            messageToUser.error("TestConfigureThreadsLogMaker.writeFile", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+            System.out.println("AbstractForms.exceptionNetworker(e.getStackTrace()) = " + AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         finally {
             printStream.close();
+            messageToUser.info(this.callingClass, nameFile, MessageFormat.format("{0} nano start ({1})", startTime, LocalDate.now()));
         }
-        messageToUser.info(this.callingClass, nameFile, MessageFormat.format("{0} nano start ({1})", startTime, LocalDate.now()));
+        
     }
     
     @Override
