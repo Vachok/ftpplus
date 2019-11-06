@@ -10,7 +10,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.FakeRequest;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -252,9 +255,7 @@ public class PcNamesScanner implements NetScanService {
             if (NetKeeper.getPcNamesForSendToDatabase().size() > 0) {
                 NetScanService.writeUsersToDBFromSET();
             }
-            Runnable monitoringRunnable = NetScanService.getInstance(NetScanService.PCNAMESSCANNER).getMonitoringRunnable();
-            scheduledFuture = AppComponents.threadConfig().getTaskScheduler()
-                    .schedule(monitoringRunnable, new Date(AppComponents.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)));
+            classOption.netScan(new FakeRequest(), classOption.getResponse(), model);
         }
     }
     
@@ -371,6 +372,12 @@ public class PcNamesScanner implements NetScanService {
     }
     
     private void noFileExists(@NotNull CountDownLatch doneSignal) {
+        this.scheduledFuture = AppComponents.threadConfig().getTaskScheduler()
+            .scheduleAtFixedRate(
+                scanTask, new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
+            .info("PcNamesScanner.noFileExists", AppComponents.threadConfig().toString(), "Before tries");
+    
         try {
             PROPS.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
             InitProperties.getInstance(InitProperties.FILE).setProps(PROPS);
@@ -379,20 +386,22 @@ public class PcNamesScanner implements NetScanService {
             doneSignal.await();
         }
         catch (InterruptedException e) {
-            messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 379 ***");
+            String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
+            MessageToUser.getInstance(MessageToUser.DB, "PcNamesScanner").error("PcNamesScanner", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException e) {
             String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
             MessageToUser.getInstance(MessageToUser.DB, "PcNamesScanner").error("PcNamesScanner", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
-            messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 376 ***");
-    
         }
         finally {
-            setPrefProps();
-            this.scheduledFuture = AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(scanTask,
-                new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+            if (scheduledFuture.isDone()) {
+                setPrefProps();
+                this.scanTask = new ScannerUSR(new CountDownLatch(1), new CountDownLatch(1));
+            }
+            MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
+                .info("PcNamesScanner.noFileExists", AppComponents.threadConfig().toString(), "Finally block");
         }
     }
     
