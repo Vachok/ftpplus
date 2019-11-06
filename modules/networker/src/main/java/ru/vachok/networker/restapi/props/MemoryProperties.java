@@ -10,10 +10,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
@@ -67,6 +64,7 @@ public class MemoryProperties extends DBPropsCallable {
         final String sql = "INSERT INTO properties (property, valueofproperty) VALUES (?, ?);";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             int update = 0;
+    
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                     preparedStatement.setString(1, entry.getKey().toString());
@@ -74,12 +72,16 @@ public class MemoryProperties extends DBPropsCallable {
                     update += preparedStatement.executeUpdate();
                 }
             }
-            AppComponents.threadConfig().execByThreadConfig(()->super.setProps(properties));
+            catch (SQLException e) {
+                messageToUser.error(MessageFormat.format("MemoryProperties.setProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            }
             return update > 0;
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MemoryProperties.setProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
             return updateTable(properties) > 0;
+        }
+        finally {
+            AppComponents.threadConfig().execByThreadConfig(()->super.setProps(properties));
         }
     }
     
@@ -109,9 +111,10 @@ public class MemoryProperties extends DBPropsCallable {
         if (InitProperties.getInstance(InitProperties.FILE).getProps().size() < 17) {
             throw new InvokeIllegalException("SET FILE PROPS FIRST!");
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES);
-             PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {
-            return preparedStatement.executeUpdate() == 0;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {
+                return preparedStatement.executeUpdate() == 0;
+            }
         }
         catch (SQLException e) {
             messageToUser.error("MemoryProperties.delProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));

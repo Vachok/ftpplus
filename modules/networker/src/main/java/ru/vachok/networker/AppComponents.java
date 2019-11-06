@@ -10,8 +10,7 @@ import org.springframework.context.annotation.*;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -171,6 +170,9 @@ public class AppComponents {
     
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
+        if (request.getSession() == null) {
+            request = new FakeRequest();
+        }
         Visitor visitor = new Visitor(request);
         ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
         return visitor;

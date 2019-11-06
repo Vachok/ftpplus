@@ -173,7 +173,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
             printStream.println(objectToAppend);
-            stringBuilder.append(fileForAppend.getAbsolutePath());
+            stringBuilder.append("Object: ").append(objectToAppend).append(" added to: ").append(fileForAppend.getAbsolutePath());
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));

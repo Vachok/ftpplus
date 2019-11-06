@@ -45,9 +45,10 @@ public class Visitor {
     private String remAddr;
 
     private HttpSession session;
+    
     private HttpServletRequest request;
     
-    public Visitor(@NotNull HttpServletRequest request) throws NullPointerException, IllegalStateException {
+    public Visitor(@NotNull HttpServletRequest request) throws RuntimeException {
         List<String> visitList = new ArrayList<>();
         this.request = request;
         this.session = request.getSession();
@@ -85,7 +86,7 @@ public class Visitor {
     public String getVisitPlace() {
         return visitPlace;
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Visitor{");

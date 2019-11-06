@@ -86,4 +86,6 @@ public enum PropertiesNames {
     public static final String REALFTPPASS = "realftppass";
     
     public static final String LIMITSEARCHROWS = "limitsearchrows";
+    
+    public static final String SUN_JAVA_COMMAND = "sun.java.command";
 }

@@ -506,6 +506,8 @@ public enum ConstantsFor {
     
     public static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
     
+    public static final String LOCAL = "local";
+    
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

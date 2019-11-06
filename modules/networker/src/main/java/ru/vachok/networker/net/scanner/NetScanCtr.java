@@ -44,6 +44,12 @@ public class NetScanCtr {
     
     private HttpServletRequest request;
     
+    private HttpServletResponse response;
+    
+    public HttpServletResponse getResponse() {
+        return response;
+    }
+    
     private Model model = new ExtendedModelMap();
     
     @Contract(pure = true)
@@ -54,6 +60,7 @@ public class NetScanCtr {
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         this.request = request;
+        this.response = response;
         this.model = model;
         long lastScan = Long.parseLong(AppComponents.getUserPref().get(PropertiesNames.LASTSCAN, "1548919734742"));
         pcNamesScanner.setClassOption(this);
