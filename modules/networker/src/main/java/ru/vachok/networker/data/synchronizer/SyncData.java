@@ -15,10 +15,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 
 /**
@@ -36,11 +34,9 @@ public abstract class SyncData implements DataConnectTo {
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
-    static final String DOWNLOADER = "DBRemoteDownloader";
+    private static final String DOWNLOADER = "DBRemoteDownloader";
     
     public static final String BACKUPER = "BackupDB";
-    
-    private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     private String idColName = ConstantsFor.DBCOL_IDREC;
     
@@ -124,10 +120,6 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
     
-    void setFromFileToJSON(Deque<String> fromFileToJSON) {
-        this.fromFileToJSON = fromFileToJSON;
-    }
-    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull SyncData getInstance(@NotNull String type) {
@@ -136,8 +128,6 @@ public abstract class SyncData implements DataConnectTo {
                 return new DBRemoteDownloader(0);
             case UPUNIVERSAL:
                 return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
-            case BACKUPER:
-                return new BackupDB();
             case INETSYNC:
                 return new InternetSync("10.200.213.85");
             default:

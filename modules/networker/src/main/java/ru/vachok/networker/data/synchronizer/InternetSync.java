@@ -20,9 +20,13 @@ import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -200,7 +204,7 @@ public class InternetSync extends SyncData implements Runnable {
             }
         }
         catch (SQLException e) {
-            tableComment = "InternetSync" + " checkComment " + e.getMessage() + " see line: 89";
+            tableComment = SyncData.INETSYNC + " checkComment " + e.getMessage() + " see line: 89";
         }
         return tableComment;
     }

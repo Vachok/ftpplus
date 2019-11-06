@@ -176,7 +176,6 @@ public class SyncDataTest {
     public void testGetFromFileToJSON() {
         Queue<String> stringsQ = FileSystemWorker.readFileToQueue(Paths.get(FileNames.BUILD_GRADLE));
         Deque<String> stringDeque = new ConcurrentLinkedDeque<>(stringsQ);
-        syncData.setFromFileToJSON(stringDeque);
         Assert.assertNotNull(stringDeque);
         String jsonStr = new TForms().fromArray(stringDeque);
         Assert.assertFalse(jsonStr.isEmpty(), jsonStr);
