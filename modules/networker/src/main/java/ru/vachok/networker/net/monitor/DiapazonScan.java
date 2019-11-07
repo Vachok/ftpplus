@@ -12,10 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 
@@ -56,7 +53,7 @@ public class DiapazonScan implements NetScanService {
     
     private List<String> pingedDevices = new ArrayList<>();
     
-    private long stopClassStampLong = AppComponents.getUserPref().getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
+    private long stopClassStampLong = ru.vachok.networker.restapi.props.InitProperties.getUserPref().getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
     
     protected DiapazonScan() {
         thrConfig = AppComponents.threadConfig();
@@ -221,7 +218,7 @@ public class DiapazonScan implements NetScanService {
     private void setScanInMin() {
         if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            Preferences pref = AppComponents.getUserPref();
+            Preferences pref = ru.vachok.networker.restapi.props.InitProperties.getUserPref();
             pref.put(PropertiesNames.SCANSINMIN, String.valueOf(scansItMin));
             try {
                 pref.sync();

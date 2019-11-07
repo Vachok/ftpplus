@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi.props;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -79,9 +78,6 @@ public class MemoryProperties extends DBPropsCallable {
         }
         catch (SQLException e) {
             return updateTable(properties) > 0;
-        }
-        finally {
-            AppComponents.threadConfig().execByThreadConfig(()->super.setProps(properties));
         }
     }
     

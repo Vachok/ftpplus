@@ -12,6 +12,7 @@ import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -60,7 +61,7 @@ public class ExecScan extends DiapazonScan {
     
     private String whatVlan;
     
-    private Preferences preferences = AppComponents.getUserPref();
+    private Preferences preferences = InitProperties.getUserPref();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -227,7 +228,7 @@ public class ExecScan extends DiapazonScan {
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
-        UsefulUtilities.setPreference(DiapazonScan.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
+        InitProperties.setPreference(DiapazonScan.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
         if (byAddress.isReachable(calcTimeOutMSec())) {
             NetKeeper.getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);

@@ -4,23 +4,15 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalTime;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.InvalidPreferencesFormatException;
-import java.util.prefs.Preferences;
+import java.util.prefs.*;
 
 
 /**
@@ -98,7 +90,7 @@ public class PreferencesHelperTest {
     
     @Test
     public void testReal() {
-        Preferences fromRealClass = AppComponents.getUserPref();
+        Preferences fromRealClass = InitProperties.getUserPref();
         System.out.println("new TForms().fromArray(freomRealClass) = " + new TForms().fromArray(fromRealClass));
         String fileWorkerValue = fromRealClass.get("charset", "");
         Assert.assertEquals(fileWorkerValue, "UTF-8");

@@ -22,6 +22,7 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -132,7 +133,7 @@ public class AppComponentsTest {
     
     @Test
     public void testGetUserPref() {
-        Preferences pref = AppComponents.getUserPref();
+        Preferences pref = InitProperties.getUserPref();
         try {
             Assert.assertNotNull(pref.keys());
             Assert.assertTrue(pref.keys().length > 2);

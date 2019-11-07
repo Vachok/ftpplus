@@ -11,10 +11,7 @@ import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
@@ -22,11 +19,10 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -35,12 +31,8 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -76,22 +68,15 @@ public class AppInfoOnLoad implements Runnable {
             AppComponents.threadConfig().execByThreadConfig(syncDataBcp::superRun);
         }
         try {
-            infoForU();
             getWeekPCStats();
         }
         catch (RuntimeException e) {
-            messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 76 ***");
+            MessageToUser.getInstance(MessageToUser.DB, AppInfoOnLoad.class.getSimpleName())
+                    .error("AppInfoOnLoad.run", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
-    }
-    
-    private void setNextLast() {
-        String nextLast = String.valueOf(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
-        
-        UsefulUtilities.setPreference(PropertiesNames.LASTSCAN, nextLast);
-        AppComponents.getProps().setProperty(PropertiesNames.LASTSCAN, nextLast);
-        
-        UsefulUtilities.setPreference(PropertiesNames.NEXTSCAN, nextLast);
-        AppComponents.getProps().setProperty(PropertiesNames.NEXTSCAN, nextLast);
+        finally {
+            infoForU();
+        }
     }
     
     private static void setCurrentProvider() {
@@ -109,20 +94,14 @@ public class AppInfoOnLoad implements Runnable {
         thrConfig.execByThreadConfig(deleterTemp);
     }
     
-    private void infoForU() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(UsefulUtilities.getBuildStamp());
-        messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
-        getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
-        try {
-            messageToUser.info(UsefulUtilities.getIISLogSize());
-            AppComponents.threadConfig().execByThreadConfig(()->FileSystemWorker
-                .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS)));
-        }
-        catch (NullPointerException e) {
-            messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        ftpUploadTask();
+    private void setNextLast() {
+        String nextLast = String.valueOf(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
+        
+        InitProperties.setPreference(PropertiesNames.LASTSCAN, nextLast);
+        AppComponents.getProps().setProperty(PropertiesNames.LASTSCAN, nextLast);
+        
+        InitProperties.setPreference(PropertiesNames.NEXTSCAN, nextLast);
+        AppComponents.getProps().setProperty(PropertiesNames.NEXTSCAN, nextLast);
     }
     
     private void getWeekPCStats() {
@@ -141,17 +120,24 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
     
-    @Contract(pure = true)
-    protected static List<String> getMiniLogger() {
-        return MINI_LOGGER;
-    }
-    
-    private void ftpUploadTask() {
-        messageToUser.warn(PropertiesNames.SYS_OSNAME_LOWERCASE);
-        AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
-        String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
-        getMiniLogger().add(ftpUpload);
-        this.startPeriodicTasks();
+    private void infoForU() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(UsefulUtilities.getBuildStamp());
+        messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
+        getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
+        try {
+            messageToUser.info(UsefulUtilities.getIISLogSize());
+            AppComponents.threadConfig().execByThreadConfig(()->FileSystemWorker
+                    .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS)));
+        }
+        catch (NullPointerException e) {
+            messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        finally {
+            this.startPeriodicTasks();
+            ftpUploadTask();
+        }
+        
     }
     
     private boolean checkFileExitLastAndWriteMiniLog() {
@@ -171,6 +157,18 @@ public class AppInfoOnLoad implements Runnable {
         sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
         sb.append('}');
         return sb.toString();
+    }
+    
+    @Contract(pure = true)
+    protected static List<String> getMiniLogger() {
+        return MINI_LOGGER;
+    }
+    
+    private void ftpUploadTask() {
+        messageToUser.warn(PropertiesNames.SYS_OSNAME_LOWERCASE);
+        AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
+        String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
+        getMiniLogger().add(ftpUpload);
     }
     
     private void startPeriodicTasks() {

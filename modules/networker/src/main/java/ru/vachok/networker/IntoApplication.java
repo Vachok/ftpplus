@@ -20,6 +20,7 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.awt.*;
 import java.io.File;
@@ -28,10 +29,7 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.*;
 
 
 /**
@@ -79,7 +77,7 @@ public class IntoApplication {
         delFileThreads();
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
-            UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
+            InitProperties.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
             MESSAGE_LOCAL.info(UsefulUtilities.scheduleTrunkPcUserAuto());
         }
         if (configurableApplicationContext == null) {

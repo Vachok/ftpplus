@@ -17,7 +17,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
@@ -34,8 +33,6 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -93,28 +90,6 @@ public class AppComponents {
         }
     }
     
-    @Scope(ConstantsFor.SINGLETON)
-    public static Preferences getUserPref() {
-        Preferences prefsNeededNode = Preferences.userRoot();
-        try {
-            prefsNeededNode.flush();
-            prefsNeededNode.sync();
-        }
-        catch (BackingStoreException e) {
-            messageToUser.error(MessageFormat.format("AppComponents.getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        return prefsNeededNode;
-    }
-    
-    @Contract(pure = true)
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static @NotNull PcNamesScanner getPcNamesScanner() { //todo
-        //noinspection UnnecessaryLocalVariable test 26.10.2019 (2:21)
-        final PcNamesScanner pcNamesScanner = new PcNamesScanner();
-        return pcNamesScanner;
-    }
-    
     public PfLists getPFLists() {
         return new PfLists();
     }
@@ -169,7 +144,7 @@ public class AppComponents {
     }
     
     @Bean(STR_VISITOR)
-    public Visitor visitor(HttpServletRequest request) {
+    public Visitor visitor(@NotNull HttpServletRequest request) {
         if (request.getSession() == null) {
             request = new FakeRequest();
         }

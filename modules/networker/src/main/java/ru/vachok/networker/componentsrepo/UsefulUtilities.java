@@ -33,8 +33,6 @@ import java.time.*;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -368,18 +366,6 @@ public abstract class UsefulUtilities {
         String tagOpen = "<center><font color=\"" + color + "\">";
         String tagClose = "</font></center>";
         return tagOpen + text + tagClose;
-    }
-    
-    public static void setPreference(String prefName, String prefValue) {
-        Preferences userPref = AppComponents.getUserPref();
-        userPref.put(prefName, prefValue);
-        try {
-            userPref.flush();
-            userPref.sync();
-        }
-        catch (BackingStoreException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
     }
     
     public static void startTelnet() {

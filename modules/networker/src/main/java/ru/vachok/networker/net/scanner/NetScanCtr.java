@@ -9,17 +9,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +26,6 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -48,6 +45,8 @@ public class NetScanCtr {
     private static final Properties PROPERTIES = AppComponents.getProps();
     
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
+    
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetScanCtr.class.getSimpleName());
     
     private final ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
     
@@ -77,7 +76,7 @@ public class NetScanCtr {
     
     @Contract(pure = true)
     public NetScanCtr() {
-        this.pcNamesScanner = AppComponents.getPcNamesScanner();
+        this.pcNamesScanner = new PcNamesScanner();
     }
     
     /**
@@ -88,15 +87,15 @@ public class NetScanCtr {
         this.request = request;
         this.response = response;
         this.model = model;
-        long lastScan = Long.parseLong(AppComponents.getUserPref().get(PropertiesNames.LASTSCAN, "1548919734742"));
+        long lastScan = Long.parseLong(InitProperties.getUserPref().get(PropertiesNames.LASTSCAN, "1548919734742"));
         pcNamesScanner.setClassOption(this);
         UsefulUtilities.getVis(request);
     
         float serviceInfoVal = (float) TimeUnit.MILLISECONDS
-            .toSeconds(AppComponents.getUserPref().getLong(PropertiesNames.NEXTSCAN, UsefulUtilities.getAtomicTime()) - System
+                .toSeconds(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, UsefulUtilities.getAtomicTime()) - System
                 .currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
         String pcVal = pcNamesScanner.getStatistics() + "<p>";
-        String titleVal = AppComponents.getUserPref().get(PropertiesNames.ONLINEPC, "0") + " pc at " + new Date(lastScan);
+        String titleVal = InitProperties.getUserPref().get(PropertiesNames.ONLINEPC, "0") + " pc at " + new Date(lastScan);
         String footerVal = PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<br>First Scan: 2018-05-05";
         String thePCVal = pcNamesScanner.getThePc();
         
@@ -116,11 +115,15 @@ public class NetScanCtr {
     private void starterNetScan() {
         RejectedExecutionHandler handlerReject = scheduler.getScheduledThreadPoolExecutor().getRejectedExecutionHandler();
         if (!new File(FileNames.SCAN_TMP).exists()) {
-            scheduler.scheduleAtFixedRate(pcNamesScanner, new Date(AppComponents.getUserPref()
+            messageToUser.info(this.getClass().getSimpleName(), "No tmp file. Starting", new Date().toString());
+            scheduler.scheduleAtFixedRate(pcNamesScanner, new Date(InitProperties.getUserPref()
                 .getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis())), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY + 5));
         }
         else {
-            handlerReject.rejectedExecution(pcNamesScanner, (ThreadPoolExecutor) scheduler.getScheduledExecutor());
+            String schedExec = scheduler.getScheduledThreadPoolExecutor().toString();
+            FileSystemWorker.writeFile(FileNames.SCHEDULER_TXT, scheduler.getScheduledThreadPoolExecutor().getQueue().stream());
+            FileSystemWorker.appendObjectToFile(new File(FileNames.SCHEDULER_TXT), MessageFormat.format("Current class hash : {0}", pcNamesScanner.hashCode()));
+            messageToUser.warn(this.getClass().getSimpleName(), new File(FileNames.SCHEDULER_TXT).getAbsolutePath(), schedExec);
         }
     }
     

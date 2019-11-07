@@ -14,7 +14,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -22,11 +21,10 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -66,7 +64,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      {@link MessageLocal}
      */
     private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
     
     private Runnable r;
     
@@ -114,7 +112,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             for (long id : bean.getAllThreadIds()) {
                 ThreadInfo info = bean.getThreadInfo(id);
                 String timeThr = new PageGenerationHelper()
-                    .setColor(ConstantsFor.YELLOW, " time: " + TimeUnit.NANOSECONDS.toMillis(bean.getThreadCpuTime(id)) + " millis.\n<br>");
+                        .setColor(ConstantsFor.YELLOW, " time: " + TimeUnit.NANOSECONDS.toMillis(bean.getThreadCpuTime(id)) + " millis.\n<br>");
                 stringBuilder.append(info.toString()).append(timeThr);
             }
         }
@@ -122,7 +120,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             messageToUser.error(e.getMessage() + " see line: 387 ***");
         }
         FileSystemWorker
-            .appendObjectToFile(new File(this.getClass().getSimpleName() + ".time"), UsefulUtilities.getRunningInformation() + "\n" + stringBuilder.toString());
+                .appendObjectToFile(new File(this.getClass().getSimpleName() + ".time"), UsefulUtilities.getRunningInformation() + "\n" + stringBuilder.toString());
         return stringBuilder.toString();
     }
     
@@ -181,7 +179,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     @SuppressWarnings("MethodWithMultipleLoops")
     public void killAll() {
         long minRun = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-        AppComponents.getUserPref();
+        InitProperties.getUserPref();
         BlockingQueue<Runnable> runnableBlockingQueueSched = TASK_SCHEDULER.getScheduledThreadPoolExecutor().getQueue();
         BlockingQueue<Runnable> runnableBlockingQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         runnableBlockingQueue.clear();
@@ -191,12 +189,12 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         
         try {
             if (!TASK_EXECUTOR.getThreadPoolExecutor().awaitTermination(10, TimeUnit.SECONDS) && !TASK_SCHEDULER.getScheduledThreadPoolExecutor()
-                .awaitTermination(10, TimeUnit.SECONDS)) {
+                    .awaitTermination(10, TimeUnit.SECONDS)) {
                 TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow();
                 TASK_EXECUTOR.getThreadPoolExecutor().shutdownNow();
             }
             if (!TASK_EXECUTOR.getThreadPoolExecutor().awaitTermination(10, TimeUnit.SECONDS) && !TASK_SCHEDULER.getScheduledThreadPoolExecutor()
-                .awaitTermination(10, TimeUnit.SECONDS)) {
+                    .awaitTermination(10, TimeUnit.SECONDS)) {
                 System.exit(Math.toIntExact(minRun));
             }
         }
@@ -234,12 +232,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return false;
         }
         else {
-            try {
-                simpleAsyncExecutor.execute(r);
-            }
-            finally {
-                messageToUser.info(this.getClass().getSimpleName(), "complete ", r.toString());
-            }
+            simpleAsyncExecutor.execute(r);
             return true;
         }
     }
@@ -270,20 +263,20 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return simpleAsyncExecutor;
         }
         
-        ASExec() {
-        }
-        
-        @Override
-        public String toString() {
-            boolean throttleActive = simpleAsyncExecutor.isThrottleActive();
-            return throttleActive + " throttleActive. Concurrency limit : " + simpleAsyncExecutor.getConcurrencyLimit();
-        }
-        
         @Override
         public Executor getAsyncExecutor() {
             simpleAsyncExecutor.setConcurrencyLimit(Runtime.getRuntime().availableProcessors() - 2);
             simpleAsyncExecutor.setThreadPriority(1);
             return new ExecutorServiceAdapter(simpleAsyncExecutor);
+        }
+    
+        ASExec() {
+        }
+    
+        @Override
+        public String toString() {
+            boolean throttleActive = simpleAsyncExecutor.isThrottleActive();
+            return throttleActive + " throttleActive. Concurrency limit : " + simpleAsyncExecutor.getConcurrencyLimit();
         }
     }
 }

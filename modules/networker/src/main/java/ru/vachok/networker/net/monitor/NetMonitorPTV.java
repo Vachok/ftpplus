@@ -4,7 +4,6 @@ package ru.vachok.networker.net.monitor;
 
 
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -12,6 +11,7 @@ import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -46,7 +46,7 @@ public class NetMonitorPTV implements NetScanService {
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private PrintStream printStream;
     
-    private Preferences preferences = AppComponents.getUserPref();
+    private Preferences preferences = InitProperties.getUserPref();
     
     private String pingResultLast = "No pings yet.";
     

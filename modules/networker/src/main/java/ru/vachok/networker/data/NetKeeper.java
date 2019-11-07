@@ -12,14 +12,13 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -288,8 +287,8 @@ public abstract class NetKeeper implements Keeper, Serializable {
         
         
         static final String RESOLVE = "onLinesResolve";
-        
-        private Preferences userPref = AppComponents.getUserPref();
+    
+        private Preferences userPref = InitProperties.getUserPref();
         
         private int currentSize = NETLISTS_ONLINERESOLVE.size();
         

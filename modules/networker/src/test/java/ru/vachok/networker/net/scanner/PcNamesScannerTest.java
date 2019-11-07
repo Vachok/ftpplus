@@ -6,7 +6,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -36,7 +37,7 @@ public class PcNamesScannerTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
     
-    private PcNamesScanner pcNamesScanner = AppComponents.getPcNamesScanner();
+    private PcNamesScanner pcNamesScanner;
     
     private NetScanCtr netScanCtr = new NetScanCtr();
     
@@ -60,6 +61,11 @@ public class PcNamesScannerTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
+    
+    @BeforeMethod
+    public void initScan() {
+        this.pcNamesScanner = new PcNamesScanner();
     }
     
     @Test

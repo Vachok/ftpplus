@@ -4,7 +4,8 @@ package ru.vachok.networker.ad.user;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -13,6 +14,7 @@ import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -174,7 +176,7 @@ public class UserInfoTest {
                     while (resultSet.next()) {
                         Timestamp timestamp = resultSet.getTimestamp("lastonline");
                         System.out.println("timestamp = " + timestamp.toString());
-                        retBool = timestamp.getTime() < AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
                             .toMillis(ConstantsFor.DELAY * 3);
                     }
                 }

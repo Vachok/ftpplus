@@ -13,6 +13,7 @@ import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.mail.*;
 import javax.mail.event.TransportAdapter;
@@ -75,7 +76,7 @@ public class MailPOPTester implements MailTester, Runnable {
     @Override
     public String testComplex() throws MessagingException {
         this.stringBuilder = new StringBuilder();
-        Preferences preferences = AppComponents.getUserPref();
+        Preferences preferences = InitProperties.getUserPref();
         MAIL_SESSION.getProperties().forEach((k, v)->preferences.put(k.toString(), v.toString()));
         try {
             preferences.sync();

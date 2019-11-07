@@ -13,6 +13,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.mail.ExSRV;
 import ru.vachok.networker.mail.MailRule;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -164,8 +165,8 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testSetPreference() {
-        UsefulUtilities.setPreference("test", "test");
-        Assert.assertEquals(AppComponents.getUserPref().get("test", ""), "test");
+        InitProperties.setPreference("test", "test");
+        Assert.assertEquals(InitProperties.getUserPref().get("test", ""), "test");
     }
     
     @Test

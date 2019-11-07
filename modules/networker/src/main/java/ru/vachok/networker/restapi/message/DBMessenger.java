@@ -5,7 +5,8 @@ package ru.vachok.networker.restapi.message;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
@@ -16,8 +17,7 @@ import java.lang.management.ThreadMXBean;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Semaphore;
 
 
 /**
@@ -27,6 +27,8 @@ public class DBMessenger implements MessageToUser {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
+    
+    private final Semaphore dbSemaphore = new Semaphore(1);
     
     private String headerMsg;
     
@@ -136,15 +138,26 @@ public class DBMessenger implements MessageToUser {
     
     private void dbSend() {
         String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
-        long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
-        String stack = MessageFormat.format("{3}. UPTIME: {2}\n{0}\nPeak threads: {1}.",
-            ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime, pc);
+        long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
+        
         if (!isInfo) {
-            stack = setStack(stack);
             sql = sql.replace(ConstantsFor.PREF_NODE_NAME, "errors");
         }
-        try (Connection con = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("log")) {
+        if (dbSemaphore.tryAcquire()) {
+            messageToUser.info(this.getClass().getSimpleName(), dbSemaphore.toString(), Thread.currentThread().getState().name());
+            dbConnect(sql, pc, getStack());
+        }
+        else if (dbSemaphore.hasQueuedThreads()) {
+            messageToUser.warn(this.getClass().getSimpleName(), dbSemaphore.toString(), Thread.currentThread().getState().name());
+        }
+        else {
+            messageToUser.error(this.getClass().getSimpleName(), dbSemaphore.toString(), Thread.currentThread().getState().name());
+        }
+    }
+    
+    private void dbConnect(String sql, String pc, String stack) {
+        try (Connection con = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("log")) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
                 p.setString(1, this.headerMsg);
                 p.setString(2, this.titleMsg);
@@ -156,14 +169,15 @@ public class DBMessenger implements MessageToUser {
             }
         }
         catch (SQLException | RuntimeException e) {
-            messageToUser.error(DBMessenger.class.getSimpleName(), e.getMessage(), " see line: 161 ***");
             if (!e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 notDuplicate();
             }
+            else {
+                dbSemaphore.release();
+            }
         }
         finally {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+            messageToUser.info(DBMessenger.class.getSimpleName(), dbSemaphore.availablePermits() + " available permits", Thread.currentThread().getState().name());
         }
     }
     
@@ -176,21 +190,10 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = "";
     }
     
-    private @NotNull String setStack(String stack) {
+    private @NotNull String getStack() {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        stringBuilder.append(stack).append("\n");
-        
-        long cpuTime = 0;
-        for (long threadId : threadMXBean.getAllThreadIds()) {
-            new TForms().fromArray(threadMXBean.dumpAllThreads(true, true));
-            cpuTime += threadMXBean.getThreadCpuTime(threadId);
-        }
-        stringBuilder.append(TimeUnit.NANOSECONDS.toMillis(cpuTime)).append(" cpu time ms.").append("\n\nTraces: \n");
-        Thread.currentThread().checkAccess();
-        Map<Thread, StackTraceElement[]> threadStackMap = Thread.getAllStackTraces();
-        String thrStackStr = AbstractForms.fromArrayJson(threadStackMap);
-        stringBuilder.append(thrStackStr).append("\n");
+        stringBuilder.append(AbstractForms.fromArray(threadMXBean.dumpAllThreads(true, true)));
         return stringBuilder.toString();
     }
 }

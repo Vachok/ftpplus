@@ -57,7 +57,6 @@ public class PCMonitoring implements NetScanService {
         if ((start + TimeUnit.MINUTES.toMillis(runningDurationMin)) > System.currentTimeMillis()) {
             AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
             Thread.currentThread().setName(thrName);
-            messageToUser.warn(thrName);
             do {
                 getExecution();
             } while ((start + TimeUnit.MINUTES.toMillis(runningDurationMin)) > System.currentTimeMillis());

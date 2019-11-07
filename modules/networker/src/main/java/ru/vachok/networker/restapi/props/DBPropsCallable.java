@@ -7,24 +7,17 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -68,8 +61,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     }
     
     private void setPassSQL() {
-        String dbUser = AppComponents.getUserPref().get(PropertiesNames.DBUSER, "");
-        String dbPass = AppComponents.getUserPref().get(PropertiesNames.DBPASS, "");
+        String dbUser = InitProperties.getUserPref().get(PropertiesNames.DBUSER, "");
+        String dbPass = InitProperties.getUserPref().get(PropertiesNames.DBPASS, "");
         mysqlDataSource.setUser(dbUser);
         mysqlDataSource.setPassword(dbPass);
         mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
@@ -82,8 +75,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     }
     
     private void setUserPrefUserPass(String dbUser, String dbPass) {
-        UsefulUtilities.setPreference(PropertiesNames.DBUSER, dbUser);
-        UsefulUtilities.setPreference(PropertiesNames.DBPASS, dbPass);
+        InitProperties.setPreference(PropertiesNames.DBUSER, dbUser);
+        InitProperties.setPreference(PropertiesNames.DBPASS, dbPass);
     }
     
     private void setUserPassFromPropsFile() {
@@ -112,8 +105,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     private void initDefaultDB() {
         try {
             this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
-            mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
-            mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
+            mysqlDataSource.setUser(InitProperties.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
+            mysqlDataSource.setPassword(InitProperties.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
             mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         }
         catch (ArrayIndexOutOfBoundsException e) {
