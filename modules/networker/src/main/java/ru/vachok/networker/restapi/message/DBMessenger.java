@@ -19,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.concurrent.Semaphore;
 
 
 /**
@@ -29,8 +28,6 @@ public class DBMessenger implements MessageToUser {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
-    
-    private final Semaphore dbSemaphore = new Semaphore(1);
     
     private String headerMsg;
     
@@ -146,16 +143,8 @@ public class DBMessenger implements MessageToUser {
         if (!isInfo) {
             sql = sql.replace(ConstantsFor.PREF_NODE_NAME, "errors");
         }
-        if (dbSemaphore.tryAcquire()) {
-            messageToUser.info(this.getClass().getSimpleName(), dbSemaphore.toString(), Thread.currentThread().getState().name());
-            dbConnect(sql, pc, getStack());
-        }
-        else if (dbSemaphore.hasQueuedThreads()) {
-            messageToUser.warn(this.getClass().getSimpleName(), MessageFormat.format("{0} uptime", upTime), Thread.currentThread().getState().name());
-        }
-        else {
-            messageToUser.error(this.getClass().getSimpleName(), dbSemaphore.toString(), Thread.currentThread().getState().name());
-        }
+        messageToUser.info(this.getClass().getSimpleName(), " dbConnect", MessageFormat.format("dbSemaphore.tryAcquire({0} uptime)", upTime));
+        dbConnect(sql, pc, getStack());
     }
     
     private void dbConnect(String sql, String pc, String stack) {
@@ -176,8 +165,7 @@ public class DBMessenger implements MessageToUser {
             }
         }
         finally {
-            dbSemaphore.release();
-            messageToUser.info(DBMessenger.class.getSimpleName(), dbSemaphore.availablePermits() + " available permits", Thread.currentThread().getState().name());
+            messageToUser.info(DBMessenger.class.getSimpleName(), "dbSemaphore.release();" + " available permits", Thread.currentThread().getState().name());
         }
     }
     

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -105,7 +104,7 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.TITLE, titleVal);
         model.addAttribute(ConstantsFor.BEANNAME_NETSCANNERSVC, pcNamesScanner);
         model.addAttribute(ModelAttributeNames.THEPC, thePCVal);
-        model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", scheduler.toString(), footerVal));
+        model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", this.toString(), footerVal));
         
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         
@@ -116,15 +115,12 @@ public class NetScanCtr {
     private void starterNetScan() {
         File file = new File(FileNames.SCAN_TMP);
         if (!file.exists()) {
-            scheduler.schedule(pcNamesScanner, new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)));
-            InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
+            scheduler.purge();
+            scheduler.schedule(pcNamesScanner, new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)), ConstantsFor.DELAY);
         }
         else {
-            messageToUser
-                .info(FileSystemWorker.writeFile(file.getAbsolutePath(), MessageFormat.format("Current class info :\n {0}", pcNamesScanner.toString())));
             MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
-                .info(this.pcNamesScanner.getClass().getSimpleName(), new Date(this.pcNamesScanner.scheduledExecutionTime()).toString(), this.pcNamesScanner
-                    .toString());
+                .info(this.getClass().getSimpleName(), new Date(this.pcNamesScanner.scheduledExecutionTime()).toString(), this.pcNamesScanner.toString());
             file.deleteOnExit();
         }
     }
