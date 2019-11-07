@@ -5,17 +5,19 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import ru.vachok.networker.AppComponents;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -24,8 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.Properties;
-import java.util.concurrent.RejectedExecutionHandler;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 
@@ -42,13 +43,11 @@ public class NetScanCtr {
      */
     private static final String STR_NETSCAN = "/netscan";
     
-    private static final Properties PROPERTIES = AppComponents.getProps();
-    
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetScanCtr.class.getSimpleName());
+    private final Timer scheduler = new Timer();
     
-    private final ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetScanCtr.class.getSimpleName());
     
     @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScanner pcNamesScanner;
     
@@ -56,7 +55,7 @@ public class NetScanCtr {
     
     private HttpServletResponse response;
     
-    private Model model = new ExtendedModelMap();
+    private Model model;
     
     public HttpServletResponse getResponse() {
         return response;
@@ -76,7 +75,7 @@ public class NetScanCtr {
     
     @Contract(pure = true)
     public NetScanCtr() {
-        this.pcNamesScanner = new PcNamesScanner();
+    
     }
     
     /**
@@ -84,15 +83,17 @@ public class NetScanCtr {
      */
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
+        this.pcNamesScanner = new PcNamesScanner();
         this.request = request;
         this.response = response;
         this.model = model;
+    
         long lastScan = Long.parseLong(InitProperties.getUserPref().get(PropertiesNames.LASTSCAN, "1548919734742"));
         pcNamesScanner.setClassOption(this);
         UsefulUtilities.getVis(request);
     
         float serviceInfoVal = (float) TimeUnit.MILLISECONDS
-                .toSeconds(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, UsefulUtilities.getAtomicTime()) - System
+            .toSeconds(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, UsefulUtilities.getAtomicTime()) - System
                 .currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
         String pcVal = pcNamesScanner.getStatistics() + "<p>";
         String titleVal = InitProperties.getUserPref().get(PropertiesNames.ONLINEPC, "0") + " pc at " + new Date(lastScan);
@@ -104,7 +105,7 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.TITLE, titleVal);
         model.addAttribute(ConstantsFor.BEANNAME_NETSCANNERSVC, pcNamesScanner);
         model.addAttribute(ModelAttributeNames.THEPC, thePCVal);
-        model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", scheduler.getScheduledThreadPoolExecutor().toString(), footerVal));
+        model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", scheduler.toString(), footerVal));
         
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         
@@ -113,17 +114,18 @@ public class NetScanCtr {
     }
     
     private void starterNetScan() {
-        RejectedExecutionHandler handlerReject = scheduler.getScheduledThreadPoolExecutor().getRejectedExecutionHandler();
-        if (!new File(FileNames.SCAN_TMP).exists()) {
-            messageToUser.info(this.getClass().getSimpleName(), "No tmp file. Starting", new Date().toString());
-            scheduler.scheduleAtFixedRate(pcNamesScanner, new Date(InitProperties.getUserPref()
-                .getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis())), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY + 5));
+        File file = new File(FileNames.SCAN_TMP);
+        if (!file.exists()) {
+            scheduler.schedule(pcNamesScanner, new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)));
+            InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
         }
         else {
-            String schedExec = scheduler.getScheduledThreadPoolExecutor().toString();
-            FileSystemWorker.writeFile(FileNames.SCHEDULER_TXT, scheduler.getScheduledThreadPoolExecutor().getQueue().stream());
-            FileSystemWorker.appendObjectToFile(new File(FileNames.SCHEDULER_TXT), MessageFormat.format("Current class hash : {0}", pcNamesScanner.hashCode()));
-            messageToUser.warn(this.getClass().getSimpleName(), new File(FileNames.SCHEDULER_TXT).getAbsolutePath(), schedExec);
+            messageToUser
+                .info(FileSystemWorker.writeFile(file.getAbsolutePath(), MessageFormat.format("Current class info :\n {0}", pcNamesScanner.toString())));
+            MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
+                .info(this.pcNamesScanner.getClass().getSimpleName(), new Date(this.pcNamesScanner.scheduledExecutionTime()).toString(), this.pcNamesScanner
+                    .toString());
+            file.deleteOnExit();
         }
     }
     

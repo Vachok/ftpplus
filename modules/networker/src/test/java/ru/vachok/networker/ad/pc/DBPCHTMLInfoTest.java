@@ -23,7 +23,9 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -108,7 +110,7 @@ public class DBPCHTMLInfoTest {
     @Ignore
     public void startOfTimeOnResolve() {
         List<String> smallCounterPcNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.pcuser")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT pcname from pcuser WHERE timeon < '2019-11-04'")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
@@ -195,7 +197,7 @@ public class DBPCHTMLInfoTest {
         this.pcName = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
         JsonObject jsonObject = new JsonObject();
         jsonObject.set("start", System.nanoTime());
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.velkompc")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
             String sql = "SELECT * from velkompc WHERE AddressPP like ? and OnlineNow = 1 order by idrec desc limit 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
@@ -221,8 +223,8 @@ public class DBPCHTMLInfoTest {
         LocalDateTime localDateTime = LocalDateTime.ofEpochSecond(longStamp / 1000, 0, ZoneOffset.ofHours(3));
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         Assert.assertTrue(timestamp.getTime() == longStamp);
-        
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.pcuser")) {
+    
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             String sql = "SELECT * from velkompc WHERE TimeNow > ? and NamePP like ? AND onlinenow=1 order by idrec ASC limit 1";
             try (PreparedStatement preparedStatementFirst = connection.prepareStatement(sql)) {
                 preparedStatementFirst.setTimestamp(1, timestamp);
@@ -244,8 +246,8 @@ public class DBPCHTMLInfoTest {
     
     private void finaliz(@NotNull JsonObject jsonObject) {
         long aLong = jsonObject.getLong("on", MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
-        
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.pcuser")) {
+    
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `velkom`.`pcuser` SET `timeon`=? WHERE  pcname like ?")) {
                 preparedStatement.setTimestamp(1, Timestamp.valueOf(LocalDateTime.ofEpochSecond(aLong / 1000, 0, ZoneOffset.ofHours(3))));
                 preparedStatement.setString(2, String.format("%s%%", pcName));

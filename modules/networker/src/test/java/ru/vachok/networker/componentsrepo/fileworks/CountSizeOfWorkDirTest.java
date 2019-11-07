@@ -56,7 +56,7 @@ public class CountSizeOfWorkDirTest {
         Future<String> countSizeOfWorkDir = AppComponents.threadConfig().getTaskExecutor().submit(new CountSizeOfWorkDir());
         try {
             String result = countSizeOfWorkDir.get(30, TimeUnit.SECONDS);
-            Assert.assertTrue(result.contains("networker"));
+            Assert.assertTrue(result.contains(ConstantsFor.PREF_NODE_NAME));
             Assert.assertTrue(result.contains("gradle"));
             Assert.assertTrue(result.contains("idea"));
         }

@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.prefs.Preferences;
 
 
 public abstract class AbstractForms {
@@ -62,5 +63,9 @@ public abstract class AbstractForms {
     
     public static String fromArray(Collection<?> collection) {
         return T_FORMS.fromArray(collection);
+    }
+    
+    public static String fromArray(Preferences pref) {
+        return T_FORMS.fromArray(pref);
     }
 }

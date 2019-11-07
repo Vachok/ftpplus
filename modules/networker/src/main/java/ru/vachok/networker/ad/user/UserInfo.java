@@ -10,7 +10,9 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -23,9 +25,10 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 
 /**
@@ -93,9 +96,6 @@ public abstract class UserInfo implements InformationFactory {
 
 
     private static class DatabaseWriter {
-        
-        
-        private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
         
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.DatabaseWriter.class.getSimpleName());
         
@@ -211,13 +211,13 @@ public abstract class UserInfo implements InformationFactory {
                 sql = sqlOff;
             }
             else {
+                boolean isJustStart = ConstantsFor.START_STAMP > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY + 10));
                 sql = sqlOn;
-                if (wasOffline()) {
+                if (!isJustStart && wasOffline()) {
                     sql = String
                             .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                                     .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
                 }
-    
             }
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

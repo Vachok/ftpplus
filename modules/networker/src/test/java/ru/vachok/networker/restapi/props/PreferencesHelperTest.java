@@ -4,15 +4,23 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.LocalTime;
-import java.util.prefs.*;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.InvalidPreferencesFormatException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -25,7 +33,7 @@ public class PreferencesHelperTest {
     
     private Preferences userRoot = Preferences.userRoot();
     
-    private Preferences networker = Preferences.userRoot().node("networker");
+    private Preferences networker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
     
     @BeforeClass
     public void setUp() {

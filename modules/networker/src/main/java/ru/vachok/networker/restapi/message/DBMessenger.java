@@ -14,7 +14,9 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.concurrent.Semaphore;
@@ -149,7 +151,7 @@ public class DBMessenger implements MessageToUser {
             dbConnect(sql, pc, getStack());
         }
         else if (dbSemaphore.hasQueuedThreads()) {
-            messageToUser.warn(this.getClass().getSimpleName(), dbSemaphore.toString(), Thread.currentThread().getState().name());
+            messageToUser.warn(this.getClass().getSimpleName(), MessageFormat.format("{0} uptime", upTime), Thread.currentThread().getState().name());
         }
         else {
             messageToUser.error(this.getClass().getSimpleName(), dbSemaphore.toString(), Thread.currentThread().getState().name());
@@ -172,11 +174,9 @@ public class DBMessenger implements MessageToUser {
             if (!e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 notDuplicate();
             }
-            else {
-                dbSemaphore.release();
-            }
         }
         finally {
+            dbSemaphore.release();
             messageToUser.info(DBMessenger.class.getSimpleName(), dbSemaphore.availablePermits() + " available permits", Thread.currentThread().getState().name());
         }
     }

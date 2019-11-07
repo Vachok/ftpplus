@@ -11,6 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -115,7 +116,7 @@ public class SaveLogsToDBTest {
     @Test
     public void testComment() {
         final String sql = "SELECT TABLE_COMMENT FROM information_schema.TABLES WHERE TABLE_NAME LIKE 'inetstats' AND TABLE_SCHEMA LIKE 'velkom';";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.inetstats");
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {

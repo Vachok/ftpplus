@@ -11,7 +11,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -21,6 +23,7 @@ import java.util.regex.Pattern;
  <p>
  
  @since 12.08.2018 (16:26) */
+@SuppressWarnings("SpellCheckingInspection")
 public enum ConstantsFor {
     ;
     
@@ -272,8 +275,6 @@ public enum ConstantsFor {
     
     public static final String PATTERN_POINT = ".";
     
-    public static final int MINUTES_IN_STD_WORK_DAY = 540;
-    
     public static final String STR_BR = "<br>";
     
     public static final String STR_N = "\n";
@@ -288,15 +289,11 @@ public enum ConstantsFor {
     
     public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
     
-    public static final String TOSTRING_PROPERTIES = "properties = ";
-    
     public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
     
     public static final String GOOD_NO_LOCKS = "No deadlocks, good!";
     
     public static final String DBFIELD_TIMESET = "timeset";
-    
-    public static final String STATIC_INITIALIZER = ".static initializer";
     
     public static final String DBBASENAME_U0466446_PROPERTIES = "u0466446_properties";
     
@@ -324,10 +321,6 @@ public enum ConstantsFor {
     
     public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
     
-    public static final String COLOR_SILVER = "silver";
-    
-    public static final String RUSSTR_KOMPUTER = "компьютер";
-    
     public static final String PREF_NODE_NAME = "networker";
     
     public static final String WRONG_PASS = "WRONG RASS";
@@ -351,8 +344,6 @@ public enum ConstantsFor {
      */
     public static final float ONE_HOUR_IN_MIN = 60f;
     
-    public static final String BIGINT_13 = "bigint(13)";
-    
     public static final String DB_VELKOMINETSTATS = "velkom.inetstats";
     
     public static final int MIN_DELAY = 17;
@@ -362,8 +353,6 @@ public enum ConstantsFor {
     public static final String STARTING = "starting";
     
     public static final String CONNECTING_TO = "Connecting to: ";
-    
-    public static final String SQL_ALTERTABLE = "ALTER TABLE ";
     
     /**
      {@link Pattern} IP-адреса

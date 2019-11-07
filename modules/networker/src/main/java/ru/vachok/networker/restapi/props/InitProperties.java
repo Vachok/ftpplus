@@ -58,6 +58,9 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
         catch (BackingStoreException e) {
             System.err.println(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+        finally {
+            System.out.println("AbstractForms.fromArray(getUserPref())");
+        }
     }
     
     static void reloadApplicationPropertiesFromFile() {
