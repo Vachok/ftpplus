@@ -112,9 +112,10 @@ public class NetScanCtr {
         return ModelAttributeNames.NETSCAN;
     }
     
-    private void starterNetScan() {
+    void starterNetScan() {
         File file = new File(FileNames.SCAN_TMP);
         if (!file.exists()) {
+            PcNamesScanner.fileScanTMPCreate(true);
             scheduler.purge();
             scheduler.schedule(pcNamesScanner, new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)), ConstantsFor.DELAY);
         }
