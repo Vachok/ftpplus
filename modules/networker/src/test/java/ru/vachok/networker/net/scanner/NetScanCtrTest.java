@@ -16,6 +16,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
+import ru.vachok.networker.componentsrepo.FakeRequest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -76,7 +77,7 @@ public class NetScanCtrTest {
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
         }
-        HttpServletRequest request = this.request;
+        HttpServletRequest request = new FakeRequest();
         HttpServletResponse response = this.response;
         Model model = this.model;
         try {

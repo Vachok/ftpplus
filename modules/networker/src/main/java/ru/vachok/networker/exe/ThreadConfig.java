@@ -92,7 +92,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         scThreadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER);
         TASK_SCHEDULER.prefersShortLivedTasks();
-        TASK_SCHEDULER.setThreadNamePrefix("SCH");
+        TASK_SCHEDULER.setThreadNamePrefix("S");
         TASK_SCHEDULER.setThreadPriority(2);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
