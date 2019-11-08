@@ -64,7 +64,7 @@ public class NameOrIPChecker {
             }
         }
         catch (UnknownFormatConversionException e) {
-            messageToUser.warn(NameOrIPChecker.class.getSimpleName(), "isLocalAddress", e.getMessage() + Thread.currentThread().getState().name());
+            messageToUser.info(NameOrIPChecker.class.getSimpleName(), "isLocalAddress", e.getMessage() + Thread.currentThread().getState().name());
         }
         return result;
     }

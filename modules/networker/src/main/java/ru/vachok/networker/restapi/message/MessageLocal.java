@@ -143,7 +143,6 @@ public class MessageLocal implements MessageToUser {
         if (typeLog.equals("info")) {
             msg = MessageFormat.format("{0} : {1}", titleMsg, bodyMsg);
             logger.info(msg);
-            MessageToUser.getInstance(MessageToUser.FILE, headerMsg).info(headerMsg, titleMsg, bodyMsg);
         }
         if (typeLog.equals("err")) {
             msg = MessageFormat.format("!*** {0} ERROR. {1}, used {0}, but : {2} ***!", headerMsg, titleMsg, bodyMsg);

@@ -5,7 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
@@ -13,7 +16,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -22,10 +27,14 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.*;
-import java.text.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -88,6 +97,17 @@ public class PcNamesScannerTest {
         Assert.assertTrue(a224Scan.contains("a224"), a224Scan);
         boolean isUser = a224Scan.contains(" : ialekseeva") || a224Scan.contains("n.kolodyazhnyj");
         Assert.assertTrue(isUser, a224Scan);
+    }
+    
+    @Test
+    public void testFileScanTMPCreate() {
+        File file = new File(FileNames.SCAN_TMP);
+        boolean isMethodOk = PcNamesScanner.fileScanTMPCreate(true);
+        Assert.assertTrue(file.exists());
+        Assert.assertTrue(isMethodOk);
+        isMethodOk = PcNamesScanner.fileScanTMPCreate(false);
+        Assert.assertFalse(file.exists());
+        Assert.assertTrue(isMethodOk);
     }
     
     private void scanAutoPC(String testPrefix, int countPC) {

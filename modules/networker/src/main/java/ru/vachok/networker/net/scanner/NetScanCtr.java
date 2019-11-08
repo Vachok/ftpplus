@@ -7,11 +7,17 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -72,6 +78,10 @@ public class NetScanCtr {
     
     }
     
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+    }
+    
     /**
      @see NetScanCtrTest#testNetScan()
      */
@@ -85,9 +95,8 @@ public class NetScanCtr {
         long lastScan = Long.parseLong(InitProperties.getUserPref().get(PropertiesNames.LASTSCAN, "1548919734742"));
         UsefulUtilities.getVis(request);
     
-        float serviceInfoVal = (float) TimeUnit.MILLISECONDS
-            .toSeconds(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, UsefulUtilities.getAtomicTime()) - System
-                .currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
+        long nextScan = InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, UsefulUtilities.getAtomicTime());
+        float serviceInfoVal = (float) TimeUnit.MILLISECONDS.toSeconds(nextScan - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
         String pcVal = pcNamesScanner.getStatistics() + "<p>";
         String titleVal = InitProperties.getUserPref().get(PropertiesNames.ONLINEPC, "0") + " pc at " + new Date(lastScan);
         String footerVal = PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<br>First Scan: 2018-05-05";
@@ -101,21 +110,29 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", this.toString(), footerVal));
         
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
-        
-        starterNetScan();
+    
+        starterNetScan(pcNamesScanner);
         return ModelAttributeNames.NETSCAN;
     }
     
-    void starterNetScan() {
+    /**
+     @see NetScanCtrTest#testStarterNetScan()
+     */
+    void starterNetScan(PcNamesScanner pcNamesScanner) {
+        this.pcNamesScanner = pcNamesScanner;
         File file = new File(FileNames.SCAN_TMP);
-        if (!file.exists()) {
+        Date nextStart = new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, System.currentTimeMillis()));
+        if (System.currentTimeMillis() > nextStart.getTime() & !file.exists()) {
             PcNamesScanner.fileScanTMPCreate(true);
-            scheduler.purge();
-            scheduler.schedule(pcNamesScanner, new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)), ConstantsFor.DELAY);
+            AppComponents.threadConfig().getTaskScheduler().schedule(pcNamesScanner, nextStart);
+            messageToUser.warn(this.getClass().getSimpleName(), file.getAbsolutePath(), MessageFormat
+                .format("{0} nextStart. pcNamesScanner with hash {1} next run.", nextStart.toString(), this.pcNamesScanner.hashCode()));
         }
         else {
-            MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
-                .info(this.getClass().getSimpleName(), new Date(this.pcNamesScanner.scheduledExecutionTime()).toString(), this.pcNamesScanner.toString());
+            String bodyMsg = MessageFormat
+                .format("{0} scan.tmp\npcNamesScanner with hash {1} running... {2} next start, InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, System.currentTimeMillis()): {3}",
+                    file.exists(), this.pcNamesScanner.hashCode(), nextStart.toString());
+            messageToUser.info(this.getClass().getSimpleName(), new Date(pcNamesScanner.scheduledExecutionTime()).toString(), bodyMsg);
             file.deleteOnExit();
         }
     }

@@ -7,12 +7,17 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -27,10 +32,15 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.sql.*;
-import java.text.*;
-import java.time.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -81,8 +91,8 @@ public abstract class UsefulUtilities {
             delay = ConstantsFor.MIN_DELAY;
         }
         if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")) | thisPC().toLowerCase()
-                .contains(OtherKnownDevices.HOSTNAME_HOME)) {
-            return ConstantsFor.MIN_DELAY;
+            .contains(OtherKnownDevices.HOSTNAME_HOME) | thisPC().contains("-h")) {
+            return Long.parseLong(AppComponents.getProps().getProperty("mindelay", String.valueOf(1)));
         }
         else {
             return delay;

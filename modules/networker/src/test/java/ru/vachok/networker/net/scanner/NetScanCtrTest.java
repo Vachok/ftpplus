@@ -10,7 +10,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
@@ -62,6 +65,8 @@ public class NetScanCtrTest {
     
     @BeforeMethod
     public void initScan() {
+        netScanCtr.setModel(model);
+        netScanCtr.setRequest(request);
         this.pcNamesScanner = new PcNamesScanner(netScanCtr);
     }
     
@@ -93,6 +98,14 @@ public class NetScanCtrTest {
         catch (TaskRejectedException e) {
             Assert.assertNotNull(e);
         }
+    }
+    
+    @Test
+    public void testStarterNetScan() {
+        netScanCtr.starterNetScan(pcNamesScanner);
+        File file = new File(FileNames.SCAN_TMP);
+        Assert.assertTrue(file.exists());
+        Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)));
     }
     
     @Test
