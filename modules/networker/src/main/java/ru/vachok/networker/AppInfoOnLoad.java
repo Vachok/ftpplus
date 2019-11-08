@@ -11,10 +11,7 @@ import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
@@ -22,9 +19,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -36,12 +31,8 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -65,23 +56,25 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
-        String avCharsetsStr = new TForms().fromArray(Charset.availableCharsets());
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
-        thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
+        String name = "AppInfoOnLoad.run";
+        thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider, name);
         delFilePatterns();
         setNextLast();
         SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
-        AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
+        AppComponents.threadConfig().execByThreadConfig(syncData::superRun, name);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-            AppComponents.threadConfig().execByThreadConfig(syncDataBcp::superRun);
+            AppComponents.threadConfig().execByThreadConfig(syncDataBcp::superRun, name);
         }
         try {
             getWeekPCStats();
         }
         catch (RuntimeException e) {
             MessageToUser.getInstance(MessageToUser.DB, AppInfoOnLoad.class.getSimpleName())
-                    .error("AppInfoOnLoad.run", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                    .error(name, e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         finally {
             infoForU();
@@ -100,7 +93,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private void delFilePatterns() {
         DeleterTemp deleterTemp = new DeleterTemp(UsefulUtilities.getPatternsToDeleteFilesOnStart());
-        thrConfig.execByThreadConfig(deleterTemp);
+        thrConfig.execByThreadConfig(deleterTemp, "AppInfoOnLoad.delFilePatterns");
     }
     
     private void setNextLast() {
@@ -132,12 +125,14 @@ public class AppInfoOnLoad implements Runnable {
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(UsefulUtilities.getBuildStamp());
-        messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
+        String name = "AppInfoOnLoad.infoForU";
+        messageToUser.info(name, ConstantsFor.STR_FINISH, " = " + stringBuilder);
         getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
+            Runnable runInfoForU = ()->FileSystemWorker
+                    .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
             messageToUser.info(UsefulUtilities.getIISLogSize());
-            AppComponents.threadConfig().execByThreadConfig(()->FileSystemWorker
-                    .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS)));
+            AppComponents.threadConfig().execByThreadConfig(runInfoForU, name);
         }
         catch (NullPointerException e) {
             messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -152,7 +147,7 @@ public class AppInfoOnLoad implements Runnable {
     private boolean checkFileExitLastAndWriteMiniLog() {
         StringBuilder exitLast = new StringBuilder();
         if (new File("exit.last").exists()) {
-            exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
+            exitLast.append(AbstractForms.fromArray(FileSystemWorker.readFileToList("exit.last")));
         }
         getMiniLogger().add(exitLast.toString());
         return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
@@ -239,7 +234,7 @@ public class AppInfoOnLoad implements Runnable {
             taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         if (secondOfDayNow > 40000) {
-            thrConfig.execByThreadConfig(kudrWorkTime);
+            thrConfig.execByThreadConfig(kudrWorkTime, "AppInfoOnLoad.kudrMonitoring");
         }
         messageToUser.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
     }

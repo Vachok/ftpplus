@@ -4,26 +4,17 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.*;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -98,6 +89,7 @@ public class DBMessengerTest {
             Assert.assertFalse(resultSet.wasNull());
         }
         catch (SQLException e) {
+            e.printStackTrace();
             retStr = MessageFormat
                 .format("DBMessengerTest.checkMessageExistsInDatabase says: {0}. Parameters: \n[sql]: {1}", e.getMessage(), AbstractForms.fromArray(e));
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));

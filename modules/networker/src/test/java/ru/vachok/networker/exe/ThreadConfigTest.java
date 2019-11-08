@@ -7,12 +7,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -68,10 +65,19 @@ public class ThreadConfigTest {
      */
     @Test
     public void testExecByThreadConfig() {
+        File file = new File(this.getClass().getSimpleName());
         ThreadConfig threadConfig = ThreadConfig.getI();
-        Runnable runnable = ()->System.out.println("threadConfig = " + threadConfig);
-        boolean execByThreadConfig = threadConfig.execByThreadConfig(runnable);
-        Assert.assertTrue(execByThreadConfig);
+        boolean execByThreadConfig = threadConfig.execByThreadConfig(()->FileSystemWorker.writeFile(file.getAbsolutePath(), threadConfig.toString()));
+        try {
+            Thread.sleep(400);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        finally {
+            Assert.assertTrue(file.exists());
+            Assert.assertTrue(file.delete());
+        }
     }
     
     @Test

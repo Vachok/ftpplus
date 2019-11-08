@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.jetbrains.annotations.Contract;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -24,7 +25,9 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     String SWING = ru.vachok.networker.restapi.message.MessageSwing.class.getTypeName();
     
-    MessageLocal MESSAGE_LOCAL = new MessageLocal(MessageToUser.class.getSimpleName());
+    MessageLocal MESSAGE_LOCAL = new MessageLocal("MessageLocal");
+    
+    String FILE = MessageFile.class.getTypeName();
     
     @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
@@ -33,10 +36,11 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             messengerHeader = MessageToUser.class.getSimpleName();
         }
         if (messengerType == null) {
-            return new MessageLocal(messengerHeader);
+            return new MessageLocal(messengerHeader, "null");
         }
         else if (messengerType.equals(LOCAL_CONSOLE)) {
-            MESSAGE_LOCAL.setBodyMsg(messengerHeader);
+            MESSAGE_LOCAL.setBodyMsg(MessageToUser.LOCAL_CONSOLE);
+            MESSAGE_LOCAL.setTitleMsg(messengerHeader);
             return MESSAGE_LOCAL;
         }
         else if (messengerType.equals(TRAY)) {
@@ -47,6 +51,9 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
             return new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
+        }
+        else if (messengerType.equalsIgnoreCase(FILE)) {
+            return new MessageFileLocal(messengerHeader);
         }
         else {
             return new MessageLocal(messengerHeader);

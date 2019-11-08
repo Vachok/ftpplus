@@ -10,10 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.FakeRequest;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -37,10 +34,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
@@ -116,7 +110,8 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
     }
     
     @Autowired
-    public PcNamesScanner() {
+    public PcNamesScanner(NetScanCtr netScanCtr) {
+        this.classOption = netScanCtr;
     }
     
     @Override
@@ -293,6 +288,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             InitProperties.getInstance(InitProperties.FILE).setProps(AppComponents.getProps());
             InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(this.scanTask);
+            Thread.currentThread().setName(thePc);
             submit.get();
         }
         finally {
@@ -403,7 +399,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             closePrefix();
         }
         catch (InvokeIllegalException e) {
-            AppComponents.threadConfig().execByThreadConfig(NetScanService::writeUsersToDBFromSET);
+            AppComponents.threadConfig().execByThreadConfig(NetScanService::writeUsersToDBFromSET, "PcNamesScanner.dbSend");
             String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
             MessageToUser.getInstance(MessageToUser.DB, "PcNamesScanner").error("PcNamesScanner", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
@@ -411,7 +407,6 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             if (NetKeeper.getPcNamesForSendToDatabase().size() > 0) {
                 NetScanService.writeUsersToDBFromSET();
             }
-            classOption.netScan(new FakeRequest(), classOption.getResponse(), model);
         }
     }
     
@@ -551,7 +546,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             }
             String elapsedTime = ConstantsFor.ELAPSED + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             setToDB.add(elapsedTime);
-            AppComponents.threadConfig().execByThreadConfig(this::writeLog);
+            AppComponents.threadConfig().execByThreadConfig(this::writeLog, "PcNamesScanner.ScannerUSR.scanPCPrefixes");
         }
         
         @Override

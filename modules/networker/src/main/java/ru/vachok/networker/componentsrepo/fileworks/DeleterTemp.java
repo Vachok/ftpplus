@@ -5,6 +5,7 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -48,7 +49,7 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (dir.toFile().getName().contains("gradle")) {
+        if (dir.toFile().getName().contains(ConstantsFor.GRADLE)) {
             return FileVisitResult.SKIP_SUBTREE;
         }
         if (dir.toFile().getName().contains("idea")) {

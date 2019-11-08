@@ -23,9 +23,7 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -56,6 +54,7 @@ public class DBPCHTMLInfoTest {
     public void initFields() {
         this.dbpchtmlInfo = new DBPCHTMLInfo();
         this.pcName = "do0213";
+        this.dbpchtmlInfo.setClassOption(this.pcName);
     }
     
     @Test

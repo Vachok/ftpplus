@@ -128,7 +128,7 @@ public class AppComponentsTest {
     @Test
     public void testLaunchRegRuFTPLibsUploader() {
         String ftpLibUplString = new AppComponents().launchRegRuFTPLibsUploader();
-        Assert.assertTrue(ftpLibUplString.contains("true"));
+        Assert.assertTrue(ftpLibUplString.toLowerCase().contains("true"));
     }
     
     @Test

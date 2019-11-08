@@ -14,7 +14,6 @@ import java.util.Objects;
 
 public class MessageLocal implements MessageToUser {
     
-    
     private static final String STR_BODYMSG = "bodyMsg='";
     
     public void setBodyMsg(String bodyMsg) {
@@ -24,6 +23,10 @@ public class MessageLocal implements MessageToUser {
     
     private String bodyMsg = "NO BODY";
     
+    public void setTitleMsg(String titleMsg) {
+        this.titleMsg = titleMsg;
+    }
+    
     private String titleMsg;
     
     private String headerMsg;
@@ -31,8 +34,8 @@ public class MessageLocal implements MessageToUser {
     
     public MessageLocal(String className) {
         this.headerMsg = className;
-        this.titleMsg = Thread.currentThread().getName();
-        Thread.currentThread().setName(headerMsg);
+        this.titleMsg = "constructing...";
+        Thread.currentThread().setName(className);
     }
     
     @Contract(pure = true)
@@ -133,16 +136,19 @@ public class MessageLocal implements MessageToUser {
         Logger logger = LoggerFactory.getLogger(headerMsg);
         String msg;
         if (typeLog.equals("warn")) {
-            msg = MessageFormat.format("||| Warning! {1} : {2} |||", headerMsg, titleMsg, bodyMsg);
+            msg = MessageFormat.format("|||{0}: {1} , {2} |||", headerMsg, titleMsg, bodyMsg);
             logger.warn(msg);
+            MessageToUser.getInstance(MessageToUser.FILE, headerMsg).warn(headerMsg, titleMsg, bodyMsg);
         }
         if (typeLog.equals("info")) {
             msg = MessageFormat.format("{0} : {1}", titleMsg, bodyMsg);
             logger.info(msg);
+            MessageToUser.getInstance(MessageToUser.FILE, headerMsg).info(headerMsg, titleMsg, bodyMsg);
         }
         if (typeLog.equals("err")) {
             msg = MessageFormat.format("!*** {0} ERROR. {1}, used {0}, but : {2} ***!", headerMsg, titleMsg, bodyMsg);
             logger.error(msg);
+            MessageToUser.getInstance(MessageToUser.FILE, headerMsg).error(headerMsg, titleMsg, bodyMsg);
         }
         return logger;
     }

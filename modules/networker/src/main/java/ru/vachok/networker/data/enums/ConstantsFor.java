@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -496,6 +494,10 @@ public enum ConstantsFor {
     public static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
     
     public static final String LOCAL = "local";
+    
+    public static final String GRADLE = "gradle";
+    
+    public static final String PROTOTYPE = "prototype";
     
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     

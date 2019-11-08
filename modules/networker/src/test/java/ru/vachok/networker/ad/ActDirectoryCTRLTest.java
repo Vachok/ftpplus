@@ -8,13 +8,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -28,6 +23,7 @@ import java.util.List;
 import java.util.UnknownFormatConversionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.testng.Assert.assertTrue;
 
@@ -110,7 +106,7 @@ public class ActDirectoryCTRLTest {
         List<String> loginsRaw = UserInfo.getInstance(mockQuery).getLogins(mockQuery, 10);
         List<String> distinct = loginsRaw.stream().distinct().collect(Collectors.toList());
         String fromArray = AbstractForms.fromArray(distinct);
-        Assert.assertTrue(fromArray.contains("do0001.eatmeat.ru : estrelyaeva") || fromArray.contains("do0001.eatmeat.ru : efilistova"), fromArray);
+        Assert.assertTrue(Stream.of("estrelyaeva", "deloproject", "efilistova").anyMatch(fromArray::contains), fromArray);
     }
     
     private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, HttpServletRequest request) {

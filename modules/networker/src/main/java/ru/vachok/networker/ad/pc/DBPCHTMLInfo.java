@@ -246,6 +246,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private String searchInBigDB() {
         String result = "Not registered in both databases...";
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         final String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP + "AND AddressPP LIKE '%true' ORDER BY idRec DESC LIMIT 1";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

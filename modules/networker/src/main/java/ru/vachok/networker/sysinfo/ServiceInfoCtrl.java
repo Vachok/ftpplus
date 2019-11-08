@@ -133,7 +133,7 @@ public class ServiceInfoCtrl {
         Future<Long> whenCome = AppComponents.threadConfig().getTaskExecutor().submit(callWhenCome);
         if (Stats.isSunday()) {
             Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            AppComponents.threadConfig().execByThreadConfig((Runnable) stats);
+            AppComponents.threadConfig().execByThreadConfig((Runnable) stats, "ServiceInfoCtrl.additionalDo");
         }
         Date comeD = new Date();
         try {

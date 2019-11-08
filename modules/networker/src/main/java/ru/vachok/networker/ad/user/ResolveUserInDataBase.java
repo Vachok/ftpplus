@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
@@ -51,20 +52,23 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public String getInfo() {
+        String result;
+        try {
+            result = getLogins((String) aboutWhat, 1).get(0);
+            result = result.split(" ")[0];
+            String resolvedAddress = new NameOrIPChecker(result).resolveInetAddress().getHostAddress();
+            if (resolvedAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP)) & !resolvedAddress.equals("127.0.0.1")) {
+                result = resolvedAddress;
+            }
+            else {
+                result = tryPcName();
+            }
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
+            result = MessageFormat.format("ResolveUserInDataBase.getInfo {0}\n{1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
-        
-        ResolveUserInDataBase that = (ResolveUserInDataBase) o;
-        
-        if (aboutWhat != null ? !aboutWhat.equals(that.aboutWhat) : that.aboutWhat != null) {
-            return false;
-        }
-        return dataConnectTo.equals(that.dataConnectTo);
+        return result;
     }
     
     private String tryPcName() {
@@ -188,17 +192,22 @@ class ResolveUserInDataBase extends UserInfo {
                 .toString();
     }
     
+    @Contract(value = "null -> false", pure = true)
     @Override
-    public String getInfo() {
-        String retString;
-        try {
-            retString = getLogins((String) aboutWhat, 1).get(0);
-            retString = retString.split(" ")[0];
-            return new NameOrIPChecker(retString).resolveInetAddress().getHostAddress();
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
-            return tryPcName();
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
+        
+        ResolveUserInDataBase that = (ResolveUserInDataBase) o;
+        
+        if (aboutWhat != null ? !aboutWhat.equals(that.aboutWhat) : that.aboutWhat != null) {
+            return false;
+        }
+        return dataConnectTo.equals(that.dataConnectTo);
     }
     
     

@@ -2,6 +2,7 @@ package ru.vachok.networker;
 
 
 import com.eclipsesource.json.JsonObject;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -67,5 +68,10 @@ public abstract class AbstractForms {
     
     public static String fromArray(Preferences pref) {
         return T_FORMS.fromArray(pref);
+    }
+    
+    @Contract(pure = true)
+    public static TForms getI() {
+        return T_FORMS;
     }
 }

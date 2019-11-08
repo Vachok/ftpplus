@@ -84,7 +84,9 @@ public class ActDirectoryCTRL {
         String queryString = this.request.getQueryString();
         String queryStringIP = new NameOrIPChecker(queryString).resolveInetAddress().getHostAddress();
         InternetUse makeCSV = InternetUse.getInstance(queryStringIP);
-        AppComponents.threadConfig().execByThreadConfig(()->makeCSV.getInfoAbout(queryString + ".csv"));
+        String fileName = queryString + ".csv";
+        AppComponents.threadConfig().execByThreadConfig(()->makeCSV.getInfoAbout(fileName), "makeCSV() - " + fileName);
+        
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
         

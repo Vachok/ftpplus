@@ -184,31 +184,31 @@ public class AppComponents {
         return new TemporaryFullInternet();
     }
     
-    String launchRegRuFTPLibsUploader() {
-        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
-//        Callable<String> coverReportUpdate = new CoverReportUpdate();
-        try {
-            boolean isExec = threadConfig().execByThreadConfig(regRuFTPLibsUploader);
-//            Future<String> submit = threadConfig().getTaskExecutor().submit(coverReportUpdate);
-//            String coverReportUpdateFutureStr = submit.get();
-            return String.valueOf(true);
-        }
-        catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-    
     private static void loadPropsFromDB() {
-        InitProperties initProperties;
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_LOCAL);
         try {
             initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         }
         catch (RuntimeException e) {
             initProperties = InitProperties.getInstance(InitProperties.FILE);
         }
-        Properties props = initProperties.getProps();
-        APP_PR.putAll(props);
-        APP_PR.setProperty(PropertiesNames.DBSTAMP, String.valueOf(System.currentTimeMillis()));
-        APP_PR.setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
+        finally {
+            Properties props = initProperties.getProps();
+            APP_PR.putAll(props);
+            APP_PR.setProperty(PropertiesNames.DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            APP_PR.setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
+        }
+    }
+    
+    String launchRegRuFTPLibsUploader() {
+        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
+        try {
+            threadConfig().getTaskExecutor().execute(regRuFTPLibsUploader, 100);
+            return this.getClass().getSimpleName() + ".launchRegRuFTPLibsUploader: TRUE";
+        }
+        catch (RuntimeException e) {
+            return MessageFormat
+                    .format("{0}.launchRegRuFTPLibsUploader: FALSE {1} {2}", AppComponents.class.getSimpleName(), e.getMessage(), Thread.currentThread().getState().name());
+        }
     }
 }

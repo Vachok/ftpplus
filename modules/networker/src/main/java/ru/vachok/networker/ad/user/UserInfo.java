@@ -10,9 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -25,10 +23,8 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -37,6 +33,8 @@ public abstract class UserInfo implements InformationFactory {
     
     
     private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_PCUSERAUTO_FULL;
+    
+    private static final UserInfo.DatabaseWriter dbWriter = new UserInfo.DatabaseWriter();
     
     @Override
     public abstract String getInfo();
@@ -65,12 +63,12 @@ public abstract class UserInfo implements InformationFactory {
      @see UserInfoTest#testWriteUsersToDBFromSET()
      */
     public static boolean writeUsersToDBFromSET() {
-        return new UserInfo.DatabaseWriter().writeAllPrefixToDB();
+        return dbWriter.writeAllPrefixToDB();
     }
     
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains(ConstantsFor.UNKNOWN_USER) | !lastFileUse.contains("not found")) {
-            AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
+            AppComponents.threadConfig().execByThreadConfig(()->dbWriter.writeAutoresolvedUserToDB(pcName, lastFileUse), "UserInfo.autoResolvedUsersRecord");
         }
         else {
             System.err.println(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
@@ -78,11 +76,28 @@ public abstract class UserInfo implements InformationFactory {
     }
     
     public static void renewOffCounter(String pcName, boolean isOffline) {
-        AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().updTime(pcName, isOffline));
+        String methName = "UserInfo.renewOffCounter";
+        try {
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(dbWriter::countWorkTime);
+            submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            UserInfo.DatabaseWriter.messageToUser
+                    .error(MessageFormat.format(Thread.currentThread().getState().name(), e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+        }
+        catch (ExecutionException | TimeoutException e) {
+            UserInfo.DatabaseWriter.messageToUser.error(MessageFormat.format(methName, e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+        }
+        finally {
+            AppComponents.threadConfig().execByThreadConfig(()->dbWriter.updTime(pcName, isOffline), methName);
+        }
+        
     }
     
     public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
-        return new UserInfo.DatabaseWriter().uniqueUserAddToDB(pcName, lastFileUse);
+        return dbWriter.uniqueUserAddToDB(pcName, lastFileUse);
     }
     
     public abstract List<String> getLogins(String pcName, int resultsLimit);
@@ -206,7 +221,7 @@ public abstract class UserInfo implements InformationFactory {
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                     .valueOf(LocalDateTime.now()));
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
-            AppComponents.threadConfig().execByThreadConfig(this::countWorkTime);
+    
             if (isOffline) {
                 sql = sqlOff;
             }

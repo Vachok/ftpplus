@@ -65,7 +65,7 @@ public class ScanOnline implements NetScanService {
     
     @Override
     public void run() {
-        AppComponents.threadConfig().execByThreadConfig(SwitchesAvailability::new);
+        AppComponents.threadConfig().execByThreadConfig(SwitchesAvailability::new, "ScanOnline.run");
         
         setMaxOnlineListFromFile();
         

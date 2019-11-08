@@ -7,6 +7,7 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -39,7 +40,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     private final Properties retProps = new Properties();
     
-    private static final TForms T_FORMS = new TForms();
+    private static final TForms T_FORMS = AbstractForms.getI();
     
     private String propsDBID = ConstantsFor.class.getSimpleName();
     
@@ -99,7 +100,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             initDefaultDB();
         }
         this.propsDBID = propsIDClass;
-        Thread.currentThread().setName(propsIDClass);
+        Thread.currentThread().setName(this.getClass().getSimpleName());
     }
     
     private void initDefaultDB() {

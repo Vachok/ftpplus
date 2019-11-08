@@ -23,7 +23,6 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.awt.*;
-import java.io.File;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -44,13 +43,15 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.DB, IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, IntoApplication.class.getSimpleName());
     
     private static final boolean IS_TRAY_SUPPORTED = SystemTray.isSupported();
     
+    private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
+    
     private static Properties localCopyProperties = AppComponents.getProps();
     
-    private static ConfigurableApplicationContext configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
+    private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run();
     
     @Contract(pure = true)
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
@@ -69,67 +70,45 @@ public class IntoApplication {
         }
         catch (ApplicationContextException e) {
             return MessageFormat
-                .format("IntoApplication.reloadConfigurableApplicationContext\n{0}, {1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                    .format("IntoApplication.reloadConfigurableApplicationContext\n{0}, {1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
     }
     
     public static void main(@NotNull String[] args) {
-        delFileThreads();
+        setUTF8Enc();
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
             InitProperties.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
             MESSAGE_LOCAL.info(UsefulUtilities.scheduleTrunkPcUserAuto());
         }
-        if (configurableApplicationContext == null) {
-            try {
-                configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
-            }
-            catch (RuntimeException e) {
-                MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.main: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-        }
         if (args.length > 0) {
             new IntoApplication.ArgsReader(args).run();
         }
         else {
-            startContext();
+            startApp();
         }
     }
     
-    private static void delFileThreads() {
-        File threadsInfo = new File(ThreadConfig.class.getSimpleName() + ".time");
-        if (threadsInfo.exists()) {
-            threadsInfo.delete();
-        }
+    protected static void setUTF8Enc() {
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
+        System.setProperty(PropertiesNames.ENCODING, "UTF8");
+        stringBuilder.append(AbstractForms.fromArray(System.getProperties()));
+        FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
     }
     
-    private static void startContext() {
-        beforeSt();
+    private static void startApp() {
         try {
             checkTray();
-            configurableApplicationContext.start();
         }
-        catch (RuntimeException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
-                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+        finally {
+            if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
+                MESSAGE_LOCAL.error(IntoApplication.class.getSimpleName(), "Start context failed!", configurableApplicationContext.getClass().getSimpleName());
+            }
+            else {
+                appInfoStarter();
+            }
         }
-        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
-            throw new RejectedExecutionException(configurableApplicationContext.toString());
-        }
-        else {
-            afterSt();
-        }
-    }
-    
-    protected static void beforeSt() {
-        @NotNull StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(UsefulUtilities.ipFlushDNS());
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
-        stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.ENCODING)).append("\n");
-        System.setProperty(PropertiesNames.ENCODING, "UTF8");
-        stringBuilder.append(new TForms().fromArray(System.getProperties()));
-        FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
     }
     
     private static void checkTray() {
@@ -141,38 +120,28 @@ public class IntoApplication {
         }
         catch (HeadlessException e) {
             MESSAGE_LOCAL.error(MessageFormat
-                .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms.fromArray(e)));
         }
     }
     
-    private static void afterSt() {
+    private static void appInfoStarter() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
-    }
-    
-    public static void closeContext() {
-        configurableApplicationContext.stop();
-        configurableApplicationContext.close();
-        if (configurableApplicationContext.isActive()) {
-            configurableApplicationContext.refresh();
-        }
-        else {
-            MESSAGE_LOCAL.info("AppComponents.threadConfig().killAll()");
-        }
+        AppComponents.threadConfig().execByThreadConfig(infoAndSched, "IntoApplication.appInfoStarter");
     }
     
     @Override
     public String toString() {
         return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+                .toString();
     }
     
+
     /**
      @since 19.07.2019 (9:51)
      */
-    public static class ArgsReader implements Runnable {
-    
-    
+    private static class ArgsReader implements Runnable {
+        
+        
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, IntoApplication.ArgsReader.class.getSimpleName());
         
         private String[] appArgs;
@@ -227,6 +196,14 @@ public class IntoApplication {
             }
             readArgs();
         }
+    
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ArgsReader{");
+            sb.append("appArgs=").append(AbstractForms.fromArray(appArgs));
+            sb.append('}');
+            return sb.toString();
+        }
         
         private boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
             boolean isTray = true;
@@ -234,7 +211,7 @@ public class IntoApplication {
                 localCopyProperties.setProperty(PropertiesNames.TOTPC, stringStringEntry.getValue());
             }
             if (stringStringEntry.getKey().equals("off")) {
-                AppComponents.threadConfig().execByThreadConfig(exitApp);
+                AppComponents.threadConfig().execByThreadConfig(exitApp, "ArgsReader.parseMapEntry");
             }
             if (stringStringEntry.getKey().contains("notray")) {
                 messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
@@ -253,22 +230,27 @@ public class IntoApplication {
         }
         
         private void readArgs() {
-            beforeSt();
+            setUTF8Enc();
             try {
-                startContext();
+                startApp();
             }
             catch (IllegalStateException e) {
                 messageToUser.error(MessageFormat.format("ArgsReader.readArgs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
-            afterSt();
+            finally {
+                appInfoStarter();
+            }
         }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ArgsReader{");
-            sb.append("appArgs=").append(new TForms().fromArray(appArgs));
-            sb.append('}');
-            return sb.toString();
+    }
+    
+    protected static void closeContext() {
+        configurableApplicationContext.stop();
+        configurableApplicationContext.close();
+        if (configurableApplicationContext.isActive()) {
+            configurableApplicationContext.refresh();
+        }
+        else {
+            MESSAGE_LOCAL.info("AppComponents.threadConfig().killAll()");
         }
     }
 }

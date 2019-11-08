@@ -29,7 +29,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     private String dbName = ConstantsFor.STR_VELKOM;
     
-    private String tableName;
+    private String tableName = ConstantsFor.STR_VELKOM;
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
@@ -86,7 +86,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         try {
             retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
             retSource.setDumpQueriesOnException(true);
-            Thread.currentThread().setName(retSource.getDatabaseName());
         }
         catch (SQLException | FileNotFoundException e) {
             messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));

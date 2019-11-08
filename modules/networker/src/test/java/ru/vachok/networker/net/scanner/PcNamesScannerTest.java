@@ -47,13 +47,11 @@ public class PcNamesScannerTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 2));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        this.pcNamesScanner.setClassOption(netScanCtr);
-        this.pcNamesScanner.setThePc("do0001");
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         this.netScanCtr.setModel(new ExtendedModelMap());
     }
@@ -65,13 +63,17 @@ public class PcNamesScannerTest {
     
     @BeforeMethod
     public void initScan() {
-        this.pcNamesScanner = new PcNamesScanner();
+        this.pcNamesScanner = new PcNamesScanner(netScanCtr);
     }
     
     @Test
     public void testToString() {
         String toStr = pcNamesScanner.toString();
-        Assert.assertTrue(toStr.contains(PcNamesScanner.SCANNER), toStr);
+        Assert.assertTrue(toStr.contains("startClassTime"), toStr);
+        Assert.assertTrue(toStr.contains("lastScanStamp"), toStr);
+        Assert.assertTrue(toStr.contains("nextScanStamp"), toStr);
+        Assert.assertTrue(toStr.contains("minutes"), toStr);
+        Assert.assertTrue(toStr.contains("classOption"), toStr);
         System.out.println("toStr = " + toStr);
     }
     
@@ -155,7 +157,7 @@ public class PcNamesScannerTest {
         Runnable runnable = pcNamesScanner.getMonitoringRunnable();
         Assert.assertEquals(runnable, pcNamesScanner);
         String runToStr = runnable.toString();
-        Assert.assertTrue(runToStr.contains(PcNamesScanner.SCANNER), runToStr);
+        Assert.assertTrue(runToStr.contains("{\"startClassTime\":"), runToStr);
     }
     
     @Test
@@ -168,10 +170,20 @@ public class PcNamesScannerTest {
         checkBigDB();
     }
     
-    private static boolean checkDateFromDB(String timeNow) throws ParseException {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.forLanguageTag("ru, RU"));
-        Date parseDate = format.parse(timeNow);
-        return parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(72));
+    private static void checkWeekDB() {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom.pcuserauto");
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by idrec desc LIMIT 1");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                if (resultSet.first()) {
+                    Assert.assertTrue(checkDateFromDB(resultSet.getString(ConstantsFor.DB_FIELD_WHENQUERIED)));
+                    break;
+                }
+            }
+        }
+        catch (SQLException | ParseException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
     
     private static void checkBigDB() {
@@ -285,19 +297,10 @@ public class PcNamesScannerTest {
         return MessageFormat.format("{0} parameter. Result:  {1}", pcName, pcNameInfo);
     }
     
-    private static void checkWeekDB() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom.pcuserauto");
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by whenQueried desc LIMIT 1");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                if (resultSet.first()) {
-                    Assert.assertTrue(checkDateFromDB(resultSet.getString(ConstantsFor.DB_FIELD_WHENQUERIED)));
-                    break;
-                }
-            }
-        }
-        catch (SQLException | ParseException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
+    private static boolean checkDateFromDB(String timeNow) throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.forLanguageTag("ru, RU"));
+        Date parseDate = format.parse(timeNow);
+        System.out.println(MessageFormat.format("{0} = {1}", ConstantsFor.DB_PCUSERAUTO, parseDate));
+        return parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(72));
     }
 }

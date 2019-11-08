@@ -7,17 +7,13 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -27,9 +23,7 @@ import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  <a href="/pflists" target=_blank>Pf Lists</a>
  
  @since 14.11.2018 (15:11) */
-@SuppressWarnings({"SameReturnValue", "ClassUnconnectedToPackage"})
+@SuppressWarnings({"SameReturnValue", "ClassUnconnectedToPackage", "InstanceVariableOfConcreteClass"})
 @Controller
 public class PfListsCtr {
     
@@ -73,15 +67,9 @@ public class PfListsCtr {
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
-    /**
-     {@link PfLists}
-     */
     @SuppressWarnings("CanBeFinal")
     private PfLists pfListsInstAW;
     
-    /**
-     {@link PfListsSrv}
-     */
     private PfListsSrv pfListsSrvInstAW;
     
     /**
@@ -115,13 +103,13 @@ public class PfListsCtr {
             modSet(model);
         }
         if (request.getQueryString() != null) {
-            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
+            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner, "PfListsCtr.pfBean");
             model.addAttribute(ATT_METRIC, refreshRate);
         }
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
         if (nextUpd < System.currentTimeMillis()) {
-            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
+            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner, "PfListsCtr.pfBean");
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ModelAttributeNames.ATT_GITSTATS, toString());
         }
@@ -162,9 +150,8 @@ public class PfListsCtr {
      */
     private void modSet(@NotNull Model model) {
         @NotNull String metricValue = new Date(pfListsInstAW.getTimeStampToNextUpdLong()) + " will be update";
-        
-        @NotNull String gitstatValue = MessageFormat
-            .format("{0}\n{1} thr, active\nChange: {2}\n{3}\n{4}",
+    
+        @NotNull String gitstatValue = MessageFormat.format("{0}\n{1} thr, active\nChange: {2}\n{3}\n{4}",
                 pfListsInstAW.getInetLog(),
                 Thread.activeCount(),
                 Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1")),

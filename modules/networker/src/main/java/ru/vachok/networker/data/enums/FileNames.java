@@ -110,4 +110,6 @@ public enum FileNames {
     public static final String INETIPS_SET = "inetips.set";
     
     public static final String SCHEDULER_TXT = "scheduler.txt";
+    
+    public static final String APP_LOG = "app.json";
 }

@@ -7,16 +7,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -82,13 +77,12 @@ public class NetScanCtr {
      */
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
-        this.pcNamesScanner = new PcNamesScanner();
+        this.pcNamesScanner = new PcNamesScanner(this);
         this.request = request;
         this.response = response;
         this.model = model;
     
         long lastScan = Long.parseLong(InitProperties.getUserPref().get(PropertiesNames.LASTSCAN, "1548919734742"));
-        pcNamesScanner.setClassOption(this);
         UsefulUtilities.getVis(request);
     
         float serviceInfoVal = (float) TimeUnit.MILLISECONDS

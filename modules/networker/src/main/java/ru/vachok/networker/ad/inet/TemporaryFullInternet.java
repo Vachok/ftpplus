@@ -167,7 +167,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     }
     
     private void execOldMeth() {
-        boolean isExecByThreadConfig = AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
+        boolean isExecByThreadConfig = AppComponents.threadConfig().execByThreadConfig(this::sshChecker, getClass().getSimpleName() + ".execOldMeth()");
         Date nextStart = new Date(UsefulUtilities.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         String fromArray = AbstractForms.fromArray(SSH_CHECKER_MAP);
         MINI_LOGGER.add(MessageFormat.format("{2} is exec Old Meth: {0} {1}", userInputIpOrHostName, fromArray, isExecByThreadConfig));

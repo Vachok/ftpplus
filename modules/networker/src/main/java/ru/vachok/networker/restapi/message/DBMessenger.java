@@ -14,9 +14,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 
@@ -27,7 +25,7 @@ import java.time.LocalTime;
 public class DBMessenger implements MessageToUser {
     
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
+    private final Runnable dbSendRun = this::dbSend;
     
     private String headerMsg;
     
@@ -39,7 +37,6 @@ public class DBMessenger implements MessageToUser {
     
     public void setHeaderMsg(String headerMsg) {
         this.headerMsg = headerMsg;
-        Thread.currentThread().setName("DBMsg-" + this.hashCode());
     }
     
     @Contract(pure = true)
@@ -67,7 +64,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         this.isInfo = false;
-        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
+        AppComponents.threadConfig().getTaskExecutor().execute(dbSendRun, 1);
     }
     
     @Override
@@ -76,7 +73,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         this.isInfo = true;
-        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
+        AppComponents.threadConfig().getTaskExecutor().execute(dbSendRun, 1);
     }
     
     @Override
@@ -95,7 +92,7 @@ public class DBMessenger implements MessageToUser {
     public void error(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         this.headerMsg = PropertiesNames.ERROR;
-        this.titleMsg = UsefulUtilities.thisPC();
+        this.titleMsg = this.getClass().getSimpleName();
         errorAlert(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
@@ -112,7 +109,7 @@ public class DBMessenger implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = MessageFormat.format("{0} (WARN)", titleMsg);
         this.bodyMsg = bodyMsg;
-        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
+        AppComponents.threadConfig().getTaskExecutor().execute(dbSendRun, 1);
     }
     
     @Override
@@ -143,7 +140,6 @@ public class DBMessenger implements MessageToUser {
         if (!isInfo) {
             sql = sql.replace(ConstantsFor.PREF_NODE_NAME, "errors");
         }
-        messageToUser.info(this.getClass().getSimpleName(), " dbConnect", MessageFormat.format("dbSemaphore.tryAcquire({0} uptime)", upTime));
         dbConnect(sql, pc, getStack());
     }
     
@@ -163,9 +159,6 @@ public class DBMessenger implements MessageToUser {
             if (!e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 notDuplicate();
             }
-        }
-        finally {
-            messageToUser.info(DBMessenger.class.getSimpleName(), "dbSemaphore.release();" + " available permits", Thread.currentThread().getState().name());
         }
     }
     

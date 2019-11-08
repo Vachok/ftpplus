@@ -66,12 +66,17 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
     
-    private Runnable r;
+    private Runnable r = new Thread();
     
     /**
      @return {@link #TASK_EXECUTOR}
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
+        setExecutor();
+        return TASK_EXECUTOR;
+    }
+    
+    private void setExecutor() {
         TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
         TASK_EXECUTOR.setQueueCapacity(500);
@@ -79,10 +84,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_EXECUTOR.setAwaitTerminationSeconds(6);
         TASK_EXECUTOR.setThreadPriority(7);
         TASK_EXECUTOR.setThreadNamePrefix("E-");
-        return TASK_EXECUTOR;
     }
     
     public ThreadPoolTaskScheduler getTaskScheduler() {
+        setScheduler();
+        return TASK_SCHEDULER;
+    }
+    
+    private void setScheduler() {
         ScheduledThreadPoolExecutor scThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scThreadPoolExecutor.setCorePoolSize(PROCESSORS);
         scThreadPoolExecutor.setMaximumPoolSize(20);
@@ -94,7 +103,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.setThreadPriority(2);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
-        return TASK_SCHEDULER;
     }
     
     @Contract(pure = true)
@@ -209,14 +217,17 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
     
     public boolean execByThreadConfig(Runnable runnable) {
+        return execByThreadConfig(runnable, "test");
+    }
+    
+    public boolean execByThreadConfig(Runnable runnable, String threadName) {
         this.r = runnable;
         try {
-            return execByThreadConfig();
+            return execByThreadConfig(threadName);
         }
         catch (RuntimeException e) {
             String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
-            MessageToUser.getInstance(MessageToUser.DB, "ThreadConfig").error("ThreadConfig", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "ThreadConfig").error("ThreadConfig219", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
             return false;
         }
     }
@@ -226,15 +237,23 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      
      @see ru.vachok.networker.exe.ThreadConfigTest#testExecByThreadConfig()
      */
-    private boolean execByThreadConfig() {
+    private boolean execByThreadConfig(String thName) {
         SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
-        if (simpleAsyncExecutor == null) {
-            return false;
+        Thread newThread = new Thread(()->r.run());
+        try {
+            newThread.setName(thName);
+            simpleAsyncExecutor.execute(newThread);
         }
-        else {
-            simpleAsyncExecutor.execute(r);
-            return true;
+        catch (RuntimeException e) {
+            messageToUser.error(MessageFormat.format("ThreadConfig.execByThreadConfig", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            newThread.setUncaughtExceptionHandler(new BadRunHandler(newThread));
+            TASK_EXECUTOR.execute(newThread);
         }
+        finally {
+            messageToUser.info(this.getClass().getSimpleName(), newThread.getName(), newThread.getState().name());
+        }
+        return newThread.isAlive();
+    
     }
     
     @Override
@@ -277,6 +296,32 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         public String toString() {
             boolean throttleActive = simpleAsyncExecutor.isThrottleActive();
             return throttleActive + " throttleActive. Concurrency limit : " + simpleAsyncExecutor.getConcurrencyLimit();
+        }
+    }
+    
+    
+    
+    private class BadRunHandler implements Thread.UncaughtExceptionHandler {
+        
+        
+        private Thread thread;
+        
+        @Contract(pure = true)
+        BadRunHandler(Thread thread) {
+            this.thread = thread;
+        }
+        
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            messageToUser.error(this.getClass().getSimpleName(), thread.getName(), AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
+        }
+        
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("BadRunHandler{");
+            sb.append("thread=").append(thread);
+            sb.append('}');
+            return sb.toString();
         }
     }
 }

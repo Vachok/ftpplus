@@ -62,7 +62,7 @@ public class NetScanCtrTest {
     
     @BeforeMethod
     public void initScan() {
-        this.pcNamesScanner = new PcNamesScanner();
+        this.pcNamesScanner = new PcNamesScanner(netScanCtr);
     }
     
     @Test

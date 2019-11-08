@@ -10,15 +10,11 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.io.File;
-import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.WatchEvent;
@@ -228,8 +224,10 @@ public class TForms {
         for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
             try{
                 brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_BR);
-                nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_N);}catch (RuntimeException e){
-                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).error(e.getMessage() + " see line: 227");
+                nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_N);
+            }
+            catch (RuntimeException e) {
+            
             }
         }
         

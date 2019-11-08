@@ -160,11 +160,6 @@ public class SshActs {
         return vipNet;
     }
     
-    /**
-     Добавить домен в разрешенные
-     
-     @return результат выполненния
-     */
     public String allowDomainAdd() {
         this.allowDomain = Objects.requireNonNull(checkDName());
         if (allowDomain.equalsIgnoreCase(ConstantsFor.ANS_DOMNAMEEXISTS)) {
@@ -179,7 +174,6 @@ public class SshActs {
             .append(" #")
             .append(allowDomain)
             .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
-            
             .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
             .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
         
@@ -197,12 +191,6 @@ public class SshActs {
             .replace(allowDomain, "<font color=\"yellow\">" + allowDomain + "</font>").replace(resolvedIp, "<font color=\"yellow\">" + resolvedIp + "</font>");
     }
     
-    /**
-     Приведение имени домена в нужный формат
-     <p>
-     
-     @return имя домена для применения в /etc/pf/allowdomain
-     */
     private String checkDName() {
         try {
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
@@ -242,15 +230,6 @@ public class SshActs {
         return allowDomain;
     }
     
-    /**
-     Резолвит ip-адрес
-     <p>
-     
-     @param domainName домен для проверки
-     @return ip-адрес
- 
-     @throws NullPointerException
-     */
     private String resolveIp(String domainName) {
         InetAddress inetAddress = null;
         try {
@@ -276,11 +255,6 @@ public class SshActs {
         }
     }
     
-    /**
-     Определяет, где запущен.
-     
-     @return адрес нужного сервака
-     */
     public String whatSrvNeed() {
         AppComponents.getProps().setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
@@ -291,11 +265,6 @@ public class SshActs {
         }
     }
     
-    /**
-     Удаление домена из разрешенных
-     
-     @return результат выполнения
-     */
     @SuppressWarnings("DuplicateStringLiteralInspection")
     public String allowDomainDel() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -330,9 +299,6 @@ public class SshActs {
         return stringBuilder.toString();
     }
     
-    /**
-     @return имя домена, для удаления.
-     */
     private String checkDNameDel() {
         try {
             this.delDomain = delDomain.replace("http://", ".");
@@ -374,9 +340,6 @@ public class SshActs {
         return call.split("<br>\n");
     }
     
-    /**
-     Установить все списки на <b>false</b>
-     */
     public void setAllFalse() {
         this.squidLimited = false;
         this.squid = false;

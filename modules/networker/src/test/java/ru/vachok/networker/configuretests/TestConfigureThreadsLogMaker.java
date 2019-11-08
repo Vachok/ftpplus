@@ -6,18 +6,14 @@ package ru.vachok.networker.configuretests;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.lang.management.*;
 import java.text.MessageFormat;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
 
@@ -46,6 +42,17 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         return printStream;
     }
     
+    public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
+        this.startTime = startNANOTime;
+        this.callingClass = callingClass;
+        try {
+            this.printStream = new PrintStream(new FileOutputStream(this.getClass().getSimpleName()));
+        }
+        catch (FileNotFoundException e) {
+            messageToUser.error("TestConfigureThreadsLogMaker", "TestConfigureThreadsLogMaker", e.getMessage() + " see line: 140");
+        }
+    }
+    
     @Override
     public void before() {
         if (callingClass == null) {
@@ -56,19 +63,13 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         threadMXBean.setThreadCpuTimeEnabled(true);
         threadMXBean.setThreadContentionMonitoringEnabled(true);
         threadMXBean.resetPeakThreadCount();
-        findThread();
-        
-    }
-    
-    public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
-        this.startTime = startNANOTime;
-        this.callingClass = callingClass;
         try {
-            this.printStream = new PrintStream(new FileOutputStream(this.getClass().getSimpleName()));
+            findThread();
         }
-        catch (FileNotFoundException e) {
-            messageToUser.error("TestConfigureThreadsLogMaker", "TestConfigureThreadsLogMaker", e.getMessage() + " see line: 140");
+        catch (NetworkerStopException e) {
+            e.printStackTrace();
         }
+    
     }
     
     @Override
@@ -107,44 +108,15 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
             Runtime.getRuntime().runFinalization();
         }
-      
+    
     }
     
-    private void findThread() {
-        try {
-            for (long threadId : threadMXBean.getAllThreadIds()) {
-                String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
-                if (callingClass.contains(threadName)) {
-                    this.threadInfo = threadMXBean.getThreadInfo(threadId);
-                }
+    private void findThread() throws NetworkerStopException {
+        for (long threadId : threadMXBean.getAllThreadIds()) {
+            String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
+            if (callingClass.contains(threadName)) {
+                this.threadInfo = threadMXBean.getThreadInfo(threadId);
             }
-        }
-        catch (RuntimeException e) {
-            messageToUser.error("TestConfigureThreadsLogMaker.findThread", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
-        }
-        if (threadInfo != null) {
-            writeFile();
-        }
-    }
-    
-    private void writeFile() {
-        String nameFile = TEST_FOLDER + callingClass + ".log";
-        try {
-            Files.createDirectories(Paths.get(TEST_FOLDER));
-        }
-        catch (IOException e) {
-            System.out.println("AbstractForms.exceptionNetworker(e.getStackTrace()) = " + AbstractForms.exceptionNetworker(e.getStackTrace()));
-        }
-        try {
-            OutputStream outputStream = new FileOutputStream(nameFile, true);
-            this.printStream = new PrintStream(outputStream, true);
-        }
-        catch (IOException e) {
-            System.out.println("AbstractForms.exceptionNetworker(e.getStackTrace()) = " + AbstractForms.exceptionNetworker(e.getStackTrace()));
-        }
-        finally {
-            printStream.close();
-            messageToUser.info(this.callingClass, nameFile, MessageFormat.format("{0} nano start ({1})", startTime, LocalDate.now()));
         }
         
     }
