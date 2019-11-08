@@ -66,7 +66,7 @@ public class DBMessenger implements MessageToUser {
     private void dbSendFile() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         dataConnectTo.createTable(ConstantsFor.DBNAME_LOG_DBMESSENGER, Collections.emptyList());
-        final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `json`) VALUES (?, ?)";
+        final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `upstring`, `json`) VALUES (?, ?, ?)";
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_LOG_DBMESSENGER);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             Path path = Paths.get(FileNames.APP_JSON);
@@ -77,7 +77,8 @@ public class DBMessenger implements MessageToUser {
                     JsonObject jsonObject = Json.parse(jsonStr).asObject();
                     preparedStatement.setTimestamp(1, Timestamp
                         .valueOf(LocalDateTime.ofEpochSecond((jsonObject.getLong(PropertiesNames.TIMESTAMP, 0) / 1000), 0, ZoneOffset.ofHours(3))));
-                    preparedStatement.setString(2, jsonObject.toString());
+                    preparedStatement.setString(2, UsefulUtilities.thisPC());
+                    preparedStatement.setString(3, jsonObject.toString());
                     preparedStatement.executeUpdate();
                 }
                 
