@@ -17,7 +17,14 @@ import java.util.StringJoiner;
 public class MessageSwing extends ru.vachok.messenger.MessageSwing implements MessageToUser {
     
     
+    private String headerMsg = "no HEAD";
+    
     private final ru.vachok.messenger.MessageSwing libMessageSwing;
+    
+    @Override
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
+    }
     
     public MessageSwing(String header) {
         libMessageSwing = new ru.vachok.messenger.MessageSwing(header);

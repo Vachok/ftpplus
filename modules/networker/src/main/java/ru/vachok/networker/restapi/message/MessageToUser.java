@@ -29,6 +29,12 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     String FILE = MessageFile.class.getTypeName();
     
+    MessageToUser DB_MESSENGER = new DBMessenger("init");
+    
+    MessageToUser SWING_M = new ru.vachok.networker.restapi.message.MessageSwing("init");
+    
+    MessageToUser FILE_LOC_M = new MessageFileLocal("init");
+    
     @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static MessageToUser getInstance(String messengerType, String messengerHeader) {
@@ -36,7 +42,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             messengerHeader = MessageToUser.class.getSimpleName();
         }
         if (messengerType == null) {
-            return new MessageLocal(messengerHeader, "null");
+            return MESSAGE_LOCAL;
         }
         else if (messengerType.equals(LOCAL_CONSOLE)) {
             MESSAGE_LOCAL.setBodyMsg(MessageToUser.LOCAL_CONSOLE);
@@ -47,18 +53,23 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             return MessageToTray.getInstance(messengerHeader);
         }
         else if (messengerType.equals(DB)) {
-            return new DBMessenger(messengerHeader);
+            DB_MESSENGER.setHeaderMsg(messengerHeader);
+            return DB_MESSENGER;
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
-            return new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
+            MESSAGE_LOCAL.setHeaderMsg(messengerHeader);
+            return SWING_M;
         }
         else if (messengerType.equalsIgnoreCase(FILE)) {
-            return new MessageFileLocal(messengerHeader);
+            MESSAGE_LOCAL.setHeaderMsg(messengerHeader);
+            return FILE_LOC_M;
         }
         else {
-            return new MessageLocal(messengerHeader);
+            return MESSAGE_LOCAL;
         }
     }
+    
+    void setHeaderMsg(String headerMsg);
     
     @Override
     default void infoTimer(int timeOut, String headerMsg) {

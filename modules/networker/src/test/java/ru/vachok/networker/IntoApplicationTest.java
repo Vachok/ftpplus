@@ -3,10 +3,11 @@
 package ru.vachok.networker;
 
 
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -34,22 +35,10 @@ public class IntoApplicationTest {
         testConfigureThreadsLogMaker.after();
         IntoApplication.closeContext();
     }
-
-    @Test(enabled = false)
-    public void testGetConfigurableApplicationContext() {
-        try {
-            Assert.assertFalse(IntoApplication.reloadConfigurableApplicationContext().isEmpty());
-        }
-        catch (BeanCreationException e) {
-            Assert.assertNull(e, e.getBeanName() + " " + e.getResourceDescription() + " " + e.getResourceDescription());
-        }
-    }
     
     @Test
     public void testReloadConfigurableApplicationContext() {
         IntoApplication.main(new String[]{"-test, -notray"});
-        String reloadAppContext = IntoApplication.reloadConfigurableApplicationContext();
-        Assert.assertEquals(reloadAppContext, "application");
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
             context.close();
             IntoApplication.closeContext();

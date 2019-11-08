@@ -3,36 +3,22 @@
 package ru.vachok.networker.restapi.message;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Queue;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -59,35 +45,6 @@ public class DBMessenger implements MessageToUser {
     DBMessenger(String headerMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = DataConnectTo.getInstance(DataConnectTo.TESTING).toString();
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-            .scheduleWithFixedDelay(this::dbSendFile, 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
-    }
-    
-    private void dbSendFile() {
-        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        dataConnectTo.createTable(ConstantsFor.DBNAME_LOG_DBMESSENGER, Collections.emptyList());
-        final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `upstring`, `json`) VALUES (?, ?, ?)";
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_LOG_DBMESSENGER);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            Path path = Paths.get(FileNames.APP_JSON);
-            Queue<String> logJson = FileSystemWorker.readFileToQueue(path);
-            while (!logJson.isEmpty()) {
-                String jsonStr = logJson.remove();
-                if (!jsonStr.isEmpty()) {
-                    JsonObject jsonObject = Json.parse(jsonStr).asObject();
-                    preparedStatement.setTimestamp(1, Timestamp
-                        .valueOf(LocalDateTime.ofEpochSecond((jsonObject.getLong(PropertiesNames.TIMESTAMP, 0) / 1000), 0, ZoneOffset.ofHours(3))));
-                    preparedStatement.setString(2, UsefulUtilities.thisPC());
-                    preparedStatement.setString(3, jsonObject.toString());
-                    preparedStatement.executeUpdate();
-                }
-                
-            }
-            Files.deleteIfExists(path);
-        }
-        catch (SQLException | IOException e) {
-            System.err.println(MessageFormat.format("{0}, message: {1}. See line: 176 ***", DBMessenger.class.getSimpleName(), e.getMessage()));
-        }
     }
     
     @Override

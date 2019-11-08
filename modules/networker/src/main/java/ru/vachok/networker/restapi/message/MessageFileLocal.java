@@ -25,6 +25,11 @@ class MessageFileLocal implements MessageToUser {
     
     private String titleMsg;
     
+    @Override
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
+    }
+    
     @Contract(pure = true)
     MessageFileLocal(String titleMsg) {
         this.titleMsg = titleMsg;

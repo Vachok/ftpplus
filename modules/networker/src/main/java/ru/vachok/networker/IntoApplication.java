@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -52,34 +51,19 @@ public class IntoApplication {
     
     private static Properties localCopyProperties = AppComponents.getProps();
     
-    private static final ConfigurableApplicationContext configurableApplicationContext;
+    private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
     
     
     static {
-        configurableApplicationContext = SPRING_APPLICATION.run();
+        if (!configurableApplicationContext.isRunning()) {
+            configurableApplicationContext.refresh();
+        }
     }
     
     
     @Contract(pure = true)
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
-    }
-    
-    @Deprecated
-    public static @NotNull String reloadConfigurableApplicationContext() {
-        @NotNull String result;
-        if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
-            configurableApplicationContext.stop();
-            configurableApplicationContext.close();
-        }
-        try {
-            result = MessageFormat.format("{0} {1}", configurableApplicationContext.isActive(), configurableApplicationContext.getApplicationName());
-        }
-        catch (ApplicationContextException e) {
-            result = MessageFormat
-                .format("IntoApplication.reloadConfigurableApplicationContext\n{0}, {1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-        }
-        return result;
     }
     
     public static void main(@NotNull String[] args) {
@@ -134,7 +118,7 @@ public class IntoApplication {
     
     private static void appInfoStarter() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        AppComponents.threadConfig().execByThreadConfig(infoAndSched, "IntoApplication.appInfoStarter");
+        AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
     }
     
     @Override

@@ -33,6 +33,11 @@ public class MessageLocal implements MessageToUser {
         this.titleMsg = titleMsg;
     }
     
+    @Override
+    public void setHeaderMsg(String header) {
+        this.headerMsg = header;
+    }
+    
     public MessageLocal(String className) {
         this.headerMsg = className;
         this.titleMsg = "constructing...";

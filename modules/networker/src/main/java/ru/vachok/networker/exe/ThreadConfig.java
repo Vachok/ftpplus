@@ -24,7 +24,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -239,7 +241,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private boolean execByThreadConfig(String thName) {
         SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
-        Thread newThread = new Thread(()->r.run());
+        Thread newThread = new Thread();
         try {
             newThread.setName(thName);
             simpleAsyncExecutor.execute(newThread);

@@ -3,6 +3,8 @@
 package ru.vachok.networker;
 
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.networker.ad.common.RightsChecker;
@@ -26,19 +28,27 @@ import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.ssh.Tracerouting;
+import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.ZoneOffset;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -80,13 +90,11 @@ public class AppInfoOnLoad implements Runnable {
         }
         try {
             getWeekPCStats();
+            infoForU();
         }
         catch (RuntimeException e) {
             MessageToUser.getInstance(MessageToUser.DB, AppInfoOnLoad.class.getSimpleName())
                     .error(name, e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-        }
-        finally {
-            infoForU();
         }
     }
     
@@ -170,6 +178,16 @@ public class AppInfoOnLoad implements Runnable {
         return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
     
+    private static void scheduleIISLogClean(Date nextStartDay) {
+        Runnable iisCleaner = new MailIISLogsCleaner();
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        getMiniLogger().add(nextStartDay + " MailIISLogsCleaner() start\n");
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
+            .scheduleWithFixedDelay(AppInfoOnLoad::dbSendFile, 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        
+    }
+    
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
@@ -229,10 +247,31 @@ public class AppInfoOnLoad implements Runnable {
         getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
     }
     
-    private static void scheduleIISLogClean(Date nextStartDay) {
-        Runnable iisCleaner = new MailIISLogsCleaner();
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        getMiniLogger().add(nextStartDay + " MailIISLogsCleaner() start\n");
+    private static void dbSendFile() {
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        dataConnectTo.createTable(ConstantsFor.DBNAME_LOG_DBMESSENGER, Collections.emptyList());
+        final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `upstring`, `json`) VALUES (?, ?, ?)";
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_LOG_DBMESSENGER);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            Path path = Paths.get(FileNames.APP_JSON);
+            Queue<String> logJson = FileSystemWorker.readFileToQueue(path);
+            while (!logJson.isEmpty()) {
+                String jsonStr = logJson.remove();
+                if (!jsonStr.isEmpty()) {
+                    JsonObject jsonObject = Json.parse(jsonStr).asObject();
+                    preparedStatement.setTimestamp(1, Timestamp
+                        .valueOf(LocalDateTime.ofEpochSecond((jsonObject.getLong(PropertiesNames.TIMESTAMP, 0) / 1000), 0, ZoneOffset.ofHours(3))));
+                    preparedStatement.setString(2, UsefulUtilities.thisPC());
+                    preparedStatement.setString(3, jsonObject.toString());
+                    preparedStatement.executeUpdate();
+                }
+                
+            }
+            Files.deleteIfExists(path);
+        }
+        catch (SQLException | IOException e) {
+            System.err.println(MessageFormat.format("{0}, message: {1}. See line: 176 ***", DBMessenger.class.getSimpleName(), e.getMessage()));
+        }
     }
     
     private void kudrMonitoring() {
