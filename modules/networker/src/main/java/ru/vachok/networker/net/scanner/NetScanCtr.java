@@ -124,7 +124,8 @@ public class NetScanCtr {
         Date nextStart = new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, System.currentTimeMillis()));
         if (System.currentTimeMillis() > nextStart.getTime() & !file.exists()) {
             PcNamesScanner.fileScanTMPCreate(true);
-            AppComponents.threadConfig().getTaskScheduler().schedule(pcNamesScanner, nextStart);
+            AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
+                .scheduleWithFixedDelay(pcNamesScanner, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
             messageToUser.warn(this.getClass().getSimpleName(), file.getAbsolutePath(), MessageFormat
                 .format("{0} nextStart. pcNamesScanner with hash {1} next run.", nextStart.toString(), this.pcNamesScanner.hashCode()));
         }
