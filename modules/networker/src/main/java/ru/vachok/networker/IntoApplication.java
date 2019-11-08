@@ -17,7 +17,6 @@ import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -28,7 +27,9 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -51,27 +52,34 @@ public class IntoApplication {
     
     private static Properties localCopyProperties = AppComponents.getProps();
     
-    private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run();
+    private static final ConfigurableApplicationContext configurableApplicationContext;
+    
+    
+    static {
+        configurableApplicationContext = SPRING_APPLICATION.run();
+    }
+    
     
     @Contract(pure = true)
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
-        ThreadConfig.dumpToFile("IntoApplication.getConfigurableApplicationContext");
         return configurableApplicationContext;
     }
     
+    @Deprecated
     public static @NotNull String reloadConfigurableApplicationContext() {
+        @NotNull String result;
         if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
         }
         try {
-            configurableApplicationContext = SpringApplication.run(IntoApplication.class);
-            return MessageFormat.format("{0} {1}", configurableApplicationContext.isActive(), configurableApplicationContext.getApplicationName());
+            result = MessageFormat.format("{0} {1}", configurableApplicationContext.isActive(), configurableApplicationContext.getApplicationName());
         }
         catch (ApplicationContextException e) {
-            return MessageFormat
-                    .format("IntoApplication.reloadConfigurableApplicationContext\n{0}, {1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            result = MessageFormat
+                .format("IntoApplication.reloadConfigurableApplicationContext\n{0}, {1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
+        return result;
     }
     
     public static void main(@NotNull String[] args) {
@@ -82,7 +90,7 @@ public class IntoApplication {
             MESSAGE_LOCAL.info(UsefulUtilities.scheduleTrunkPcUserAuto());
         }
         if (args.length > 0) {
-            new IntoApplication.ArgsReader(args).run();
+            IntoApplication.ArgsReader.run();
         }
         else {
             startApp();
@@ -139,25 +147,24 @@ public class IntoApplication {
     /**
      @since 19.07.2019 (9:51)
      */
-    private static class ArgsReader implements Runnable {
+    private static class ArgsReader {
         
         
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, IntoApplication.ArgsReader.class.getSimpleName());
-        
-        private String[] appArgs;
-        
-        private ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
     
-        public ArgsReader(String[] appArgs) {
-            this.appArgs = appArgs;
+        private static String[] appArgs;
+    
+        private static ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
+    
+        ArgsReader(String[] appArgs) {
+            IntoApplication.ArgsReader.appArgs = appArgs;
         }
-        
-        @Override
-        public void run() {
+    
+        public static void run() {
             fillArgsMap();
         }
-        
-        private void fillArgsMap() {
+    
+        private static void fillArgsMap() {
             List<@NotNull String> argsList = Arrays.asList(appArgs);
             Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
             boolean isTray = true;
@@ -204,8 +211,8 @@ public class IntoApplication {
             sb.append('}');
             return sb.toString();
         }
-        
-        private boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
+    
+        private static boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
             boolean isTray = true;
             if (stringStringEntry.getKey().contains(PropertiesNames.TOTPC)) {
                 localCopyProperties.setProperty(PropertiesNames.TOTPC, stringStringEntry.getValue());
@@ -228,8 +235,8 @@ public class IntoApplication {
             
             return isTray;
         }
-        
-        private void readArgs() {
+    
+        private static void readArgs() {
             setUTF8Enc();
             try {
                 startApp();
