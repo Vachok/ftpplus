@@ -7,16 +7,22 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.time.*;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +44,8 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     
     private List<String> toWriteAllowed = new ArrayList<>();
     
+    private NameOrIPChecker nIPCheck;
+    
     @Override
     public String getInfoAbout(String aboutWhat) {
         return fillAttribute(aboutWhat);
@@ -46,13 +54,14 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     @Override
     public void setClassOption(@NotNull Object classOption) {
         this.aboutWhat = (String) classOption;
+        nIPCheck = new NameOrIPChecker(aboutWhat);
     }
     
     @Override
     public String fillWebModel() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+            this.aboutWhat = nIPCheck.resolveInetAddress().getHostAddress();
         }
         catch (RuntimeException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));

@@ -419,7 +419,7 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setString(5, UsefulUtilities.thisPC());
             prStatement.setString(6, resolveUser);
     
-            messageToUser.warn(this.getClass().getSimpleName(), "executing statement", MessageFormat
+            messageToUser.info(this.getClass().getSimpleName(), "executing statement", MessageFormat
                 .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
             return prStatement.executeUpdate();
         }

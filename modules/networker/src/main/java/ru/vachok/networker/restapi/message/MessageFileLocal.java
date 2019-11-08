@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.*;
 
@@ -12,7 +13,7 @@ import java.io.*;
 class MessageFileLocal implements MessageToUser {
     
     
-    private static final File appLog = new File(FileNames.APP_LOG);
+    private static final File appLog = new File(FileNames.APP_JSON);
     
     private static final String WARN = "warn";
     
@@ -102,7 +103,7 @@ class MessageFileLocal implements MessageToUser {
     private void pringAppLog(String logType) {
         JsonObject jsonObject = new JsonObject();
         try {
-            jsonObject.set("timestamp", System.currentTimeMillis());
+            jsonObject.set(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
             jsonObject.set(logType, this.headerMsg);
             jsonObject.set(titleMsg, bodyMsg);
         }

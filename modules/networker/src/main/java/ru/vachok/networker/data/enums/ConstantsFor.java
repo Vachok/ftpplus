@@ -501,6 +501,8 @@ public enum ConstantsFor {
     
     public static final String PROTOTYPE = "prototype";
     
+    public static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
+    
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

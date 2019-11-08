@@ -88,4 +88,6 @@ public enum PropertiesNames {
     public static final String LIMITSEARCHROWS = "limitsearchrows";
     
     public static final String SUN_JAVA_COMMAND = "sun.java.command";
+    
+    public static final String TIMESTAMP = "timestamp";
 }

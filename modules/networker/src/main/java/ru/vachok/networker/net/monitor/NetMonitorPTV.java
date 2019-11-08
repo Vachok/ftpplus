@@ -4,10 +4,12 @@ package ru.vachok.networker.net.monitor;
 
 
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -16,8 +18,12 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.nio.file.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -116,7 +122,6 @@ public class NetMonitorPTV implements NetScanService {
             preferences.sync();
         }
         else {
-            System.err.println(filePath);
             preferences.put(FileNames.PING_TV, "7-JAN-1984 )");
         }
         this.outputStream = new FileOutputStream(pingTv);
@@ -172,7 +177,7 @@ public class NetMonitorPTV implements NetScanService {
         Field[] swFields = SwitchesWiFi.class.getFields();
         for (Field swF : swFields) {
             String ipAddrStr = swF.get(swF).toString();
-            writePingToDB(ipAddrStr, swF.getName(), "INSERT INTO SwitchesWiFi (`ip`, `pcName`, `online`) VALUES (?,?,?);");
+            writePingToDB(ipAddrStr, swF.getName());
         }
     }
     
@@ -189,10 +194,9 @@ public class NetMonitorPTV implements NetScanService {
         }
     }
     
-    private void writePingToDB(String ipAddr, String name, String sql) {
-        NameOrIPChecker checker = new NameOrIPChecker(ipAddr);
+    private void writePingToDB(String ipAddr, String name) {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANMONITOR)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO SwitchesWiFi (`ip`, `pcName`, `online`) VALUES (?,?,?);")) {
                 preparedStatement.setString(1, ipAddr);
                 preparedStatement.setString(2, name);
                 preparedStatement.setString(3, String.valueOf(NetScanService.isReach(ipAddr)));
@@ -200,7 +204,7 @@ public class NetMonitorPTV implements NetScanService {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("NetMonitorPTV.writePingToDB", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.info(MessageFormat.format("NetMonitorPTV.writePingToDB", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
         }
     }
     
@@ -215,7 +219,7 @@ public class NetMonitorPTV implements NetScanService {
             preferences.sync();
         }
         else {
-            System.out.println(pingTv.getAbsolutePath() + " size in kb = " + pingTv.length() / ConstantsFor.KBYTE);
+            messageToUser.info(pingTv.getAbsolutePath() + " size in kb = " + pingTv.length() / ConstantsFor.KBYTE);
         }
     }
     
