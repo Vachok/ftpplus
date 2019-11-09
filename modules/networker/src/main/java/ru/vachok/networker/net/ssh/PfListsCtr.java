@@ -7,13 +7,17 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -23,7 +27,9 @@ import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Date;
+import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 
@@ -103,13 +109,13 @@ public class PfListsCtr {
             modSet(model);
         }
         if (request.getQueryString() != null) {
-            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner, "PfListsCtr.pfBean");
+            threadConfig.getTaskExecutor().getThreadPoolExecutor().execute(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, refreshRate);
         }
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
         if (nextUpd < System.currentTimeMillis()) {
-            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner, "PfListsCtr.pfBean");
+            threadConfig.getTaskExecutor().getThreadPoolExecutor().execute(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ModelAttributeNames.ATT_GITSTATS, toString());
         }

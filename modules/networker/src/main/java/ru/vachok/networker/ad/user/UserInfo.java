@@ -90,7 +90,7 @@ public abstract class UserInfo implements InformationFactory {
             UserInfo.DatabaseWriter.messageToUser.error(MessageFormat.format(methName, e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
         }
         finally {
-            AppComponents.threadConfig().execByThreadConfig(()->dbWriter.updTime(pcName, isOffline), methName);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->dbWriter.updTime(pcName, isOffline));
         }
         
     }

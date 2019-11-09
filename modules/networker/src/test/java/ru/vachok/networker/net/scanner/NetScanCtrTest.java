@@ -42,9 +42,11 @@ public class NetScanCtrTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private PcNamesScanner pcNamesScanner;
+    private static final PcNamesScannerWorks FINAL_SCANNER = new PcNamesScannerWorks();
     
-    private NetScanCtr netScanCtr = new NetScanCtr();
+    private PcNamesScannerWorks pcNamesScanner;
+    
+    private NetScanCtr netScanCtr;
     
     private HttpServletRequest request = new MockHttpServletRequest();
     
@@ -65,9 +67,10 @@ public class NetScanCtrTest {
     
     @BeforeMethod
     public void initScan() {
+        this.pcNamesScanner = FINAL_SCANNER;
+        this.netScanCtr = new NetScanCtr(FINAL_SCANNER);
         netScanCtr.setModel(model);
         netScanCtr.setRequest(request);
-        this.pcNamesScanner = new PcNamesScanner(netScanCtr);
     }
     
     @Test
@@ -80,7 +83,7 @@ public class NetScanCtrTest {
         }
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr();
+            netScanCtr = new NetScanCtr(pcNamesScanner);
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -89,7 +92,7 @@ public class NetScanCtrTest {
         HttpServletResponse response = this.response;
         Model model = this.model;
         try {
-            String netScanStr = netScanCtr.netScan(request, response, model);
+            String netScanStr = netScanCtr.netScan(request, response, model, pcNamesScanner);
             Assert.assertNotNull(netScanStr);
             assertTrue(netScanStr.equals(ModelAttributeNames.NETSCAN));
             assertTrue(model.asMap().size() >= 5, showModel(model.asMap()));
@@ -102,7 +105,7 @@ public class NetScanCtrTest {
     
     @Test
     public void testStarterNetScan() {
-        netScanCtr.starterNetScan(pcNamesScanner);
+        netScanCtr.starterNetScan();
         File file = new File(FileNames.SCAN_TMP);
         Assert.assertTrue(file.exists());
         Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)));
@@ -132,7 +135,7 @@ public class NetScanCtrTest {
         HttpServletResponse response = this.response;
         pcNamesScanner.setThePc("do0001");
         try {
-            String pcNameInfoStr = netScanCtr.pcNameForInfo(pcNamesScanner, model);
+            String pcNameInfoStr = netScanCtr.pcNameForInfo(model, pcNamesScanner);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
             Assert.assertTrue(model.asMap().get(ModelAttributeNames.THEPC).equals("do0001"));
             

@@ -44,13 +44,7 @@ class LocalUserResolver extends UserInfo {
             pcName = PCInfo.getInstance(String.valueOf(pcName)).getInfo();
         }
         List<String> pcLogins = getLogins((String) pcName, 1);
-        String[] splitBySpace = new String[10];
-        try {
-            splitBySpace = pcLogins.get(0).split(" ");
-        }
-        catch (IndexOutOfBoundsException e) {
-            this.userName = new UnknownUser(this.getClass().getSimpleName()).getInfo();
-        }
+        String[] splitBySpace = trySplit(pcLogins);
         String retStr;
         try {
             this.userName = Paths.get(splitBySpace[1]).getFileName().toString();
@@ -63,8 +57,24 @@ class LocalUserResolver extends UserInfo {
                 this.userName = new UnknownUser(this.getClass().getSimpleName()).getInfo();
             }
         }
-        retStr = pcName + " : " + userName;
+        finally {
+            retStr = pcName + " : " + userName;
+        }
         return retStr;
+    }
+    
+    private String[] trySplit(@NotNull List<String> logins) {
+        String[] splitBySpace = new String[10];
+        try {
+            splitBySpace = logins.get(0).split(" ");
+        }
+        catch (IndexOutOfBoundsException e) {
+            this.userName = new UnknownUser(this.getClass().getSimpleName()).getInfo();
+        }
+        finally {
+            messageToUser.info(this.getClass().getSimpleName(), "split", Arrays.toString(splitBySpace));
+        }
+        return splitBySpace;
     }
     
     @Override

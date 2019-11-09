@@ -5,6 +5,7 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 
@@ -45,11 +45,11 @@ public class NetScanCtr {
     
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
-    private final Timer scheduler = new Timer();
+    private final File file = new File(FileNames.SCAN_TMP);
     
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetScanCtr.class.getSimpleName());
     
-    @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScanner pcNamesScanner;
+    @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScannerWorks pcNamesScanner;
     
     private HttpServletRequest request;
     
@@ -65,6 +65,10 @@ public class NetScanCtr {
         return request;
     }
     
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+    }
+    
     Model getModel() {
         return model;
     }
@@ -73,25 +77,27 @@ public class NetScanCtr {
         this.model = model;
     }
     
-    @Contract(pure = true)
-    public NetScanCtr() {
-    
+    public void setResponse(HttpServletResponse response) {
+        this.response = response;
     }
     
-    public void setRequest(HttpServletRequest request) {
-        this.request = request;
+    @Contract(pure = true)
+    @Autowired
+    public NetScanCtr(PcNamesScannerWorks pcNamesScanner) {
+        this.pcNamesScanner = pcNamesScanner;
     }
     
     /**
      @see NetScanCtrTest#testNetScan()
      */
     @GetMapping(STR_NETSCAN)
-    public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
-        this.pcNamesScanner = new PcNamesScanner(this);
+    public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model, @NotNull @ModelAttribute
+        PcNamesScannerWorks pcNamesScanner) {
+        this.pcNamesScanner = pcNamesScanner;
         this.request = request;
         this.response = response;
         this.model = model;
-    
+        this.pcNamesScanner.setClassOption(this);
         long lastScan = Long.parseLong(InitProperties.getUserPref().get(PropertiesNames.LASTSCAN, "1548919734742"));
         UsefulUtilities.getVis(request);
     
@@ -111,21 +117,32 @@ public class NetScanCtr {
         
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
     
-        starterNetScan(pcNamesScanner);
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
+            .scheduleWithFixedDelay(pcNamesScanner, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
+    
         return ModelAttributeNames.NETSCAN;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetScanCtr{");
+        try {
+            sb.append(", request=").append(request);
+        }
+        catch (RuntimeException e) {
+            sb.append(MessageFormat.format("Exception: {0} in {1}.toString()", e.getMessage(), this.getClass().getSimpleName()));
+        }
+        sb.append('}');
+        return sb.toString();
     }
     
     /**
      @see NetScanCtrTest#testStarterNetScan()
      */
-    void starterNetScan(PcNamesScanner pcNamesScanner) {
-        this.pcNamesScanner = pcNamesScanner;
-        File file = new File(FileNames.SCAN_TMP);
+    public void starterNetScan() {
         Date nextStart = new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, System.currentTimeMillis()));
         if (System.currentTimeMillis() > nextStart.getTime() & !file.exists()) {
             PcNamesScanner.fileScanTMPCreate(true);
-            AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-                .scheduleWithFixedDelay(pcNamesScanner, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
             messageToUser.warn(this.getClass().getSimpleName(), file.getAbsolutePath(), MessageFormat
                 .format("{0} nextStart. pcNamesScanner with hash {1} next run.", nextStart.toString(), this.pcNamesScanner.hashCode()));
         }
@@ -142,18 +159,16 @@ public class NetScanCtr {
      POST /netscan
      <p>
  
-     @param pcNamesScanner {@link PcNamesScanner}
      @param model {@link Model}
      @return redirect:/ad? + {@link PcNamesScanner#getThePc()}
      */
     @PostMapping(STR_NETSCAN)
-    public @NotNull String pcNameForInfo(@NotNull @ModelAttribute PcNamesScanner pcNamesScanner, Model model) {
-    
+    public @NotNull String pcNameForInfo(Model model, @NotNull @ModelAttribute PcNamesScannerWorks pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
         this.model = model;
         this.pcNamesScanner.setClassOption(this);
         String thePc = pcNamesScanner.getThePc();
-        
+        this.pcNamesScanner.setModel(model);
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", this.pcNamesScanner.getExecution().trim());
             model.addAttribute(ModelAttributeNames.TITLE, thePc);
@@ -163,18 +178,5 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.THEPC, thePc);
         pcNamesScanner.setThePc("");
         return "redirect:/ad?" + thePc;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetScanCtr{");
-        try {
-            sb.append(", request=").append(request);
-        }
-        catch (RuntimeException e) {
-            sb.append(MessageFormat.format("Exception: {0} in {1}.toString()", e.getMessage(), this.getClass().getSimpleName()));
-        }
-        sb.append('}');
-        return sb.toString();
     }
 }

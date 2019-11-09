@@ -8,6 +8,7 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.*;
+import java.text.MessageFormat;
 
 
 class MessageFileLocal implements MessageToUser {
@@ -113,7 +114,7 @@ class MessageFileLocal implements MessageToUser {
             jsonObject.set(titleMsg, bodyMsg);
         }
         catch (RuntimeException e) {
-            e.printStackTrace();
+            jsonObject.set("JSON Error", e.getClass().getSimpleName());
         }
         finally {
             try (OutputStream outputStream = new FileOutputStream(appLog, true);
@@ -121,7 +122,7 @@ class MessageFileLocal implements MessageToUser {
                 printStream.println(jsonObject.toString());
             }
             catch (IOException e) {
-                e.printStackTrace();
+                System.err.println(MessageFormat.format("{0}: {1} see line: 124 ***", MessageFileLocal.class.getSimpleName(), e.getMessage()));
             }
         }
     }

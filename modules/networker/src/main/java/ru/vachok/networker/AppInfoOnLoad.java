@@ -226,6 +226,9 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4, thisDelay, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(saveTHRTimes, 5, 5, TimeUnit.MINUTES);
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
+            .scheduleWithFixedDelay(new AppComponents().pcNamesScanner(), 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
+    
         getMiniLogger().add(thrConfig.toString());
         this.startIntervalTasks();
     }

@@ -46,9 +46,9 @@ public class PcNamesScannerTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
     
-    private PcNamesScanner pcNamesScanner;
+    private static final PcNamesScannerWorks PC_SCANNER = new PcNamesScannerWorks();
     
-    private NetScanCtr netScanCtr = new NetScanCtr();
+    private NetScanCtr netScanCtr;
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
     
@@ -72,12 +72,12 @@ public class PcNamesScannerTest {
     
     @BeforeMethod
     public void initScan() {
-        this.pcNamesScanner = new PcNamesScanner(netScanCtr);
+        this.netScanCtr = new NetScanCtr(PC_SCANNER);
     }
     
     @Test
     public void testToString() {
-        String toStr = pcNamesScanner.toString();
+        String toStr = PC_SCANNER.toString();
         Assert.assertTrue(toStr.contains("startClassTime"), toStr);
         Assert.assertTrue(toStr.contains("lastScanStamp"), toStr);
         Assert.assertTrue(toStr.contains("nextScanStamp"), toStr);
@@ -160,9 +160,9 @@ public class PcNamesScannerTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        pcNamesScanner.setModel(new ExtendedModelMap());
-        pcNamesScanner.setRequest(new MockHttpServletRequest());
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->pcNamesScanner.checkTime());
+        PC_SCANNER.setModel(new ExtendedModelMap());
+        PC_SCANNER.setRequest(new MockHttpServletRequest());
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->PC_SCANNER.checkTime());
         try {
             submit.get(20, TimeUnit.SECONDS);
         }
@@ -174,8 +174,8 @@ public class PcNamesScannerTest {
     
     @Test
     public void testGetMonitoringRunnable() {
-        Runnable runnable = pcNamesScanner.getMonitoringRunnable();
-        Assert.assertEquals(runnable, pcNamesScanner);
+        Runnable runnable = PC_SCANNER.getMonitoringRunnable();
+        Assert.assertEquals(runnable, PC_SCANNER);
         String runToStr = runnable.toString();
         Assert.assertTrue(runToStr.contains("{\"startClassTime\":"), runToStr);
     }
@@ -183,7 +183,7 @@ public class PcNamesScannerTest {
     @Test
     public void testOnePrefixSET() {
         NetKeeper.getPcNamesForSendToDatabase().clear();
-        Set<String> notdScanned = pcNamesScanner.onePrefixSET("dotd");
+        Set<String> notdScanned = PC_SCANNER.onePrefixSET("dotd");
         Assert.assertTrue(notdScanned.size() > 3);
         String setStr = AbstractForms.fromArray(notdScanned);
         Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
@@ -236,7 +236,7 @@ public class PcNamesScannerTest {
     @Test
     public void testRun() {
         try {
-            Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(pcNamesScanner);
+            Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(PC_SCANNER);
             Assert.assertNull(submit.get(20, TimeUnit.SECONDS));
         }
         catch (RuntimeException | ExecutionException | TimeoutException e) {
@@ -251,13 +251,13 @@ public class PcNamesScannerTest {
     
     @Test
     public void testGetExecution() {
-        String scannerExecution = pcNamesScanner.getExecution();
+        String scannerExecution = PC_SCANNER.getExecution();
         Assert.assertTrue(scannerExecution.contains("<p>"));
     }
     
     @Test
     public void testGetPingResultStr() {
-        String resultStr = pcNamesScanner.getPingResultStr();
+        String resultStr = PC_SCANNER.getPingResultStr();
         Assert.assertTrue(resultStr.contains("<p>"));
     }
     
@@ -267,7 +267,7 @@ public class PcNamesScannerTest {
         if (logFile.exists()) {
             Assert.assertTrue(logFile.delete());
         }
-        String writeLogStr = pcNamesScanner.writeLog();
+        String writeLogStr = PC_SCANNER.writeLog();
         Assert.assertEquals(logFile.getAbsolutePath(), writeLogStr);
         Assert.assertTrue(logFile.exists());
         logFile.deleteOnExit();
@@ -302,7 +302,7 @@ public class PcNamesScannerTest {
     
     @Test
     public void testGetStatistics() {
-        String statistics = pcNamesScanner.getStatistics();
+        String statistics = PC_SCANNER.getStatistics();
         System.out.println("statistics = " + statistics);
     }
     

@@ -51,14 +51,7 @@ public class IntoApplication {
     
     private static Properties localCopyProperties = AppComponents.getProps();
     
-    private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
-    
-    
-    static {
-        if (!configurableApplicationContext.isRunning()) {
-            configurableApplicationContext.refresh();
-        }
-    }
+    private static ConfigurableApplicationContext configurableApplicationContext;
     
     
     @Contract(pure = true)
@@ -77,7 +70,7 @@ public class IntoApplication {
             IntoApplication.ArgsReader.run();
         }
         else {
-            startApp();
+            checkTray();
         }
     }
     
@@ -89,21 +82,8 @@ public class IntoApplication {
         FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
     }
     
-    private static void startApp() {
-        try {
-            checkTray();
-        }
-        finally {
-            if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
-                MESSAGE_LOCAL.error(IntoApplication.class.getSimpleName(), "Start context failed!", configurableApplicationContext.getClass().getSimpleName());
-            }
-            else {
-                appInfoStarter();
-            }
-        }
-    }
-    
     private static void checkTray() {
+        SPRING_APPLICATION.run(IntoApplication.class);
         Optional optionalTray = SystemTrayHelper.getI();
         try {
             if (IS_TRAY_SUPPORTED && optionalTray.isPresent()) {
@@ -113,6 +93,9 @@ public class IntoApplication {
         catch (HeadlessException e) {
             MESSAGE_LOCAL.error(MessageFormat
                     .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms.fromArray(e)));
+        }
+        finally {
+            appInfoStarter();
         }
     }
     
@@ -223,7 +206,7 @@ public class IntoApplication {
         private static void readArgs() {
             setUTF8Enc();
             try {
-                startApp();
+                checkTray();
             }
             catch (IllegalStateException e) {
                 messageToUser.error(MessageFormat.format("ArgsReader.readArgs: {0}, ({1})", e.getMessage(), e.getClass().getName()));

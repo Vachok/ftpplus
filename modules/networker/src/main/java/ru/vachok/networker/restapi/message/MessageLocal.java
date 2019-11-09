@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.NetworkerStopException;
 
 import java.text.MessageFormat;
 import java.util.Objects;
@@ -98,36 +99,57 @@ public class MessageLocal implements MessageToUser {
         infoNoTitles(this.bodyMsg);
     }
     
-    private Logger log(@NotNull String typeLog) {
+    public void loggerFine(String bodyMsg) {
+        Logger logger = LoggerFactory.getLogger(bodyMsg);
+        logger.debug(bodyMsg);
+    }
+    
+    private void log(@NotNull String typeLog) {
         Thread.currentThread().setName(Objects.requireNonNull(headerMsg, ()->this.getClass().getSimpleName() + " SET HEADER!"));
-        int logLevel = Integer.parseInt(AppComponents.getProps().getProperty("loglevel", String.valueOf(1)));
+        
         Logger logger = LoggerFactory.getLogger(headerMsg);
         String msg;
         if (typeLog.equals("warn")) {
             msg = MessageFormat.format("|||{0}: {1} , {2} |||", headerMsg, titleMsg, bodyMsg);
             logger.warn(msg);
-            if (logLevel == 2) {
-                MessageToUser.getInstance(MessageToUser.FILE, headerMsg).warn(headerMsg, titleMsg, bodyMsg);
-            }
         }
         if (typeLog.equals("info")) {
             msg = MessageFormat.format("{0} : {1}", titleMsg, bodyMsg);
             logger.info(msg);
-            if (logLevel == 3) {
-                MessageToUser.getInstance(MessageToUser.FILE, headerMsg).error(headerMsg, titleMsg, bodyMsg);
-            }
         }
         if (typeLog.equals("err")) {
             msg = MessageFormat.format("!*** {0} ERROR. {1}, used {0}, but : {2} ***!", headerMsg, titleMsg, bodyMsg);
             logger.error(msg);
-            MessageToUser.getInstance(MessageToUser.FILE, headerMsg).error(headerMsg, titleMsg, bodyMsg);
+    
         }
-        return logger;
+        try {
+            writeToFile(typeLog);
+        }
+        catch (NetworkerStopException e) {
+            System.err.println("Log not written");
+        }
+        finally {
+        
+        }
     }
     
-    public void loggerFine(String bodyMsg) {
-        Logger fineLogger = log("");
-        fineLogger.debug(bodyMsg);
+    private void writeToFile(@NotNull String typeLog) throws NetworkerStopException {
+        String[] messages = {bodyMsg, titleMsg, headerMsg};
+        for (String s : messages) {
+            if (s == null) {
+                throw new NetworkerStopException(getClass().getSimpleName(), "writeToFile", 133);
+            }
+        }
+        int logLevel = Integer.parseInt(AppComponents.getProps().getProperty("loglevel", String.valueOf(1)));
+        switch (typeLog) {
+            case "err":
+                MessageToUser.getInstance(MessageToUser.FILE, headerMsg).errorAlert(headerMsg, titleMsg, bodyMsg);
+            case "warn":
+                MessageToUser.getInstance(MessageToUser.FILE, headerMsg).warning(headerMsg, titleMsg, bodyMsg);
+        }
+        if (logLevel > 1 & typeLog.equalsIgnoreCase("info")) {
+            MessageToUser.getInstance(MessageToUser.FILE, headerMsg).error(headerMsg, titleMsg, bodyMsg);
+        }
     }
     
     @Override

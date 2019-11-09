@@ -91,12 +91,10 @@ public abstract class UsefulUtilities {
             delay = ConstantsFor.MIN_DELAY;
         }
         if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")) | thisPC().toLowerCase()
-            .contains(OtherKnownDevices.HOSTNAME_HOME) | thisPC().contains("-h")) {
-            return Long.parseLong(AppComponents.getProps().getProperty("mindelay", String.valueOf(1)));
+            .contains(OtherKnownDevices.HOSTNAME_HOME) | thisPC().toLowerCase().contains("-h")) {
+            delay = Long.parseLong(AppComponents.getProps().getProperty("mindelay", String.valueOf(1)));
         }
-        else {
-            return delay;
-        }
+        return delay;
     }
     
     /**

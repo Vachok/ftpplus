@@ -346,7 +346,7 @@ public enum ConstantsFor {
     
     public static final String DB_VELKOMINETSTATS = "velkom.inetstats";
     
-    public static final int MIN_DELAY = 1;
+    public static final int MIN_DELAY = 17;
     
     public static final String SQL_GET_VELKOMPC_NAMEPP = "select * from velkompc where NamePP like ?";
     
