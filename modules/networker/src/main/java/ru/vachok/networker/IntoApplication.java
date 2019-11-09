@@ -185,7 +185,7 @@ public class IntoApplication {
                 localCopyProperties.setProperty(PropertiesNames.TOTPC, stringStringEntry.getValue());
             }
             if (stringStringEntry.getKey().equals("off")) {
-                AppComponents.threadConfig().execByThreadConfig(exitApp, "ArgsReader.parseMapEntry");
+                AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(exitApp);
             }
             if (stringStringEntry.getKey().contains("notray")) {
                 messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());

@@ -353,7 +353,7 @@ public class PcNamesScannerWorksTest extends PcNamesScanner {
             messageToUser.warn(this.getClass().getSimpleName(), FileNames.SCAN_TMP, String.valueOf(scanTask.fileScanTMPCreate(true)));
             this.scheduledFuture = taskScheduler
                 .scheduleAtFixedRate(scanTask, new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)), TimeUnit.MINUTES
-                    .toMillis(ConstantsFor.DELAY * 2));
+                    .toMillis(22));
             InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
             PROPS.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
             InitProperties.getInstance(InitProperties.FILE).setProps(PROPS);

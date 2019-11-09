@@ -13,7 +13,10 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -21,10 +24,15 @@ import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 
 /**
@@ -152,7 +160,8 @@ class PCOn extends PCInfo {
     
     @NotNull String pcNameWithHTMLLink() {
         String lastUserRaw = pcName + " : " + userLogin; // pcName : userName
-        AppComponents.threadConfig().execByThreadConfig(()->UserInfo.uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userLogin), "PCOn.pcNameWithHTMLLink");
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+            .execute(()->UserInfo.uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userLogin));
         String lastUser = new PageGenerationHelper().setColor("#00ff69", lastUserRaw);
         if (lastUser.contains(".err") || lastUser.contains(ConstantsFor.ISNTRESOLVED)) {
             lastUser = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, UserInfo.getInstance("ResolveUserInDataBase").getLogins(pcName, 1).get(0));

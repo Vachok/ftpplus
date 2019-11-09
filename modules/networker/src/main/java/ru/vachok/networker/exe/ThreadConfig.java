@@ -14,6 +14,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -222,7 +223,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         return execByThreadConfig(runnable, "test");
     }
     
-    public boolean execByThreadConfig(Runnable runnable, String threadName) {
+    private boolean execByThreadConfig(Runnable runnable, String threadName) {
         this.r = runnable;
         try {
             return execByThreadConfig(threadName);
@@ -230,6 +231,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         catch (RuntimeException e) {
             String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "ThreadConfig").error("ThreadConfig219", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(r);
             return false;
         }
     }

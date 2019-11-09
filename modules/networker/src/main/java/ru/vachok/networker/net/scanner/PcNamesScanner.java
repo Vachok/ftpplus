@@ -371,7 +371,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             closePrefix();
         }
         catch (InvokeIllegalException e) {
-            AppComponents.threadConfig().execByThreadConfig(NetScanService::writeUsersToDBFromSET, "PcNamesScanner.dbSend");
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((NetScanService::writeUsersToDBFromSET));
             String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
             messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 408 ***");
         }

@@ -244,7 +244,7 @@ public class PcNamesScannerWorks extends PcNamesScanner {
         }
         catch (InvokeIllegalException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".onePrefixSET", e));
-            AppComponents.threadConfig().execByThreadConfig(NetScanService::writeUsersToDBFromSET);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((NetScanService::writeUsersToDBFromSET));
             FileSystemWorker.writeFile("bad.scan", MessageFormat.format("{0}:\n{1}", e.getMessage(), AbstractForms.fromArray(e)));
         }
         
@@ -521,7 +521,7 @@ public class PcNamesScannerWorks extends PcNamesScanner {
             }
             String elapsedTime = ConstantsFor.ELAPSED + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             setToDB.add(elapsedTime);
-            AppComponents.threadConfig().execByThreadConfig(this::writeLog);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((this::writeLog));
         }
         
         @Override

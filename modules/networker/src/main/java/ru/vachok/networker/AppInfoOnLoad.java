@@ -79,14 +79,14 @@ public class AppInfoOnLoad implements Runnable {
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         String name = "AppInfoOnLoad.run";
-        thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider, name);
+        thrConfig.getTaskExecutor().getThreadPoolExecutor().execute(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
         setNextLast();
         SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
-        AppComponents.threadConfig().execByThreadConfig(syncData::superRun, name);
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(syncData::superRun);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-            AppComponents.threadConfig().execByThreadConfig(syncDataBcp::superRun, name);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(syncDataBcp::superRun);
         }
         try {
             getWeekPCStats();
@@ -110,7 +110,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private void delFilePatterns() {
         DeleterTemp deleterTemp = new DeleterTemp(UsefulUtilities.getPatternsToDeleteFilesOnStart());
-        thrConfig.execByThreadConfig(deleterTemp, "AppInfoOnLoad.delFilePatterns");
+        thrConfig.getTaskExecutor().getThreadPoolExecutor().execute(deleterTemp);
     }
     
     private void setNextLast() {
@@ -157,7 +157,7 @@ public class AppInfoOnLoad implements Runnable {
             Runnable runInfoForU = ()->FileSystemWorker
                     .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
             messageToUser.info(UsefulUtilities.getIISLogSize());
-            AppComponents.threadConfig().execByThreadConfig(runInfoForU, name);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runInfoForU);
         }
         catch (NullPointerException e) {
             messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -293,7 +293,7 @@ public class AppInfoOnLoad implements Runnable {
             taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         if (secondOfDayNow > 40000) {
-            thrConfig.execByThreadConfig(kudrWorkTime, "AppInfoOnLoad.kudrMonitoring");
+            thrConfig.getTaskExecutor().getThreadPoolExecutor().execute(kudrWorkTime);
         }
         messageToUser.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
     }

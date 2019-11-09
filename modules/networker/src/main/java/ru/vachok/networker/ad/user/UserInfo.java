@@ -67,7 +67,7 @@ public abstract class UserInfo implements InformationFactory {
     
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains(ConstantsFor.UNKNOWN_USER) | !lastFileUse.contains("not found")) {
-            AppComponents.threadConfig().execByThreadConfig(()->dbWriter.writeAutoresolvedUserToDB(pcName, lastFileUse), "UserInfo.autoResolvedUsersRecord");
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->dbWriter.writeAutoresolvedUserToDB(pcName, lastFileUse));
         }
         else {
             System.err.println(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));

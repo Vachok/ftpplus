@@ -17,7 +17,9 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -85,7 +87,7 @@ public class ActDirectoryCTRL {
         String queryStringIP = new NameOrIPChecker(queryString).resolveInetAddress().getHostAddress();
         InternetUse makeCSV = InternetUse.getInstance(queryStringIP);
         String fileName = queryString + ".csv";
-        AppComponents.threadConfig().execByThreadConfig(()->makeCSV.getInfoAbout(fileName), "makeCSV() - " + fileName);
+        AppComponents.threadConfig().getTaskExecutor().execute(()->makeCSV.getInfoAbout(fileName));
         
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
