@@ -62,7 +62,7 @@ public class IntoApplication {
             MESSAGE_LOCAL.info(UsefulUtilities.scheduleTrunkPcUserAuto());
         }
         if (args.length > 0) {
-            ArgsReader.run();
+            new ArgsReader(args).run();
         }
         else {
             checkTray();
@@ -103,16 +103,5 @@ public class IntoApplication {
     public String toString() {
         return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
                 .toString();
-    }
-    
-    protected static void closeContext() {
-        configurableApplicationContext.stop();
-        configurableApplicationContext.close();
-        if (configurableApplicationContext.isActive()) {
-            configurableApplicationContext.refresh();
-        }
-        else {
-            MESSAGE_LOCAL.info("AppComponents.threadConfig().killAll()");
-        }
     }
 }

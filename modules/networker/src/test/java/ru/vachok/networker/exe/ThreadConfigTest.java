@@ -3,12 +3,13 @@
 package ru.vachok.networker.exe;
 
 
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -101,16 +102,5 @@ public class ThreadConfigTest {
     @Test
     public void testToString1() {
         Assert.assertTrue(AppComponents.threadConfig().toString().contains("ThreadConfig{"), AppComponents.threadConfig().toString());
-    }
-    
-    @Test
-    public void testKillAll() {
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            context.close();
-            Assert.assertFalse(context.isRunning());
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
     }
 }

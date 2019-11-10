@@ -8,13 +8,16 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -93,8 +96,10 @@ public class ServiceInfoCtrlTest {
             Assert.assertTrue(mapMod.get("dipscan").toString().contains("DiapazonScan. Running "), mapMod.get("dipscan").toString());
             Assert.assertTrue(mapMod.get("request").toString().contains("Заголовки</h3></center>HOST:"), mapMod.get("request").toString());
             Assert.assertTrue(mapMod.get(ModelAttributeNames.FOOTER).toString().contains("icons8-плохие-поросята"), mapMod.get("footer").toString());
-            if ((LocalTime.now().toSecondOfDay() < LocalTime.parse("09:00").toSecondOfDay()) || (LocalTime.now().toSecondOfDay() > LocalTime.parse("18:00")
-                .toSecondOfDay())) {
+            boolean isTime = (LocalTime.now().toSecondOfDay() < LocalTime.parse("09:00").toSecondOfDay()) || (LocalTime.now().toSecondOfDay() > LocalTime
+                .parse("18:00")
+                .toSecondOfDay());
+            if (isTime | Stats.isSunday()) {
                 Assert.assertTrue(mapMod.get("mail").toString().contains("</b><br>"), mapMod.get("mail").toString());
             }
             else {

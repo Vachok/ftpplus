@@ -17,7 +17,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  @since 19.07.2019 (9:51) */
-class ArgsReader {
+class ArgsReader implements Runnable {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ArgsReader.class.getSimpleName());
@@ -30,7 +30,8 @@ class ArgsReader {
         this.appArgs = appArgs;
     }
     
-    public static void run() {
+    @Override
+    public void run() {
         fillArgsMap();
     }
     
