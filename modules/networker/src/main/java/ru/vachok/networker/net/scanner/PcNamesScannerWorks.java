@@ -65,8 +65,6 @@ public class PcNamesScannerWorks extends PcNamesScanner {
     
     private static final File fileTmp = new File(FileNames.SCAN_TMP);
     
-    protected static final String SCANNER = "PcNamesScanner1111{";
-    
     private static List<String> logMini = new ArrayList<>();
     
     private String thePc = "";
@@ -144,7 +142,7 @@ public class PcNamesScannerWorks extends PcNamesScanner {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(SCANNER);
+        final StringBuilder sb = new StringBuilder();
         try {
             sb.append("thePc='").append(thePc).append('\'');
             sb.append(", lastScanStamp=").append(new Date(Long.parseLong(InitProperties.getUserPref().get(PropertiesNames.LASTSCAN, String

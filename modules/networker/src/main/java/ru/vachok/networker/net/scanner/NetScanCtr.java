@@ -19,6 +19,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -51,7 +52,7 @@ public class NetScanCtr {
     
     @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScanner pcNamesScanner;
     
-    @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScannerWorks pcNamesScannerOld;
+    private NetScanService pcNamesScannerOld = new PcNamesScannerWorks();
     
     private HttpServletRequest request;
     
@@ -61,6 +62,10 @@ public class NetScanCtr {
     
     public HttpServletResponse getResponse() {
         return response;
+    }
+    
+    public void setResponse(HttpServletResponse response) {
+        this.response = response;
     }
     
     HttpServletRequest getRequest() {
@@ -79,15 +84,10 @@ public class NetScanCtr {
         this.model = model;
     }
     
-    public void setResponse(HttpServletResponse response) {
-        this.response = response;
-    }
-    
     @Contract(pure = true)
     @Autowired
     public NetScanCtr(PcNamesScanner pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
-        this.pcNamesScannerOld = new PcNamesScannerWorks();
     }
     
     /**
@@ -117,12 +117,8 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.BEANNAME_NETSCANNERSVC, pcNamesScanner);
         model.addAttribute(ModelAttributeNames.THEPC, thePCVal);
         model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", this.toString(), footerVal));
-        
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
-    
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-            .scheduleWithFixedDelay(pcNamesScanner, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
-    
+        starterNetScan();
         return ModelAttributeNames.NETSCAN;
     }
     
@@ -142,12 +138,13 @@ public class NetScanCtr {
     /**
      @see NetScanCtrTest#testStarterNetScan()
      */
-    public void starterNetScan() {
+    void starterNetScan() {
         Date nextStart = new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, System.currentTimeMillis()));
-        if (System.currentTimeMillis() > nextStart.getTime() & !file.exists()) {
+        if (!file.exists()) {
             PcNamesScanner.fileScanTMPCreate(true);
             messageToUser.warn(this.getClass().getSimpleName(), file.getAbsolutePath(), MessageFormat
                 .format("{0} nextStart. pcNamesScanner with hash {1} next run.", nextStart.toString(), this.pcNamesScanner.hashCode()));
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(pcNamesScanner);
         }
         else {
             String bodyMsg = MessageFormat

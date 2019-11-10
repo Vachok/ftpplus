@@ -34,7 +34,10 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
@@ -245,7 +248,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
         try {
             noFileExists();
         }
-        catch (ConcurrentModificationException | ExecutionException | TimeoutException e) {
+        catch (ConcurrentModificationException e) {
             messageToUser.error("PcNamesScanner.catchingConcurencyException", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         finally {
@@ -253,22 +256,20 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
         }
     }
     
-    private void noFileExists() throws ExecutionException, TimeoutException {
+    private void noFileExists() {
         Thread.currentThread().setName(thePc);
-        this.scanThread = new Thread(new PcNamesScanner.ScannerUSR());
         InitProperties.getTheProps().setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
         InitProperties.getInstance(InitProperties.FILE).setProps(InitProperties.getTheProps());
         InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-        scanThread.start();
+        new ScannerUSR().run();
         messageToUser.info(this.getClass().getSimpleName(), scanThread.getName(), scanThread.getState().name());
         defineNewTask();
     }
     
     private void defineNewTask() {
         setPrefProps();
-        this.scanThread = new Thread(new PcNamesScanner.ScannerUSR());
-        boolean timeAndFileOk = (System.currentTimeMillis() > nextScanStamp & fileScanTMPCreate(false));
-        if (!scanThread.isAlive() && timeAndFileOk) {
+        boolean timeAndFileOk = (System.currentTimeMillis() > nextScanStamp);
+        if (!new File(FileNames.SCAN_TMP).exists() & timeAndFileOk) {
             classOption.starterNetScan();
         }
         else {
@@ -297,8 +298,6 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
     /**
      @param createNewFile true, if need new file
      @return true, if create<br>or<br>true if delete, with parameter.
-     
-     @see PcNamesScannerTest#testFileScanTMPCreate()
      */
     static boolean fileScanTMPCreate(boolean createNewFile) {
         boolean retBool = scanFile.exists();
@@ -431,13 +430,10 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
      */
     private void closePrefix() {
         boolean bigDBWritten = NetScanService.writeUsersToDBFromSET();
-        if (bigDBWritten) {
-            NetKeeper.getPcNamesForSendToDatabase().clear();
-            messageToUser.info(this.getClass().getSimpleName(), "NetKeeper.getPcNamesForSendToDatabase()", "CLEARED");
-        }
-        else {
-            throw new InvokeIllegalException(this.getClass().getSimpleName() + " ERR to write: NetKeeper.getPcNamesForSendToDatabase");
-        }
+        NetKeeper.getPcNamesForSendToDatabase().clear();
+        File file = new File(FileNames.SCAN_TMP);
+        messageToUser.info(this.getClass().getSimpleName(), "NetKeeper.getPcNamesForSendToDatabase cleared", String.valueOf(bigDBWritten));
+        messageToUser.info(this.getClass().getSimpleName(), file.getAbsolutePath(), String.valueOf(fileScanTMPCreate(false)));
     }
     
     private class ScannerUSR implements NetScanService {
@@ -450,7 +446,6 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
                 scanIt();
             }
             catch (RuntimeException e) {
-                String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
                 messageToUser.error("ScannerUSR.run", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
             }
             finally {
