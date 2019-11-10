@@ -24,6 +24,8 @@ import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -134,6 +136,24 @@ public class ExitApp extends Thread implements Externalizable {
     public void run() {
         VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         miniLoggerLast.add(reasonExit);
+        synchronizePrefProps();
+    }
+    
+    private void synchronizePrefProps() {
+        Preferences userPref = InitProperties.getUserPref();
+        Properties props = AppComponents.getProps();
+        try {
+            String[] keys = userPref.keys();
+            for (String key : keys) {
+                props.put(key, userPref.get(key, key));
+            }
+            for (Object o : props.keySet()) {
+                InitProperties.setPreference(o.toString(), props.get(o).toString());
+            }
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(ExitApp.class.getSimpleName(), e.getMessage(), " see line: 149 ***");
+        }
         copyAvail();
     }
     
@@ -156,7 +176,6 @@ public class ExitApp extends Thread implements Externalizable {
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(FileNames.PING_TV);
-        
         FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
                 .append(".")
                 .append(ConstantsFor.FILESYSTEM_SEPARATOR)
@@ -189,7 +208,8 @@ public class ExitApp extends Thread implements Externalizable {
      <p>
      Запуск {@link #exitAppDO()}
      */
-    private void writeObj() {
+    private void
+    writeObj() {
         if (toWriteObj != null) {
             miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
             try (ObjectOutput objectOutput = new ObjectOutputStream(outFileStream)) {

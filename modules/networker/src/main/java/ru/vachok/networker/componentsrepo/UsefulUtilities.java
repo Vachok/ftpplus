@@ -298,6 +298,10 @@ public abstract class UsefulUtilities {
         return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
     
+    public static int getLogLevel() {
+        return InitProperties.getUserPref().getInt("loglevel", ConstantsFor.LOGLEVEL);
+    }
+    
     /**
      Очистка pcuserauto
      */

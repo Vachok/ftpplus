@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.NetworkerStopException;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 
 import java.text.MessageFormat;
 import java.util.Objects;
@@ -128,11 +128,13 @@ public class MessageLocal implements MessageToUser {
         catch (NetworkerStopException e) {
             System.err.println("Log not written");
         }
-        finally {
-        
-        }
     }
     
+    /**
+     @param typeLog info, warn or err
+     @throws NetworkerStopException if some message is null
+     @see MessageLocalTest#testWrireLogToFile()
+     */
     private void writeToFile(@NotNull String typeLog) throws NetworkerStopException {
         String[] messages = {bodyMsg, titleMsg, headerMsg};
         for (String s : messages) {
@@ -140,14 +142,14 @@ public class MessageLocal implements MessageToUser {
                 throw new NetworkerStopException(getClass().getSimpleName(), "writeToFile", 133);
             }
         }
-        int logLevel = Integer.parseInt(AppComponents.getProps().getProperty("loglevel", String.valueOf(1)));
+        
         switch (typeLog) {
             case "err":
                 MessageToUser.getInstance(MessageToUser.FILE, headerMsg).errorAlert(headerMsg, titleMsg, bodyMsg);
             case "warn":
                 MessageToUser.getInstance(MessageToUser.FILE, headerMsg).warning(headerMsg, titleMsg, bodyMsg);
         }
-        if (logLevel > 1 & typeLog.equalsIgnoreCase("info")) {
+        if (UsefulUtilities.getLogLevel() > 1 & typeLog.equalsIgnoreCase("info")) {
             MessageToUser.getInstance(MessageToUser.FILE, headerMsg).error(headerMsg, titleMsg, bodyMsg);
         }
     }

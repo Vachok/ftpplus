@@ -5,9 +5,12 @@ package ru.vachok.networker;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.networker.ad.common.RightsChecker;
+import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -183,7 +186,14 @@ public class AppInfoOnLoad implements Runnable {
         thrConfig.getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         getMiniLogger().add(nextStartDay + " MailIISLogsCleaner() start\n");
         AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-            .scheduleWithFixedDelay(AppInfoOnLoad::dbSendFile, 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
+            .scheduleWithFixedDelay(()->{
+                try {
+                    dbSendAppJson();
+                }
+                catch (NetworkerStopException e) {
+                    messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 194 ***");
+                }
+            }, 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
         
     }
     
@@ -250,30 +260,43 @@ public class AppInfoOnLoad implements Runnable {
         getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
     }
     
-    private static void dbSendFile() {
+    private static void dbSendAppJson() throws NetworkerStopException {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         dataConnectTo.createTable(ConstantsFor.DBNAME_LOG_DBMESSENGER, Collections.emptyList());
+        Path path = Paths.get(FileNames.APP_JSON);
         final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `upstring`, `json`) VALUES (?, ?, ?)";
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_LOG_DBMESSENGER);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            Path path = Paths.get(FileNames.APP_JSON);
-            Queue<String> logJson = FileSystemWorker.readFileToQueue(path);
-            while (!logJson.isEmpty()) {
-                String jsonStr = logJson.remove();
-                if (!jsonStr.isEmpty()) {
-                    JsonObject jsonObject = Json.parse(jsonStr).asObject();
-                    preparedStatement.setTimestamp(1, Timestamp
-                        .valueOf(LocalDateTime.ofEpochSecond((jsonObject.getLong(PropertiesNames.TIMESTAMP, 0) / 1000), 0, ZoneOffset.ofHours(3))));
-                    preparedStatement.setString(2, UsefulUtilities.thisPC());
-                    preparedStatement.setString(3, jsonObject.toString());
-                    preparedStatement.executeUpdate();
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_LOG_DBMESSENGER)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                Queue<String> logJson;
+                if (path.toFile().exists()) {
+                    logJson = FileSystemWorker.readFileToQueue(path);
                 }
-                
+                else {
+                    throw new NetworkerStopException(AppInfoOnLoad.class.getSimpleName(), "dbSendAppJson", 275);
+                }
+                while (!logJson.isEmpty()) {
+                    executeStatement(preparedStatement, logJson);
+                }
+                Files.deleteIfExists(path);
             }
-            Files.deleteIfExists(path);
         }
         catch (SQLException | IOException e) {
             System.err.println(MessageFormat.format("{0}, message: {1}. See line: 176 ***", DBMessenger.class.getSimpleName(), e.getMessage()));
+        }
+    }
+    
+    private static void executeStatement(@NotNull PreparedStatement preparedStatement, Queue<String> logJson) throws SQLException {
+        String jsonStr = logJson.remove();
+        try {
+            JsonObject jsonObject = Json.parse(jsonStr).asObject();
+            preparedStatement.setTimestamp(1, Timestamp
+                .valueOf(LocalDateTime.ofEpochSecond((jsonObject.getLong(PropertiesNames.TIMESTAMP, 0) / 1000), 0, ZoneOffset.ofHours(3))));
+            preparedStatement.setString(2, UsefulUtilities.thisPC());
+            preparedStatement.setString(3, jsonObject.toString());
+            preparedStatement.executeUpdate();
+        }
+        catch (ParseException e) {
+            messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 282 ***");
         }
     }
     

@@ -463,6 +463,8 @@ public enum ConstantsFor {
     
     public static final String DB_FIELD_WHENQUERIED = "whenQueried";
     
+    public static final int LOGLEVEL = 1;
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final String DB_SEARCHPERMANENT = "search.permanent";
