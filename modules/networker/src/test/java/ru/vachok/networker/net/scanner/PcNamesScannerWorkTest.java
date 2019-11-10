@@ -47,7 +47,7 @@ public class PcNamesScannerWorkTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerWorkTest.class.getSimpleName(), System
         .nanoTime());
     
-    private static final PcNamesScannerWorks PC_SCANNER = new PcNamesScannerWorks();
+    private static final PcNamesScanner PC_SCANNER = new PcNamesScanner();
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
     
@@ -75,6 +75,7 @@ public class PcNamesScannerWorkTest {
     @BeforeMethod
     public void initScan() {
         this.netScanCtr = new NetScanCtr(PC_SCANNER);
+        PC_SCANNER.setClassOption(netScanCtr);
     }
     
     @Test

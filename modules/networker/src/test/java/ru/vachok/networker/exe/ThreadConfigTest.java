@@ -68,12 +68,16 @@ public class ThreadConfigTest {
     public void testExecByThreadConfig() {
         File file = new File(this.getClass().getSimpleName());
         ThreadConfig threadConfig = ThreadConfig.getI();
-        boolean execByThreadConfig = threadConfig.execByThreadConfig(()->FileSystemWorker.writeFile(file.getAbsolutePath(), threadConfig.toString()));
+        Runnable runnable = ()->FileSystemWorker.writeFile(file.getAbsolutePath(), threadConfig.toString());
+        boolean b = threadConfig.execByThreadConfig(runnable);
+        Assert.assertTrue(b);
         try {
             Thread.sleep(400);
         }
         catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
         finally {
             Assert.assertTrue(file.exists());

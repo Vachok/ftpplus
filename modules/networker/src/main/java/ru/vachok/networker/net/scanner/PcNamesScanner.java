@@ -7,6 +7,7 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
@@ -42,6 +43,7 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
  @see ru.vachok.networker.net.scanner.PcNamesScannerTest
  @since 21.08.2018 (14:40) */
 @SuppressWarnings("WeakerAccess")
+@Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
 @EnableAsync(proxyTargetClass = true)
 public class PcNamesScanner extends TimerTask implements NetScanService {

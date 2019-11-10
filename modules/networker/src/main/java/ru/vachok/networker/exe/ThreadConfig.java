@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -14,12 +15,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -223,15 +225,13 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         return execByThreadConfig(runnable, "test");
     }
     
-    private boolean execByThreadConfig(Runnable runnable, String threadName) {
+    private boolean execByThreadConfig(Runnable runnable, @SuppressWarnings("SameParameterValue") String threadName) {
         this.r = runnable;
         try {
             return execByThreadConfig(threadName);
         }
         catch (RuntimeException e) {
-            String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
-            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "ThreadConfig").error("ThreadConfig219", title, AbstractForms.exceptionNetworker(e.getStackTrace()));
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(r);
+            messageToUser.error("ThreadConfig.execByThreadConfig", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
             return false;
         }
     }
@@ -244,20 +244,39 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     private boolean execByThreadConfig(String thName) {
         SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
         Thread newThread = new Thread();
+        boolean retBool = false;
         try {
+            newThread = new Thread(r);
             newThread.setName(thName);
-            simpleAsyncExecutor.execute(newThread);
+            Future<?> submit = simpleAsyncExecutor.submit(newThread);
+            Object oGet = submit.get(ConstantsFor.DELAY, TimeUnit.MINUTES);
+            retBool = (oGet == null);
         }
-        catch (RuntimeException e) {
-            messageToUser.error(MessageFormat.format("ThreadConfig.execByThreadConfig", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
-            newThread.setUncaughtExceptionHandler(new BadRunHandler(newThread));
-            TASK_EXECUTOR.execute(newThread);
+        catch (InterruptedException e) {
+            newThread.checkAccess();
+            newThread.interrupt();
+            messageToUser.error(ThreadConfig.class.getSimpleName(), e.getMessage(), " see line: 256 ***");
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(ThreadConfig.class.getSimpleName(), e.getMessage(), " see line: 259 ***");
         }
         finally {
-            messageToUser.info(this.getClass().getSimpleName(), newThread.getName(), newThread.getState().name());
+            FileSystemWorker.appendObjectToFile(new File(FileNames.APP_JSON), getTrheadInfo(newThread));
         }
-        return newThread.isAlive();
+        return retBool;
     
+    }
+    
+    @Contract(pure = true)
+    private @NotNull JsonObject getTrheadInfo(@NotNull Thread thread) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.set(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+        jsonObject.set("threadName", thread.getName());
+        jsonObject.set("id", thread.getId());
+        jsonObject.set("prio", thread.getPriority());
+        jsonObject.set("state", thread.getState().name());
+        jsonObject.set("tostring", thread.toString());
+        return jsonObject;
     }
     
     @Override
@@ -277,7 +296,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      @since <a href="https://github.com/Vachok/ftpplus/commit/f40030246ec6f28cc9c484b9c56a3879da1162af" target=_blank>21.02.2019 (22:49)</a>
      */
     private class ASExec extends AsyncConfigurerSupport {
-        
         
         private SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor("A");
         
@@ -300,32 +318,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         public String toString() {
             boolean throttleActive = simpleAsyncExecutor.isThrottleActive();
             return throttleActive + " throttleActive. Concurrency limit : " + simpleAsyncExecutor.getConcurrencyLimit();
-        }
-    }
-    
-    
-    
-    private class BadRunHandler implements Thread.UncaughtExceptionHandler {
-        
-        
-        private Thread thread;
-        
-        @Contract(pure = true)
-        BadRunHandler(Thread thread) {
-            this.thread = thread;
-        }
-        
-        @Override
-        public void uncaughtException(Thread t, Throwable e) {
-            messageToUser.error(this.getClass().getSimpleName(), thread.getName(), AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
-        }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("BadRunHandler{");
-            sb.append("thread=").append(thread);
-            sb.append('}');
-            return sb.toString();
         }
     }
 }

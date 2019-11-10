@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
@@ -44,12 +43,8 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 /**
  @since 21.08.2018 (14:40) */
 @SuppressWarnings("WeakerAccess")
-@Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
 public class PcNamesScannerWorks extends PcNamesScanner {
-    
-    
-    public static final String REMOVE = " remove ";
     
     /**
      {@link ConstantsFor#DELAY}

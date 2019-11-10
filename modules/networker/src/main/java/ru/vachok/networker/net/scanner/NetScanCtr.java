@@ -49,7 +49,9 @@ public class NetScanCtr {
     
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetScanCtr.class.getSimpleName());
     
-    @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScannerWorks pcNamesScanner;
+    @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScanner pcNamesScanner;
+    
+    @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScannerWorks pcNamesScannerOld;
     
     private HttpServletRequest request;
     
@@ -83,8 +85,9 @@ public class NetScanCtr {
     
     @Contract(pure = true)
     @Autowired
-    public NetScanCtr(PcNamesScannerWorks pcNamesScanner) {
+    public NetScanCtr(PcNamesScanner pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
+        this.pcNamesScannerOld = new PcNamesScannerWorks();
     }
     
     /**
@@ -92,7 +95,7 @@ public class NetScanCtr {
      */
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model, @NotNull @ModelAttribute
-        PcNamesScannerWorks pcNamesScanner) {
+        PcNamesScanner pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
         this.request = request;
         this.response = response;
