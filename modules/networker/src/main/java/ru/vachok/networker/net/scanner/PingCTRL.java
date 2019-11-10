@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
@@ -25,6 +24,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.PingerFromFile;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +42,7 @@ public class PingCTRL {
     
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
-    private static final Properties PROPERTIES = AppComponents.getProps();
+    private static final Properties PROPERTIES = InitProperties.getTheProps();
     
     private NetScanService netPingerInst;
     

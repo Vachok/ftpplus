@@ -204,7 +204,7 @@ class PCOn extends PCInfo {
         int onlinePC = InitProperties.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        InitProperties.getTheProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
         return onlinePC;
     }
     

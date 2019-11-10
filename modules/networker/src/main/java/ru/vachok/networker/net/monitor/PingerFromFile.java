@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -19,6 +18,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,11 +62,11 @@ public class PingerFromFile implements NetScanService {
     /**
      Таймаут метода {@link #pingSW()}.
      <p>
-     Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
+     Берётся из {@link InitProperties#getTheProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
  
      @see PropertiesNames#PINGSLEEP
      */
-    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PINGSLEEP, "20"));
+    private long pingSleepMsec = Long.parseLong(InitProperties.getTheProps().getProperty(PropertiesNames.PINGSLEEP, "20"));
     
     /**
      {@link MessageLocal}. Вывод сообщений
@@ -211,7 +211,7 @@ public class PingerFromFile implements NetScanService {
     }
     
     private void pingSW() {
-        Properties properties = AppComponents.getProps();
+        Properties properties = InitProperties.getTheProps();
         this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PINGSLEEP, String.valueOf(pingSleepMsec)));
         for (InetAddress inetAddress : ipAsList) {
             try {

@@ -120,10 +120,10 @@ public class AppInfoOnLoad implements Runnable {
         String nextLast = String.valueOf(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         
         InitProperties.setPreference(PropertiesNames.LASTSCAN, nextLast);
-        AppComponents.getProps().setProperty(PropertiesNames.LASTSCAN, nextLast);
+        InitProperties.getTheProps().setProperty(PropertiesNames.LASTSCAN, nextLast);
         
         InitProperties.setPreference(PropertiesNames.NEXTSCAN, nextLast);
-        AppComponents.getProps().setProperty(PropertiesNames.NEXTSCAN, nextLast);
+        InitProperties.getTheProps().setProperty(PropertiesNames.NEXTSCAN, nextLast);
         
         showInConsole();
     }

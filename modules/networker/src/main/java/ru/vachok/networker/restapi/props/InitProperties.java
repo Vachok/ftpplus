@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.MessageFormat;
+import java.util.Properties;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -33,6 +34,28 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     String DB_LOCAL = "srv-inetstat";
     
     String TEST = "test";
+    
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    static @NotNull Properties getTheProps() {
+        @NotNull Properties result = PropsHelper.getAppPr();
+        
+        boolean isSmallSize = result.size() < 9;
+        if (isSmallSize) {
+            new PropsHelper().loadPropsFromDB();
+            isSmallSize = result.size() < 9;
+            if (isSmallSize) {
+                result.putAll(new DBPropsCallable().call());
+                isSmallSize = result.size() < 9;
+            }
+            if (!isSmallSize) {
+                getInstance(FILE).setProps(result);
+            }
+            else {
+                System.err.println(MessageFormat.format("{0}. APP_PR getter. line 135 size = {1} !!!", InitProperties.class.getSimpleName(), result.size()));
+            }
+        }
+        return result;
+    }
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
@@ -56,7 +79,7 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
             userPref.sync();
         }
         catch (BackingStoreException e) {
-            System.err.println(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            System.err.println(MessageFormat.format("setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     
@@ -85,7 +108,7 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
             prefsNeededNode.sync();
         }
         catch (BackingStoreException e) {
-            System.err.println(MessageFormat.format("AppComponents.getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            System.err.println(MessageFormat.format("getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return prefsNeededNode;
     }

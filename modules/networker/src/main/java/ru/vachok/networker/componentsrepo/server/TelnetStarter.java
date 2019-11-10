@@ -3,8 +3,8 @@
 package ru.vachok.networker.componentsrepo.server;
 
 
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.util.StringJoiner;
 
@@ -30,7 +30,7 @@ public class TelnetStarter implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setName("TELNET");
-        int lPort = Integer.parseInt(AppComponents.getProps().getProperty(TelnetServer.PR_LPORT, "9990"));
+        int lPort = Integer.parseInt(InitProperties.getTheProps().getProperty(TelnetServer.PR_LPORT, "9990"));
         if (telnetPort > 0) {
             lPort = telnetPort;
         }

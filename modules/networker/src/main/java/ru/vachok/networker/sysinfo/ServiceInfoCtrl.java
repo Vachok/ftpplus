@@ -60,7 +60,7 @@ public class ServiceInfoCtrl {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ServiceInfoCtrl.class.getSimpleName());
     
-    private static final Properties APP_PR = AppComponents.getProps();
+    private static final Properties APP_PR = InitProperties.getTheProps();
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     

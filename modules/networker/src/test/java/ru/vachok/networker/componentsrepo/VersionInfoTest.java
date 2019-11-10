@@ -4,11 +4,13 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 
@@ -45,7 +47,7 @@ import ru.vachok.networker.sysinfo.VersionInfo;
      */
     @Test(enabled = false)
     public void getParamsTEST() {
-        ru.vachok.networker.sysinfo.VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), UsefulUtilities.thisPC());
+        ru.vachok.networker.sysinfo.VersionInfo infoVers = new VersionInfo(InitProperties.getTheProps(), UsefulUtilities.thisPC());
         Assert.assertFalse(infoVers.getAppBuild().isEmpty());
         Assert.assertFalse(infoVers.getBuildTime().isEmpty());
         Assert.assertFalse(infoVers.getAppVersion().isEmpty());

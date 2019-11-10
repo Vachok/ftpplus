@@ -63,9 +63,9 @@ public class PcNamesScannerWorksTest extends PcNamesScanner {
     private static final long startClassTime = System.currentTimeMillis();
     
     /**
-     {@link AppComponents#getProps()}
+     {@link InitProperties#getTheProps()}
      */
-    private static final Properties PROPS = AppComponents.getProps();
+    private static final Properties PROPS = InitProperties.getTheProps();
     
     private static final File fileTmp = new File(FileNames.SCAN_TMP);
     
@@ -392,12 +392,12 @@ public class PcNamesScannerWorksTest extends PcNamesScanner {
     private void setPrefProps() {
         String lastScan = String.valueOf(System.currentTimeMillis());
         InitProperties.setPreference(PropertiesNames.LASTSCAN, lastScan);
-        AppComponents.getProps().setProperty(PropertiesNames.LASTSCAN, lastScan);
+        InitProperties.getTheProps().setProperty(PropertiesNames.LASTSCAN, lastScan);
         String nextScan = String.valueOf(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
         InitProperties.setPreference(PropertiesNames.NEXTSCAN, nextScan);
-        AppComponents.getProps().setProperty(PropertiesNames.NEXTSCAN, nextScan);
-        InitProperties.getInstance(InitProperties.FILE).setProps(AppComponents.getProps());
-        InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(AppComponents.getProps());
+        InitProperties.getTheProps().setProperty(PropertiesNames.NEXTSCAN, nextScan);
+        InitProperties.getInstance(InitProperties.FILE).setProps(InitProperties.getTheProps());
+        InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(InitProperties.getTheProps());
     }
     
     private void newPCCheck(String pcValue, double remainPC) {

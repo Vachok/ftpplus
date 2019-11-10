@@ -4,7 +4,6 @@ package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -21,7 +20,10 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -45,7 +47,7 @@ public class ExecScan extends DiapazonScan {
     
     private static final int HOME_VLAN = 111;
     
-    private final Properties props = AppComponents.getProps();
+    private final Properties props = InitProperties.getTheProps();
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ExecScan.class.getSimpleName());
     

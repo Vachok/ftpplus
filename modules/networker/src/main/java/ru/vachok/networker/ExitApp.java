@@ -141,7 +141,7 @@ public class ExitApp extends Thread implements Externalizable {
     
     private void synchronizePrefProps() {
         Preferences userPref = InitProperties.getUserPref();
-        Properties props = AppComponents.getProps();
+        Properties props = InitProperties.getTheProps();
         try {
             String[] keys = userPref.keys();
             for (String key : keys) {
@@ -239,7 +239,7 @@ public class ExitApp extends Thread implements Externalizable {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            initProperties.setProps(AppComponents.getProps());
+            initProperties.setProps(InitProperties.getTheProps());
             if (devices.size() > 0) {
                 miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
                 miniLoggerLast.add("Last" + " = " + devices.getLast());

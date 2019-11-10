@@ -76,7 +76,7 @@ public class AppComponentsTest {
     
     @Test
     public void testGetProps() {
-        Properties appProps = new AppComponents().getProps();
+        Properties appProps = InitProperties.getTheProps();
         Assert.assertTrue(appProps.size() > 12, "AppProps size = " + appProps.size());
         Assert.assertTrue(appProps.getProperty("server.port").equals("8880"));
         Assert.assertTrue(appProps.getProperty("application.name").equals("ru.vachok.networker-"));
@@ -230,7 +230,7 @@ public class AppComponentsTest {
         file.delete();
         Assert.assertFalse(file.exists());
         InitProperties.setPreference(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis() - 100));
-        AppComponents.getProps().setProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis() - 100));
+        InitProperties.getTheProps().setProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis() - 100));
         PcNamesScannerWorks scanner = new PcNamesScannerWorks();
         NetScanCtr option = new NetScanCtr(scanner);
         option.setModel(new ExtendedModelMap());

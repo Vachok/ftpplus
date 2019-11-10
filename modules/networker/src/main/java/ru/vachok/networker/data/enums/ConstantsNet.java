@@ -4,7 +4,7 @@ package ru.vachok.networker.data.enums;
 
 
 import org.jetbrains.annotations.Contract;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 
 /**
@@ -46,7 +46,7 @@ public enum ConstantsNet {
     
     public static final int MAX_IN_ONE_VLAN = 255;
     
-    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
     
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
     

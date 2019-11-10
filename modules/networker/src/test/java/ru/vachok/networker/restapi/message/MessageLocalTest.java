@@ -17,6 +17,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.util.Queue;
@@ -114,7 +115,7 @@ public class MessageLocalTest {
             String logStr = appJson.remove();
             try {
                 JsonObject jsonObject = Json.parse(logStr).asObject();
-                long timestamp = jsonObject.getLong("timestamp", 0);
+                long timestamp = jsonObject.getLong(PropertiesNames.TIMESTAMP, 0);
                 Assert.assertTrue(timestamp + TimeUnit.SECONDS.toMillis(10) > System.currentTimeMillis());
             }
             catch (ParseException e) {

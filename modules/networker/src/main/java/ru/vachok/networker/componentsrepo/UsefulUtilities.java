@@ -54,7 +54,7 @@ public abstract class UsefulUtilities {
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh"};
     
-    private static final Properties APP_PROPS = AppComponents.getProps();
+    private static final Properties APP_PROPS = InitProperties.getTheProps();
     
     private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UsefulUtilities.class.getSimpleName());
     
@@ -92,7 +92,7 @@ public abstract class UsefulUtilities {
         }
         if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")) | thisPC().toLowerCase()
             .contains(OtherKnownDevices.HOSTNAME_HOME) | thisPC().toLowerCase().contains("-h")) {
-            delay = Long.parseLong(AppComponents.getProps().getProperty("mindelay", String.valueOf(1)));
+            delay = Long.parseLong(InitProperties.getTheProps().getProperty(PropertiesNames.MINDELAY, String.valueOf(1)));
         }
         return delay;
     }
@@ -216,7 +216,7 @@ public abstract class UsefulUtilities {
     public static long getBuildStamp() {
         long retLong = 1L;
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-        Properties appPr = AppComponents.getProps();
+        Properties appPr = InitProperties.getTheProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
@@ -288,7 +288,7 @@ public abstract class UsefulUtilities {
     
     @SuppressWarnings("MagicNumber")
     public static int getScansDelay() {
-        int scansInOneMin = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.SCANSINMIN, "111"));
+        int scansInOneMin = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.SCANSINMIN, "111"));
         if (scansInOneMin <= 0) {
             scansInOneMin = 85;
         }

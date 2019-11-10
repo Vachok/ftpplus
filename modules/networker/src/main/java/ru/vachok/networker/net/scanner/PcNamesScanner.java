@@ -182,7 +182,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
     }
     
     private void isMapSizeBigger(int thisTotalPC) {
-        int pcWas = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.ONLINEPC, "0"));
+        int pcWas = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.ONLINEPC, "0"));
         int remainPC = thisTotalPC - NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size();
         boolean newPSs = remainPC < 0;
     
@@ -203,14 +203,14 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
     private void newPCCheck(String pcValue, double remainPC) {
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
         classOption.getModel().addAttribute(ModelAttributeNames.NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
-        AppComponents.getProps().setProperty(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
+        InitProperties.getTheProps().setProperty(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
         InitProperties.setPreference(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
-        AppComponents.getProps().setProperty(ModelAttributeNames.NEWPC, String.valueOf(remainPC));
+        InitProperties.getTheProps().setProperty(ModelAttributeNames.NEWPC, String.valueOf(remainPC));
     }
     
     private void noNewPCCheck(int remainPC) {
         if (remainPC < ConstantsFor.INT_ANSWER) {
-            AppComponents.getProps().setProperty(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
+            InitProperties.getTheProps().setProperty(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
             InitProperties.setPreference(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
         }
     }
@@ -254,8 +254,8 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
     private void noFileExists() throws ExecutionException, TimeoutException {
         Thread.currentThread().setName(thePc);
         this.scanThread = new Thread(new PcNamesScanner.ScannerUSR());
-        AppComponents.getProps().setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-        InitProperties.getInstance(InitProperties.FILE).setProps(AppComponents.getProps());
+        InitProperties.getTheProps().setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
+        InitProperties.getInstance(InitProperties.FILE).setProps(InitProperties.getTheProps());
         InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
         scanThread.start();
         messageToUser.info(this.getClass().getSimpleName(), scanThread.getName(), scanThread.getState().name());
@@ -279,17 +279,17 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
     private void setPrefProps() {
         String lastScan = String.valueOf(System.currentTimeMillis());
         InitProperties.setPreference(PropertiesNames.LASTSCAN, lastScan);
-        AppComponents.getProps().setProperty(PropertiesNames.LASTSCAN, lastScan);
+        InitProperties.getTheProps().setProperty(PropertiesNames.LASTSCAN, lastScan);
         this.lastScanStamp = System.currentTimeMillis();
         
         long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
         String nextScan = String.valueOf(nextStart);
         InitProperties.setPreference(PropertiesNames.NEXTSCAN, nextScan);
-        AppComponents.getProps().setProperty(PropertiesNames.NEXTSCAN, nextScan);
+        InitProperties.getTheProps().setProperty(PropertiesNames.NEXTSCAN, nextScan);
         this.nextScanStamp = nextStart;
-        
-        InitProperties.getInstance(InitProperties.FILE).setProps(AppComponents.getProps());
-        InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(AppComponents.getProps());
+    
+        InitProperties.getInstance(InitProperties.FILE).setProps(InitProperties.getTheProps());
+        InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(InitProperties.getTheProps());
     }
     
     /**
@@ -462,7 +462,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             if (request != null && request.getQueryString() != null) {
                 linksMap.clear();
                 InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-                AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, "0");
+                InitProperties.getTheProps().setProperty(PropertiesNames.ONLINEPC, "0");
                 Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
                 classOption.getModel()
                     .addAttribute(ModelAttributeNames.TITLE, MessageFormat.format("Last: {0}, next: {1}", new Date(lastScanStamp), new Date(nextScanStamp)))
@@ -471,7 +471,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             else {
                 linksMap.clear();
                 InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-                AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, "0");
+                InitProperties.getTheProps().setProperty(PropertiesNames.ONLINEPC, "0");
                 getExecution();
                 model.addAttribute(ModelAttributeNames.TITLE, MessageFormat.format("Last: {0}, next: {1}", new Date(lastScanStamp), new Date(nextScanStamp)))
                     .addAttribute(ModelAttributeNames.PC, tForms.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
@@ -489,7 +489,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
     
             MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
                     .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
-                        AppComponents.getProps().getProperty(PropertiesNames.ONLINEPC), new File(FileNames.SCAN_TMP).getAbsolutePath()));
+                        InitProperties.getTheProps().getProperty(PropertiesNames.ONLINEPC), new File(FileNames.SCAN_TMP).getAbsolutePath()));
     
             return this.toString();
         }
@@ -551,7 +551,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
         }
         
         private void setTimesLastNext() {
-            Properties props = AppComponents.getProps();
+            Properties props = InitProperties.getTheProps();
     
             InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
             long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY / 10);
@@ -568,7 +568,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
             String bodyMsg = MessageFormat
                 .format("Online: {0}.\n{1} min uptime. \n{2} next run\n",
-                    AppComponents.getProps().getProperty(PropertiesNames.ONLINEPC, "0"), upTime, new Date(nextScanStamp));
+                    InitProperties.getTheProps().getProperty(PropertiesNames.ONLINEPC, "0"), upTime, new Date(nextScanStamp));
             try {
                 AppComponents.getMessageSwing(this.getClass().getSimpleName()).infoTimer((int) ConstantsFor.DELAY, bodyMsg);
             }
@@ -601,7 +601,7 @@ public class PcNamesScanner extends TimerTask implements NetScanService {
             titleBuilder.append("/");
             titleBuilder.append(thisTotalPC);
             titleBuilder.append(" PCs (");
-            titleBuilder.append(AppComponents.getProps().getProperty(PropertiesNames.ONLINEPC, "0"));
+            titleBuilder.append(InitProperties.getTheProps().getProperty(PropertiesNames.ONLINEPC, "0"));
             titleBuilder.append("/");
             titleBuilder.append(pcWas);
             titleBuilder.append(") Next run ");

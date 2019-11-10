@@ -19,6 +19,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -83,8 +84,8 @@ public class NetScanCtr {
     
     @Contract(pure = true)
     @Autowired
-    public NetScanCtr(PcNamesScannerWorks pcNamesScanner) {
-        this.pcNamesScanner = pcNamesScanner;
+    public NetScanCtr(NetScanService pcNamesScanner) {
+        this.pcNamesScanner = (PcNamesScannerWorks) pcNamesScanner;
     }
     
     /**

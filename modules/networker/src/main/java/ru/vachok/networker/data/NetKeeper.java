@@ -5,7 +5,6 @@ package ru.vachok.networker.data;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -18,7 +17,9 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -55,7 +56,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
     
-    private static Properties properties = AppComponents.getProps();
+    private static Properties properties = InitProperties.getTheProps();
     
     private static Map<String, File> scanFiles = getScanFiles();
     

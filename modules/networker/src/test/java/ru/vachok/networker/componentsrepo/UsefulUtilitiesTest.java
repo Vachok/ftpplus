@@ -3,14 +3,17 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.mail.ExSRV;
 import ru.vachok.networker.mail.MailRule;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -31,7 +34,8 @@ import static ru.vachok.networker.componentsrepo.UsefulUtilities.scheduleTrunkPc
 public class UsefulUtilitiesTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UsefulUtilitiesTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UsefulUtilitiesTest.class.getSimpleName(), System
+        .nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -90,7 +94,7 @@ public class UsefulUtilitiesTest {
     @Test
     public void testGetDelay() {
         long delay = UsefulUtilities.getDelay();
-        Assert.assertEquals(delay, 17);
+        Assert.assertEquals(delay, InitProperties.getUserPref().getInt(PropertiesNames.MINDELAY, 17));
     }
     
     @Test
@@ -150,9 +154,9 @@ public class UsefulUtilitiesTest {
         List<String> deleteFilesOnStart = UsefulUtilities.getPatternsToDeleteFilesOnStart();
         String fromArray = new TForms().fromArray(deleteFilesOnStart);
         Assert.assertEquals(fromArray, "visit_\n" +
-                ".tv\n" +
-                ".own\n" +
-                ".rgh\n");
+            ".tv\n" +
+            ".own\n" +
+            ".rgh\n");
     }
     
     @Test
@@ -201,18 +205,9 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testScheduleTrunkPcUserAuto() {
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            context.start();
-            Assert.assertTrue(context.isRunning());
-            String userAuto = scheduleTrunkPcUserAuto();
-            String schedToStr = AppComponents.threadConfig().getTaskScheduler().toString();
-            Assert.assertEquals(userAuto, schedToStr);
-            context.stop();
-            Assert.assertFalse(context.isRunning());
-        }
-        catch (IllegalStateException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        String userAuto = scheduleTrunkPcUserAuto();
+        String schedToStr = AppComponents.threadConfig().getTaskScheduler().toString();
+        Assert.assertEquals(userAuto, schedToStr);
     }
     
     @Test

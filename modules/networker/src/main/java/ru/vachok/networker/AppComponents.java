@@ -29,7 +29,6 @@ import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -58,8 +57,6 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
     
-    private static final Properties APP_PR = new Properties();
-    
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
     
     private final NetScanService pcNamesScanner = new PcNamesScanner();
@@ -77,45 +74,8 @@ public class AppComponents {
         return properties;
     }
     
-    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
-    public static Properties getProps() {
-        boolean isSmallSize = APP_PR.size() < 9;
-        if (isSmallSize) {
-            loadPropsFromDB();
-            isSmallSize = APP_PR.size() < 9;
-            if (isSmallSize) {
-                APP_PR.putAll(new DBPropsCallable().call());
-                isSmallSize = APP_PR.size() < 9;
-            }
-            if (!isSmallSize) {
-                InitProperties.getInstance(InitProperties.FILE).setProps(APP_PR);
-            }
-            else {
-                messageToUser.error(AppComponents.class.getSimpleName(), "APP_PR getter. line 135", MessageFormat.format(" size = {0} !!!", APP_PR.size()));
-            }
-            return APP_PR;
-        }
-        else {
-            return APP_PR;
-        }
-    }
-    
     public PfLists getPFLists() {
         return new PfLists();
-    }
-    
-    @Contract(pure = true)
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static ThreadConfig threadConfig() {
-        return THREAD_CONFIG;
-    }
-    
-    public AppComponents() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-        if (APP_PR.isEmpty()) {
-            APP_PR.putAll(initProperties.getProps());
-        }
     }
     
     @Contract(value = "_ -> new", pure = true)
@@ -173,6 +133,7 @@ public class AppComponents {
     public PcNamesScanner pcNamesScanner() {
         return (PcNamesScanner) pcNamesScanner;
     }
+    
     public SshActs sshActs() {
         return new SshActs();
     }
@@ -191,29 +152,13 @@ public class AppComponents {
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Contract(" -> new")
     static @NotNull VersionInfo versionInfo() {
-        return new VersionInfo(APP_PR, UsefulUtilities.thisPC());
+        return new VersionInfo(InitProperties.getTheProps(), UsefulUtilities.thisPC());
     }
     
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     TemporaryFullInternet temporaryFullInternet() {
         return new TemporaryFullInternet();
-    }
-    
-    private static void loadPropsFromDB() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_LOCAL);
-        try {
-            initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-        }
-        catch (RuntimeException e) {
-            initProperties = InitProperties.getInstance(InitProperties.FILE);
-        }
-        finally {
-            Properties props = initProperties.getProps();
-            APP_PR.putAll(props);
-            APP_PR.setProperty(PropertiesNames.DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            APP_PR.setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
-        }
     }
     
     String launchRegRuFTPLibsUploader() {
@@ -224,7 +169,15 @@ public class AppComponents {
         }
         catch (RuntimeException e) {
             return MessageFormat
-                    .format("{0}.launchRegRuFTPLibsUploader: FALSE {1} {2}", AppComponents.class.getSimpleName(), e.getMessage(), Thread.currentThread().getState().name());
+                .format("{0}.launchRegRuFTPLibsUploader: FALSE {1} {2}", AppComponents.class.getSimpleName(), e.getMessage(), Thread.currentThread().getState()
+                    .name());
         }
+    }
+    
+    @Contract(pure = true)
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ThreadConfig threadConfig() {
+        return THREAD_CONFIG;
     }
 }

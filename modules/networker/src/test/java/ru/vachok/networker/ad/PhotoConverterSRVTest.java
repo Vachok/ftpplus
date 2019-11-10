@@ -7,11 +7,11 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 
@@ -52,7 +52,7 @@ public class PhotoConverterSRVTest {
         String psCommandsStr = photoConverterSRV.psCommands();
         Assert.assertFalse(psCommandsStr.isEmpty());
         try {
-            new File(AppComponents.getProps().getProperty(PropertiesNames.ADPHOTOPATH)).listFiles();
+            new File(InitProperties.getTheProps().getProperty(PropertiesNames.ADPHOTOPATH)).listFiles();
         }
         catch (NullPointerException e) {
             Assert.assertNotNull(e);

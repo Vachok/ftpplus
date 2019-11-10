@@ -5,7 +5,9 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -13,7 +15,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -25,7 +29,10 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -107,11 +114,11 @@ import java.util.concurrent.LinkedBlockingDeque;
     @NotNull
     private Collection<String> getAllDevLocalDeq() {
         final int MAX_IN_ONE_VLAN = 255;
-        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
         final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
         
         int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
-        AppComponents.getProps().setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
+        InitProperties.getTheProps().setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
     

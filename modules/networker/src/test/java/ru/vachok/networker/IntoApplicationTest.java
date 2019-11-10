@@ -37,20 +37,6 @@ public class IntoApplicationTest {
     }
     
     @Test
-    public void testReloadConfigurableApplicationContext() {
-        IntoApplication.main(new String[]{"-test, -notray"});
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            context.close();
-            IntoApplication.closeContext();
-            Assert.assertFalse(context.isActive());
-            Assert.assertFalse(context.isRunning());
-        }
-        catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
     public void testMain() {
         try {
             IntoApplication.main(new String[]{"test"});

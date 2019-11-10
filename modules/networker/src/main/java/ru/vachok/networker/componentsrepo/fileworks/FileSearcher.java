@@ -6,12 +6,12 @@ package ru.vachok.networker.componentsrepo.fileworks;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.common.CommonSRV;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -19,8 +19,14 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -99,7 +105,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
      */
     private @NotNull String infoFromTable() {
         StringBuilder stringBuilder = new StringBuilder();
-        int rowsLim = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.LIMITSEARCHROWS, "300"));
+        int rowsLim = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.LIMITSEARCHROWS, "300"));
         final String sql = String.format(ConstantsFor.SQL_SELECT, ConstantsFor.DB_TABLESEARCH + lastTableName + " limit " + rowsLim);
         stringBuilder.append(lastTableName).append(" = ");
         stringBuilder.append(connectToDatabase(sql)).append("\n");
@@ -113,7 +119,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private @NotNull JsonObject connectToDatabase(String sql) {
         JsonObject jsonObject = new JsonObject();
-        int rowsLim = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.LIMITSEARCHROWS, "300"));
+        int rowsLim = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.LIMITSEARCHROWS, "300"));
         try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_TABLESEARCH + ConstantsFor.DB_PERMANENT)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

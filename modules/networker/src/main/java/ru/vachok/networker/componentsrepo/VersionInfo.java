@@ -6,11 +6,11 @@ package ru.vachok.networker.componentsrepo;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -32,9 +32,9 @@ public class VersionInfo {
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
     
     /**
-     {@link AppComponents#getProps()}
+     {@link InitProperties#getTheProps()}
      */
-    private static final Properties PROPERTIES = AppComponents.getProps();
+    private static final Properties PROPERTIES = InitProperties.getTheProps();
     
     private static final String PR_APP_BUILD = "appBuild";
     
@@ -95,7 +95,7 @@ public class VersionInfo {
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
-            AppComponents.getProps().setProperty(PropertiesNames.BUILDTIME, timeStr);
+            InitProperties.getTheProps().setProperty(PropertiesNames.BUILDTIME, timeStr);
             return timeStr;
         }
         else {
@@ -136,13 +136,13 @@ public class VersionInfo {
             this.appBuild = String.valueOf(ConstantsFor.DELAY);
             this.buildTime = new Date().toString();
         }
-        AppComponents.getProps().setProperty(PropertiesNames.BUILDTIME, this.buildTime);
-        AppComponents.getProps().setProperty(PropertiesNames.BUILD, this.appBuild);
-        AppComponents.getProps().setProperty(PropertiesNames.APPVERSION, this.appVersion);
+        InitProperties.getTheProps().setProperty(PropertiesNames.BUILDTIME, this.buildTime);
+        InitProperties.getTheProps().setProperty(PropertiesNames.BUILD, this.appBuild);
+        InitProperties.getTheProps().setProperty(PropertiesNames.APPVERSION, this.appVersion);
     }
     
     private void getParams() {
-        Properties properties = AppComponents.getProps();
+        Properties properties = InitProperties.getTheProps();
         this.appBuild = properties.getProperty(PropertiesNames.BUILD, ALERT_DNE);
         this.appVersion = properties.getProperty(PropertiesNames.APPVERSION, ALERT_DNE);
         this.buildTime = properties.getProperty(PropertiesNames.BUILDTIME, ALERT_DNE);

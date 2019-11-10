@@ -20,6 +20,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,9 +55,9 @@ public class PfListsCtr {
     private static final String ATT_VIPNET = "vipnet";
     
     /**
-     {@link AppComponents#getProps()}
+     {@link InitProperties#getTheProps()}
      */
-    private final Properties properties = AppComponents.getProps();
+    private final Properties properties = InitProperties.getTheProps();
     
     /**
      {@link Random#nextInt(int)} - {@link TimeUnit#toMillis(long)} <b>250</b>
