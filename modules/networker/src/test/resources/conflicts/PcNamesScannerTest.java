@@ -2,6 +2,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -82,7 +83,9 @@ public class PcNamesScannerTest {
         String toStr = PC_SCANNER.toString();
         Assert.assertTrue(toStr.contains("startClassTime"), toStr);
         Assert.assertTrue(toStr.contains("lastScanStamp"), toStr);
-        Assert.assertTrue(toStr.contains("thePc"), toStr);
+        Assert.assertTrue(toStr.contains("nextScanStamp"), toStr);
+        Assert.assertTrue(toStr.contains("minutes"), toStr);
+        Assert.assertTrue(toStr.contains("classOption"), toStr);
         System.out.println("toStr = " + toStr);
     }
     
@@ -158,6 +161,26 @@ public class PcNamesScannerTest {
         Assert.assertTrue(isMethodOk);
     }
     
+    @Test
+    public void testIsTime() {
+        try {
+            Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        PC_SCANNER.setModel(new ExtendedModelMap());
+        PC_SCANNER.setRequest(new MockHttpServletRequest());
+        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(PC_SCANNER::checkTime);
+        try {
+            submit.get(20, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        checkWeekDB();
+    }
+    
     private static void checkWeekDB() {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom.pcuserauto");
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by idrec desc LIMIT 1");
@@ -222,7 +245,7 @@ public class PcNamesScannerTest {
     @Test
     public void testRun() {
         try {
-            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(PC_SCANNER);
+            Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(PC_SCANNER);
             Assert.assertNull(submit.get(20, TimeUnit.SECONDS));
         }
         catch (RuntimeException | ExecutionException | TimeoutException e) {

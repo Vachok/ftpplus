@@ -9,7 +9,10 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
@@ -27,7 +30,7 @@ public class MemoryProperties extends DBPropsCallable {
         Properties retProps = new Properties();
         retProps.putAll(fromMemoryTable());
         if (retProps.size() < 17) {
-            retProps.putAll(super.getProps());
+            retProps.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
         }
         return retProps;
     }
@@ -63,7 +66,7 @@ public class MemoryProperties extends DBPropsCallable {
             return update > 0;
         }
         catch (SQLException e) {
-            return updateTable(properties) > 0;
+            return updateTable(properties);
         }
     }
     
@@ -86,23 +89,23 @@ public class MemoryProperties extends DBPropsCallable {
     }
     
     @Contract(pure = true)
-    private int updateTable(@NotNull Properties properties) {
+    private boolean updateTable(@NotNull Properties properties) {
         final String sql = "UPDATE properties SET property=?, valueofproperty=? WHERE property=?";
-        int update = 0;
+    
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                     preparedStatement.setString(1, entry.getKey().toString());
                     preparedStatement.setString(2, entry.getValue().toString());
                     preparedStatement.setString(3, entry.getKey().toString());
-                    update += preparedStatement.executeUpdate();
+                    preparedStatement.executeUpdate();
                 }
             }
+            return true;
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("MemoryProperties.updateTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
-            update -= 1;
+            return false;
         }
-        return update;
     }
 }

@@ -3,7 +3,9 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
@@ -11,7 +13,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -19,8 +23,10 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 
 /**
@@ -138,7 +144,7 @@ public class UserInfoTest {
         for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
             boolean contPC = nullPCLogin.split(" : ")[0].contains("a123");
             Assert.assertTrue(contPC, nullPCLogin.split(" : ")[0]);
-            boolean contName = nullPCLogin.split(" : ")[1].contains("i.k.romanovskii") || nullPCLogin.split(" : ")[1].contains("e.v.vinokur");
+            boolean contName = Stream.of("i.k.romanovskii", "e.v.vinokur", "a.f.zarickii").anyMatch(s->nullPCLogin.split(" : ")[1].contains(s));
             Assert.assertTrue(contName, nullPCLogin.split(" : ")[1]);
         }
         UserInfo instanceDO0045 = UserInfo.getInstance("do0125");

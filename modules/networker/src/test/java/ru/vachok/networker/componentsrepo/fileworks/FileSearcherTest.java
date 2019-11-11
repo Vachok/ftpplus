@@ -1,20 +1,29 @@
 package ru.vachok.networker.componentsrepo.fileworks;
 
 
-import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.NetworkerStopException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -36,12 +45,6 @@ public class FileSearcherTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            context.stop();
-        }
-        catch (RuntimeException | NetworkerStopException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
     }
     
     @BeforeMethod

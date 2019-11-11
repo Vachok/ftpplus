@@ -11,7 +11,9 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.FakeRequest;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -70,7 +72,6 @@ public class NetScanCtrTest {
         this.netScanCtr = new NetScanCtr(pcNamesScanner);
         netScanCtr.setModel(model);
         netScanCtr.setRequest(request);
-        pcNamesScanner.setClassOption(netScanCtr);
         try {
             Files.deleteIfExists(FILE.toPath());
         }
@@ -111,14 +112,6 @@ public class NetScanCtrTest {
         catch (TaskRejectedException e) {
             Assert.assertNotNull(e);
         }
-    }
-    
-    @Test
-    @Ignore
-    public void testStarterNetScan() {
-        netScanCtr.starterNetScan();
-        Assert.assertTrue(FILE.exists());
-        Assert.assertTrue(FILE.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)));
     }
     
     @Test

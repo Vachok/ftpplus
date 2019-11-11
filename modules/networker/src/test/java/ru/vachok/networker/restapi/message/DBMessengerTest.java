@@ -4,17 +4,27 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.*;
-import java.text.*;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -46,10 +56,11 @@ public class DBMessengerTest {
     @Test
     public void testToString() {
         String toStr = MessageToUser.getInstance(MessageToUser.DB, "test").toString();
-        Assert.assertTrue(toStr.contains("DBMessenger{"), toStr);
+        Assert.assertTrue(toStr.contains("MessageLocal{"), toStr);
     }
     
     @Test
+    @Ignore
     public void testWork() {
         new DBMessenger(DBMessengerTest.class.getSimpleName()).info("test", "test", "test");
         Future<String> checkDBFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(this::checkMessageExistsInDatabase);

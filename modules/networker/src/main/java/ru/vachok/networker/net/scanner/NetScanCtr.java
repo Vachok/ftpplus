@@ -8,14 +8,17 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -24,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 
@@ -159,28 +161,5 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.THEPC, thePc);
         pcNamesScanner.setThePc("");
         return "redirect:/ad?" + thePc;
-    }
-    
-    /**
-     @see NetScanCtrTest#testStarterNetScan()
-     */
-    void starterNetScan() {
-        Date startDate = new Date(InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()));
-        if (!file.exists()) {
-            PcNamesScanner.fileScanTMPCreate(true);
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(pcNamesScanner);
-            messageToUser.info("Executing pcNamesScanner " + String.valueOf(pcNamesScanner.hashCode()), AppComponents.threadConfig().toString(), AbstractForms
-                    .fromArray(Thread.currentThread().getStackTrace()));
-        }
-        else {
-            BlockingQueue<Runnable> runnableBlockingQueue = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().getQueue();
-            for (Runnable runnable : runnableBlockingQueue) {
-                if (runnable instanceof PcNamesScanner) {
-                    runnableBlockingQueue.remove();
-                }
-            }
-            messageToUser.warn("PcNamesScanner already running. File {0} is {1}!", file.getAbsolutePath(), String.valueOf(file.exists()));
-            file.deleteOnExit();
-        }
     }
 }

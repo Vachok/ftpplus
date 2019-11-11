@@ -11,14 +11,25 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -133,6 +144,14 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public Properties getProps() {
+        retProps = call();
+        if (retProps.size() > 17) {
+            InitProperties.getInstance(InitProperties.FILE).setProps(retProps);
+        }
+        return retProps;
+    }
+    
+    private Properties fromDB() {
         final String sql = "select * from velkom.props";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.props");
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -146,28 +165,6 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
         return retProps;
     }
-    
-    private Properties getPropsFromSRVDatabase() {
-        this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
-        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-        final String sql = "SELECT * FROM `ru_vachok_networker`";
-        try (Connection connection = mysqlDataSource.getConnection()) {
-            try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
-                pStatement.setString(1, propsDBID);
-                try (ResultSet r = pStatement.executeQuery()) {
-                    while (r.next()) {
-                        retProps.setProperty(r.getString(ConstantsFor.DBCOL_PROPERTY), r.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getPropsPr", e));
-            retProps.putAll(InitProperties.getInstance(FILE).getProps());
-        }
-        return retProps;
-    }
-    
     @Override
     public boolean setProps(Properties properties) {
         DBPropsCallable.LocalPropertiesFinder localPropsFinder = new DBPropsCallable.LocalPropertiesFinder();
@@ -306,7 +303,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             retProps.putAll(props);
             if (retProps.size() > 9) {
                 initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-                retBool.set(initProperties.setProps(retProps));
+                initProperties.setProps(retProps);
             }
             else {
                 retProps.putAll(props);
@@ -317,7 +314,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         private void fileIsWritableOrNotExists() throws IOException {
             if (retProps.size() < 10) {
                 retProps.clear();
-                Properties props = InitProperties.getInstance(InitProperties.DB_LOCAL).getProps();
+                Properties props = InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps();
                 retProps.putAll(props);
                 retBool.set(retProps.size() > 10);
             }

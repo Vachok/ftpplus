@@ -6,7 +6,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
@@ -44,11 +46,18 @@ public class ScanMessagesCreator implements Keeper {
         return titleBuilder.toString();
     }
     
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ScanMessagesCreator.class.getSimpleName() + "[\n", "\n]")
+            .add("lastScanStamp = " + lastScanStamp)
+            .toString();
+    }
+    
     @NotNull String fillUserPCForWEBModel() {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-        if (linksMap.size() == 0) {
+        if (linksMap.size() < 50) {
             brStringBuilder.append(FileSystemWorker.readRawFile(new File(FileNames.LASTNETSCAN_TXT).getAbsolutePath()));
         }
         else {

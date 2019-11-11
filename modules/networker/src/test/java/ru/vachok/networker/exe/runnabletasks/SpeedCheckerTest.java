@@ -11,7 +11,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
@@ -46,9 +45,7 @@ public class SpeedCheckerTest {
         try {
             Future<Long> aLongFuture = Executors.newSingleThreadExecutor().submit(new SpeedChecker());
             long aLong = aLongFuture.get(30, TimeUnit.SECONDS);
-            if (!Stats.isSunday()) {
-                Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(3) > System.currentTimeMillis(), new Date(aLong).toString());
-            }
+            Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(3) > System.currentTimeMillis(), new Date(aLong).toString());
         }
         catch (ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
