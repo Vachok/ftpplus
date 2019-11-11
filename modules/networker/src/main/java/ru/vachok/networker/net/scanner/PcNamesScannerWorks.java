@@ -5,13 +5,13 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.ui.Model;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -86,10 +86,12 @@ public class PcNamesScannerWorks extends PcNamesScanner {
     /**
      @return атрибут модели.
      */
+    @Override
     public String getThePc() {
         return thePc;
     }
     
+    @Override
     public void setThePc(String thePc) {
         this.thePc = thePc;
     }
@@ -161,12 +163,26 @@ public class PcNamesScannerWorks extends PcNamesScanner {
     @Override
     public void run() {
         if (classOption == null) {
-            throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
+            setClassOption();
         }
         else {
             this.model = classOption.getModel();
             this.request = classOption.getRequest();
             checkScanConditions();
+        }
+    }
+    
+    private void setClassOption() {
+        NetScanCtr netScanCtr = new NetScanCtr(this);
+        try {
+            ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
+            context.getBeanFactory().registerSingleton("netScanCtr", netScanCtr);
+        }
+        catch (NetworkerStopException e) {
+            messageToUser.error("PcNamesScannerWorks.setClassOption", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        finally {
+            this.setClassOption(netScanCtr);
         }
     }
     
@@ -184,6 +200,7 @@ public class PcNamesScannerWorks extends PcNamesScanner {
         return isSystemTimeBigger;
     }
     
+    @Override
     protected @NotNull Set<String> onePrefixSET(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
@@ -191,11 +208,11 @@ public class PcNamesScannerWorks extends PcNamesScanner {
         for (String pcName : autoPcNames) {
             InformationFactory informationFactory = InformationFactory.getInstance(pcName);
             messageToUser
-                .info(pcName, NetKeeper.getPcNamesForSendToDatabase().size() + " NetKeeper.getPcNamesForSendToDatabase() size", informationFactory.getInfo());
+                    .info(pcName, NetKeeper.getPcNamesForSendToDatabase().size() + " NetKeeper.getPcNamesForSendToDatabase() size", informationFactory.getInfo());
         }
         Set<String> copySet = new HashSet<>(NetKeeper.getPcNamesForSendToDatabase());
         String elapsedTime = MessageFormat
-            .format("<b>Elapsed: {0} sec.</b> {1}", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime), LocalTime.now());
+                .format("<b>Elapsed: {0} sec.</b> {1}", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime), LocalTime.now());
         copySet.add(elapsedTime);
         dbSend(prefixPcName);
         return copySet;
@@ -355,7 +372,7 @@ public class PcNamesScannerWorks extends PcNamesScanner {
                 tryScan(startSignal, doneSignal);
             }
             catch (ConcurrentModificationException e) {
-                messageToUser.error("PcNamesScanner1111.sysTimeBigger", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                messageToUser.error("PcNamesScanner1111.sysTimeBigger", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
         }
     }
@@ -374,7 +391,7 @@ public class PcNamesScannerWorks extends PcNamesScanner {
             doneSignal.await();
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.error("PcNamesScanner1111.noFileExists", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("PcNamesScanner1111.noFileExists", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         setPrefProps();
         messageToUser.warn(this.getClass().getSimpleName(), FileNames.SCAN_TMP, String.valueOf(scanTask.fileScanTMPCreate(false)));

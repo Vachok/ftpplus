@@ -92,7 +92,7 @@ public class UserReportsMaker extends InternetUse {
         }
         catch (SQLException | RuntimeException e) {
             messageToUser.error("UserReportsMaker", "getMapUsage", e.getMessage() + " see line: 62");
-            timeSite.put(new Date(), e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace()));
+            timeSite.put(new Date(), e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         messageToUser.info(this.getClass().getSimpleName(), "Returning MAP: ", timeSite.size() + " records");
         return timeSite;

@@ -2,10 +2,7 @@ package ru.vachok.networker.restapi.database;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -13,13 +10,8 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.DatabaseCleanerFromDuplicatesTest;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 
 /**
@@ -93,7 +85,7 @@ public class H2DBTest {
             nextStep();
         }
         catch (SQLException e) {
-            String messageErr = e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace());
+            String messageErr = e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace());
             Assert.assertNull(e, messageErr);
         }
     }

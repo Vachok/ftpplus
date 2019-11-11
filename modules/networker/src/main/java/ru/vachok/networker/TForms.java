@@ -620,7 +620,7 @@ public class TForms {
     }
     
     @NotNull
-    public static String exceptionNetworker(@NotNull StackTraceElement[] trace) {
+    public static String networkerTrace(@NotNull StackTraceElement[] trace) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("\n");
         File appendFile = new File("trace.last");
@@ -630,7 +630,6 @@ public class TForms {
             if (elem.contains("ru.vachok.networker")) {
                 stringBuilder.append(elem).append("\n");
             }
-    
             FileSystemWorker.appendObjectToFile(appendFile, elem);
         }
         return stringBuilder.toString();

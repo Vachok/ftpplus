@@ -246,7 +246,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             }
             catch (SQLException e) {
                 if (!(e instanceof MySQLIntegrityConstraintViolationException)) {
-                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), T_FORMS.exceptionNetworker(e.getStackTrace()));
+                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), T_FORMS.networkerTrace(e.getStackTrace()));
                     retBool.set(false);
                     tryWithLibsInit();
                 }
@@ -279,7 +279,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                     fileIsWritableOrNotExists();
                 }
                 catch (IOException e) {
-                    messageToUser.error("LocalPropertiesFinder.findRightProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                    messageToUser.error("LocalPropertiesFinder.findRightProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
                 }
                 finally {
                     retBool.set(retProps.size() > 10);

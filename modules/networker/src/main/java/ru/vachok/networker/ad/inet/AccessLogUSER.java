@@ -169,7 +169,7 @@ class AccessLogUSER extends InternetUse {
         }
         catch (SQLException | RuntimeException e) {
             inetDateStampSite
-                    .put(System.currentTimeMillis(), MessageFormat.format("AccessLogUSER.dbConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+                    .put(System.currentTimeMillis(), MessageFormat.format("AccessLogUSER.dbConnection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
     }
     

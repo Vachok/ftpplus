@@ -60,7 +60,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("SaveLogsToDB.getLastRecordID", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("SaveLogsToDB.getLastRecordID", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             result = 0 - e.getErrorCode();
         }
         return result;

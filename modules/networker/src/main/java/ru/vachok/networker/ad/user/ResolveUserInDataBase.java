@@ -66,7 +66,7 @@ class ResolveUserInDataBase extends UserInfo {
             }
         }
         catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
-            result = MessageFormat.format("ResolveUserInDataBase.getInfo {0}\n{1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            result = MessageFormat.format("ResolveUserInDataBase.getInfo {0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return result;
     }
@@ -169,7 +169,7 @@ class ResolveUserInDataBase extends UserInfo {
                 }
             }
             catch (RuntimeException e) {
-                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             }
         }
         catch (SQLException e) {

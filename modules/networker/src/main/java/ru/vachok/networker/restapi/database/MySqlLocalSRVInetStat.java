@@ -87,7 +87,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             retSource.setDumpQueriesOnException(true);
         }
         catch (SQLException | FileNotFoundException e) {
-            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return retSource;
     }
@@ -129,7 +129,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                     resultsUpload += 1;
                 }
                 else {
-                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
                 }
             }
         }
@@ -142,7 +142,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             }
             else {
                 messageToUser
-                        .error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+                        .error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             }
         }
         return resultsUpload;

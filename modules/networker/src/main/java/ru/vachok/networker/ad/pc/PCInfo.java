@@ -128,7 +128,7 @@ public abstract class PCInfo implements InformationFactory {
             NetKeeper.getPcNamesForSendToDatabase().add(stringToAdd);
         }
         catch (UnknownFormatConversionException e) {
-            stringToAdd = MessageFormat.format(PCInfo.class.getSimpleName(), e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            stringToAdd = MessageFormat.format(PCInfo.class.getSimpleName(), e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return stringToAdd;
     }

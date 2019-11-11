@@ -108,7 +108,7 @@ public class PCMonitoring implements NetScanService {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("PCMonitoring.writeLog", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("PCMonitoring.writeLog", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         return MessageFormat.format("Updated: {0} by {1}", execUp, sql);
     }

@@ -32,22 +32,20 @@ public class MemoryProperties extends DBPropsCallable {
         return retProps;
     }
     
-    private @NotNull Properties fromMemoryTable() {
-        Properties properties = new Properties();
+    @Override
+    public boolean delProps() {
+        if (InitProperties.getInstance(InitProperties.FILE).getProps().size() < 17) {
+            throw new InvokeIllegalException("SET FILE PROPS FIRST!");
+        }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from mem.properties")) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        properties.put(resultSet.getString(2), resultSet.getString(3));
-                    }
-                }
+            try (PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {
+                return preparedStatement.executeUpdate() == 0;
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
-            properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+            messageToUser.error("MemoryProperties.delProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            return false;
         }
-        return properties;
     }
     
     @Override
@@ -69,6 +67,24 @@ public class MemoryProperties extends DBPropsCallable {
         }
     }
     
+    private @NotNull Properties fromMemoryTable() {
+        Properties properties = new Properties();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from mem.properties")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        properties.put(resultSet.getString(2), resultSet.getString(3));
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+            properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+        }
+        return properties;
+    }
+    
     @Contract(pure = true)
     private int updateTable(@NotNull Properties properties) {
         final String sql = "UPDATE properties SET property=?, valueofproperty=? WHERE property=?";
@@ -84,25 +100,9 @@ public class MemoryProperties extends DBPropsCallable {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MemoryProperties.updateTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("MemoryProperties.updateTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             update -= 1;
         }
         return update;
-    }
-    
-    @Override
-    public boolean delProps() {
-        if (InitProperties.getInstance(InitProperties.FILE).getProps().size() < 17) {
-            throw new InvokeIllegalException("SET FILE PROPS FIRST!");
-        }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {
-                return preparedStatement.executeUpdate() == 0;
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error("MemoryProperties.delProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-            return false;
-        }
     }
 }

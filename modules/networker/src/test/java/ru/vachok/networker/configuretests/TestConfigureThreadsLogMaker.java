@@ -102,7 +102,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             
         }
         catch (RuntimeException e) {
-            messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
             messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));

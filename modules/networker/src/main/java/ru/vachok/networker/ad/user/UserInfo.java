@@ -76,10 +76,10 @@ public abstract class UserInfo implements InformationFactory {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
             UserInfo.DatabaseWriter.messageToUser
-                .error(MessageFormat.format(Thread.currentThread().getState().name(), e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+                    .error(MessageFormat.format(Thread.currentThread().getState().name(), e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         catch (ExecutionException | TimeoutException e) {
-            UserInfo.DatabaseWriter.messageToUser.error(MessageFormat.format(methName, e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            UserInfo.DatabaseWriter.messageToUser.error(MessageFormat.format(methName, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         finally {
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->dbWriter.updTime(pcName, isOffline));
@@ -320,7 +320,7 @@ public abstract class UserInfo implements InformationFactory {
             catch (SQLException | RuntimeException e) {
                 if (e instanceof SQLException) {
                     MessageToUser.getInstance(MessageToUser.DB, UserInfo.DatabaseWriter.class.getSimpleName())
-                        .error("DatabaseWriter.writeAllPrefixToDB", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                            .error("DatabaseWriter.writeAllPrefixToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
                 }
                 return false;
             }

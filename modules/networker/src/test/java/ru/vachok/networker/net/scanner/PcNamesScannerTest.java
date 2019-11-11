@@ -290,6 +290,11 @@ public class PcNamesScannerTest {
         scanAutoPC("pp", 5);
     }
     
+    @Test
+    public void testStart() {
+        PC_SCANNER.run();
+    }
+    
     private static boolean checkMap() {
         ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
         String fromArray = AbstractForms.fromArray(htmlLinks);

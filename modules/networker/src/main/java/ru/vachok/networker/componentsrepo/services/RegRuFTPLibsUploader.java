@@ -3,25 +3,17 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
-import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.*;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
@@ -101,7 +93,7 @@ public class RegRuFTPLibsUploader implements Runnable {
                 return makeConnectionAndStoreLibs();
             }
             catch (IOException | RuntimeException e) {
-                pc = e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace());
+                pc = e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace());
             }
         }
         else {

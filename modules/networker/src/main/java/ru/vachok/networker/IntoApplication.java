@@ -45,7 +45,7 @@ public class IntoApplication {
     
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
     
-    private static ConfigurableApplicationContext configurableApplicationContext;
+    private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
     
     
     @Contract(pure = true)
@@ -54,7 +54,8 @@ public class IntoApplication {
             return configurableApplicationContext;
         }
         else {
-            throw new NetworkerStopException("IntoApplication", "getConfigurableApplicationContext", 56);
+            configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+            return configurableApplicationContext;
         }
     }
     
@@ -82,7 +83,7 @@ public class IntoApplication {
     }
     
     static void checkTray() {
-        SPRING_APPLICATION.run(IntoApplication.class);
+    
         Optional optionalTray = SystemTrayHelper.getI();
         try {
             if (IS_TRAY_SUPPORTED && optionalTray.isPresent()) {

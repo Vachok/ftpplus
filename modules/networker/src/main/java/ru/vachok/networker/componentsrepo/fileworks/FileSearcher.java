@@ -19,14 +19,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -188,7 +182,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             return AbstractForms.fromArray(getSearchTablesToDrop());
         }
         catch (SQLException e) {
-            return MessageFormat.format("{0}\n{1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            return MessageFormat.format("{0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
     

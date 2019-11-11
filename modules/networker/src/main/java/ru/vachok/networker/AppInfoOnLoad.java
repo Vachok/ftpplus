@@ -23,6 +23,7 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -80,7 +81,10 @@ public class AppInfoOnLoad implements Runnable {
             infoForU();
         }
         catch (RuntimeException e) {
-            messageToUser.error("AppInfoOnLoad.run", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("AppInfoOnLoad.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        finally {
+            AppComponents.threadConfig().getTaskExecutor().submit(new PcNamesScanner());
         }
     }
     

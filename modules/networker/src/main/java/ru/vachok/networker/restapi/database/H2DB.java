@@ -28,7 +28,7 @@ public class H2DB implements DataConnectTo {
             DriverManager.registerDriver(driver);
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("H2DB.static initializer", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("H2DB.static initializer", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         
     }
@@ -72,7 +72,7 @@ public class H2DB implements DataConnectTo {
             }
         }
         catch (SQLException e) {
-            messageToUser.error("H2DB.createTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("H2DB.createTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             return -666;
         }
     }

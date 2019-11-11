@@ -58,7 +58,7 @@ class RegRuMysqlLoc implements DataConnectTo {
             return defDataSource;
         }
         catch (SQLException e) {
-            messageToUser.error("RegRuMysqlLoc.getDataSourceLoc", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("RegRuMysqlLoc.getDataSourceLoc", e.getMessage(), new TForms().networkerTrace(e.getStackTrace()));
             return DataConnectToAdapter.getLibDataSource();
         }
     }
@@ -113,7 +113,7 @@ class RegRuMysqlLoc implements DataConnectTo {
             return defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error("RegRuMysqlLoc.getDefaultConnection", e.getMessage(), TForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("RegRuMysqlLoc.getDefaultConnection", e.getMessage(), TForms.networkerTrace(e.getStackTrace()));
             return conAlt(dbName);
         }
     }

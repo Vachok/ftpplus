@@ -89,7 +89,7 @@ public class FileSearcherTest {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace()));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
     

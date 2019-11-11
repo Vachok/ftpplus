@@ -24,16 +24,19 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     private String dbName;
     
     @Override
-    public boolean dropTable(String dbPointTable) {
-        final String sql = String.format("drop table `%s`", dbPointTable);
+    public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
+        final String sql = String
+                .format("CREATE TABLE `%s` (\n\t`idrec` INT(7) UNSIGNED NOT NULL DEFAULT 0,\n\t`stamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),\n\t`upstring` VARCHAR(1000) NOT NULL DEFAULT '-',\n\tPRIMARY KEY (`idrec`),\n\tUNIQUE INDEX `upstring` (`upstring`)\n)\nCOLLATE='utf8_general_ci'\nENGINE=MyISAM\nMAX_ROWS=1000000\n;\n", dbPointTable);
+        messageToUser.warn(dbPointTable, this.getClass().getSimpleName() + " creating...", sql);
+        int retInt = 0;
         try (Connection connection = getDefaultConnection(dbPointTable);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            return preparedStatement.executeUpdate() == 0;
+            retInt = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            messageToUser.error("TesterDB65SQL.dropTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-            return false;
+            messageToUser.error("TesterDB65SQL.createTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
+        return retInt;
     }
     
     @Override
@@ -84,18 +87,15 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     }
     
     @Override
-    public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
-        final String sql = String
-                .format("CREATE TABLE `%s` (\n\t`idrec` INT(7) UNSIGNED NOT NULL DEFAULT 0,\n\t`stamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),\n\t`upstring` VARCHAR(1000) NOT NULL DEFAULT '-',\n\tPRIMARY KEY (`idrec`),\n\tUNIQUE INDEX `upstring` (`upstring`)\n)\nCOLLATE='utf8_general_ci'\nENGINE=MyISAM\nMAX_ROWS=1000000\n;\n", dbPointTable);
-        messageToUser.warn(dbPointTable, this.getClass().getSimpleName() + " creating...", sql);
-        int retInt = 0;
+    public boolean dropTable(String dbPointTable) {
+        final String sql = String.format("drop table `%s`", dbPointTable);
         try (Connection connection = getDefaultConnection(dbPointTable);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            retInt = preparedStatement.executeUpdate();
+            return preparedStatement.executeUpdate() == 0;
         }
         catch (SQLException e) {
-            messageToUser.error("TesterDB65SQL.createTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("TesterDB65SQL.dropTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            return false;
         }
-        return retInt;
     }
 }

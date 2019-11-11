@@ -14,8 +14,8 @@ public abstract class AbstractForms {
     
     private static final TForms T_FORMS = new TForms();
     
-    public static @NotNull String exceptionNetworker(StackTraceElement[] trace) {
-        return T_FORMS.exceptionNetworker(trace);
+    public static @NotNull String networkerTrace(StackTraceElement[] trace) {
+        return T_FORMS.networkerTrace(trace);
     }
     
     public static String fromArray(Properties props) {

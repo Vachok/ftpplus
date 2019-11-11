@@ -20,13 +20,9 @@ import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -154,7 +150,7 @@ public class InternetSync extends SyncData implements Runnable {
                 toJSON = removedStr.split(",");
             }
             catch (IndexOutOfBoundsException e) {
-                messageToUser.error("InternetSync.createJSON", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                messageToUser.error("InternetSync.createJSON", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
             JsonObject jsonObject = new JsonObject();
             long valueParsed = parseDate(toJSON[0]);
@@ -308,7 +304,7 @@ public class InternetSync extends SyncData implements Runnable {
         }
         catch (SQLException e) {
             return MessageFormat
-                .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()), sql);
+                    .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()), sql);
         }
     }
     

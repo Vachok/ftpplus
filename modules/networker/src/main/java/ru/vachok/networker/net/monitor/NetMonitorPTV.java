@@ -6,10 +6,7 @@ package ru.vachok.networker.net.monitor;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -18,12 +15,8 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -204,7 +197,7 @@ public class NetMonitorPTV implements NetScanService {
             }
         }
         catch (SQLException e) {
-            messageToUser.info(MessageFormat.format("NetMonitorPTV.writePingToDB", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.info(MessageFormat.format("NetMonitorPTV.writePingToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
     }
     

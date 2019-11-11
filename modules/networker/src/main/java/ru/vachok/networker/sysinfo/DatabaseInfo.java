@@ -11,10 +11,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
@@ -97,7 +94,7 @@ public class DatabaseInfo implements DataConnectTo, InformationFactory {
             return stringBuilder.toString();
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DatabaseInfo.databaseSchemaObjects", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("DatabaseInfo.databaseSchemaObjects", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             return e.getMessage();
         }
     }
