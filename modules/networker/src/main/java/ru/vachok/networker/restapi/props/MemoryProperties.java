@@ -20,35 +20,27 @@ import java.util.Properties;
  @since 08.10.2019 (16:26) */
 public class MemoryProperties extends DBPropsCallable {
     
-    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MemoryProperties.class.getSimpleName());
     
     @Override
     public Properties getProps() {
         Properties retProps = new Properties();
-        try {
-            retProps.putAll(fromMemoryTable());
-        }
-        catch (RuntimeException e) {
-            messageToUser.error(MemoryProperties.class.getSimpleName(), e.getMessage(), " see line: 36 ***");
-            retProps.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
-        }
+        retProps.putAll(fromMemoryTable());
         if (retProps.size() < 17) {
             retProps.putAll(super.getProps());
-        }
-        else {
-            InitProperties.getInstance(InitProperties.FILE).setProps(retProps);
         }
         return retProps;
     }
     
     private @NotNull Properties fromMemoryTable() {
         Properties properties = new Properties();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from mem.properties");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                properties.put(resultSet.getString(2), resultSet.getString(3));
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from mem.properties")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        properties.put(resultSet.getString(2), resultSet.getString(3));
+                    }
+                }
             }
         }
         catch (SQLException e) {
@@ -60,19 +52,15 @@ public class MemoryProperties extends DBPropsCallable {
     
     @Override
     public boolean setProps(@NotNull Properties properties) {
-        final String sql = "INSERT INTO properties (property, valueofproperty) VALUES (?, ?);";
+        final String sql = "INSERT INTO mem.properties (property, valueofproperty) VALUES (?, ?);";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             int update = 0;
-    
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                     preparedStatement.setString(1, entry.getKey().toString());
                     preparedStatement.setString(2, entry.getValue().toString());
                     update += preparedStatement.executeUpdate();
                 }
-            }
-            catch (SQLException e) {
-                messageToUser.error(MessageFormat.format("MemoryProperties.setProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
             }
             return update > 0;
         }

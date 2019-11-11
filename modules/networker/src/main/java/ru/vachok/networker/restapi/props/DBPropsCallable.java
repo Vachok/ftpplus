@@ -18,7 +18,6 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.*;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +37,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
-    private final Properties retProps = new Properties();
+    private Properties retProps = new Properties();
     
     private static final TForms T_FORMS = AbstractForms.getI();
     
@@ -134,14 +133,18 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public Properties getProps() {
-        Properties calledPr = call();
-        if (calledPr.size() < 9) {
-            calledPr = getPropsFromSRVDatabase();
+        final String sql = "select * from velkom.props";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.props");
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                retProps.put(resultSet.getString("property"), resultSet.getString("valueofproperty"));
+            }
         }
-        if (calledPr.size() > 9) {
-            InitProperties.getInstance(InitProperties.FILE).setProps(calledPr);
+        catch (SQLException e) {
+            messageToUser.warn(DBPropsCallable.class.getSimpleName(), "getProps", e.getMessage() + Thread.currentThread().getState().name());
         }
-        return calledPr;
+        return retProps;
     }
     
     private Properties getPropsFromSRVDatabase() {
@@ -181,10 +184,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     @Override
     public Properties call() {
         DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
-        synchronized(retProps) {
-            this.callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
-            return localPropertiesFinder.findRightProps();
-        }
+        this.callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
+        return localPropertiesFinder.findRightProps();
     }
     
     @Override
@@ -261,28 +262,28 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
     
         private Properties findRightProps() {
-            File constForProps = new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES);
+            File constForProps = new File(FileNames.CONSTANTSFOR_PROPERTIES);
             addApplicationProperties();
             long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
-            
             boolean fileIsFiveHoursAgo = constForProps.lastModified() < fiveHRSAgo;
             boolean canNotWrite = !constForProps.canWrite();
             boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite | fileIsFiveHoursAgo);
             
-            messageToUser
-                .info(MessageFormat.format("File {1} last mod is: {0}. FileIsFiveHoursAgo ({5}) = {4} , canWrite: {2}\n\'isFileOldOrReadOnly\' boolean is: {3}",
-                    new Date(constForProps.lastModified()), constForProps.getName(), constForProps
-                        .canWrite(), isFileOldOrReadOnly, fileIsFiveHoursAgo, new Date(fiveHRSAgo)));
-            
             if (isFileOldOrReadOnly) {
-                boolean isWritableSet = constForProps.setWritable(true);
-                
-                messageToUser
-                    .info(MessageFormat.format("Setting file {1} to writable: {0}. Starting propsFileIsReadOnly meth...", isWritableSet, constForProps.canWrite()));
                 propsFileIsReadOnly();
+                boolean isWritableSet = constForProps.setWritable(true);
+                messageToUser.info(this.getClass().getSimpleName(), "mem.properties updated", String.valueOf(isWritableSet));
             }
             else {
-                fileIsWritableOrNotExists();
+                try {
+                    fileIsWritableOrNotExists();
+                }
+                catch (IOException e) {
+                    messageToUser.error("LocalPropertiesFinder.findRightProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                }
+                finally {
+                    retBool.set(retProps.size() > 10);
+                }
             }
             return retProps;
         }
@@ -299,33 +300,29 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
         
         private void propsFileIsReadOnly() {
-            InitProperties initProperties = InitProperties.getInstance(FILE);
+            InitProperties initProperties = InitProperties.getInstance(InitProperties.FILE);
             Properties props = initProperties.getProps();
             retProps.clear();
             retProps.putAll(props);
             if (retProps.size() > 9) {
-                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
-                    initProperties.setProps(retProps), retProps.size(), initProperties.getClass().getTypeName()));
-                setProps(props);
-                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
-                    initProperties.setProps(retProps), retProps.size(), InitPropertiesAdapter.class.getTypeName()));
+                initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
+                retBool.set(initProperties.setProps(retProps));
             }
             else {
                 retProps.putAll(props);
             }
             retBool.set(retProps.size() > 9);
         }
-        
-        private void fileIsWritableOrNotExists() {
-            InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-            Properties props = initProperties.getProps();
-            retBool.set(props.size() > 10);
-            if (retBool.get()) {
+    
+        private void fileIsWritableOrNotExists() throws IOException {
+            if (retProps.size() < 10) {
+                retProps.clear();
+                Properties props = InitProperties.getInstance(InitProperties.DB_LOCAL).getProps();
                 retProps.putAll(props);
-                setProps(retProps);
+                retBool.set(retProps.size() > 10);
             }
-            else {
-                retProps.putAll(InitProperties.getInstance(InitProperties.ATAPT).getProps());
+            if (retBool.get()) {
+                retProps.store(new FileOutputStream(FileNames.CONSTANTSFOR_PROPERTIES), this.getClass().getSimpleName());
             }
         }
     
