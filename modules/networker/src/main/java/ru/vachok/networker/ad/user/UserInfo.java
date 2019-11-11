@@ -10,29 +10,21 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
-import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -187,12 +179,12 @@ public abstract class UserInfo implements InformationFactory {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     stringBuilder.append(execAutoResolvedUser(preparedStatement));
                 }
+                messageToUser.info(this.getClass().getSimpleName(), "writeAutoresolvedUserToDB", stringBuilder.toString());
             }
-            catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
+            catch (SQLException | RuntimeException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
                     pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
-            messageToUser.info(this.getClass().getSimpleName(), "writeAutoresolvedUserToDB", stringBuilder.toString());
         }
     
         /**

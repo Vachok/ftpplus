@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
@@ -44,14 +45,17 @@ public class IntoApplication {
     
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
     
-    private static Properties localCopyProperties = InitProperties.getTheProps();
-    
     private static ConfigurableApplicationContext configurableApplicationContext;
     
     
     @Contract(pure = true)
-    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
-        return configurableApplicationContext;
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() throws NetworkerStopException {
+        if (configurableApplicationContext != null) {
+            return configurableApplicationContext;
+        }
+        else {
+            throw new NetworkerStopException("IntoApplication", "getConfigurableApplicationContext", 56);
+        }
     }
     
     public static void main(@NotNull String[] args) {

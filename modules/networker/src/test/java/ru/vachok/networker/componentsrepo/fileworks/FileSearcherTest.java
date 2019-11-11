@@ -5,6 +5,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -38,7 +39,7 @@ public class FileSearcherTest {
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
             context.stop();
         }
-        catch (RuntimeException e) {
+        catch (RuntimeException | NetworkerStopException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }

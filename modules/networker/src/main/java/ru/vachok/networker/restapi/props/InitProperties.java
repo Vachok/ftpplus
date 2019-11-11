@@ -7,8 +7,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
@@ -84,13 +83,19 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     }
     
     static void reloadApplicationPropertiesFromFile() {
-        File propsFile = new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES);
+        File propsFile = new File(FileNames.CONSTANTSFOR_PROPERTIES);
+        Properties fromApp = PropsHelper.getAppPr();
         try {
-            Files.setAttribute(propsFile.toPath(), "dos:readonly", true);
+            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, true);
+            Properties propsFromFile = InitProperties.getInstance(InitProperties.FILE).getProps();
+            fromApp.clear();
+            fromApp.putAll(propsFromFile);
+            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, false);
         }
         catch (IOException e) {
-            System.err.println(e.getMessage());
+            System.err.println(MessageFormat.format("Reloading properties from file {0} error: {1}", FileNames.CONSTANTSFOR_PROPERTIES, e.getMessage()));
         }
+    
     }
     
     @Override

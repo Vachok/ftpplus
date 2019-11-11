@@ -2,13 +2,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
@@ -16,9 +12,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -27,24 +21,20 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
 
 /**
  @see PcNamesScanner */
-public class PcNamesScannerWorkTest {
+public class PcNamesScannerTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerWorkTest.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System
         .nanoTime());
     
     private static final PcNamesScanner PC_SCANNER = new PcNamesScanner();
@@ -159,26 +149,6 @@ public class PcNamesScannerWorkTest {
         isMethodOk = PcNamesScanner.fileScanTMPCreate(false);
         Assert.assertFalse(file.exists());
         Assert.assertTrue(isMethodOk);
-    }
-    
-    @Test
-    public void testIsTime() {
-        try {
-            Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        PC_SCANNER.setModel(new ExtendedModelMap());
-        PC_SCANNER.setRequest(new MockHttpServletRequest());
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->PC_SCANNER.checkTime());
-        try {
-            submit.get(20, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        checkWeekDB();
     }
     
     private static void checkWeekDB() {

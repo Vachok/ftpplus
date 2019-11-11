@@ -8,17 +8,13 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -28,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -52,7 +48,7 @@ public class NetScanCtr {
     
     @SuppressWarnings("InstanceVariableOfConcreteClass") private PcNamesScanner pcNamesScanner;
     
-    private NetScanService pcNamesScannerOld = new PcNamesScannerWorks();
+    private static final NetScanService PC_NAMES_SCANNER_OLD = new PcNamesScannerWorks();
     
     private HttpServletRequest request;
     
@@ -136,26 +132,6 @@ public class NetScanCtr {
     }
     
     /**
-     @see NetScanCtrTest#testStarterNetScan()
-     */
-    void starterNetScan() {
-        Date nextStart = new Date(InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, System.currentTimeMillis()));
-        if (!file.exists()) {
-            PcNamesScanner.fileScanTMPCreate(true);
-            messageToUser.warn(this.getClass().getSimpleName(), file.getAbsolutePath(), MessageFormat
-                .format("{0} nextStart. pcNamesScanner with hash {1} next run.", nextStart.toString(), this.pcNamesScanner.hashCode()));
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(pcNamesScanner);
-        }
-        else {
-            String bodyMsg = MessageFormat
-                .format("{0} scan.tmp\npcNamesScanner with hash {1} running... {2} next start, InitProperties.getUserPref().getLong(PropertiesNames.NEXTSCAN, System.currentTimeMillis()): {3}",
-                    file.exists(), this.pcNamesScanner.hashCode(), nextStart.toString());
-            messageToUser.info(this.getClass().getSimpleName(), new Date(pcNamesScanner.scheduledExecutionTime()).toString(), bodyMsg);
-            file.deleteOnExit();
-        }
-    }
-    
-    /**
      POST /netscan
      <p>
  
@@ -163,7 +139,7 @@ public class NetScanCtr {
      @return redirect:/ad? + {@link PcNamesScanner#getThePc()}
      */
     @PostMapping(STR_NETSCAN)
-    public @NotNull String pcNameForInfo(Model model, @NotNull @ModelAttribute PcNamesScannerWorks pcNamesScanner) {
+    public @NotNull String pcNameForInfo(Model model, @NotNull @ModelAttribute PcNamesScanner pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
         this.model = model;
         this.pcNamesScanner.setClassOption(this);
@@ -178,5 +154,37 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.THEPC, thePc);
         pcNamesScanner.setThePc("");
         return "redirect:/ad?" + thePc;
+    }
+    
+    /**
+     @see NetScanCtrTest#testStarterNetScan()
+     */
+    void starterNetScan() {
+        Date startDate = new Date(InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()));
+        if (!file.exists()) {
+            PcNamesScanner.fileScanTMPCreate(true);
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(pcNamesScanner);
+            messageToUser.info(MessageFormat.format("Executing pcNamesScanner {0}", pcNamesScanner.hashCode()));
+            try {
+                submit.get(25, TimeUnit.MINUTES);
+            }
+            catch (InterruptedException e) {
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException | TimeoutException e) {
+                BlockingQueue<Runnable> queue = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().getQueue();
+                for (Runnable runnable : queue) {
+                    if (runnable instanceof PcNamesScanner) {
+                        queue.remove();
+                    }
+                }
+                messageToUser.error("NetScanCtr.starterNetScan", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            }
+        }
+        else {
+            messageToUser.warn(MessageFormat.format("PcNamesScanner already running. File {0} is {1}!", file.getAbsolutePath(), file.exists()));
+            file.deleteOnExit();
+        }
     }
 }

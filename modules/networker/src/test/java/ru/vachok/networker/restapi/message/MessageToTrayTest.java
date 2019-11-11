@@ -4,8 +4,8 @@ package ru.vachok.networker.restapi.message;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -30,6 +30,9 @@ public class MessageToTrayTest {
         try (ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext()) {
             this.applicationContext = applicationContext;
             this.messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
+        }
+        catch (NetworkerStopException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     

@@ -3,9 +3,7 @@
 package ru.vachok.networker;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -16,10 +14,7 @@ import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
@@ -27,9 +22,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -39,22 +32,13 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -96,8 +80,7 @@ public class AppInfoOnLoad implements Runnable {
             infoForU();
         }
         catch (RuntimeException e) {
-            MessageToUser.getInstance(MessageToUser.DB, AppInfoOnLoad.class.getSimpleName())
-                    .error(name, e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("AppInfoOnLoad.run", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
     }
     
@@ -236,9 +219,6 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4, thisDelay, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(saveTHRTimes, 5, 5, TimeUnit.MINUTES);
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-            .scheduleWithFixedDelay(new AppComponents().pcNamesScanner(), 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
-    
         getMiniLogger().add(thrConfig.toString());
         this.startIntervalTasks();
     }

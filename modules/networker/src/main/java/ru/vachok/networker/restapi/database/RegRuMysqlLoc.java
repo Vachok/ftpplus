@@ -4,33 +4,21 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- Class ru.vachok.networker.restapi.database.RegRuMysql
- <p>
- 
  @see ru.vachok.networker.restapi.database.RegRuMysqlLocTest
  @since 14.07.2019 (12:16) */
 class RegRuMysqlLoc implements DataConnectTo {
@@ -45,7 +33,7 @@ class RegRuMysqlLoc implements DataConnectTo {
     private MysqlDataSource mysqlDataSource;
     
     @Contract(pure = true)
-    public RegRuMysqlLoc(String dbName) {
+    RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
         this.mysqlDataSource = getDataSource();
         mysqlDataSource.setUser("it");
@@ -73,6 +61,11 @@ class RegRuMysqlLoc implements DataConnectTo {
             messageToUser.error("RegRuMysqlLoc.getDataSourceLoc", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
             return DataConnectToAdapter.getLibDataSource();
         }
+    }
+    
+    @Contract(pure = true)
+    RegRuMysqlLoc() {
+        this.dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
     }
     
     private @Nullable Connection conAlt(@NotNull String dbName) {
@@ -107,7 +100,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         if (dbName.contains(".")) {
-            throw new InvokeIllegalException(MessageFormat.format("Database name must me without comma! {0}\n{1}", dbName, this.getClass().getTypeName()));
+            throw new InvokeIllegalException(MessageFormat.format("{0}. Database name must me without comma: {1}!", this.getClass().getSimpleName(), dbName));
         }
         defDataSource.setDatabaseName(dbName);
         defDataSource.setUseSSL(false);

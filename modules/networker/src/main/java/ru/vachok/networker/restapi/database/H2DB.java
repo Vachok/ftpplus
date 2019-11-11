@@ -80,12 +80,12 @@ public class H2DB implements DataConnectTo {
     @SuppressWarnings({"resource", "JDBCResourceOpenedButNotSafelyClosed"})
     @Override
     public Connection getDefaultConnection(String dbName) {
-        Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbName);
+        Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:h2:mem:" + dbName + ";MODE=MYSQL;DATABASE_TO_LOWER=TRUE");
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("H2DB.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.warn(H2DB.class.getSimpleName(), "getDefaultConnection", e.getMessage() + Thread.currentThread().getState().name());
         }
         return connection;
     }

@@ -28,6 +28,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String H2DB = "H2DB";
     
+    String REGRUCONNECTION = "RegRuMysqlLoc";
+    
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getRemoteReg() {
         return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -60,6 +62,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
+            case REGRUCONNECTION:
+                return new RegRuMysqlLoc();
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case TESTING:

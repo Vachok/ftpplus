@@ -7,9 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -18,13 +16,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -186,7 +180,7 @@ class DBPCHTMLInfo implements HTMLInfo {
             }
         }
         catch (SQLException | RuntimeException e) {
-            messageToUser.error("DBPCHTMLInfo", "countOnOffNew", e.getMessage() + " see line: 188");
+            messageToUser.warn(DBPCHTMLInfo.class.getSimpleName(), "countOnOffNew", e.getMessage() + Thread.currentThread().getState().name());
         }
         return htmlOnOffCreate(on, off);
     }

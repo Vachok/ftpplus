@@ -10,18 +10,15 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.FakeRequest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.info.NetScanService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,9 +39,9 @@ public class NetScanCtrTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private static final PcNamesScannerWorks FINAL_SCANNER = new PcNamesScannerWorks();
+    private static final File FILE = new File(FileNames.SCAN_TMP);
     
-    private PcNamesScannerWorks pcNamesScanner;
+    private NetScanService pcNamesScannerOld = new PcNamesScannerWorks();
     
     private NetScanCtr netScanCtr;
     
@@ -53,6 +50,8 @@ public class NetScanCtrTest {
     private HttpServletResponse response = new MockHttpServletResponse();
     
     private Model model = new ExtendedModelMap();
+    
+    private PcNamesScanner pcNamesScanner;
     
     @BeforeClass
     public void setUp() {
@@ -67,10 +66,20 @@ public class NetScanCtrTest {
     
     @BeforeMethod
     public void initScan() {
-        this.pcNamesScanner = FINAL_SCANNER;
-        this.netScanCtr = new NetScanCtr(FINAL_SCANNER);
+        this.pcNamesScanner = new PcNamesScanner();
+        this.netScanCtr = new NetScanCtr(pcNamesScanner);
         netScanCtr.setModel(model);
         netScanCtr.setRequest(request);
+        pcNamesScanner.setClassOption(netScanCtr);
+        try {
+            Files.deleteIfExists(FILE.toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        finally {
+            Assert.assertFalse(FILE.exists());
+        }
     }
     
     @Test
@@ -104,11 +113,11 @@ public class NetScanCtrTest {
     }
     
     @Test
+    @Ignore
     public void testStarterNetScan() {
         netScanCtr.starterNetScan();
-        File file = new File(FileNames.SCAN_TMP);
-        Assert.assertTrue(file.exists());
-        Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)));
+        Assert.assertTrue(FILE.exists());
+        Assert.assertTrue(FILE.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)));
     }
     
     @Test

@@ -33,6 +33,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
+        Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName);
         if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
             this.dbName = dbName.split("\\Q.\\E")[0];
             this.tableName = dbName.split("\\Q.\\E")[1];
@@ -55,14 +56,12 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         defDataSource.setAutoReconnect(true);
         defDataSource.setCreateDatabaseIfNotExist(true);
         try {
-            Connection connection = defDataSource.getConnection();
-            Thread.currentThread().setName(defDataSource.getDatabaseName());
-            return connection;
+            connection = defDataSource.getConnection();
         }
         catch (SQLException e) {
             messageToUser.warn("MySqlLocalSRVInetStat", "getDefaultConnection", e.getMessage() + " see line: 189");
-            return null;
         }
+        return connection;
     }
     
     @Override

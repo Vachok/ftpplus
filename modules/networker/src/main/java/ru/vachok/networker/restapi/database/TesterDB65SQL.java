@@ -8,9 +8,7 @@ import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
 
@@ -68,7 +66,7 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
             connection = sourceT.getConnection();
         }
         catch (Exception e) {
-            messageToUser.error("TesterDB65SQL.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.warn(TesterDB65SQL.class.getSimpleName(), "getDefaultConnection", e.getMessage() + Thread.currentThread().getState().name());
             connection = alternateConnection();
         }
         try {
@@ -82,20 +80,13 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     }
     
     private Connection alternateConnection() {
-        Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbName);
-        try {
-            connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName);
-        }
-        catch (Exception e) {
-            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 89 ***");
-        }
-        return connection;
+        return DataConnectTo.getInstance(DataConnectTo.REGRUCONNECTION).getDefaultConnection(dbName.split("\\Q.\\E")[1]);
     }
     
     @Override
     public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
         final String sql = String
-            .format("CREATE TABLE `%s` (\n\t`idrec` INT(7) UNSIGNED NOT NULL DEFAULT 0,\n\t`stamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),\n\t`upstring` VARCHAR(1000) NOT NULL DEFAULT '-',\n\tPRIMARY KEY (`idrec`),\n\tUNIQUE INDEX `upstring` (`upstring`)\n)\nCOLLATE='utf8_general_ci'\nENGINE=MyISAM\nMAX_ROWS=1000000\n;\n", dbPointTable);
+                .format("CREATE TABLE `%s` (\n\t`idrec` INT(7) UNSIGNED NOT NULL DEFAULT 0,\n\t`stamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),\n\t`upstring` VARCHAR(1000) NOT NULL DEFAULT '-',\n\tPRIMARY KEY (`idrec`),\n\tUNIQUE INDEX `upstring` (`upstring`)\n)\nCOLLATE='utf8_general_ci'\nENGINE=MyISAM\nMAX_ROWS=1000000\n;\n", dbPointTable);
         messageToUser.warn(dbPointTable, this.getClass().getSimpleName() + " creating...", sql);
         int retInt = 0;
         try (Connection connection = getDefaultConnection(dbPointTable);

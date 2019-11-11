@@ -18,7 +18,7 @@ import java.text.MessageFormat;
  Class ActionOpenProgFolder
  <p>
  
- @see ru.vachok.networker.systray.actions.ActionOpenProgFolderTest
+ @see ActionOpenProgFolderTest
  @since 12.07.2019 (20:19) */
 @SuppressWarnings("ClassHasNoToStringMethod")
 public class ActionOpenProgFolder extends AbstractAction {

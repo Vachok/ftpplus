@@ -6,13 +6,10 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -21,9 +18,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -252,7 +247,7 @@ public class ExitApp extends Thread implements Externalizable {
             context.stop();
             System.exit(Math.toIntExact(toMinutes));
         }
-        catch (RuntimeException e) {
+        catch (RuntimeException | NetworkerStopException e) {
             AppComponents.threadConfig().killAll();
             Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
         }

@@ -317,7 +317,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
         
         private void fileIsWritableOrNotExists() {
-            InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+            InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
             Properties props = initProperties.getProps();
             retBool.set(props.size() > 10);
             if (retBool.get()) {

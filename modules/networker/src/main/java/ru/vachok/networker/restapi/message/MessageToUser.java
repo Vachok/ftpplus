@@ -52,10 +52,6 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         else if (messengerType.equals(TRAY)) {
             return MessageToTray.getInstance(messengerHeader);
         }
-        else if (messengerType.equals(DB)) {
-            DB_MESSENGER.setHeaderMsg(messengerHeader);
-            return DB_MESSENGER;
-        }
         else if (messengerType.equalsIgnoreCase(SWING)) {
             MESSAGE_LOCAL.setHeaderMsg(messengerHeader);
             return SWING_M;

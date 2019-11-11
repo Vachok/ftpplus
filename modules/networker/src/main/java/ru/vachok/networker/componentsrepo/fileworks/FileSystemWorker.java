@@ -146,7 +146,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 .format("{0} readied {1} kilobytes.", file, readBytes / ConstantsFor.KBYTE));
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), " see line: 136 ***");
             bytes = AbstractForms.exceptionNetworker(e.getStackTrace()).getBytes();
         }
         return new String(bytes);
