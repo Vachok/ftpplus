@@ -6,11 +6,15 @@ package ru.vachok.networker;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.FakeRequest;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -74,7 +78,7 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static @NotNull MessageSwing getMessageSwing(String messengerHeader) {
 //        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
-        return new ru.vachok.messenger.MessageSwing();
+        return new ru.vachok.messenger.MessageSwing(messengerHeader);
     }
     
     @Contract(value = " -> new", pure = true)
@@ -84,7 +88,7 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) {
-        MysqlDataSource mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
+        MysqlDataSource mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         mysqlDataSource.setUser(properties.getProperty(PropertiesNames.DBUSER));
         mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.DBPASS));

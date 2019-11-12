@@ -8,7 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -323,32 +324,22 @@ public class PcNamesScanner implements NetScanService {
     }
     
     private class ScannerUSR implements NetScanService {
-        
-        
+    
+    
+        private @NotNull Properties props = InitProperties.getTheProps();
+    
         @Override
         public String getPingResultStr() {
             return new ScanMessagesCreator().fillUserPCForWEBModel();
         }
     
-        /**
-         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
-     
-         @see PcNamesScannerTest#testWriteLog()
-         */
-        @SuppressWarnings("FeatureEnvy")
-        @Override
-        public String writeLog() {
-            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
-            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", logMini);
-            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
-            setTimesLastNext();
-            showScreenMessage();
-            messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
-            InitProperties.getTheProps().setProperty(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
+        private void scanIt() {
+            ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+            linksMap.clear();
+            InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
+            props.setProperty(PropertiesNames.ONLINEPC, "0");
+            getExecution();
         }
-        
         
         /**
          @return {@link #toString()}
@@ -358,10 +349,9 @@ public class PcNamesScanner implements NetScanService {
         @Override
         public String getExecution() {
             scanPCPrefixes();
-    
             MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
                     .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
-                        InitProperties.getTheProps().getProperty(PropertiesNames.ONLINEPC), new File(FileNames.SCAN_TMP).getAbsolutePath()));
+                        props.getProperty(PropertiesNames.ONLINEPC), new File(FileNames.SCAN_TMP).getAbsolutePath()));
     
             return this.toString();
         }
@@ -412,35 +402,33 @@ public class PcNamesScanner implements NetScanService {
         public Runnable getMonitoringRunnable() {
             return this;
         }
-        
-        private void scanIt() {
-            TForms tForms = new TForms();
-            ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-            linksMap.clear();
-            InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-            InitProperties.getTheProps().setProperty(PropertiesNames.ONLINEPC, "0");
-            getExecution();
-        }
     
-        private void setTimesLastNext() {
-            Properties props = InitProperties.getTheProps();
-    
-            InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-            long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY / 10);
-    
-            props.setProperty(PropertiesNames.NEXTSCAN, String.valueOf(nextStart));
-            InitProperties.setPreference(PropertiesNames.NEXTSCAN, String.valueOf(nextStart));
-    
-            initProperties.setProps(props);
-            initProperties = InitProperties.getInstance(InitProperties.FILE);
-            initProperties.setProps(props);
+        /**
+         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
+     
+         @see PcNamesScannerTest#testWriteLog()
+         */
+        @SuppressWarnings("FeatureEnvy")
+        @Override
+        public String writeLog() {
+            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
+            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", logMini);
+            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
+            showScreenMessage();
+            messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
+            String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
+            props.setProperty(PropertiesNames.TOTPC, totPC);
+            InitProperties.setPreference(PropertiesNames.TOTPC, totPC);
+            InitProperties.getInstance(InitProperties.FILE).setProps(props);
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }
         
         private void showScreenMessage() {
             float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
             String bodyMsg = MessageFormat
                 .format("Online: {0}.\n{1} min uptime. \n{2} next run\n",
-                        InitProperties.getTheProps().getProperty(PropertiesNames.ONLINEPC, "0"), upTime, new Date(lastScanStamp));
+                    props.getProperty(PropertiesNames.ONLINEPC, "0"), upTime, new Date(lastScanStamp));
             try {
                 AppComponents.getMessageSwing(this.getClass().getSimpleName()).infoTimer((int) ConstantsFor.DELAY, bodyMsg);
             }

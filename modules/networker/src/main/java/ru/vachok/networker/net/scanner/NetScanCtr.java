@@ -104,9 +104,8 @@ public class NetScanCtr {
         float serviceInfoVal = (float) TimeUnit.MILLISECONDS.toSeconds(nextScan - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
         String pcVal = pcNamesScanner.getStatistics() + "<p>";
         String titleVal = InitProperties.getUserPref().get(PropertiesNames.ONLINEPC, "0") + " pc at " + new Date(lastScan);
-        String footerVal = PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<br>First Scan: 2018-05-05";
         String thePCVal = pcNamesScanner.getThePc();
-        
+        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<br>First Scan: 2018-05-05");
         model.addAttribute(ModelAttributeNames.SERVICEINFO, serviceInfoVal);
         model.addAttribute(ModelAttributeNames.PC, pcVal);
         model.addAttribute(ModelAttributeNames.TITLE, titleVal);
@@ -155,7 +154,7 @@ public class NetScanCtr {
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", this.pcNamesScanner.getExecution().trim());
             model.addAttribute(ModelAttributeNames.TITLE, thePc);
-            model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
+    
             return "ok";
         }
         model.addAttribute(ModelAttributeNames.THEPC, thePc);
