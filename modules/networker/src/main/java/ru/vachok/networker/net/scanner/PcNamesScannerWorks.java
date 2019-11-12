@@ -10,10 +10,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.ui.Model;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
@@ -177,9 +179,6 @@ public class PcNamesScannerWorks extends PcNamesScanner {
         try {
             ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
             context.getBeanFactory().registerSingleton("netScanCtr", netScanCtr);
-        }
-        catch (NetworkerStopException e) {
-            messageToUser.error("PcNamesScannerWorks.setClassOption", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
             this.setClassOption(netScanCtr);
