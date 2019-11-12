@@ -6,7 +6,9 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
@@ -19,8 +21,6 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -131,24 +131,6 @@ public class ExitApp extends Thread implements Externalizable {
     public void run() {
         VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         miniLoggerLast.add(reasonExit);
-        synchronizePrefProps();
-    }
-    
-    private void synchronizePrefProps() {
-        Preferences userPref = InitProperties.getUserPref();
-        Properties props = InitProperties.getTheProps();
-        try {
-            String[] keys = userPref.keys();
-            for (String key : keys) {
-                props.put(key, userPref.get(key, key));
-            }
-            for (Object o : props.keySet()) {
-                InitProperties.setPreference(o.toString(), props.get(o).toString());
-            }
-        }
-        catch (BackingStoreException e) {
-            messageToUser.error(ExitApp.class.getSimpleName(), e.getMessage(), " see line: 149 ***");
-        }
         copyAvail();
     }
     

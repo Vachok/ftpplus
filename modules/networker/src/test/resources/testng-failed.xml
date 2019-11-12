@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
-    <test thread-count="5" name="networker(failed)">
-        <classes>
-        </classes>
-    </test> <!-- networker(failed) -->
+  <test thread-count="5" name="networker(failed)">
+    <classes>
+      <class name="ru.vachok.networker.ad.pc.PCOffTest">
+        <methods>
+          <include name="setUp"/>
+          <include name="tryResolveA161"/>
+          <include name="testGetInfo"/>
+          <include name="testGetInfoAbout"/>
+          <include name="tearDown"/>
+          <include name="testToString"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.ad.pc.PCOffTest -->
+    </classes>
+  </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

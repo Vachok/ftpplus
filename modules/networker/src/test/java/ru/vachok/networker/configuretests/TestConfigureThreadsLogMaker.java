@@ -6,7 +6,7 @@ package ru.vachok.networker.configuretests;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.NetworkerStopException;
+import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;

@@ -10,15 +10,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.awt.*;
 import java.text.MessageFormat;
@@ -61,10 +60,9 @@ public class IntoApplication {
     
     public static void main(@NotNull String[] args) {
         setUTF8Enc();
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", UsefulUtilities.scheduleTrunkPcUserAuto());
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
-            InitProperties.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
-            MESSAGE_LOCAL.info(UsefulUtilities.scheduleTrunkPcUserAuto());
         }
         if (args.length > 0) {
             new ArgsReader(args).run();

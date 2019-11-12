@@ -5,8 +5,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 

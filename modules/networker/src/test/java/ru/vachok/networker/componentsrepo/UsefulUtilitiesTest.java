@@ -5,9 +5,7 @@ package ru.vachok.networker.componentsrepo;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -94,7 +92,7 @@ public class UsefulUtilitiesTest {
     @Test
     public void testGetDelay() {
         long delay = UsefulUtilities.getDelay();
-        Assert.assertEquals(delay, InitProperties.getUserPref().getInt(PropertiesNames.MINDELAY, 17));
+        Assert.assertEquals(delay, Long.parseLong(InitProperties.getTheProps().getProperty(PropertiesNames.MINDELAY, String.valueOf(5))));
     }
     
     @Test

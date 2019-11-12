@@ -36,6 +36,15 @@ public abstract class UserInfo implements InformationFactory {
     
     private static final UserInfo.DatabaseWriter dbWriter = new UserInfo.DatabaseWriter();
     
+    @Override
+    public abstract String getInfo();
+    
+    @Override
+    public abstract void setClassOption(Object option);
+    
+    @Override
+    public abstract String getInfoAbout(String aboutWhat);
+    
     @Contract("null -> new")
     public static @NotNull UserInfo getInstance(String type) {
         return type == null ? new UnknownUser(UserInfo.class.getSimpleName()) : checkType(type);
@@ -94,30 +103,9 @@ public abstract class UserInfo implements InformationFactory {
     public abstract List<String> getLogins(String pcName, int resultsLimit);
     
     @Override
-    public abstract String getInfo();
-    
-    @Override
-    public abstract void setClassOption(Object option);
-    
-    @Override
-    public abstract String getInfoAbout(String aboutWhat);
-    
-    @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
-            .toString();
-    }
-    
-    static String resolvePCUserOverDB(String pcOrUser) {
-        String result;
-        try {
-            List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
-            result = userLogins.get(0);
-        }
-        catch (IndexOutOfBoundsException e) {
-            result = new ResolveUserInDataBase(pcOrUser).getLoginFromStaticDB(pcOrUser);
-        }
-        return result;
+                .toString();
     }
     
 
@@ -162,7 +150,7 @@ public abstract class UserInfo implements InformationFactory {
         @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+                    .toString();
         }
     
         /**
@@ -183,7 +171,7 @@ public abstract class UserInfo implements InformationFactory {
             }
             catch (SQLException | RuntimeException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
-                    pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
+                        pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
         }
     
@@ -205,7 +193,7 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
             String retStr = MessageFormat.format("{0}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
-                .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
+                    .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
             return retStr;
         }
@@ -232,7 +220,7 @@ public abstract class UserInfo implements InformationFactory {
             this.pcName = pcName;
             String sql;
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-                .valueOf(LocalDateTime.now()));
+                    .valueOf(LocalDateTime.now()));
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
         
             if (isOffline) {
@@ -243,8 +231,8 @@ public abstract class UserInfo implements InformationFactory {
                 sql = sqlOn;
                 if (!isJustStart && wasOffline()) {
                     sql = String
-                        .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-                            .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
+                            .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+                                    .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
                 }
             }
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
@@ -267,11 +255,11 @@ public abstract class UserInfo implements InformationFactory {
                 while (resultSet.next()) {
                     Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
                     retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN,
-                        System.currentTimeMillis()) - TimeUnit.MINUTES.toMillis(Year.now().getValue() - 1984);
+                            System.currentTimeMillis()) - TimeUnit.MINUTES.toMillis(Year.now().getValue() - 1984);
                 }
             }
             catch (SQLException e) {
-                messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName(), "wasOffline", e.getMessage() + " see line: 273");
+                messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName(), "wasOffline", e.getMessage() + Thread.currentThread().getState().name());
             }
             return retBool;
         }
@@ -283,31 +271,35 @@ public abstract class UserInfo implements InformationFactory {
                     preparedStatement.setString(1, String.format("%s%%", pcName));
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
-                            Timestamp timeOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON);
-                            Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
-                            long timeSpend = lastOn.getTime() - timeOn.getTime();
-                            timeSpend = TimeUnit.MILLISECONDS.toMinutes(timeSpend);
-                            try (PreparedStatement setTimeSpend = connection.prepareStatement(String
-                                .format("UPDATE pcuser SET spendtime=%d WHERE pcname LIKE '%s%%'", (int) timeSpend, pcName))) {
-                                messageToUser.info(
-                                    this.getClass().getSimpleName(),
-                                    MessageFormat.format("Time spend {0} minutes", (int) timeSpend),
-                                    MessageFormat.format("updated {0} row(s)", setTimeSpend.executeUpdate()));
-                            }
+                            countTime(connection, resultSet);
                         }
                     }
                 }
             }
             catch (SQLException e) {
-                messageToUser.warn("DatabaseWriter", "countWorkTime", e.getMessage() + " see line: 256");
+                messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName(), "countWorkTime", e.getMessage() + Thread.currentThread().getState().name());
             }
         }
     
+        private void countTime(@NotNull Connection connection, @NotNull ResultSet resultSet) throws SQLException {
+            Timestamp timeOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON);
+            Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
+            long timeSpend = lastOn.getTime() - timeOn.getTime();
+            timeSpend = TimeUnit.MILLISECONDS.toMinutes(timeSpend);
+            try (PreparedStatement setTimeSpend = connection.prepareStatement(String
+                    .format("UPDATE pcuser SET spendtime=%d WHERE pcname LIKE '%s%%'", (int) timeSpend, pcName))) {
+                messageToUser.info(
+                        this.getClass().getSimpleName(),
+                        MessageFormat.format("Time spend {0} minutes", (int) timeSpend),
+                        MessageFormat.format("updated {0} row(s)", setTimeSpend.executeUpdate()));
+            }
+        }
+        
         private boolean writeAllPrefixToDB() {
             int exUpInt = 0;
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
                 try (PreparedStatement prepStatement = connection
-                    .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
+                        .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
                     List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                     toSort.sort(null);
                     for (String resolvedStrFromSet : toSort) {
@@ -412,8 +404,20 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setString(6, resolveUser);
     
             messageToUser.info(this.getClass().getSimpleName(), "executing statement", MessageFormat
-                .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
+                    .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
             return prStatement.executeUpdate();
         }
+    }
+    
+    static String resolvePCUserOverDB(String pcOrUser) {
+        String result;
+        try {
+            List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
+            result = userLogins.get(0);
+        }
+        catch (IndexOutOfBoundsException e) {
+            result = new ResolveUserInDataBase(pcOrUser).getLoginFromStaticDB(pcOrUser);
+        }
+        return result;
     }
 }

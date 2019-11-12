@@ -41,16 +41,10 @@ import java.util.concurrent.TimeUnit;
 public class PcNamesScanner implements NetScanService {
     
     
-    /**
-     Время инициализации
-     */
     private final long startClassTime = System.currentTimeMillis();
     
     private static final File scanFile = new File(FileNames.SCAN_TMP);
     
-    /**
-     {@link ConstantsFor#DELAY}
-     */
     static final int DURATION_MIN = (int) ConstantsFor.DELAY;
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
@@ -61,9 +55,6 @@ public class PcNamesScanner implements NetScanService {
     
     private String thePc = "";
     
-    /**
-     @return атрибут модели.
-     */
     public String getThePc() {
         return thePc;
     }
