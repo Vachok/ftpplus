@@ -112,8 +112,10 @@ public class PcNamesScanner implements NetScanService {
      */
     @Override
     public void run() {
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + "." + hashCode(), AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
+        String fileName = this.getClass().getSimpleName() + "." + hashCode();
+        FileSystemWorker.writeFile(fileName, AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
         isMapSizeBigger(Integer.parseInt(InitProperties.getUserPref().get(PropertiesNames.TOTPC, "269")));
+        new File(fileName).deleteOnExit();
     }
     
     private void isMapSizeBigger(int thisTotalPC) {

@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.enums.FileNames;
@@ -23,7 +22,10 @@ import java.awt.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 
 /**
@@ -48,7 +50,9 @@ public class IntoApplication {
     
     
     @Contract(pure = true)
-    public static ConfigurableApplicationContext getConfigurableApplicationContext() throws NetworkerStopException {
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
+        FileSystemWorker.writeFile(IntoApplication.class.getSimpleName() + "." + configurableApplicationContext.hashCode(), AbstractForms
+            .networkerTrace(Thread.currentThread().getStackTrace()));
         if (configurableApplicationContext != null) {
             return configurableApplicationContext;
         }
