@@ -34,7 +34,7 @@ public abstract class UserInfo implements InformationFactory {
     
     private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_PCUSERAUTO_FULL;
     
-    private static final UserInfo.DatabaseWriter dbWriter = new UserInfo.DatabaseWriter();
+    private static final UserInfo.DatabaseWriter DATABASE_WRITER = new UserInfo.DatabaseWriter();
     
     @Override
     public abstract String getInfo();
@@ -63,12 +63,12 @@ public abstract class UserInfo implements InformationFactory {
      @see UserInfoTest#testWriteUsersToDBFromSET()
      */
     public static boolean writeUsersToDBFromSET() {
-        return dbWriter.writeAllPrefixToDB();
+        return DATABASE_WRITER.writeAllPrefixToDB();
     }
     
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains(ConstantsFor.UNKNOWN_USER) | !lastFileUse.contains("not found")) {
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->dbWriter.writeAutoresolvedUserToDB(pcName, lastFileUse));
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->DATABASE_WRITER.writeAutoresolvedUserToDB(pcName, lastFileUse));
         }
         else {
             System.err.println(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
@@ -78,7 +78,7 @@ public abstract class UserInfo implements InformationFactory {
     public static void renewOffCounter(String pcName, boolean isOffline) {
         String methName = "UserInfo.renewOffCounter";
         try {
-            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(dbWriter::countWorkTime);
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(DATABASE_WRITER::countWorkTime);
             submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         }
         catch (InterruptedException e) {
@@ -91,13 +91,13 @@ public abstract class UserInfo implements InformationFactory {
             UserInfo.DatabaseWriter.messageToUser.error(MessageFormat.format(methName, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         finally {
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->dbWriter.updTime(pcName, isOffline));
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->DATABASE_WRITER.updTime(pcName, isOffline));
         }
         
     }
     
     public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
-        return dbWriter.uniqueUserAddToDB(pcName, lastFileUse);
+        return DATABASE_WRITER.uniqueUserAddToDB(pcName, lastFileUse);
     }
     
     public abstract List<String> getLogins(String pcName, int resultsLimit);

@@ -130,6 +130,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     
     private void setComentInDB(final int idBefore) {
         int diffRows = (getLastRecordID() - idBefore);
+        Thread.currentThread().setName(MessageFormat.format("inetdiff{0}", diffRows));
         final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s at %s';", diffRows, UsefulUtilities.thisPC(), new Date());
         ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo
             .getInstance(ru.vachok.networker.restapi.database.DataConnectTo.DEFAULT_I);

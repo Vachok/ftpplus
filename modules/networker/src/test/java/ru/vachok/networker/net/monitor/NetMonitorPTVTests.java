@@ -54,6 +54,7 @@ import java.util.prefs.Preferences;
      */
     @Test
     public void testRun() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         Path ptvFilePath = Paths.get(FileNames.PING_TV);
         try {
             Files.deleteIfExists(ptvFilePath);

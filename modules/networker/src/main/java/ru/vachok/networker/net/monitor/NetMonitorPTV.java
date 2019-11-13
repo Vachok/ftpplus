@@ -4,7 +4,6 @@ package ru.vachok.networker.net.monitor;
 
 
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
@@ -20,8 +19,6 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Objects;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 
@@ -38,12 +35,6 @@ public class NetMonitorPTV implements NetScanService {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
-    
-    @SuppressWarnings("InstanceVariableMayNotBeInitialized")
-    private OutputStream outputStream;
-    
-    @SuppressWarnings("InstanceVariableMayNotBeInitialized")
-    private PrintStream printStream;
     
     private Preferences preferences = InitProperties.getUserPref();
     
@@ -63,15 +54,13 @@ public class NetMonitorPTV implements NetScanService {
     
     @Override
     public String writeLog() {
-        try {
-            writeStatAndCheckSize();
-            return pingTv.getAbsolutePath();
+        if (pingTv.length() > ConstantsFor.MBYTE) {
+            ifPingTVIsBig();
         }
-        catch (IOException | BackingStoreException e) {
-            String errStr = MessageFormat.format("NetMonitorPTV.writeLogToFile: {0}, ({1})", e.getMessage(), e.getClass().getName());
-            messageToUser.error(errStr);
-            return errStr;
+        else {
+            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
         }
+        return pingTv.getAbsolutePath();
     }
     
     @Override
@@ -81,49 +70,39 @@ public class NetMonitorPTV implements NetScanService {
     
     @Override
     public String getStatistics() {
-        throw new TODOException("01.11.2019 (9:04)");
+        return FileSystemWorker.readFile(pingTv);
+    }
+    
+    private void ifPingTVIsBig() {
+        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
+        boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, Paths.get(fileCopyPathString).toAbsolutePath().normalize(), true);
+        if (isPingTvCopied) {
+            InitProperties.setPreference(FileNames.PING_TV, new Date() + "_renewed");
+        }
+        else {
+            messageToUser.info(pingTv.getAbsolutePath() + " size in kb = " + pingTv.length() / ConstantsFor.KBYTE);
+        }
+    }
+    
+    @Override
+    public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        try {
+            pingIPTV();
+        }
+        catch (IOException | IllegalAccessException e) {
+            messageToUser.warn(NetMonitorPTV.class.getSimpleName(), "run", e.getMessage() + Thread.currentThread().getState().name());
+        }
     }
     
     protected String getPingResultLast() {
         return pingResultLast;
     }
     
-    @Override
-    public void run() {
-        try {
-            if (outputStream == null || printStream == null) {
-                createFile();
-            }
-            pingIPTV();
-        }
-        catch (IOException | IllegalAccessException e) {
-            messageToUser.warn("NetMonitorPTV", "run", e.getMessage() + " see line: 154");
-        }
-        catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
-        }
-    }
-    
-    private void createFile() throws IOException, BackingStoreException {
-        Path filePath = pingTv.toPath();
-    
-        if (!pingTv.exists()) {
-            Files.createFile(pingTv.toPath());
-            preferences.put(FileNames.PING_TV, new Date() + "_create");
-        }
-        else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
-            preferences.sync();
-        }
-        else {
-            preferences.put(FileNames.PING_TV, "7-JAN-1984 )");
-        }
-        this.outputStream = new FileOutputStream(pingTv);
-        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-    }
-    
-    private void pingIPTV() throws IOException, BackingStoreException, IllegalAccessException {
+    private void pingIPTV() throws IllegalAccessException, IOException {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setPriority(1);
+        createFile();
         StringBuilder stringBuilder = new StringBuilder();
         int timeOut = ConstantsFor.TIMEOUT_650 / 2;
         
@@ -163,7 +142,15 @@ public class NetMonitorPTV implements NetScanService {
         stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
         this.pingResultLast = stringBuilder.toString();
         pingSwitches();
-        writeStatAndCheckSize();
+        writeStat();
+    }
+    
+    private void createFile() throws IOException {
+        Path filePath = pingTv.toPath();
+        if (!pingTv.exists()) {
+            Files.createFile(pingTv.toPath());
+            InitProperties.setPreference(FileNames.PING_TV, new Date() + "_create");
+        }
     }
     
     private void pingSwitches() throws IllegalAccessException {
@@ -171,19 +158,6 @@ public class NetMonitorPTV implements NetScanService {
         for (Field swF : swFields) {
             String ipAddrStr = swF.get(swF).toString();
             writePingToDB(ipAddrStr, swF.getName());
-        }
-    }
-    
-    private void writeStatAndCheckSize() throws IOException, BackingStoreException {
-        printStream.print(pingResultLast + " " + LocalDateTime.now());
-        printStream.println();
-        
-        if (pingTv.length() > ConstantsFor.MBYTE) {
-            printStream.close();
-            ifPingTVIsBig();
-        }
-        else {
-            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
         }
     }
     
@@ -201,26 +175,22 @@ public class NetMonitorPTV implements NetScanService {
         }
     }
     
-    private void ifPingTVIsBig() throws IOException, BackingStoreException {
-        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
-        boolean isPingTvCopied = FileSystemWorker
-                .copyOrDelFile(pingTv, Paths.get(fileCopyPathString).toAbsolutePath().normalize(), true);
-        if (isPingTvCopied) {
-            this.outputStream = new FileOutputStream(pingTv);
-            this.printStream = new PrintStream(outputStream, true);
-            preferences.put(FileNames.PING_TV, new Date() + "_renewed");
-            preferences.sync();
-        }
-        else {
-            messageToUser.info(pingTv.getAbsolutePath() + " size in kb = " + pingTv.length() / ConstantsFor.KBYTE);
-        }
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetMonitorPTV{");
         sb.append("pingResultLast='").append(pingResultLast).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+    
+    private void writeStat() {
+        try (OutputStream outputStream = new FileOutputStream(pingTv, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.print(pingResultLast + " " + LocalDateTime.now());
+            printStream.println();
+        }
+        catch (IOException e) {
+            messageToUser.error("NetMonitorPTV.writeStatAndCheckSize", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
     }
 }
