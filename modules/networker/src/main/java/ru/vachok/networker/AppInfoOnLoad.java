@@ -6,7 +6,6 @@ package ru.vachok.networker;
 import com.eclipsesource.json.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.networker.ad.common.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
@@ -22,7 +21,6 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -39,7 +37,8 @@ import java.text.MessageFormat;
 import java.time.*;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -52,8 +51,6 @@ public class AppInfoOnLoad implements Runnable {
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
-    
-    private static final ScheduledThreadPoolExecutor SCHED_EXECUTOR = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
     
     private static final List<String> MINI_LOGGER = new ArrayList<>();
     
@@ -208,21 +205,23 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void startPeriodicTasks() {
-        Runnable netMonPTVRun = new NetMonitorPTV();
+        NetScanService netScanService = NetScanService.getInstance(NetScanService.PTV);
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
-        Runnable scanOnlineRun = new AppComponents().scanOnline();
-        Runnable diapazonScanRun = DiapazonScan.getInstance();
+        NetScanService scanOnlineRun = NetScanService.getInstance("ScanOnline");
+        NetScanService diapazonScanRun = NetScanService.getInstance(NetScanService.DIAPAZON);
         Runnable istranetOrFortexRun = AppInfoOnLoad::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
         Runnable saveTHRTimes = thrConfig::getAllThreads;
-        SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, thisDelay, TimeUnit.MINUTES);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
-        SCHED_EXECUTOR.scheduleWithFixedDelay((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4, thisDelay, TimeUnit.MINUTES);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(saveTHRTimes, 5, 5, TimeUnit.MINUTES);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(netScanService, 10, 10, TimeUnit.SECONDS);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor()
+                .scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, thisDelay, TimeUnit.MINUTES);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor()
+                .scheduleWithFixedDelay((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4, thisDelay, TimeUnit.MINUTES);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(saveTHRTimes, 5, 5, TimeUnit.MINUTES);
         getMiniLogger().add(thrConfig.toString());
         this.startIntervalTasks();
     }
@@ -232,7 +231,6 @@ public class AppInfoOnLoad implements Runnable {
         scheduleStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
-        this.kudrMonitoring();
         AppInfoOnLoad.runCommonScan();
     }
     
@@ -269,7 +267,7 @@ public class AppInfoOnLoad implements Runnable {
         }
     }
     
-    private static void executeStatement(@NotNull PreparedStatement preparedStatement, Queue<String> logJson) throws SQLException {
+    private static void executeStatement(@NotNull PreparedStatement preparedStatement, @NotNull Queue<String> logJson) throws SQLException {
         String jsonStr = logJson.remove();
         try {
             JsonObject jsonObject = Json.parse(jsonStr).asObject();
@@ -282,27 +280,6 @@ public class AppInfoOnLoad implements Runnable {
         catch (ParseException e) {
             messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 282 ***");
         }
-    }
-    
-    private void kudrMonitoring() {
-        Date next9AM;
-        Runnable kudrWorkTime = new KudrWorkTime();
-        int secondOfDayNow = LocalTime.now().toSecondOfDay();
-        int officialStart = LocalTime.parse("08:30").toSecondOfDay();
-        int officialEnd = LocalTime.parse("17:30").toSecondOfDay();
-        ThreadPoolTaskScheduler taskScheduler = thrConfig.getTaskScheduler();
-        if (secondOfDayNow < officialStart) {
-            next9AM = MyCalen.getThisDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
-        }
-        else {
-            next9AM = MyCalen.getNextDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
-        }
-        if (secondOfDayNow > 40000) {
-            thrConfig.getTaskExecutor().getThreadPoolExecutor().execute(kudrWorkTime);
-        }
-        messageToUser.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
     }
     
     private static void runCommonScan() {

@@ -10,10 +10,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -21,9 +18,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
@@ -32,7 +27,6 @@ import ru.vachok.networker.net.scanner.PcNamesScannerWorks;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.props.InitProperties;
-import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -116,13 +110,6 @@ public class AppComponentsTest {
     }
     
     @Test
-    public void testVersionInfo() {
-        VersionInfo versionInfo = AppComponents.versionInfo();
-        Assert.assertNotNull(versionInfo);
-        Assert.assertFalse(versionInfo.toString().isEmpty());
-    }
-    
-    @Test
     public void testDiapazonedScanInfo() {
         try {
             DiapazonScan instance = DiapazonScan.getInstance();
@@ -188,7 +175,7 @@ public class AppComponentsTest {
     
     @Test
     public void testScanOnline() {
-        NetScanService scanOnline = new AppComponents().scanOnline();
+        NetScanService scanOnline = NetScanService.getInstance("ScanOnline");
         boolean condition = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
         Assert.assertTrue(condition, "getLoopbackAddress " + false);
         try {

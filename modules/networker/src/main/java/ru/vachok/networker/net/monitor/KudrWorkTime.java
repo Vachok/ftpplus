@@ -27,7 +27,7 @@ import java.util.concurrent.*;
 
 
 /**
- @see ru.vachok.networker.net.scanner.KudrWorkTimeTest
+ @see KudrWorkTimeTest
  @since 12.07.2019 (0:46) */
 public class KudrWorkTime implements NetScanService {
     

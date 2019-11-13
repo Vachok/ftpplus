@@ -141,10 +141,6 @@ public interface NetScanService extends Runnable {
         }
     }
     
-    static void autoResolvedUsersRecord(String pcName, String lastFile) {
-        UserInfo.autoResolvedUsersRecord(pcName, lastFile);
-    }
-    
     static boolean writeUsersToDBFromSET() {
         return UserInfo.writeUsersToDBFromSET();
     }

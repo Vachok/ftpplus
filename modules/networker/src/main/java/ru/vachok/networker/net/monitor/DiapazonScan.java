@@ -112,7 +112,7 @@ public class DiapazonScan implements NetScanService {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DiapazonScan{");
-        sb.append(getExecution()).append("<p>").append(new AppComponents().scanOnline());
+        sb.append(getExecution()).append("<p>").append(this.toString());
         sb.append('}');
         return sb.toString();
     }

@@ -6,30 +6,23 @@ package ru.vachok.networker;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.*;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.FakeRequest;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.restapi.props.InitProperties;
-import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -119,10 +112,6 @@ public class AppComponents {
         return visitor;
     }
     
-    public NetScanService scanOnline() {
-        return new ScanOnline();
-    }
-    
     public SshActs sshActs() {
         return new SshActs();
     }
@@ -132,16 +121,6 @@ public class AppComponents {
         return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
             .add("Nothing to show...")
             .toString();
-    }
-    
-    /**
-     @return new {@link VersionInfo}
-     */
-    @Scope(ConstantsFor.SINGLETON)
-    @Bean(ConstantsFor.STR_VERSIONINFO)
-    @Contract(" -> new")
-    static @NotNull VersionInfo versionInfo() {
-        return new VersionInfo(InitProperties.getTheProps(), UsefulUtilities.thisPC());
     }
     
     @Bean

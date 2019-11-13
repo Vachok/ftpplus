@@ -93,7 +93,7 @@ public class ScanOnlineTest {
     
     @Test
     public void testToStringTester() {
-        String newScanOnline = new AppComponents().scanOnline().toString();
+        String newScanOnline = NetScanService.getInstance("ScanOnline").toString();
         Assert.assertTrue(newScanOnline.contains("Since "), newScanOnline);
     }
     

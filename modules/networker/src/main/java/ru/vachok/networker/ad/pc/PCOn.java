@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
-import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -58,7 +57,7 @@ class PCOn extends PCInfo {
         String namesToFile;
         try {
             namesToFile = userInfo.getLogins(pcName, 1).get(0);
-            NetScanService.autoResolvedUsersRecord(pcName, namesToFile);
+            UserInfo.autoResolvedUsersRecord(pcName, namesToFile);
             userInfo.setClassOption(pcName);
             namesToFile = Paths.get(namesToFile.split(" ")[1]).getFileName().toString();
         }
