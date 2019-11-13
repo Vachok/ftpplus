@@ -121,7 +121,7 @@ public class ServiceInfoCtrl {
                 .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(additionalDo()));
         model.addAttribute("ping", getClassPath());
-        model.addAttribute("urls", makeRunningInfo(filesSizeFuture));
+        model.addAttribute("urls", makeRunningInfo());
         model.addAttribute("res", makeResValue());
         model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
     }
@@ -224,7 +224,8 @@ public class ServiceInfoCtrl {
     private @NotNull String getClassPath() {
         StringBuilder stringBuilder = new StringBuilder();
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getTheProps()).replace("\n", "<br>"));
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"));
         stringBuilder.append("ClassPath {<br>");
         stringBuilder.append(runtimeMXBean.getClassPath().replace(";", "<br>")).append(" }<p>");
         stringBuilder.append("BootClassPath {<br>");
@@ -240,7 +241,7 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
-    private static @NotNull String makeRunningInfo(@NotNull Future<String> filesSizeFuture) {
+    private static @NotNull String makeRunningInfo() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Запущено - ")
                 .append(new Date(ConstantsFor.START_STAMP))
@@ -262,37 +263,9 @@ public class ServiceInfoCtrl {
                 .append(MyCalen.toStringS()).append("<br><br>")
                 .append("<b><i>").append("</i></b><p><font color=\"orange\">")
                 .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-                .append(AbstractForms.fromArray(APP_PR).replace("\n", "<br>")).append("<br>Prefs: ")
-                .append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"))
-                .append("<p>")
                 .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
                 .append("<p>")
-                .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
                 .toString();
-    }
-    
-    private static String visitsPrevSessionRead() {
-        List<File> listVisitFiles = new ArrayList<>();
-        for (File fileFromList : Objects.requireNonNull(new File(".").listFiles())) {
-            if (fileFromList.getName().toLowerCase().contains(UsefulUtilities.getPatternsToDeleteFilesOnStart().get(0))) {
-                listVisitFiles.add(fileFromList);
-                fileFromList.deleteOnExit();
-            }
-        }
-        ConcurrentMap<String, String> pathFileAsStrMap = readFiles(listVisitFiles);
-        List<String> retListStr = new ArrayList<>();
-        for (Map.Entry<String, String> entry : pathFileAsStrMap.entrySet()) {
-            String pathAsStr = entry.getKey();
-            String fileAsStr = entry.getValue();
-            try {
-                retListStr.add(fileAsStr.split("userId")[0]);
-                retListStr.add("<b>" + pathAsStr.split("FtpClientPlus")[1] + "</b>");
-            }
-            catch (RuntimeException e) {
-                retListStr.add(e.getMessage());
-            }
-        }
-        return AbstractForms.fromArray(retListStr);
     }
     
     @GetMapping("/pcoff")
@@ -329,15 +302,5 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("DENY for " + request.getRemoteAddr());
         }
         return "ok";
-    }
-    
-    private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
-        Collections.sort(filesToRead);
-        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for (File fileRead : filesToRead) {
-            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
-            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
-        }
-        return readiedStrings;
     }
 }
