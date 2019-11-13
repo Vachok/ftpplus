@@ -90,6 +90,7 @@ public class NetMonitorPTV implements NetScanService {
     
     @Override
     public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             if (outputStream == null || printStream == null) {
                 createFile();

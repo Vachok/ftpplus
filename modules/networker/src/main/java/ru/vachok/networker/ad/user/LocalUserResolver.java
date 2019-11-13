@@ -247,10 +247,12 @@ class LocalUserResolver extends UserInfo {
         
         private void walkUsersFolderIfPCOnline() {
             try {
-                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
+                Path startPath = Paths.get(pathAsStr);
+                Thread.currentThread().setName(startPath.getFileName().toString());
+                Files.walkFileTree(startPath, Collections.singleton(FOLLOW_LINKS), 2, this);
             }
             catch (IOException | IndexOutOfBoundsException e) {
-                messageToUser.error(e.getMessage() + " see line: 114");
+                messageToUser.warn(LocalUserResolver.ScanUSERSFolder.class.getSimpleName(), "walkUsersFolderIfPCOnline", e.getMessage() + Thread.currentThread().getState().name());
             }
         }
         
