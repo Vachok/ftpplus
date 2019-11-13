@@ -6,7 +6,6 @@ package ru.vachok.networker.ad;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -14,6 +13,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -40,7 +40,7 @@ public class PhotoConverterSRV {
     
     private File adFotoFile;
     
-    private Properties properties = AppComponents.getProps();
+    private Properties properties = InitProperties.getTheProps();
     
     private File rawPhotoFile;
     

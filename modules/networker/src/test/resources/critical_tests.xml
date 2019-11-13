@@ -31,7 +31,7 @@
             <class name="ru.vachok.networker.info.inet.PCInetTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.net.ssh.SshActsTest"/>
-            <class name="ru.vachok.networker.net.ssh.TemporaryFullInternetTest"/>
+            <class name="ru.vachok.networker.ad.inet.TemporaryFullInternetTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.ad.ADComputerTest"/>
             <class name="ru.vachok.networker.ad.ADSrvTest"/>

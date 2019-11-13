@@ -3,11 +3,12 @@
 package ru.vachok.networker.componentsrepo.systray.actions;
 
 
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -18,8 +19,8 @@ import java.util.concurrent.*;
 /**
  Action on Reload Context button
  <p>
-
- @see ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest
+ 
+ @see ActionMakeInfoAboutOldCommonFilesTest
  @since 25.01.2019 (13:30) */
 public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
@@ -27,8 +28,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ActionMakeInfoAboutOldCommonFiles.class.getSimpleName());
     
     private long timeoutSeconds;
     
@@ -50,19 +50,17 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     protected String makeAction() {
         Callable<String> infoCollector = new OldBigFilesInfoCollector();
-        Future<String> submit = Executors.newSingleThreadExecutor().submit(infoCollector);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
         try {
             return submit.get(timeoutSeconds, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.warn(ActionMakeInfoAboutOldCommonFiles.class.getSimpleName(), "makeAction", e.getMessage() + Thread.currentThread().getState().name());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
             throw new InvokeIllegalException(getClass().getSimpleName() + " FAILED");
         }
         catch (TimeoutException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
             throw new InvokeIllegalException("TIMEOUT " + timeoutSeconds);
         }
     }

@@ -54,6 +54,7 @@ public class TelnetServer implements ConnectToMe {
     }
     
     @Override public void runSocket() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             this.socket = serverSocket.accept();
             do {

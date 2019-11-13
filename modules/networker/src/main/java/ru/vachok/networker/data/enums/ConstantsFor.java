@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  <p>
  
  @since 12.08.2018 (16:26) */
+@SuppressWarnings("SpellCheckingInspection")
 public enum ConstantsFor {
     ;
     
@@ -274,8 +275,6 @@ public enum ConstantsFor {
     
     public static final String PATTERN_POINT = ".";
     
-    public static final int MINUTES_IN_STD_WORK_DAY = 540;
-    
     public static final String STR_BR = "<br>";
     
     public static final String STR_N = "\n";
@@ -290,15 +289,11 @@ public enum ConstantsFor {
     
     public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
     
-    public static final String TOSTRING_PROPERTIES = "properties = ";
-    
     public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
     
     public static final String GOOD_NO_LOCKS = "No deadlocks, good!";
     
     public static final String DBFIELD_TIMESET = "timeset";
-    
-    public static final String STATIC_INITIALIZER = ".static initializer";
     
     public static final String DBBASENAME_U0466446_PROPERTIES = "u0466446_properties";
     
@@ -326,10 +321,6 @@ public enum ConstantsFor {
     
     public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
     
-    public static final String COLOR_SILVER = "silver";
-    
-    public static final String RUSSTR_KOMPUTER = "компьютер";
-    
     public static final String PREF_NODE_NAME = "networker";
     
     public static final String WRONG_PASS = "WRONG RASS";
@@ -353,8 +344,6 @@ public enum ConstantsFor {
      */
     public static final float ONE_HOUR_IN_MIN = 60f;
     
-    public static final String BIGINT_13 = "bigint(13)";
-    
     public static final String DB_VELKOMINETSTATS = "velkom.inetstats";
     
     public static final int MIN_DELAY = 17;
@@ -364,8 +353,6 @@ public enum ConstantsFor {
     public static final String STARTING = "starting";
     
     public static final String CONNECTING_TO = "Connecting to: ";
-    
-    public static final String SQL_ALTERTABLE = "ALTER TABLE ";
     
     /**
      {@link Pattern} IP-адреса
@@ -385,11 +372,7 @@ public enum ConstantsFor {
     
     public static final String DBCOL_SQUIDANS = "squidans";
     
-    public static final String DBCOL_TIMESPEND = "timespend";
-    
     public static final String DB_INETSTATS = "inetstats.";
-    
-    public static final String VARCHAR_20 = "VARCHAR(20) NOT NULL DEFAULT 'no data'";
     
     public static final String ERROR_DUPLICATEENTRY = "Duplicate entry";
     
@@ -455,6 +438,33 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_ONLINECONROL = "onlineConrol";
     
+    /**
+     sshworks.html
+     */
+    public static final String SSHWORKS_HTML = "sshworks";
+    
+    public static final String SSH_UNAMEA = "uname -a";
+    
+    /**
+     SSH-command
+     */
+    public static final String SSH_SUDO_ECHO = "sudo echo ";
+    
+    /**
+     SSH-command
+     */
+    public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
+    
+    public static final String SSH_ETCPF = " /etc/pf/";
+    
+    public static final String SSH_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
+    
+    public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
+    
+    public static final String DB_FIELD_WHENQUERIED = "whenQueried";
+    
+    public static final int LOGLEVEL = 1;
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final String DB_SEARCHPERMANENT = "search.permanent";
@@ -479,7 +489,21 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_CONTROLIP = "controlIp";
     
-    public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
+    public static final String DBFIELD_TIMEON = "timeon";
+    
+    public static final String DBFIELD_LASTONLINE = "lastOnLine";
+    
+    public static final String DBTABLE_LOGTEMPINET = "log.tempinet";
+    
+    public static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
+    
+    public static final String LOCAL = "local";
+    
+    public static final String GRADLE = "gradle";
+    
+    public static final String PROTOTYPE = "prototype";
+    
+    public static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
     
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     

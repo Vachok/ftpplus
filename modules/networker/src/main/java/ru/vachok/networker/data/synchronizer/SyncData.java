@@ -10,9 +10,13 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -30,11 +34,9 @@ public abstract class SyncData implements DataConnectTo {
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
-    static final String DOWNLOADER = "DBRemoteDownloader";
+    private static final String DOWNLOADER = "DBRemoteDownloader";
     
     public static final String BACKUPER = "BackupDB";
-    
-    private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     private String idColName = ConstantsFor.DBCOL_IDREC;
     
@@ -63,6 +65,11 @@ public abstract class SyncData implements DataConnectTo {
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.createTable( int ) at 04.11.2019 - (13:49)");
     }
     
     @Override
@@ -113,10 +120,6 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
     
-    void setFromFileToJSON(Deque<String> fromFileToJSON) {
-        this.fromFileToJSON = fromFileToJSON;
-    }
-    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull SyncData getInstance(@NotNull String type) {
@@ -125,8 +128,6 @@ public abstract class SyncData implements DataConnectTo {
                 return new DBRemoteDownloader(0);
             case UPUNIVERSAL:
                 return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
-            case BACKUPER:
-                return new BackupDB();
             case INETSYNC:
                 return new InternetSync("10.200.213.85");
             default:

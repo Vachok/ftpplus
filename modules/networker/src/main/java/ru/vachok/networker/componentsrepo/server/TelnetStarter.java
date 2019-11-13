@@ -3,8 +3,8 @@
 package ru.vachok.networker.componentsrepo.server;
 
 
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.util.StringJoiner;
 
@@ -15,8 +15,7 @@ import java.util.StringJoiner;
 public class TelnetStarter implements Runnable {
     
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, TelnetStarter.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TelnetStarter.class.getSimpleName());
     
     private int telnetPort = 0;
     
@@ -31,12 +30,12 @@ public class TelnetStarter implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setName("TELNET");
-        int lPort = Integer.parseInt(AppComponents.getProps().getProperty(TelnetServer.PR_LPORT, "9990"));
+        int lPort = Integer.parseInt(InitProperties.getTheProps().getProperty(TelnetServer.PR_LPORT, "9990"));
         if (telnetPort > 0) {
             lPort = telnetPort;
         }
         ConnectToMe connectToMe = new TelnetServer(lPort);
-        messageToUser.warn(connectToMe.getClass().getSimpleName(), " *** PORT IS: ", String.valueOf(lPort));
+        messageToUser.info(connectToMe.getClass().getSimpleName(), " *** PORT IS: ", String.valueOf(lPort));
         connectToMe.runSocket();
     }
     

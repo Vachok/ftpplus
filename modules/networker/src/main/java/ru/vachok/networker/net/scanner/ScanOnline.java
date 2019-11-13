@@ -4,6 +4,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -17,6 +18,7 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.ExecScan;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -33,6 +35,7 @@ import java.util.*;
  @see ru.vachok.networker.net.scanner.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
+@Scope(ConstantsFor.SINGLETON)
 public class ScanOnline implements NetScanService {
     
     
@@ -41,8 +44,6 @@ public class ScanOnline implements NetScanService {
     private @NotNull File fileMAXOnlines = new File(FileNames.ONLINES_MAX);
     
     private File onlinesFile = new File(FileNames.ONSCAN);
-    
-    private CheckerIpHTML checkerIpHTML;
     
     /**
      {@link MessageLocal}
@@ -64,7 +65,7 @@ public class ScanOnline implements NetScanService {
     
     @Override
     public void run() {
-        AppComponents.threadConfig().execByThreadConfig(SwitchesAvailability::new);
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(SwitchesAvailability::new);
         
         setMaxOnlineListFromFile();
         
@@ -90,7 +91,7 @@ public class ScanOnline implements NetScanService {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ");
         sb.append("<i>");
-        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
+        sb.append(new Date(InitProperties.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
         sb.append(" last ExecScan: ");
         sb.append("</i>");
         sb.append(tvInfo.getInfoAbout("tv"));
@@ -99,7 +100,6 @@ public class ScanOnline implements NetScanService {
                 .append(new TForms().fromArray(maxOnList, true))
                 .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(UsefulUtilities.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append(checkerIpHTML);
         return sb.toString();
     }
     
@@ -218,21 +218,6 @@ public class ScanOnline implements NetScanService {
      */
     protected String getReplaceFileNamePattern() {
         return replaceFileNamePattern;
-    }
-    
-    private boolean isReach(String hostAddress) {
-        boolean xReachable = false;
-        try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
-             PrintStream printStream = new PrintStream(outputStream);
-        ) {
-            this.checkerIpHTML = new CheckerIpHTML(hostAddress, printStream);
-            xReachable = this.checkerIpHTML.checkIP();
-        }
-        catch (IOException | ArrayIndexOutOfBoundsException e) {
-            messageToUser.error(e.getMessage());
-        }
-        
-        return xReachable;
     }
     
 }

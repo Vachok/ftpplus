@@ -22,6 +22,10 @@ public class FilePropsLocal implements InitProperties {
     
     private File propFile;
     
+    public void setPropFile(File propFile) {
+        this.propFile = propFile;
+    }
+    
     private @NotNull Properties getFromStream() {
         Properties retProps = new Properties();
         try (InputStream inputStream = getClass().getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {

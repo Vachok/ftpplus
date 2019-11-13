@@ -7,7 +7,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -19,6 +18,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 
 /**
@@ -94,8 +95,8 @@ public class UserInfoTest {
     @Test
     public void testUniqueUsersTableRecord() {
         InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
-        String manDBStr = UserInfo.uniqueUsersTableRecord("pc", "user");
-        Assert.assertEquals(manDBStr, "user executeUpdate 0");
+        String manDBStr = UserInfo.uniqueUsersTableRecord("pc1", "user1");
+        Assert.assertEquals(manDBStr, "user1 already exists in database velkom.pcuser on pc1");
     }
     
     private @NotNull String getCreate() {
@@ -124,7 +125,8 @@ public class UserInfoTest {
             }
         
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace("velkom.", ""))) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
+                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
             createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
@@ -140,32 +142,47 @@ public class UserInfoTest {
     public void testGetPCLogins() {
         UserInfo instanceNull = UserInfo.getInstance(null);
         for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
-            Assert.assertEquals(nullPCLogin.split(" : ")[0], "a123");
-            Assert.assertEquals(nullPCLogin.split(" : ")[1], "i.k.romanovskii");
+            boolean contPC = nullPCLogin.split(" : ")[0].contains("a123");
+            Assert.assertTrue(contPC, nullPCLogin.split(" : ")[0]);
+            boolean contName = Stream.of("i.k.romanovskii", "e.v.vinokur", "a.f.zarickii").anyMatch(s->nullPCLogin.split(" : ")[1].contains(s));
+            Assert.assertTrue(contName, nullPCLogin.split(" : ")[1]);
         }
         UserInfo instanceDO0045 = UserInfo.getInstance("do0125");
         List<String> logins = instanceDO0045.getLogins("do0125", 1);
         Assert.assertEquals(logins.size(), 1);
         Assert.assertTrue(logins.get(0).contains("do0125 : vashaplova"), AbstractForms.fromArray(logins));
-        
-        UserInfo kudrInst = UserInfo.getInstance("kudr");
-        for (String kudrInstPCLogin : kudrInst.getLogins("kudr", 1)) {
-            boolean do0213Expect = kudrInstPCLogin.contains("do0213") || kudrInstPCLogin.contains("no0029");
+    
+        UserInfo kudrInst = UserInfo.getInstance("ashapl");
+        for (String kudrInstPCLogin : kudrInst.getLogins("ashapl", 1)) {
+            boolean do0213Expect = kudrInstPCLogin.contains("do0125") || kudrInstPCLogin.contains("no0029");
             Assert.assertTrue(do0213Expect, kudrInstPCLogin);
         }
+    }
+    
+    @Test
+    public void testRenewOffCounter() {
+        UserInfo.renewOffCounter("test", new Random().nextBoolean());
+    }
+    
+    @Test
+    public void testGetLogins() {
+        List<String> loginsDO213 = UserInfo.getInstance("do0213").getLogins("do0213", 20);
+        String loginsStr = AbstractForms.fromArray(loginsDO213);
+        Assert.assertTrue(loginsStr.contains("ikudryashov"));
     }
     
     private boolean wasOffline(String pcName) {
         final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
         boolean retBool = false;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace("velkom.", ""))) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
+                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
             createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         Timestamp timestamp = resultSet.getTimestamp("lastonline");
                         System.out.println("timestamp = " + timestamp.toString());
-                        retBool = timestamp.getTime() < AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
                             .toMillis(ConstantsFor.DELAY * 3);
                     }
                 }

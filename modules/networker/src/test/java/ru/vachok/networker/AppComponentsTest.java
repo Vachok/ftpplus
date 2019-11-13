@@ -7,23 +7,30 @@ import org.jetbrains.annotations.Contract;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.ssh.*;
-import ru.vachok.networker.sysinfo.VersionInfo;
+import ru.vachok.networker.net.scanner.NetScanCtr;
+import ru.vachok.networker.net.scanner.PcNamesScannerWorks;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.SshActs;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -63,7 +70,7 @@ public class AppComponentsTest {
     
     @Test
     public void testGetProps() {
-        Properties appProps = new AppComponents().getProps();
+        Properties appProps = InitProperties.getTheProps();
         Assert.assertTrue(appProps.size() > 12, "AppProps size = " + appProps.size());
         Assert.assertTrue(appProps.getProperty("server.port").equals("8880"));
         Assert.assertTrue(appProps.getProperty("application.name").equals("ru.vachok.networker-"));
@@ -103,13 +110,6 @@ public class AppComponentsTest {
     }
     
     @Test
-    public void testVersionInfo() {
-        VersionInfo versionInfo = AppComponents.versionInfo();
-        Assert.assertNotNull(versionInfo);
-        Assert.assertFalse(versionInfo.toString().isEmpty());
-    }
-    
-    @Test
     public void testDiapazonedScanInfo() {
         try {
             DiapazonScan instance = DiapazonScan.getInstance();
@@ -125,12 +125,12 @@ public class AppComponentsTest {
     @Test
     public void testLaunchRegRuFTPLibsUploader() {
         String ftpLibUplString = new AppComponents().launchRegRuFTPLibsUploader();
-        Assert.assertTrue(ftpLibUplString.contains("true"));
+        Assert.assertTrue(ftpLibUplString.toLowerCase().contains("true"));
     }
     
     @Test
     public void testGetUserPref() {
-        Preferences pref = AppComponents.getUserPref();
+        Preferences pref = InitProperties.getUserPref();
         try {
             Assert.assertNotNull(pref.keys());
             Assert.assertTrue(pref.keys().length > 2);
@@ -175,7 +175,7 @@ public class AppComponentsTest {
     
     @Test
     public void testScanOnline() {
-        NetScanService scanOnline = new AppComponents().scanOnline();
+        NetScanService scanOnline = NetScanService.getInstance("ScanOnline");
         boolean condition = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
         Assert.assertTrue(condition, "getLoopbackAddress " + false);
         try {
@@ -207,7 +207,23 @@ public class AppComponentsTest {
     public void testTemporaryFullInternet() {
         TemporaryFullInternet fullInternet = new AppComponents().temporaryFullInternet();
         String toStr = fullInternet.toString();
-        Assert.assertTrue(toStr.contains("TemporaryFullInternet{delStamp="), toStr);
+        Assert.assertTrue(toStr.contains("TemporaryFullInternet["), toStr);
     }
     
+    @Test
+    @Ignore
+    public void testPcNamesScanner() {
+        File file = new File(FileNames.SCAN_TMP);
+        file.delete();
+        Assert.assertFalse(file.exists());
+        InitProperties.setPreference(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis() - 100));
+        InitProperties.getTheProps().setProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis() - 100));
+        PcNamesScannerWorks scanner = new PcNamesScannerWorks();
+        NetScanCtr option = new NetScanCtr(scanner);
+        option.setModel(new ExtendedModelMap());
+        option.setRequest(new MockHttpServletRequest());
+        option.setResponse(new MockHttpServletResponse());
+        scanner.setClassOption(option);
+        scanner.run();
+    }
 }

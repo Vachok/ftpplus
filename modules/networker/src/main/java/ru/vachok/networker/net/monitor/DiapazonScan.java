@@ -6,18 +6,14 @@ package ru.vachok.networker.net.monitor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -27,8 +23,6 @@ import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -39,7 +33,7 @@ public class DiapazonScan implements NetScanService {
     
     
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, DiapazonScan.class.getSimpleName());
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, DiapazonScan.class.getSimpleName());
     
     /**
      {@link NetKeeper#getAllDevices()}
@@ -56,11 +50,7 @@ public class DiapazonScan implements NetScanService {
     
     private List<String> pingedDevices = new ArrayList<>();
     
-    private long stopClassStampLong = AppComponents.getUserPref().getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
-    
-    protected DiapazonScan() {
-        thrConfig = AppComponents.threadConfig();
-    }
+    private long stopClassStampLong = ru.vachok.networker.restapi.props.InitProperties.getUserPref().getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
     
     /**
      SINGLETON
@@ -76,46 +66,18 @@ public class DiapazonScan implements NetScanService {
         return stopClassStampLong;
     }
     
-    @Override
-    public Runnable getMonitoringRunnable() {
-        return this;
+    BlockingDeque<String> getAllDevLocalDeq() {
+        return allDevLocalDeq;
     }
     
-    @Override
-    public String writeLog() {
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", MessageFormat.format("{0}\n{1}", this.getPingResultStr(), this.getStatistics()));
-    }
-    
-    @Override
-    public String getPingResultStr() {
-        List<String> lists = NetKeeper.getCurrentScanLists();
-        Collections.sort(lists);
-        return new TForms().fromArray(lists, true);
-    }
-    
-    @Override
-    public String getStatistics() {
-        StringBuilder stringBuilder = new StringBuilder();
-    
-        RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
-        stringBuilder.append(mxBean.getClass().getTypeName()).append(":\n");
-        stringBuilder.append(TimeUnit.MILLISECONDS.toMinutes(mxBean.getUptime())).append(" Uptime\n");
-        stringBuilder.append(mxBean.getName()).append(" Name\n");
-        stringBuilder.append(mxBean.getInputArguments()).append(" InputArguments\n");
-        stringBuilder.append(mxBean.getSpecName()).append(" SpecName\n");
-        stringBuilder.append(mxBean.getSpecVersion()).append(" SpecVersion\n");
-        stringBuilder.append(mxBean.getVmVersion()).append(" VmVersion\n");
-        stringBuilder.append(mxBean.getManagementSpecVersion()).append(" ManagementSpecVersion\n");
-        stringBuilder.append(mxBean.getVmName()).append(" VmName\n");
-        stringBuilder.append(mxBean.getVmVendor()).append(" VmVendor\n");
-    
-        return stringBuilder.toString();
+    protected DiapazonScan() {
+        thrConfig = AppComponents.threadConfig();
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DiapazonScan{");
-        sb.append(getExecution()).append("<p>").append(new AppComponents().scanOnline());
+        sb.append(getExecution()).append("<p>").append(NetScanService.getInstance("ScanOnline").toString());
         sb.append('}');
         return sb.toString();
     }
@@ -133,7 +95,7 @@ public class DiapazonScan implements NetScanService {
             messageToUser.info("NO FILES!");
         }
         StringBuilder sb = new StringBuilder("DiapazonScan. Running ");
-        sb.append(TimeUnit.MILLISECONDS.toMinutes(getRunMin()));
+        sb.append(TimeUnit.MILLISECONDS.toMinutes(InitProperties.getUserPref().getLong(ExecScan.class.getSimpleName(), 0)));
         sb.append(" min ");
         sb.append("{ ");
         sb.append("<a href=\"/showalldev\">ALL_DEVICES ");
@@ -154,42 +116,46 @@ public class DiapazonScan implements NetScanService {
         return sb.toString();
     }
     
-    private static long getRunMin() {
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-            return preferences.getLong(ExecScan.class.getSimpleName(), 1);
-        }
-        catch (BackingStoreException e) {
-            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
-            Properties props = initProperties.getProps();
-            return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
-        }
+    @Override
+    public String getPingResultStr() {
+        List<String> lists = NetKeeper.getCurrentScanLists();
+        Collections.sort(lists);
+        return new TForms().fromArray(lists, true);
+    }
+    
+    @Override
+    public String writeLog() {
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", MessageFormat.format("{0}\n{1}", this.getPingResultStr(), this.getStatistics()));
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
+        stringBuilder.append(mxBean.getClass().getTypeName()).append(":\n");
+        stringBuilder.append(TimeUnit.MILLISECONDS.toMinutes(mxBean.getUptime())).append(" Uptime\n");
+        stringBuilder.append(mxBean.getName()).append(" Name\n");
+        stringBuilder.append(mxBean.getInputArguments()).append(" InputArguments\n");
+        stringBuilder.append(mxBean.getSpecName()).append(" SpecName\n");
+        stringBuilder.append(mxBean.getSpecVersion()).append(" SpecVersion\n");
+        stringBuilder.append(mxBean.getVmVersion()).append(" VmVersion\n");
+        stringBuilder.append(mxBean.getManagementSpecVersion()).append(" ManagementSpecVersion\n");
+        stringBuilder.append(mxBean.getVmName()).append(" VmName\n");
+        stringBuilder.append(mxBean.getVmVendor()).append(" VmVendor\n");
+        
+        return stringBuilder.toString();
     }
     
     @Override
     public void run() {
-        startDo();
-    }
-    
-    BlockingDeque<String> getAllDevLocalDeq() {
-        return allDevLocalDeq;
-    }
-    
-    @Contract(" -> new")
-    private @NotNull ExecScan[] getRunnables() {
-        Map<String, File> scanFiles = NetKeeper.getScanFiles();
-        return new ExecScan[]{
-            new ExecScan(10, 20, "10.10.", scanFiles.get(FileNames.NEWLAN215)),
-            new ExecScan(21, 31, "10.10.", scanFiles.get(FileNames.SERVTXT_21SRVTXT)),
-            new ExecScan(31, 41, "10.10.", scanFiles.get(FileNames.SERVTXT_31SRVTXT)),
-            new ExecScan(11, 16, "192.168.", scanFiles.get(FileNames.OLDLANTXT0)),
-            new ExecScan(16, 21, "192.168.", scanFiles.get(FileNames.OLDLANTXT1)),
-            new ExecScan(200, 205, "10.200.", scanFiles.get(FileNames.NEWLAN205)),
-            new ExecScan(205, 210, "10.200.", scanFiles.get(FileNames.NEWLAN210)),
-            new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.NEWLAN215)),
-            new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.NEWLAN220)),
-        };
+        Thread start = new Thread(this::startDo);
+        start.run();
     }
     
     private void startDo() {
@@ -212,22 +178,32 @@ public class DiapazonScan implements NetScanService {
         scheduleTimeSetterScanMin();
     }
     
+    @Contract(" -> new")
+    private @NotNull ExecScan[] getRunnables() {
+        Map<String, File> scanFiles = NetKeeper.getScanFiles();
+        return new ExecScan[]{
+                new ExecScan(10, 20, "10.10.", scanFiles.get(FileNames.NEWLAN215)),
+                new ExecScan(21, 31, "10.10.", scanFiles.get(FileNames.SERVTXT_21SRVTXT)),
+                new ExecScan(31, 41, "10.10.", scanFiles.get(FileNames.SERVTXT_31SRVTXT)),
+                new ExecScan(11, 16, "192.168.", scanFiles.get(FileNames.OLDLANTXT0)),
+                new ExecScan(16, 21, "192.168.", scanFiles.get(FileNames.OLDLANTXT1)),
+                new ExecScan(200, 205, "10.200.", scanFiles.get(FileNames.NEWLAN205)),
+                new ExecScan(205, 210, "10.200.", scanFiles.get(FileNames.NEWLAN210)),
+                new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.NEWLAN215)),
+                new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.NEWLAN220)),
+        };
+    }
+    
     private void scheduleTimeSetterScanMin() {
         ScheduledThreadPoolExecutor schedExecutor = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
         schedExecutor.scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
     }
     
     private void setScanInMin() {
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            Preferences pref = AppComponents.getUserPref();
-            pref.put(PropertiesNames.SCANSINMIN, String.valueOf(scansItMin));
-            try {
-                pref.sync();
-            }
-            catch (BackingStoreException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setScanInMin", e));
-            }
+        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(InitProperties.getUserPref().getLong(ExecScan.class.getSimpleName(), 0)) > 0 && allDevLocalDeq
+                .size() > 0) {
+            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(InitProperties.getUserPref().getLong(ExecScan.class.getSimpleName(), 0));
+            InitProperties.setPreference(PropertiesNames.SCANSINMIN, String.valueOf(scansItMin));
         }
     }
 }

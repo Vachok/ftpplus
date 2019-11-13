@@ -9,17 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.net.ssh.*;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.UnknownHostException;
 import java.nio.file.AccessDeniedException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
@@ -40,6 +41,8 @@ public class SshActsCTRL {
     private static final String URL_SSHACTS = "/sshacts";
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SshActsCTRL.class.getSimpleName());
     
     private PfLists pfLists;
     
@@ -63,11 +66,35 @@ public class SshActsCTRL {
             model.addAttribute(ModelAttributeNames.HEAD, pageFooter.getFooter(ModelAttributeNames.HEAD));
             model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
             model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActsL.getPcName());
-            return "sshworks";
+            return ConstantsFor.SSHWORKS_HTML;
         }
         else {
             throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
         }
+    }
+    
+    public void parseReq(@NotNull String queryString) {
+        String qStr = " ";
+        try {
+            sshActs.setPcName(queryString.split("&")[0].replaceAll("pcName=", ""));
+            qStr = queryString.split("&")[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            sshActs.setAllFalse();
+        }
+        if (qStr.equalsIgnoreCase("inet=std")) {
+            sshActs.setSquid();
+        }
+        if (qStr.equalsIgnoreCase("inet=limit")) {
+            sshActs.setSquidLimited();
+        }
+        if (qStr.equalsIgnoreCase("inet=full")) {
+            sshActs.setTempFull();
+        }
+        if (qStr.equalsIgnoreCase("inet=nat")) {
+            sshActs.setVipNet();
+        }
+        String msg = toString();
     }
     
     @GetMapping(URL_SSHACTS)
@@ -95,41 +122,32 @@ public class SshActsCTRL {
                 sshActs.setPcName(sshActs.getPcName());
             }
             model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActs.toString());
-            return "sshworks";
+            return ConstantsFor.SSHWORKS_HTML;
         }
         else {
             throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
         }
     }
     
-    @PostMapping("/allowdomain")
-    public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
-        this.sshActs = sshActsL;
-        model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getAllowDomain() + " добавлен");
-        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), ()->"No address: " + sshActsL.getAllowDomain()));
-        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
-        return "ok";
-    }
-    
-    @PostMapping("/deldomain")
-    public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
-        this.sshActs = sshActsL;
-        model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getDelDomain() + " удалён");
-        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
-        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
-        return "ok";
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActsCTRL{");
+        sb.append("sshActs=").append(sshActs.hashCode());
+        sb.append('}');
+        return sb.toString();
     }
     
     @PostMapping("/tmpfullnet")
-    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws UnknownHostException {
+    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model, @NotNull HttpServletRequest request) {
         this.sshActs = sshActsL;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
-        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>) new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add"));
+        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>)
+                new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add", request.getRemoteAddr()));
         String tempInetAnswer = "null";
         try {
+            String flushDNS = UsefulUtilities.ipFlushDNS();
             tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
+            messageToUser.info(this.getClass().getSimpleName(), flushDNS, tempInetAnswer);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
@@ -142,36 +160,24 @@ public class SshActsCTRL {
         return "ok";
     }
     
-    public void parseReq(@NotNull String queryString) {
-        String qStr = " ";
-        try {
-            sshActs.setPcName(queryString.split("&")[0].replaceAll("pcName=", ""));
-            qStr = queryString.split("&")[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            sshActs.setAllFalse();
-        }
-        if (qStr.equalsIgnoreCase("inet=std")) {
-            sshActs.setSquid();
-        }
-        if (qStr.equalsIgnoreCase("inet=limit")) {
-            sshActs.setSquidLimited();
-        }
-        if (qStr.equalsIgnoreCase("inet=full")) {
-            sshActs.setTempFull();
-        }
-        if (qStr.equalsIgnoreCase("inet=nat")) {
-            sshActs.setVipNet();
-        }
-        String msg = toString();
+    @PostMapping("/allowdomain")
+    public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) {
+        this.sshActs = sshActsL;
+        model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getAllowDomain() + " добавлен");
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), ()->"No address: " + sshActsL.getAllowDomain()));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
+        return "ok";
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActsCTRL{");
-        sb.append("sshActs=").append(sshActs.hashCode());
-        sb.append('}');
-        return sb.toString();
+    @PostMapping("/deldomain")
+    public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) {
+        this.sshActs = sshActsL;
+        model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getDelDomain() + " удалён");
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
+        return "ok";
     }
     
     private boolean getAuthentic(@NotNull String pcReq) {

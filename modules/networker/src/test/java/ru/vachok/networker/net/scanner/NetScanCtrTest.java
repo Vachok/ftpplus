@@ -10,16 +10,17 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
+import ru.vachok.networker.componentsrepo.FakeRequest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.info.NetScanService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,15 +41,19 @@ public class NetScanCtrTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final PcNamesScanner pcNamesScanner = AppComponents.getPcNamesScanner();
+    private static final File FILE = new File(FileNames.SCAN_TMP);
     
-    private NetScanCtr netScanCtr = new NetScanCtr();
+    private NetScanService pcNamesScannerOld = new PcNamesScannerWorks();
+    
+    private NetScanCtr netScanCtr;
     
     private HttpServletRequest request = new MockHttpServletRequest();
     
     private HttpServletResponse response = new MockHttpServletResponse();
     
     private Model model = new ExtendedModelMap();
+    
+    private PcNamesScanner pcNamesScanner;
     
     @BeforeClass
     public void setUp() {
@@ -61,7 +66,25 @@ public class NetScanCtrTest {
         testConfigureThreadsLogMaker.after();
     }
     
+    @BeforeMethod
+    public void initScan() {
+        this.pcNamesScanner = new PcNamesScanner();
+        this.netScanCtr = new NetScanCtr(pcNamesScanner);
+        netScanCtr.setModel(model);
+        netScanCtr.setRequest(request);
+        try {
+            Files.deleteIfExists(FILE.toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        finally {
+            Assert.assertFalse(FILE.exists());
+        }
+    }
+    
     @Test
+    @Ignore
     public void testNetScan() {
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
@@ -71,16 +94,16 @@ public class NetScanCtrTest {
         }
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr();
+            netScanCtr = new NetScanCtr(pcNamesScanner);
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
         }
-        HttpServletRequest request = this.request;
+        HttpServletRequest request = new FakeRequest();
         HttpServletResponse response = this.response;
         Model model = this.model;
         try {
-            String netScanStr = netScanCtr.netScan(request, response, model);
+            String netScanStr = netScanCtr.netScan(request, response, model, pcNamesScanner);
             Assert.assertNotNull(netScanStr);
             assertTrue(netScanStr.equals(ModelAttributeNames.NETSCAN));
             assertTrue(model.asMap().size() >= 5, showModel(model.asMap()));
@@ -115,7 +138,7 @@ public class NetScanCtrTest {
         HttpServletResponse response = this.response;
         pcNamesScanner.setThePc("do0001");
         try {
-            String pcNameInfoStr = netScanCtr.pcNameForInfo(pcNamesScanner, model);
+            String pcNameInfoStr = netScanCtr.pcNameForInfo(model, pcNamesScanner);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
             Assert.assertTrue(model.asMap().get(ModelAttributeNames.THEPC).equals("do0001"));
             

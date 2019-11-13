@@ -73,7 +73,7 @@ class UserACLAdder extends UserACLManagerImpl {
         try {
             createACLs(file);
             List<AclEntry> tipEnters = new ArrayList<>(neededACLs);
-            Files.getFileAttributeView(file, AclFileAttributeView.class).setAcl(tipEnters);
+            Files.getFileAttributeView(file, AclFileAttributeView.class).setAcl(tipEnters); //todo 13.11.2019 (21:52) too long
     
             return FileVisitResult.CONTINUE;
         }
@@ -107,7 +107,7 @@ class UserACLAdder extends UserACLManagerImpl {
     private void createACLs(Path dir) throws IOException {
         Map<UserPrincipal, AclEntry> principalAclEntry = new HashMap<>();
         AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
-        List<AclEntry> currentACLs = aclFileAttributeView.getAcl();
+        List<AclEntry> currentACLs = aclFileAttributeView.getAcl(); //todo 13.11.2019 (21:52) too long
         AclEntry addAcl = createACLFor(newUser, "rw");
         currentACLs.add(addAcl);
         principalAclEntry.put(addAcl.principal(), addAcl);

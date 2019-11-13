@@ -7,23 +7,15 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -44,9 +36,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
-    private final Properties retProps = new Properties();
-    
-    private static final TForms T_FORMS = new TForms();
+    private Properties retProps = new Properties();
     
     private String propsDBID = ConstantsFor.class.getSimpleName();
     
@@ -68,8 +58,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     }
     
     private void setPassSQL() {
-        String dbUser = AppComponents.getUserPref().get(PropertiesNames.DBUSER, "");
-        String dbPass = AppComponents.getUserPref().get(PropertiesNames.DBPASS, "");
+        String dbUser = InitProperties.getUserPref().get(PropertiesNames.DBUSER, "");
+        String dbPass = InitProperties.getUserPref().get(PropertiesNames.DBPASS, "");
         mysqlDataSource.setUser(dbUser);
         mysqlDataSource.setPassword(dbPass);
         mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
@@ -82,8 +72,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     }
     
     private void setUserPrefUserPass(String dbUser, String dbPass) {
-        UsefulUtilities.setPreference(PropertiesNames.DBUSER, dbUser);
-        UsefulUtilities.setPreference(PropertiesNames.DBPASS, dbPass);
+        InitProperties.setPreference(PropertiesNames.DBUSER, dbUser);
+        InitProperties.setPreference(PropertiesNames.DBPASS, dbPass);
     }
     
     private void setUserPassFromPropsFile() {
@@ -106,14 +96,14 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             initDefaultDB();
         }
         this.propsDBID = propsIDClass;
-        Thread.currentThread().setName(propsIDClass);
+        Thread.currentThread().setName(this.getClass().getSimpleName());
     }
     
     private void initDefaultDB() {
         try {
             this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
-            mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
-            mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
+            mysqlDataSource.setUser(InitProperties.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
+            mysqlDataSource.setPassword(InitProperties.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
             mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         }
         catch (ArrayIndexOutOfBoundsException e) {
@@ -140,37 +130,27 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public Properties getProps() {
-        Properties calledPr = call();
-        if (calledPr.size() < 9) {
-            calledPr = getPropsFromSRVDatabase();
-        }
-        if (calledPr.size() > 9) {
-            InitProperties.getInstance(InitProperties.FILE).setProps(calledPr);
-        }
-        return calledPr;
-    }
-    
-    private Properties getPropsFromSRVDatabase() {
-        this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
-        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-        final String sql = "SELECT * FROM `ru_vachok_networker`";
-        try (Connection connection = mysqlDataSource.getConnection()) {
-            try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
-                pStatement.setString(1, propsDBID);
-                try (ResultSet r = pStatement.executeQuery()) {
-                    while (r.next()) {
-                        retProps.setProperty(r.getString(ConstantsFor.DBCOL_PROPERTY), r.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getPropsPr", e));
-            retProps.putAll(InitProperties.getInstance(FILE).getProps());
+        retProps = call();
+        if (retProps.size() > 17) {
+            InitProperties.getInstance(InitProperties.FILE).setProps(retProps);
         }
         return retProps;
     }
     
+    private Properties fromDB() {
+        final String sql = "select * from velkom.props";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.props");
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                retProps.put(resultSet.getString("property"), resultSet.getString("valueofproperty"));
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.warn(DBPropsCallable.class.getSimpleName(), "getProps", e.getMessage() + Thread.currentThread().getState().name());
+        }
+        return retProps;
+    }
     @Override
     public boolean setProps(Properties properties) {
         DBPropsCallable.LocalPropertiesFinder localPropsFinder = new DBPropsCallable.LocalPropertiesFinder();
@@ -187,10 +167,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     @Override
     public Properties call() {
         DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
-        synchronized(retProps) {
-            this.callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
-            return localPropertiesFinder.findRightProps();
-        }
+        this.callerStack = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
+        return localPropertiesFinder.findRightProps();
     }
     
     @Override
@@ -230,7 +208,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             final String sql = "insert props (property, valueofproperty, javaid, stack) values (?,?,?,?)";
             mysqlDataSource.setDatabaseName(ConstantsFor.STR_VELKOM);
             retBool.set(false);
-            callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
+            callerStack = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
     
             try (Connection c = mysqlDataSource.getConnection()) {
                 int executeUpdateInt = 0;
@@ -251,7 +229,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             }
             catch (SQLException e) {
                 if (!(e instanceof MySQLIntegrityConstraintViolationException)) {
-                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), T_FORMS.exceptionNetworker(e.getStackTrace()));
+                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
                     retBool.set(false);
                     tryWithLibsInit();
                 }
@@ -267,28 +245,28 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
     
         private Properties findRightProps() {
-            File constForProps = new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES);
+            File constForProps = new File(FileNames.CONSTANTSFOR_PROPERTIES);
             addApplicationProperties();
             long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
-            
             boolean fileIsFiveHoursAgo = constForProps.lastModified() < fiveHRSAgo;
             boolean canNotWrite = !constForProps.canWrite();
             boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite | fileIsFiveHoursAgo);
             
-            messageToUser
-                .info(MessageFormat.format("File {1} last mod is: {0}. FileIsFiveHoursAgo ({5}) = {4} , canWrite: {2}\n\'isFileOldOrReadOnly\' boolean is: {3}",
-                    new Date(constForProps.lastModified()), constForProps.getName(), constForProps
-                        .canWrite(), isFileOldOrReadOnly, fileIsFiveHoursAgo, new Date(fiveHRSAgo)));
-            
             if (isFileOldOrReadOnly) {
-                boolean isWritableSet = constForProps.setWritable(true);
-                
-                messageToUser
-                    .info(MessageFormat.format("Setting file {1} to writable: {0}. Starting propsFileIsReadOnly meth...", isWritableSet, constForProps.canWrite()));
                 propsFileIsReadOnly();
+                boolean isWritableSet = constForProps.setWritable(true);
+                messageToUser.info(this.getClass().getSimpleName(), "mem.properties updated", String.valueOf(isWritableSet));
             }
             else {
-                fileIsWritableOrNotExists();
+                try {
+                    fileIsWritableOrNotExists();
+                }
+                catch (IOException e) {
+                    messageToUser.error("LocalPropertiesFinder.findRightProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                }
+                finally {
+                    retBool.set(retProps.size() > 10);
+                }
             }
             return retProps;
         }
@@ -305,33 +283,29 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
         
         private void propsFileIsReadOnly() {
-            InitProperties initProperties = InitProperties.getInstance(FILE);
+            InitProperties initProperties = InitProperties.getInstance(InitProperties.FILE);
             Properties props = initProperties.getProps();
             retProps.clear();
             retProps.putAll(props);
             if (retProps.size() > 9) {
-                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
-                    initProperties.setProps(retProps), retProps.size(), initProperties.getClass().getTypeName()));
-                setProps(props);
-                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
-                    initProperties.setProps(retProps), retProps.size(), InitPropertiesAdapter.class.getTypeName()));
+                initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
+                initProperties.setProps(retProps);
             }
             else {
                 retProps.putAll(props);
             }
             retBool.set(retProps.size() > 9);
         }
-        
-        private void fileIsWritableOrNotExists() {
-            InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-            Properties props = initProperties.getProps();
-            retBool.set(props.size() > 10);
-            if (retBool.get()) {
+    
+        private void fileIsWritableOrNotExists() throws IOException {
+            if (retProps.size() < 10) {
+                retProps.clear();
+                Properties props = InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps();
                 retProps.putAll(props);
-                setProps(retProps);
+                retBool.set(retProps.size() > 10);
             }
-            else {
-                retProps.putAll(InitProperties.getInstance(InitProperties.ATAPT).getProps());
+            if (retBool.get()) {
+                retProps.store(new FileOutputStream(FileNames.CONSTANTSFOR_PROPERTIES), this.getClass().getSimpleName());
             }
         }
     

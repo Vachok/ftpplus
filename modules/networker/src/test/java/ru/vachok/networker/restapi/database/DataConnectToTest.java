@@ -24,7 +24,7 @@ public class DataConnectToTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DataConnectToTest.class.getSimpleName(), System.nanoTime());
     
-    private DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo.getInstance(ConstantsFor.DBBASENAME_U0466446_TESTING);
+    private DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo.getInstance(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
     
     @BeforeClass
     public void setUp() {

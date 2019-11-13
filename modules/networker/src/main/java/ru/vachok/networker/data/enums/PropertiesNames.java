@@ -3,7 +3,7 @@
 package ru.vachok.networker.data.enums;
 
 
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 
 /**
@@ -65,8 +65,8 @@ public enum PropertiesNames {
      Название настройки.
      <p>
      pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
-     
-     @see AppComponents#getProps()
+ 
+     @see InitProperties#getTheProps()
      */
     public static final String PINGSLEEP = "pingsleep";
     
@@ -84,4 +84,12 @@ public enum PropertiesNames {
     public static final String ERROR = "Error";
     
     public static final String REALFTPPASS = "realftppass";
+    
+    public static final String LIMITSEARCHROWS = "limitsearchrows";
+    
+    public static final String SUN_JAVA_COMMAND = "sun.java.command";
+    
+    public static final String TIMESTAMP = "timestamp";
+    
+    public static final String MINDELAY = "mindelay";
 }

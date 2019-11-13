@@ -28,6 +28,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String H2DB = "H2DB";
     
+    String REGRUCONNECTION = "RegRuMysqlLoc";
+    
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getRemoteReg() {
         return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -55,23 +57,22 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
      @param additionalColumns unstandart column names <b>with type</b>
      @return executeQuery
      */
-    default int createTable(String dbPointTable, List<String> additionalColumns) {
-        return new MySqlLocalSRVInetStat().createTable(dbPointTable, additionalColumns);
-    }
+    int createTable(String dbPointTable, List<String> additionalColumns);
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
-            case DEFAULT_I:
-                return getDefaultI();
+            case REGRUCONNECTION:
+                return new RegRuMysqlLoc();
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case TESTING:
                 return new TesterDB65SQL();
             case H2DB:
                 return new H2DB();
+            case DEFAULT_I:
             default:
-                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+                return getDefaultI();
         }
     }
     

@@ -8,9 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -79,7 +77,7 @@ public class DBPropsCallableTest {
     public void testFileReadOnly() {
         File localProps = new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES);
         try {
-            Files.setAttribute(localProps.toPath(), "dos:readonly", true);
+            Files.setAttribute(localProps.toPath(), OtherConstants.READONLY, true);
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

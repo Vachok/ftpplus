@@ -267,7 +267,7 @@ public class InternetSyncTest {
             else {
                 jsonObject.add("stamp", String.valueOf(valueParsed));
                 jsonObject.add("squidans", toJSON[1]);
-                jsonObject.add("bytes", toJSON[2]);
+                jsonObject.add(ConstantsFor.DBCOL_BYTES, toJSON[2]);
                 jsonObject.set("site", toJSON[4]);
             }
             JsonObject finalJsonObject = jsonObject;
@@ -311,7 +311,7 @@ public class InternetSyncTest {
         catch (com.eclipsesource.json.ParseException e) {
             jsonObject.add("stamp", "1");
             jsonObject.add("squidans", "");
-            jsonObject.add("bytes", "1");
+            jsonObject.add(ConstantsFor.DBCOL_BYTES, "1");
             jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
             return jsonObject;
         }
@@ -326,7 +326,7 @@ public class InternetSyncTest {
             long timestampLong = Long.parseLong(object.get("stamp").asString());
             preparedStatement.setLong(1, timestampLong);
             preparedStatement.setString(2, object.get("squidans").toString().replaceAll("\\Q\"\\E", ""));
-            preparedStatement.setInt(3, Integer.parseInt(object.get("bytes").asString()));
+            preparedStatement.setInt(3, Integer.parseInt(object.get(ConstantsFor.DBCOL_BYTES).asString()));
             preparedStatement.setString(4, object.get("site").toString().replaceAll("\\Q\"\\E", ""));
             result = preparedStatement.executeUpdate();
         }

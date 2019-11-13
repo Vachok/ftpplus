@@ -8,16 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +44,7 @@ public class ShowAllDevCTRL {
     private NetScanService scanOnline;
     
     @Autowired
-    public ShowAllDevCTRL(NetScanService scanOnline) {
+    public ShowAllDevCTRL(ScanOnline scanOnline) {
         this.scanOnline = scanOnline;
         this.messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     }
@@ -85,7 +83,7 @@ public class ShowAllDevCTRL {
     }
     
     private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(PropertiesNames.SCANSINMIN, "200"));
+        final float scansInMin = Float.parseFloat(InitProperties.getTheProps().getProperty(PropertiesNames.SCANSINMIN, "200"));
         float minLeft = NetKeeper.getAllDevices().remainingCapacity() / scansInMin;
         
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")

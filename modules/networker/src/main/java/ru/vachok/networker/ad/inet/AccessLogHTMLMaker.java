@@ -38,21 +38,24 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     
     private List<String> toWriteAllowed = new ArrayList<>();
     
+    private NameOrIPChecker nIPCheck;
+    
     @Override
     public String getInfoAbout(String aboutWhat) {
         return fillAttribute(aboutWhat);
     }
     
     @Override
-    public void setClassOption(Object classOption) {
+    public void setClassOption(@NotNull Object classOption) {
         this.aboutWhat = (String) classOption;
+        nIPCheck = new NameOrIPChecker(aboutWhat);
     }
     
     @Override
     public String fillWebModel() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+            this.aboutWhat = nIPCheck.resolveInetAddress().getHostAddress();
         }
         catch (RuntimeException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
@@ -193,7 +196,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
             
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("AccessLogHTMLMaker.getUserInetSessionsTime", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("AccessLogHTMLMaker.getUserInetSessionsTime", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         return (int) TimeUnit.MILLISECONDS.toMinutes(intE);
     }

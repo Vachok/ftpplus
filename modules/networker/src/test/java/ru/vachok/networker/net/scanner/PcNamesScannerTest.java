@@ -2,11 +2,11 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
@@ -44,26 +44,26 @@ import java.util.concurrent.*;
 public class PcNamesScannerTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System
+        .nanoTime());
     
-    private PcNamesScanner pcNamesScanner = AppComponents.getPcNamesScanner();
-    
-    private NetScanCtr netScanCtr = new NetScanCtr();
+    private static final PcNamesScanner PC_SCANNER = new PcNamesScanner();
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
     
+    private NetScanCtr netScanCtr;
+    
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 2));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        this.pcNamesScanner.setClassOption(netScanCtr);
-        this.pcNamesScanner.setThePc("do0001");
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
+        this.netScanCtr = new NetScanCtr(new PcNamesScannerWorks());
         this.netScanCtr.setModel(new ExtendedModelMap());
     }
     
@@ -72,22 +72,23 @@ public class PcNamesScannerTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
+    @BeforeMethod
+    public void initScan() {
+        this.netScanCtr = new NetScanCtr(PC_SCANNER);
+    }
+    
     @Test
     public void testToString() {
-        String toStr = pcNamesScanner.toString();
-        Assert.assertTrue(toStr.contains(PcNamesScanner.SCANNER), toStr);
+        String toStr = PC_SCANNER.toString();
+        Assert.assertTrue(toStr.contains("startClassTime"), toStr);
+        Assert.assertTrue(toStr.contains("lastScanStamp"), toStr);
+        Assert.assertTrue(toStr.contains("thePc"), toStr);
         System.out.println("toStr = " + toStr);
     }
     
     @Test
     public void scanDO() {
         scanAutoPC("do", 4);
-    }
-    
-    @Test
-    public void scanA() {
-        String a156Scan = scanName("a156");
-        Assert.assertTrue(a156Scan.contains("a156 : ougp"), a156Scan);
     }
     
     private void scanAutoPC(String testPrefix, int countPC) {
@@ -122,7 +123,13 @@ public class PcNamesScannerTest {
         return list;
     }
     
-    private void prefixToMap(String prefixPcName) {
+    private @NotNull String scanName(String pcName) {
+        InformationFactory informationFactory = InformationFactory.getInstance(pcName);
+        String pcNameInfo = informationFactory.getInfo();
+        return MessageFormat.format("{0} parameter. Result:  {1}", pcName, pcNameInfo);
+    }
+    
+    private static void prefixToMap(String prefixPcName) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<h4>");
         stringBuilder.append(prefixPcName);
@@ -133,47 +140,62 @@ public class PcNamesScannerTest {
     }
     
     @Test
-    public void testIsTime() {
-        try {
-            Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
+    public void scanA() {
+        String a224Scan = scanName("a224");
+        Assert.assertTrue(a224Scan.contains("a224"), a224Scan);
+        boolean isUser = a224Scan.contains("ialekseeva") || a224Scan.contains("n.kolodyazhnyj");
+        Assert.assertTrue(isUser, a224Scan);
+    }
+    
+    @Test
+    public void testFileScanTMPCreate() {
+        File file = new File(FileNames.SCAN_TMP);
+        boolean isMethodOk = PcNamesScanner.fileScanTMPCreate(true);
+        Assert.assertTrue(file.exists());
+        Assert.assertTrue(isMethodOk);
+        isMethodOk = PcNamesScanner.fileScanTMPCreate(false);
+        Assert.assertFalse(file.exists());
+        Assert.assertTrue(isMethodOk);
+    }
+    
+    private static void checkWeekDB() {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom.pcuserauto");
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by idrec desc LIMIT 1");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                if (resultSet.first()) {
+                    Assert.assertTrue(checkDateFromDB(resultSet.getString(ConstantsFor.DB_FIELD_WHENQUERIED)));
+                    break;
+                }
+            }
         }
-        catch (IOException e) {
+        catch (SQLException | ParseException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        pcNamesScanner.setModel(new ExtendedModelMap());
-        pcNamesScanner.setRequest(new MockHttpServletRequest());
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->pcNamesScanner.checkTime());
-        try {
-            submit.get(20, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        checkWeekDB();
-    }
-    
-    @Test
-    public void testGetMonitoringRunnable() {
-        Runnable runnable = pcNamesScanner.getMonitoringRunnable();
-        Assert.assertEquals(runnable, pcNamesScanner);
-        String runToStr = runnable.toString();
-        Assert.assertTrue(runToStr.contains(PcNamesScanner.SCANNER), runToStr);
-    }
-    
-    @Test
-    public void testOnePrefixSET() {
-        NetKeeper.getPcNamesForSendToDatabase().clear();
-        Set<String> notdScanned = pcNamesScanner.onePrefixSET("dotd");
-        Assert.assertTrue(notdScanned.size() > 3);
-        String setStr = AbstractForms.fromArray(notdScanned);
-        Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
-        checkBigDB();
     }
     
     private static boolean checkDateFromDB(String timeNow) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.forLanguageTag("ru, RU"));
         Date parseDate = format.parse(timeNow);
         return parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(72));
+    }
+    
+    @Test
+    public void testGetMonitoringRunnable() {
+        Runnable runnable = PC_SCANNER.getMonitoringRunnable();
+        Assert.assertEquals(runnable, PC_SCANNER);
+        String runToStr = runnable.toString();
+        Assert.assertTrue(runToStr.contains("{\"startClassTime\":"), runToStr);
+    }
+    
+    @Test
+    public void testOnePrefixSET() {
+        NetKeeper.getPcNamesForSendToDatabase().clear();
+        Set<String> notdScanned = PC_SCANNER.onePrefixSET("dotd");
+        Assert.assertTrue(notdScanned.size() > 3);
+        String setStr = AbstractForms.fromArray(notdScanned);
+        Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
+        checkBigDB();
     }
     
     private static void checkBigDB() {
@@ -197,16 +219,10 @@ public class PcNamesScannerTest {
         }
     }
     
-    private static boolean checkMap() {
-        ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-        String fromArray = AbstractForms.fromArray(htmlLinks);
-        return fromArray.contains(" : true") & fromArray.contains(" : false");
-    }
-    
     @Test
     public void testRun() {
         try {
-            Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(pcNamesScanner);
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(PC_SCANNER);
             Assert.assertNull(submit.get(20, TimeUnit.SECONDS));
         }
         catch (RuntimeException | ExecutionException | TimeoutException e) {
@@ -221,13 +237,13 @@ public class PcNamesScannerTest {
     
     @Test
     public void testGetExecution() {
-        String scannerExecution = pcNamesScanner.getExecution();
+        String scannerExecution = PC_SCANNER.getExecution();
         Assert.assertTrue(scannerExecution.contains("<p>"));
     }
     
     @Test
     public void testGetPingResultStr() {
-        String resultStr = pcNamesScanner.getPingResultStr();
+        String resultStr = PC_SCANNER.getPingResultStr();
         Assert.assertTrue(resultStr.contains("<p>"));
     }
     
@@ -237,7 +253,7 @@ public class PcNamesScannerTest {
         if (logFile.exists()) {
             Assert.assertTrue(logFile.delete());
         }
-        String writeLogStr = pcNamesScanner.writeLog();
+        String writeLogStr = PC_SCANNER.writeLog();
         Assert.assertEquals(logFile.getAbsolutePath(), writeLogStr);
         Assert.assertTrue(logFile.exists());
         logFile.deleteOnExit();
@@ -272,7 +288,7 @@ public class PcNamesScannerTest {
     
     @Test
     public void testGetStatistics() {
-        String statistics = pcNamesScanner.getStatistics();
+        String statistics = PC_SCANNER.getStatistics();
         System.out.println("statistics = " + statistics);
     }
     
@@ -281,25 +297,9 @@ public class PcNamesScannerTest {
         scanAutoPC("pp", 5);
     }
     
-    private @NotNull String scanName(String pcName) {
-        InformationFactory informationFactory = InformationFactory.getInstance(pcName);
-        String pcNameInfo = informationFactory.getInfo();
-        return MessageFormat.format("{0} parameter. Result:  {1}", pcName, pcNameInfo);
-    }
-    
-    private static void checkWeekDB() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom.pcuserauto");
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by whenQueried desc LIMIT 1");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                if (resultSet.first()) {
-                    Assert.assertTrue(checkDateFromDB(resultSet.getString("whenQueried")));
-                    break;
-                }
-            }
-        }
-        catch (SQLException | ParseException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
+    private static boolean checkMap() {
+        ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+        String fromArray = AbstractForms.fromArray(htmlLinks);
+        return fromArray.contains(" : true") & fromArray.contains(" : false");
     }
 }

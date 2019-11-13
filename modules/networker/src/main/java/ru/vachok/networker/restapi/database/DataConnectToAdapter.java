@@ -7,10 +7,10 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
@@ -47,7 +47,7 @@ public abstract class DataConnectToAdapter implements DataConnectTo {
             source.setAutoReconnect(true);
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            Properties props = AppComponents.getProps();
+            Properties props = InitProperties.getTheProps();
             source.setUser(props.getProperty(PropertiesNames.DBUSER));
             source.setPassword(props.getProperty(PropertiesNames.DBPASS));
         }

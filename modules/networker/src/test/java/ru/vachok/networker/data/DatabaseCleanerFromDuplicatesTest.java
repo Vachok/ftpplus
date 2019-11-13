@@ -81,7 +81,7 @@ public class DatabaseCleanerFromDuplicatesTest {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT distinct whenQueried FROM pcuserauto;")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        tsList.add(resultSet.getTimestamp("whenQueried"));
+                        tsList.add(resultSet.getTimestamp(ConstantsFor.DB_FIELD_WHENQUERIED));
                     }
                     Assert.assertTrue(tsList.size() > 1, "NO DISTINCT whenQueried!");
                     getGoodIDs(tsList);

@@ -4,7 +4,6 @@ package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -18,7 +17,7 @@ import java.text.MessageFormat;
  Class ActionOpenProgFolder
  <p>
  
- @see ru.vachok.networker.systray.actions.ActionOpenProgFolderTest
+ @see ActionOpenProgFolderTest
  @since 12.07.2019 (20:19) */
 @SuppressWarnings("ClassHasNoToStringMethod")
 public class ActionOpenProgFolder extends AbstractAction {
@@ -31,13 +30,14 @@ public class ActionOpenProgFolder extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         openFolder();
-        InitProperties.reloadApplicationPropertiesFromFile();
     }
     
     private void openFolder() {
         Path workingNowPathRoot = Paths.get(".");
         try {
             Process execOpen = Runtime.getRuntime().exec(MessageFormat.format("explorer \"{0}\n", workingNowPathRoot));
+            int exitValue = execOpen.exitValue();
+            System.out.println("exitValue = " + exitValue);
         }
         catch (IOException e1) {
             System.err.println(e1.getMessage() + " " + getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED);

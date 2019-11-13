@@ -29,14 +29,15 @@ public abstract class PCInfo implements InformationFactory {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
-    private static String pcName;
+    private static String pcName = "no name";
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
         PCInfo.pcName = aboutWhat;
+        final PCInfo tvPcInformation = new TvPcInformation();
         if (aboutWhat.equals(InformationFactory.TV)) {
-            return new TvPcInformation();
+            return tvPcInformation;
         }
         else {
             if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
@@ -128,7 +129,7 @@ public abstract class PCInfo implements InformationFactory {
             NetKeeper.getPcNamesForSendToDatabase().add(stringToAdd);
         }
         catch (UnknownFormatConversionException e) {
-            stringToAdd = MessageFormat.format(PCInfo.class.getSimpleName(), e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            stringToAdd = MessageFormat.format(PCInfo.class.getSimpleName(), e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return stringToAdd;
     }

@@ -3,13 +3,13 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -52,20 +52,23 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public String getInfo() {
+        String result;
+        try {
+            result = getLogins((String) aboutWhat, 1).get(0);
+            result = result.split(" ")[0];
+            String resolvedAddress = new NameOrIPChecker(result).resolveInetAddress().getHostAddress();
+            if (resolvedAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP)) & !resolvedAddress.equals("127.0.0.1")) {
+                result = resolvedAddress;
+            }
+            else {
+                result = tryPcName();
+            }
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
+            result = MessageFormat.format("ResolveUserInDataBase.getInfo {0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
-        
-        ResolveUserInDataBase that = (ResolveUserInDataBase) o;
-        
-        if (aboutWhat != null ? !aboutWhat.equals(that.aboutWhat) : that.aboutWhat != null) {
-            return false;
-        }
-        return dataConnectTo.equals(that.dataConnectTo);
+        return result;
     }
     
     private String tryPcName() {
@@ -158,7 +161,7 @@ class ResolveUserInDataBase extends UserInfo {
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        Timestamp timestamp = resultSet.getTimestamp(ConstantsNet.DB_FIELD_WHENQUERIED);
+                        Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DB_FIELD_WHENQUERIED);
                         String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
                             .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
                         retList.add(addStr);
@@ -166,7 +169,7 @@ class ResolveUserInDataBase extends UserInfo {
                 }
             }
             catch (RuntimeException e) {
-                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             }
         }
         catch (SQLException e) {
@@ -189,17 +192,22 @@ class ResolveUserInDataBase extends UserInfo {
                 .toString();
     }
     
+    @Contract(value = "null -> false", pure = true)
     @Override
-    public String getInfo() {
-        String retString;
-        try {
-            retString = getLogins((String) aboutWhat, 1).get(0);
-            retString = retString.split(" ")[0];
-            return new NameOrIPChecker(retString).resolveInetAddress().getHostAddress();
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
-            return tryPcName();
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
+        
+        ResolveUserInDataBase that = (ResolveUserInDataBase) o;
+        
+        if (aboutWhat != null ? !aboutWhat.equals(that.aboutWhat) : that.aboutWhat != null) {
+            return false;
+        }
+        return dataConnectTo.equals(that.dataConnectTo);
     }
     
     

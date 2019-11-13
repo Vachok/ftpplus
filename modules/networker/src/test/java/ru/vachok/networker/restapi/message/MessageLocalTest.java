@@ -1,13 +1,27 @@
 package ru.vachok.networker.restapi.message;
 
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
+
+import java.io.File;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -19,7 +33,7 @@ public class MessageLocalTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(MessageLocal.class
         .getSimpleName(), System.nanoTime());
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser;
     
     @BeforeClass
     public void setUp() {
@@ -30,6 +44,11 @@ public class MessageLocalTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
+    
+    @BeforeMethod
+    public void initMsgToUser() {
+        this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
     }
     
     @Test
@@ -83,5 +102,26 @@ public class MessageLocalTest {
     public void testTestToString() {
         String toString = messageToUser.toString();
         Assert.assertTrue(toString.contains("MessageLocal{"), toString);
+    }
+    
+    @Test
+    public void testWrireLogToFile() {
+        File file = new File(FileNames.APP_JSON);
+        Assert.assertTrue(file.delete());
+        messageToUser.errorAlert("test", "test", "test");
+        Assert.assertTrue(file.exists());
+        Queue<String> appJson = FileSystemWorker.readFileToQueue(file.toPath().normalize().toAbsolutePath());
+        while (!appJson.isEmpty()) {
+            String logStr = appJson.remove();
+            try {
+                JsonObject jsonObject = Json.parse(logStr).asObject();
+                long timestamp = jsonObject.getLong(PropertiesNames.TIMESTAMP, 0);
+                Assert.assertTrue(timestamp + TimeUnit.SECONDS.toMillis(10) > System.currentTimeMillis());
+            }
+            catch (ParseException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            }
+            
+        }
     }
 }

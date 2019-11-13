@@ -3,7 +3,6 @@
 package ru.vachok.networker;
 
 
-import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -37,12 +36,6 @@ public class AppInfoOnLoadTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            context.stop();
-        }
-        catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
     }
     
     @Test

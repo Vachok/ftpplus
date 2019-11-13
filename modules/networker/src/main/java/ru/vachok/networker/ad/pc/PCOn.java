@@ -8,31 +8,22 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
@@ -66,7 +57,7 @@ class PCOn extends PCInfo {
         String namesToFile;
         try {
             namesToFile = userInfo.getLogins(pcName, 1).get(0);
-            NetScanService.autoResolvedUsersRecord(pcName, namesToFile);
+            UserInfo.autoResolvedUsersRecord(pcName, namesToFile);
             userInfo.setClassOption(pcName);
             namesToFile = Paths.get(namesToFile.split(" ")[1]).getFileName().toString();
         }
@@ -146,13 +137,13 @@ class PCOn extends PCInfo {
     
     @Override
     public String getInfo() {
-        if (pcName == null | pcName.contains("unknown")) {
+        if (pcName == null || pcName.contains("unknown")) {
             return "PC is not set or on DNS record" + this.toString();
         }
         else {
             this.pcName = checkValidNameWithoutEatmeat(pcName);
             String currentName = pcNameWithHTMLLink();
-            messageToUser.warn(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, addressIp, true, userLogin));
+            messageToUser.info(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, addressIp, true, userLogin));
             NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName + "<br>", true);
             return currentName;
         }
@@ -160,6 +151,8 @@ class PCOn extends PCInfo {
     
     @NotNull String pcNameWithHTMLLink() {
         String lastUserRaw = pcName + " : " + userLogin; // pcName : userName
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+            .execute(()->UserInfo.uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userLogin));
         String lastUser = new PageGenerationHelper().setColor("#00ff69", lastUserRaw);
         if (lastUser.contains(".err") || lastUser.contains(ConstantsFor.ISNTRESOLVED)) {
             lastUser = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, UserInfo.getInstance("ResolveUserInDataBase").getLogins(pcName, 1).get(0));
@@ -187,22 +180,22 @@ class PCOn extends PCInfo {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        retStr = new Date(resultSet.getTimestamp("timeon").getTime()).toString();
+                        retStr = new Date(resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON).getTime()).toString();
                     }
                 }
             }
         }
         catch (SQLException e) {
-            retStr = e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace());
+            retStr = e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace());
         }
         return retStr;
     }
     
     private int englargeOnCounter() {
-        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
+        int onlinePC = InitProperties.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
-        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        InitProperties.getTheProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
         return onlinePC;
     }
     

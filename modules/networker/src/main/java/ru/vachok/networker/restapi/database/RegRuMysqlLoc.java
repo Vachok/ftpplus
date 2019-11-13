@@ -19,9 +19,6 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- Class ru.vachok.networker.restapi.database.RegRuMysql
- <p>
- 
  @see ru.vachok.networker.restapi.database.RegRuMysqlLocTest
  @since 14.07.2019 (12:16) */
 class RegRuMysqlLoc implements DataConnectTo {
@@ -36,7 +33,7 @@ class RegRuMysqlLoc implements DataConnectTo {
     private MysqlDataSource mysqlDataSource;
     
     @Contract(pure = true)
-    public RegRuMysqlLoc(String dbName) {
+    RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
         this.mysqlDataSource = getDataSource();
         mysqlDataSource.setUser("it");
@@ -61,9 +58,14 @@ class RegRuMysqlLoc implements DataConnectTo {
             return defDataSource;
         }
         catch (SQLException e) {
-            messageToUser.error("RegRuMysqlLoc.getDataSourceLoc", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("RegRuMysqlLoc.getDataSourceLoc", e.getMessage(), new TForms().networkerTrace(e.getStackTrace()));
             return DataConnectToAdapter.getLibDataSource();
         }
+    }
+    
+    @Contract(pure = true)
+    RegRuMysqlLoc() {
+        this.dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
     }
     
     private @Nullable Connection conAlt(@NotNull String dbName) {
@@ -73,6 +75,11 @@ class RegRuMysqlLoc implements DataConnectTo {
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.dropTable( boolean ) at 20.09.2019 - (20:37)");
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.createTable( int ) at 04.11.2019 - (13:50)");
     }
     
     @Override
@@ -93,7 +100,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         if (dbName.contains(".")) {
-            throw new InvokeIllegalException(MessageFormat.format("Database name must me without comma! {0}\n{1}", dbName, this.getClass().getTypeName()));
+            throw new InvokeIllegalException(MessageFormat.format("{0}. Database name must me without comma: {1}!", this.getClass().getSimpleName(), dbName));
         }
         defDataSource.setDatabaseName(dbName);
         defDataSource.setUseSSL(false);
@@ -106,7 +113,7 @@ class RegRuMysqlLoc implements DataConnectTo {
             return defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error("RegRuMysqlLoc.getDefaultConnection", e.getMessage(), TForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("RegRuMysqlLoc.getDefaultConnection", e.getMessage(), TForms.networkerTrace(e.getStackTrace()));
             return conAlt(dbName);
         }
     }

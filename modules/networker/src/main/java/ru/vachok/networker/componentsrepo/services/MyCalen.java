@@ -22,7 +22,7 @@ public abstract class MyCalen {
     
     private static final String DATE_RETURNED = " date returned";
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, MyCalen.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MyCalen.class.getSimpleName());
     
     @Contract(pure = true)
     private MyCalen() {

@@ -43,8 +43,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -56,7 +54,7 @@ public abstract class UsefulUtilities {
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh"};
     
-    private static final Properties APP_PROPS = AppComponents.getProps();
+    private static final Properties APP_PROPS = InitProperties.getTheProps();
     
     private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UsefulUtilities.class.getSimpleName());
     
@@ -93,12 +91,10 @@ public abstract class UsefulUtilities {
             delay = ConstantsFor.MIN_DELAY;
         }
         if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")) | thisPC().toLowerCase()
-            .contains(OtherKnownDevices.HOSTNAME_HOME)) {
-            return ConstantsFor.MIN_DELAY;
+            .contains(OtherKnownDevices.HOSTNAME_HOME) | thisPC().toLowerCase().contains("-h")) {
+            delay = Long.parseLong(InitProperties.getTheProps().getProperty(PropertiesNames.MINDELAY, String.valueOf(5)));
         }
-        else {
-            return delay;
-        }
+        return delay;
     }
     
     /**
@@ -124,7 +120,7 @@ public abstract class UsefulUtilities {
     public static @NotNull String getUpTime() {
         String tUnit = " h";
         float hrsOn = (float)
-            (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
+                (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
         if (hrsOn > ConstantsFor.ONE_DAY_HOURS) {
             hrsOn /= ConstantsFor.ONE_DAY_HOURS;
             tUnit = " d";
@@ -214,49 +210,13 @@ public abstract class UsefulUtilities {
         return cpuTimeStr;
     }
     
-    public static @NotNull String scheduleTrunkPcUserAuto() {
-        Runnable trunkTableUsers = UsefulUtilities::trunkTableUsers;
-        ScheduledThreadPoolExecutor schedExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        schedExecutor.scheduleWithFixedDelay(trunkTableUsers, getDelayMs(), ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
-        return AppComponents.threadConfig().getTaskScheduler().toString();
-    }
-    
-    private static @NotNull String maxCPUThread() {
-        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        Map<String, Long> allThreadsCPU = new ConcurrentHashMap<>();
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        try {
-            for (long threadId : bean.getAllThreadIds()) {
-                ThreadInfo info = bean.getThreadInfo(threadId);
-                allThreadsCPU
-                    .put(MessageFormat.format("{0}, INFO: {1}\n{2}", info.getThreadName(), info.toString(), new TForms().fromArray(info.getStackTrace(), true)), bean
-                        .getThreadCpuTime(threadId));
-            }
-        }
-        catch (RuntimeException e) {
-            MESSAGE_LOCAL.error(e.getMessage() + " see line: 361 ***");
-        }
-        
-        Optional<Long> maxOpt = allThreadsCPU.values().stream().max(Comparator.naturalOrder());
-        maxOpt.ifPresent(stringBuilder::append);
-        for (Map.Entry<String, Long> stringLongEntry : allThreadsCPU.entrySet()) {
-            maxOpt.ifPresent(aLong->{
-                if (stringLongEntry.getValue().equals(aLong)) {
-                    stringBuilder.append(" ").append(stringLongEntry.getKey());
-                }
-            });
-        }
-        return stringBuilder.toString();
-    }
-    
     /**
      @return время билда
      */
     public static long getBuildStamp() {
         long retLong = 1L;
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-        Properties appPr = AppComponents.getProps();
+        Properties appPr = InitProperties.getTheProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
@@ -271,10 +231,17 @@ public abstract class UsefulUtilities {
         }
         catch (UnknownHostException | NumberFormatException e) {
             MESSAGE_LOCAL.error(MessageFormat
-                .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         initProperties.setProps(appPr);
         return retLong;
+    }
+    
+    public static @NotNull String scheduleTrunkPcUserAuto() {
+        Runnable trunkTableUsers = UsefulUtilities::trunkTableUsers;
+        ScheduledThreadPoolExecutor schedExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        schedExecutor.scheduleWithFixedDelay(trunkTableUsers, getDelayMs(), ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        return AppComponents.threadConfig().getTaskScheduler().toString();
     }
     
     /**
@@ -321,7 +288,7 @@ public abstract class UsefulUtilities {
     
     @SuppressWarnings("MagicNumber")
     public static int getScansDelay() {
-        int scansInOneMin = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.SCANSINMIN, "111"));
+        int scansInOneMin = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.SCANSINMIN, "111"));
         if (scansInOneMin <= 0) {
             scansInOneMin = 85;
         }
@@ -331,67 +298,8 @@ public abstract class UsefulUtilities {
         return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
     
-    public static Visitor getVis(HttpServletRequest request) {
-        return new AppComponents().visitor(request);
-    }
-    
-    /**
-     @return ipconfig /flushdns results from console
-     
-     @throws UnsupportedOperationException if non Windows OS
-     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
-     */
-    public static @NotNull String ipFlushDNS() {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
-            try {
-                stringBuilder.append(runProcess("ipconfig /flushdns"));
-            }
-            catch (IOException e) {
-                stringBuilder.append(e.getMessage());
-            }
-        }
-        else {
-            stringBuilder.append(System.getProperty("os.name"));
-        }
-        return stringBuilder.toString();
-    }
-    
-    private static @NotNull String runProcess(String cmdProcess) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        Process processFlushDNS = Runtime.getRuntime().exec(cmdProcess);
-        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
-        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
-        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-            bufferedReader.lines().forEach(stringBuilder::append);
-        }
-        return stringBuilder.toString();
-    }
-    
-    @Contract(pure = true)
-    public static @NotNull String getHTMLCenterColor(String color, String text) {
-        String tagOpen = "<center><font color=\"" + color + "\">";
-        String tagClose = "</font></center>";
-        return tagOpen + text + tagClose;
-    }
-    
-    public static void setPreference(String prefName, String prefValue) {
-        Preferences userPref = AppComponents.getUserPref();
-        userPref.put(prefName, prefValue);
-        try {
-            userPref.flush();
-            userPref.sync();
-        }
-        catch (BackingStoreException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-    }
-    
-    public static void startTelnet() {
-        final Thread telnetThread = new Thread(new TelnetStarter());
-        telnetThread.setDaemon(true);
-        telnetThread.start();
-        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
+    public static int getLogLevel() {
+        return InitProperties.getUserPref().getInt("loglevel", ConstantsFor.LOGLEVEL);
     }
     
     /**
@@ -410,10 +318,95 @@ public abstract class UsefulUtilities {
     protected static long getDelayMs() {
         Date dateStart = MyCalen.getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
         DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
-        long delayMs = dateStart.getTime() - System.currentTimeMillis();
-        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
-        MessageToUser.getInstance(MessageToUser.DB, UsefulUtilities.class.getSimpleName()).info(msg);
-        return delayMs;
+        return dateStart.getTime() - System.currentTimeMillis();
+    }
+    
+    /**
+     @return ipconfig /flushdns results from console
+     
+     @throws UnsupportedOperationException if non Windows OS
+     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
+     */
+    public static @NotNull String ipFlushDNS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
+            stringBuilder.append(runProcess("ipconfig /flushdns"));
+        }
+        else {
+            stringBuilder.append(runProcess(ConstantsFor.SSH_UNAMEA));
+        }
+        return stringBuilder.toString();
+    }
+    
+    public static Visitor getVis(HttpServletRequest request) {
+        return new AppComponents().visitor(request);
+    }
+    
+    private static @NotNull String runProcess(String cmdProcess) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Process processFlushDNS = null;
+        String name = "UsefulUtilities.runProcess";
+        try {
+            processFlushDNS = Runtime.getRuntime().exec(cmdProcess);
+        }
+        catch (IOException e) {
+            System.err.println(MessageFormat.format(name, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+        }
+        
+        try (InputStream flushDNSInputStream = processFlushDNS.getInputStream()) {
+            try (InputStreamReader reader = new InputStreamReader(flushDNSInputStream)) {
+                try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+                    bufferedReader.lines().forEach(stringBuilder::append);
+                }
+            }
+        }
+        catch (IOException e) {
+            System.err.println(MessageFormat.format(name, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+        }
+        return stringBuilder.toString();
+    }
+    
+    private static @NotNull String maxCPUThread() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        Map<String, Long> allThreadsCPU = new ConcurrentHashMap<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try {
+            for (long threadId : bean.getAllThreadIds()) {
+                ThreadInfo info = bean.getThreadInfo(threadId);
+                allThreadsCPU
+                        .put(MessageFormat.format("{0}, INFO: {1}\n{2}", info.getThreadName(), info.toString(), new TForms().fromArray(info.getStackTrace(), true)), bean
+                                .getThreadCpuTime(threadId));
+            }
+        }
+        catch (RuntimeException e) {
+            MESSAGE_LOCAL.error(e.getMessage() + " see line: 361 ***");
+        }
+        
+        Optional<Long> maxOpt = allThreadsCPU.values().stream().max(Comparator.naturalOrder());
+        maxOpt.ifPresent(stringBuilder::append);
+        for (Map.Entry<String, Long> stringLongEntry : allThreadsCPU.entrySet()) {
+            maxOpt.ifPresent(aLong->{
+                if (stringLongEntry.getValue().equals(aLong)) {
+                    stringBuilder.append(" ").append(stringLongEntry.getKey());
+                }
+            });
+        }
+        return stringBuilder.toString();
+    }
+    
+    @Contract(pure = true)
+    public static @NotNull String getHTMLCenterColor(String color, String text) {
+        String tagOpen = "<center><font color=\"" + color + "\">";
+        String tagClose = "</font></center>";
+        return tagOpen + text + tagClose;
+    }
+    
+    public static void startTelnet() {
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
+        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
     }
     
 }

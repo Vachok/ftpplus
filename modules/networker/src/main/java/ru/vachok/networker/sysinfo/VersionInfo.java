@@ -4,13 +4,13 @@ package ru.vachok.networker.sysinfo;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class VersionInfo {
     
     
     /**
-     {@link AppComponents#getProps()}
+     {@link InitProperties#getTheProps()}
      */
     private final Properties PROPERTIES;
     
@@ -60,7 +60,7 @@ public class VersionInfo {
     
     private static final String PR_APP_BUILD = "appBuild";
     
-    private static final Preferences PREF_USER = AppComponents.getUserPref();
+    private static final Preferences PREF_USER = InitProperties.getUserPref();
     
     private static final String ALERT_DNE = "Property does not exists";
     

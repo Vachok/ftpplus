@@ -20,6 +20,7 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -113,11 +114,11 @@ import java.util.concurrent.LinkedBlockingDeque;
     @NotNull
     private Collection<String> getAllDevLocalDeq() {
         final int MAX_IN_ONE_VLAN = 255;
-        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
         final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
         
         int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
-        AppComponents.getProps().setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
+        InitProperties.getTheProps().setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
     
@@ -159,7 +160,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
         if (UsefulUtilities.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
-            AppComponents.getUserPref().putLong(this.getClass().getSimpleName(), System.currentTimeMillis());
+            InitProperties.getUserPref().putLong(this.getClass().getSimpleName(), System.currentTimeMillis());
         }
         
         boolean isReachable = byAddress.isReachable(timeOutMSec);

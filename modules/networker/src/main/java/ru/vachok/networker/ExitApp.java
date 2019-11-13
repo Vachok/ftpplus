@@ -156,7 +156,6 @@ public class ExitApp extends Thread implements Externalizable {
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(FileNames.PING_TV);
-        
         FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
                 .append(".")
                 .append(ConstantsFor.FILESYSTEM_SEPARATOR)
@@ -189,7 +188,8 @@ public class ExitApp extends Thread implements Externalizable {
      <p>
      Запуск {@link #exitAppDO()}
      */
-    private void writeObj() {
+    private void
+    writeObj() {
         if (toWriteObj != null) {
             miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
             try (ObjectOutput objectOutput = new ObjectOutputStream(outFileStream)) {
@@ -219,7 +219,7 @@ public class ExitApp extends Thread implements Externalizable {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            initProperties.setProps(AppComponents.getProps());
+            initProperties.setProps(InitProperties.getTheProps());
             if (devices.size() > 0) {
                 miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
                 miniLoggerLast.add("Last" + " = " + devices.getLast());

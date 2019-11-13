@@ -4,24 +4,17 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +67,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         final long startNano = System.nanoTime();
         int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);
         final long endNano = System.nanoTime();
-        Assert.assertTrue(stringsInCommonOwn > 11, MessageFormat.format("{0} strings in {1}", stringsInCommonOwn, fileToCount.toFile().getName()));
+        Assert.assertTrue(stringsInCommonOwn > 10, MessageFormat.format("{0} strings in {1}", stringsInCommonOwn, fileToCount.toFile().getName()));
         long nanoElapsed = endNano - startNano;
         Assert.assertTrue((nanoElapsed < 26_927_200_499L), String.valueOf(nanoElapsed));
         try {

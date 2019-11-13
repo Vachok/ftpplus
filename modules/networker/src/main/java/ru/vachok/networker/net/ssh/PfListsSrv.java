@@ -82,7 +82,6 @@ public class PfListsSrv {
     /**
      @return {@link #commandForNatStr}
      */
-    @SuppressWarnings("WeakerAccess")
     public @NotNull String getCommandForNatStr() {
         return commandForNatStr;
     }

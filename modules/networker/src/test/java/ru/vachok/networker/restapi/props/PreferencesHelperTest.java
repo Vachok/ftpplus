@@ -7,10 +7,10 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
@@ -33,7 +33,7 @@ public class PreferencesHelperTest {
     
     private Preferences userRoot = Preferences.userRoot();
     
-    private Preferences networker = Preferences.userRoot().node("networker");
+    private Preferences networker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
     
     @BeforeClass
     public void setUp() {
@@ -98,7 +98,7 @@ public class PreferencesHelperTest {
     
     @Test
     public void testReal() {
-        Preferences fromRealClass = AppComponents.getUserPref();
+        Preferences fromRealClass = InitProperties.getUserPref();
         System.out.println("new TForms().fromArray(freomRealClass) = " + new TForms().fromArray(fromRealClass));
         String fileWorkerValue = fromRealClass.get("charset", "");
         Assert.assertEquals(fileWorkerValue, "UTF-8");

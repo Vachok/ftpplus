@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.stats.data.DataConnectTo;
 
 import java.sql.*;
@@ -37,7 +38,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     
     public int getIDDifferenceWhileAppRunning() {
         int difference = getLastRecordID() - START_ID;
-        UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(difference));
+        InitProperties.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(difference));
         return difference;
     }
     
@@ -59,7 +60,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("SaveLogsToDB.getLastRecordID", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("SaveLogsToDB.getLastRecordID", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             result = 0 - e.getErrorCode();
         }
         return result;
@@ -129,6 +130,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     
     private void setComentInDB(final int idBefore) {
         int diffRows = (getLastRecordID() - idBefore);
+        Thread.currentThread().setName(MessageFormat.format("inetdiff{0}", diffRows));
         final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s at %s';", diffRows, UsefulUtilities.thisPC(), new Date());
         ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo
             .getInstance(ru.vachok.networker.restapi.database.DataConnectTo.DEFAULT_I);

@@ -2,10 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -24,7 +21,7 @@ public class LocalUserResolverTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(LocalUserResolver.class.getSimpleName(), System.nanoTime());
     
-    private LocalUserResolver localUserResolver = new LocalUserResolver();
+    private LocalUserResolver localUserResolver;
     
     @BeforeMethod
     public void initExecutor() {
@@ -44,14 +41,8 @@ public class LocalUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        try {
-            Thread.sleep(500);
-            List<String> variantsOfPC = localUserResolver.getLogins("do0134", 10);
-            Assert.assertTrue(variantsOfPC.size() > 0, AbstractForms.fromArray(variantsOfPC));
-        }
-        catch (InterruptedException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
+        List<String> variantsOfPC = localUserResolver.getLogins("do0134", 10);
+        Assert.assertTrue(variantsOfPC.size() > 0, AbstractForms.fromArray(variantsOfPC));
     }
     
     @Test

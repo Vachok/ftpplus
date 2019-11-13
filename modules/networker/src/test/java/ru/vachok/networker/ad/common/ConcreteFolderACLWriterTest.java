@@ -25,7 +25,9 @@ public class ConcreteFolderACLWriterTest {
     @Test
     public void testRun() {
         File fileOwner = new File(currentPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_OWNER);
-        Assert.assertTrue(fileOwner.delete());
+        if (fileOwner.exists()) {
+            Assert.assertTrue(fileOwner.delete());
+        }
         ConcreteFolderACLWriter concreteFolderACLWriter = new ConcreteFolderACLWriter(currentPath);
         concreteFolderACLWriter.run();
         Assert.assertTrue(fileOwner.exists());

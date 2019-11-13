@@ -7,9 +7,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
@@ -40,9 +38,8 @@ class UnknownUser extends UserInfo {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.credentials = aboutWhat;
-        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
+    public String getInfo() {
+        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.networkerTrace(Thread.currentThread().getStackTrace()));
     }
     
     @Override
@@ -51,8 +48,9 @@ class UnknownUser extends UserInfo {
     }
     
     @Override
-    public String getInfo() {
-        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
+    public String getInfoAbout(String aboutWhat) {
+        this.credentials = aboutWhat;
+        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.networkerTrace(Thread.currentThread().getStackTrace()));
     }
     
     @Override

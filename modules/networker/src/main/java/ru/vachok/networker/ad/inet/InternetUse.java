@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  @see ru.vachok.networker.ad.inet.InternetUseTest
  @since 02.04.2019 (10:24) */
+@SuppressWarnings("MethodWithMultipleReturnPoints")
 public abstract class InternetUse implements InformationFactory {
     
     
@@ -24,8 +25,6 @@ public abstract class InternetUse implements InformationFactory {
     private static final Map<String, String> INET_UNIQ = new ConcurrentHashMap<>();
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetUse.class.getSimpleName());
-    
-    private static int cleanedRows = 0;
     
     @Contract(pure = true)
     public static Map<String, String> get24hrsTempInetList() {
@@ -62,6 +61,7 @@ public abstract class InternetUse implements InformationFactory {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("InternetUse{");
+        int cleanedRows = 0;
         sb.append("cleanedRows=").append(cleanedRows);
         sb.append('}');
         return sb.toString();

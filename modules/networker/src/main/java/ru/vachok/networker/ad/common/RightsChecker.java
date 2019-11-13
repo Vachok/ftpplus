@@ -6,21 +6,15 @@ package ru.vachok.networker.ad.common;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.attribute.*;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -38,9 +32,11 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     private final Path logsCopyStopPath;
     
-    private static final Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON);
-    
     private final long startClass;
+    
+    private static final String TABLE_FULL_NAME = ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON;
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RightsChecker.class.getSimpleName());
     
     private long filesScanned;
     
@@ -49,8 +45,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     private Path startPath = ConstantsFor.COMMON_DIR;
     
     private long lastModDir;
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RightsChecker.class.getSimpleName());
     
     public RightsChecker(@NotNull Path logsCopyStopPath) {
         this.logsCopyStopPath = logsCopyStopPath;
@@ -92,7 +86,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointOwn, dir.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + owner);
             //Изменение формата ломает: CommonRightsParsing.rightsWriterToFolderACL
             String objectToFile = FileSystemWorker
-                .appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
+                    .appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
             
             new RightsWriter(dir.toAbsolutePath().normalize().toString(), owner.toString(), Arrays.toString(users.getAcl().toArray())).writeDBCommonTable();
         }
@@ -128,9 +122,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         StringBuilder stringBuilder = new StringBuilder()
-            .append("Dir visited = ")
-            .append(dir).append("\n")
-            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
+                .append("Dir visited = ")
+                .append(dir).append("\n")
+                .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
         long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
         if (secondsScan == 0) {
             secondsScan = 1;
@@ -142,22 +136,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             dir.toFile().setLastModified(lastModDir);
         }
         return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
-        sb.append("fileLocalCommonPointOwn=").append(fileLocalCommonPointOwn);
-        sb.append(", fileLocalCommonPointRgh=").append(fileLocalCommonPointRgh);
-        
-        sb.append(", filesScanned=").append(filesScanned);
-        sb.append(", dirsScanned=").append(dirsScanned);
-        
-        sb.append(", startPath=").append(startPath);
-        sb.append(", logsCopyStopPath=").append(logsCopyStopPath);
-        
-        sb.append('}');
-        return sb.toString();
     }
     
     private void copyExistsFiles(final long timeStart) {
@@ -186,9 +164,27 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         File forAppend = new File(this.getClass().getSimpleName() + ".res");
         
         FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
-            this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
+                this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
+        sb.append("fileLocalCommonPointOwn=").append(fileLocalCommonPointOwn);
+        sb.append(", fileLocalCommonPointRgh=").append(fileLocalCommonPointRgh);
+        
+        sb.append(", filesScanned=").append(filesScanned);
+        sb.append(", dirsScanned=").append(dirsScanned);
+        
+        sb.append(", startPath=").append(startPath);
+        sb.append(", logsCopyStopPath=").append(logsCopyStopPath);
+        
+        sb.append('}');
+        return sb.toString();
+    }
+    
+
+
     /**
      @since 11.09.2019 (16:16)
      */
@@ -220,8 +216,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         
         void writeDBCommonTable() {
             final String sql = "INSERT INTO common (`dir`, `user`, `users`) VALUES (?,?,?)";
-            
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(TABLE_FULL_NAME);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, dir);
                 preparedStatement.setString(2, owner);
                 preparedStatement.setString(3, acl);
@@ -240,12 +237,12 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         
         private void updateRecord() {
             final String sql = "UPDATE common SET dir = ?, user = ?, users = ? WHERE dir = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(TABLE_FULL_NAME);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, dir);
                 preparedStatement.setString(2, owner);
                 preparedStatement.setString(3, acl);
                 preparedStatement.setString(4, dir);
-                
                 preparedStatement.executeUpdate();
             }
             catch (SQLException ignore) {

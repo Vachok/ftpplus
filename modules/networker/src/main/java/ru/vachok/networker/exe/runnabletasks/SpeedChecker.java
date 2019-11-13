@@ -8,6 +8,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,7 +30,7 @@ import static java.time.DayOfWeek.SUNDAY;
 public class SpeedChecker implements Callable<Long> {
     
     
-    private static final Properties APP_PR = AppComponents.getProps();
+    private static final Properties APP_PR = InitProperties.getTheProps();
     
     private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
     

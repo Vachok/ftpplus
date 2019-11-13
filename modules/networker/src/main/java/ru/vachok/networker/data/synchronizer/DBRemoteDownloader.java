@@ -9,9 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -64,7 +62,7 @@ class DBRemoteDownloader extends SyncData {
             }
         }
         catch (SQLException e) {
-            messageToUser.error("DBRemoteDownloader.superRun " + dbToSync, e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("DBRemoteDownloader.superRun " + dbToSync, e.getMessage(), new TForms().networkerTrace(e.getStackTrace()));
             messageToUser.error(CONNECT_TO_LOCAL.getDataSource().getURL());
         }
     }

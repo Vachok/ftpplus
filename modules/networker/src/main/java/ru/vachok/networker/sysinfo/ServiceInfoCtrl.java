@@ -9,10 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
@@ -21,15 +18,14 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,11 +34,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
@@ -57,9 +50,10 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @Controller
 public class ServiceInfoCtrl {
     
+    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ServiceInfoCtrl.class.getSimpleName());
     
-    private static final Properties APP_PR = AppComponents.getProps();
+    private static final Properties APP_PR = InitProperties.getTheProps();
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
@@ -71,10 +65,7 @@ public class ServiceInfoCtrl {
     
     private boolean authReq;
     
-    private static final TForms FORMS = new TForms();
-    
     public ServiceInfoCtrl() {
-    
     }
     
     @Contract(pure = true)
@@ -100,7 +91,7 @@ public class ServiceInfoCtrl {
     public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getTotalCPUTimeInformation() + " total CPU");
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80")
-            .anyMatch(sP->request.getRemoteAddr().contains(sP));
+                .anyMatch(sP->request.getRemoteAddr().contains(sP));
         visitor = new AppComponents().visitor(request);
         if (authReq) {
             modModMaker(model, request, visitor);
@@ -115,62 +106,24 @@ public class ServiceInfoCtrl {
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
+        
         ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
         NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
-        messageToUser.info(this.getClass().getSimpleName(), "diapazonScan.writeLog()", diapazonScan.writeLog());
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
+        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
+        
         model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
+        
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
-            .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+                .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(additionalDo()));
         model.addAttribute("ping", getClassPath());
-        model.addAttribute("urls", makeRunningInfo(filesSizeFuture));
+        model.addAttribute("urls", makeRunningInfo());
         model.addAttribute("res", makeResValue());
         model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
-    }
-    
-    private Date additionalDo() {
-        Callable<Long> callWhenCome = new SpeedChecker();
-        Future<Long> whenCome = AppComponents.threadConfig().getTaskExecutor().submit(callWhenCome);
-        if (Stats.isSunday()) {
-            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            AppComponents.threadConfig().execByThreadConfig((Runnable) stats);
-        }
-        Date comeD = new Date();
-        try {
-            comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return comeD;
-    }
-    
-    private static @NotNull String makeRunningInfo(@NotNull Future<String> filesSizeFuture) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            stringBuilder.append("Запущено - ")
-                .append(new Date(ConstantsFor.START_STAMP))
-                .append(UsefulUtilities.getUpTime())
-                .append(" (<i>rnd delay is ")
-                .append(ConstantsFor.DELAY)
-                .append(" : ")
-                .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
-                .append(" delays)</i>")
-                .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-                .append(UsefulUtilities.getRunningInformation())
-                .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
-                .append("<p>")
-                .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
-        }
-        return stringBuilder.toString();
     }
     
     private @NotNull String prepareRequest(@NotNull HttpServletRequest request) {
@@ -178,32 +131,32 @@ public class ServiceInfoCtrl {
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
         String bBr = "</b><br>";
         stringBuilder
-            .append("HOST: ")
-            .append("<b>").append(request.getHeader("host")).append(bBr);
+                .append("HOST: ")
+                .append("<b>").append(request.getHeader("host")).append(bBr);
         stringBuilder
-            .append("upgrade-insecure-requests: ".toUpperCase())
-            .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
+                .append("upgrade-insecure-requests: ".toUpperCase())
+                .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
         stringBuilder
-            .append("user-agent: ".toUpperCase())
-            .append("<b>").append(request.getHeader("user-agent")).append(bBr);
+                .append("user-agent: ".toUpperCase())
+                .append("<b>").append(request.getHeader("user-agent")).append(bBr);
         stringBuilder
-            .append("ACCEPT: ")
-            .append("<b>").append(request.getHeader("accept")).append(bBr);
+                .append("ACCEPT: ")
+                .append("<b>").append(request.getHeader("accept")).append(bBr);
         stringBuilder
-            .append("referer: ".toUpperCase())
-            .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
+                .append("referer: ".toUpperCase())
+                .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
         stringBuilder
-            .append("accept-encoding: ".toUpperCase())
-            .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
+                .append("accept-encoding: ".toUpperCase())
+                .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
         stringBuilder
-            .append("accept-language: ".toUpperCase())
-            .append("<b>").append(request.getHeader("accept-language")).append(bBr);
+                .append("accept-language: ".toUpperCase())
+                .append("<b>").append(request.getHeader("accept-language")).append(bBr);
         stringBuilder
-            .append("cookie: ".toUpperCase())
-            .append("<b>").append(request.getHeader("cookie")).append(bBr);
+                .append("cookie: ".toUpperCase())
+                .append("<b>").append(request.getHeader("cookie")).append(bBr);
         
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
-        stringBuilder.append(FORMS.fromEnum(request.getAttributeNames(), true));
+        stringBuilder.append(AbstractForms.fromEnum(request.getAttributeNames()).replace("<br>", "\n"));
         return stringBuilder.toString();
     }
     
@@ -237,12 +190,12 @@ public class ServiceInfoCtrl {
             int diffSec = allDaySec - toEndDaySec;
             float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
             stringBuilder
-                .append("Работаем ")
-                .append(TimeUnit.SECONDS.toMinutes(diffSec));
+                    .append("Работаем ")
+                    .append(TimeUnit.SECONDS.toMinutes(diffSec));
             stringBuilder
-                .append("(мин.). Ещё ")
-                .append(String.format("%.02f", percDay))
-                .append(" % или ");
+                    .append("(мин.). Ещё ")
+                    .append(String.format("%.02f", percDay))
+                    .append(" % или ");
         }
         else {
             stringBuilder.append("<b> GO HOME! </b><br>");
@@ -251,10 +204,28 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
+    private Date additionalDo() {
+        Callable<Long> callWhenCome = new SpeedChecker();
+        Future<Long> whenCome = AppComponents.threadConfig().getTaskExecutor().submit(callWhenCome);
+        if (Stats.isSunday()) {
+            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((Runnable) stats);
+        }
+        Date comeD = new Date();
+        try {
+            comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return comeD;
+    }
+    
     private @NotNull String getClassPath() {
         StringBuilder stringBuilder = new StringBuilder();
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getTheProps()).replace("\n", "<br>"));
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"));
         stringBuilder.append("ClassPath {<br>");
         stringBuilder.append(runtimeMXBean.getClassPath().replace(";", "<br>")).append(" }<p>");
         stringBuilder.append("BootClassPath {<br>");
@@ -270,63 +241,50 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
+    private static @NotNull String makeRunningInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Запущено - ")
+                .append(new Date(ConstantsFor.START_STAMP))
+                .append(UsefulUtilities.getUpTime())
+                .append(" (<i>rnd delay is ")
+                .append(ConstantsFor.DELAY)
+                .append(" : ")
+                .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
+                .append(" delays)</i>")
+                .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+                .append(UsefulUtilities.getRunningInformation())
+                .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
+                .append("<p>").append("</details></font><br>");
+        return stringBuilder.toString().replace("***", "<br>");
+    }
+    
     private @NotNull String makeResValue() {
         return new StringBuilder()
-            .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append(Paths.get(".")).append("</i></b><p><font color=\"orange\">")
-            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-            .append(FORMS.fromArray(APP_PR, true)).append("<br>Prefs: ").append(FORMS.fromArray(AppComponents.getUserPref(), true))
-            .append("<p>")
-            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
-            .append("<p>")
-            .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
-            .toString();
-    }
-    
-    private static String visitsPrevSessionRead() {
-        List<File> listVisitFiles = new ArrayList<>();
-        for (File fileFromList : Objects.requireNonNull(new File(".").listFiles())) {
-            if (fileFromList.getName().toLowerCase().contains(UsefulUtilities.getPatternsToDeleteFilesOnStart().get(0))) {
-                listVisitFiles.add(fileFromList);
-                fileFromList.deleteOnExit();
-            }
-        }
-        ConcurrentMap<String, String> pathFileAsStrMap = readFiles(listVisitFiles);
-        List<String> retListStr = new ArrayList<>();
-        for (Map.Entry<String, String> entry : pathFileAsStrMap.entrySet()) {
-            String pathAsStr = entry.getKey();
-            String fileAsStr = entry.getValue();
-            try {
-                retListStr.add(fileAsStr.split("userId")[0]);
-                retListStr.add("<b>" + pathAsStr.split("FtpClientPlus")[1] + "</b>");
-            }
-            catch (RuntimeException e) {
-                retListStr.add(e.getMessage());
-            }
-        }
-        return FORMS.fromArray(retListStr, true);
-    }
-    
-    private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
-        Collections.sort(filesToRead);
-        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for (File fileRead : filesToRead) {
-            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
-            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
-        }
-        return readiedStrings;
+                .append(MyCalen.toStringS()).append("<br><br>")
+                .append("<b><i>").append("</i></b><p><font color=\"orange\">")
+                .append(ConstantsNet.getSshMapStr()).append("</font><p>")
+                .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
+                .append("<p>")
+                .toString();
     }
     
     @GetMapping("/pcoff")
     public void offPC(Model model) throws IOException {
-        if (authReq && !UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            String reload = IntoApplication.reloadConfigurableApplicationContext();
-            messageToUser.warn(reload);
+        if (authReq) {
+            Runtime.getRuntime().exec("SHUTDOWN /P /F");
         }
         else {
-//            Runtime.getRuntime().exec(COM_SHUTDOWN_P_F);
             throw new AccessDeniedException("Denied for " + visitor);
         }
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
+                .add("pageFooter = " + pageFooter)
+                .add("visitor = " + visitor)
+                .add("authReq = " + authReq)
+                .toString();
     }
     
     @GetMapping("/stop")
@@ -344,14 +302,5 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("DENY for " + request.getRemoteAddr());
         }
         return "ok";
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
-            .add("pageFooter = " + pageFooter)
-            .add("visitor = " + visitor)
-            .add("authReq = " + authReq)
-            .toString();
     }
 }

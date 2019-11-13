@@ -150,7 +150,7 @@ public class InternetSync extends SyncData implements Runnable {
                 toJSON = removedStr.split(",");
             }
             catch (IndexOutOfBoundsException e) {
-                messageToUser.error("InternetSync.createJSON", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                messageToUser.error("InternetSync.createJSON", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
             JsonObject jsonObject = new JsonObject();
             long valueParsed = parseDate(toJSON[0]);
@@ -200,7 +200,7 @@ public class InternetSync extends SyncData implements Runnable {
             }
         }
         catch (SQLException e) {
-            tableComment = "InternetSync" + " checkComment " + e.getMessage() + " see line: 89";
+            tableComment = SyncData.INETSYNC + " checkComment " + e.getMessage() + " see line: 89";
         }
         return tableComment;
     }
@@ -304,7 +304,7 @@ public class InternetSync extends SyncData implements Runnable {
         }
         catch (SQLException e) {
             return MessageFormat
-                .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()), sql);
+                    .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()), sql);
         }
     }
     

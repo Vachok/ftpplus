@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import java.awt.image.BufferedImage;
@@ -19,7 +20,7 @@ import java.util.List;
  @since 30.08.2018 (10:11) */
 @SuppressWarnings("ClassWithTooManyFields")
 @Component(ModelAttributeNames.ADUSER)
-@Scope("prototype")
+@Scope(ConstantsFor.PROTOTYPE)
 public class ADUser {
     
     

@@ -20,6 +20,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  <a href="/pflists" target=_blank>Pf Lists</a>
  
  @since 14.11.2018 (15:11) */
-@SuppressWarnings({"SameReturnValue", "ClassUnconnectedToPackage"})
+@SuppressWarnings({"SameReturnValue", "ClassUnconnectedToPackage", "InstanceVariableOfConcreteClass"})
 @Controller
 public class PfListsCtr {
     
@@ -54,9 +55,9 @@ public class PfListsCtr {
     private static final String ATT_VIPNET = "vipnet";
     
     /**
-     {@link AppComponents#getProps()}
+     {@link InitProperties#getTheProps()}
      */
-    private final Properties properties = AppComponents.getProps();
+    private final Properties properties = InitProperties.getTheProps();
     
     /**
      {@link Random#nextInt(int)} - {@link TimeUnit#toMillis(long)} <b>250</b>
@@ -73,15 +74,9 @@ public class PfListsCtr {
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
-    /**
-     {@link PfLists}
-     */
     @SuppressWarnings("CanBeFinal")
     private PfLists pfListsInstAW;
     
-    /**
-     {@link PfListsSrv}
-     */
     private PfListsSrv pfListsSrvInstAW;
     
     /**
@@ -115,13 +110,13 @@ public class PfListsCtr {
             modSet(model);
         }
         if (request.getQueryString() != null) {
-            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
+            threadConfig.getTaskExecutor().getThreadPoolExecutor().execute(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, refreshRate);
         }
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
         if (nextUpd < System.currentTimeMillis()) {
-            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
+            threadConfig.getTaskExecutor().getThreadPoolExecutor().execute(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ModelAttributeNames.ATT_GITSTATS, toString());
         }
@@ -162,9 +157,8 @@ public class PfListsCtr {
      */
     private void modSet(@NotNull Model model) {
         @NotNull String metricValue = new Date(pfListsInstAW.getTimeStampToNextUpdLong()) + " will be update";
-        
-        @NotNull String gitstatValue = MessageFormat
-            .format("{0}\n{1} thr, active\nChange: {2}\n{3}\n{4}",
+    
+        @NotNull String gitstatValue = MessageFormat.format("{0}\n{1} thr, active\nChange: {2}\n{3}\n{4}",
                 pfListsInstAW.getInetLog(),
                 Thread.activeCount(),
                 Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1")),

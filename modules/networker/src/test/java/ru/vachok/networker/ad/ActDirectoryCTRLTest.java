@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.UnknownFormatConversionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.testng.Assert.assertTrue;
 
@@ -105,7 +106,7 @@ public class ActDirectoryCTRLTest {
         List<String> loginsRaw = UserInfo.getInstance(mockQuery).getLogins(mockQuery, 10);
         List<String> distinct = loginsRaw.stream().distinct().collect(Collectors.toList());
         String fromArray = AbstractForms.fromArray(distinct);
-        Assert.assertTrue(fromArray.contains("do0001 : estrelyaeva") || fromArray.contains("do0001 : efilistova"), fromArray);
+        Assert.assertTrue(Stream.of("estrelyaeva", "deloproject", "efilistova").anyMatch(fromArray::contains), fromArray);
     }
     
     private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, HttpServletRequest request) {

@@ -6,11 +6,11 @@ import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 
 public class MemoryPropertiesTest {
@@ -43,9 +43,7 @@ public class MemoryPropertiesTest {
         Assert.assertTrue(memoryPropertiesProps.containsKey(PropertiesNames.DBPASS));
         Assert.assertTrue(memoryPropertiesProps.containsKey(PropertiesNames.DBUSER));
         Assert.assertTrue(memoryPropertiesProps.containsKey("spring.servlet.multipart.max-request-size"));
-        Assert.assertTrue(new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES).exists());
-        Assert.assertTrue(new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES).lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES
-            .toMillis(1)));
+        Assert.assertTrue(new File(FileNames.CONSTANTSFOR_PROPERTIES).exists());
     }
     
     @Test

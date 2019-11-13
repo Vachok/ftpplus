@@ -102,14 +102,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(e.getMessage());
             printStream.println();
-            printStream.println(AbstractForms.exceptionNetworker(e.getStackTrace()));
+            printStream.println(AbstractForms.networkerTrace(e.getStackTrace()));
             printStream.println("****");
             printStream.println(new Date());
-            printStream.println(AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
+            printStream.println(AbstractForms.networkerTrace(Thread.currentThread().getStackTrace()));
             messageToUser.info(FileSystemWorker.class.getSimpleName(), "printed error: ", String.valueOf(printStream.checkError()));
         }
         catch (IOException exIO) {
-            result = MessageFormat.format("FileSystemWorker.error:\n{0}, {1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            result = MessageFormat.format("FileSystemWorker.error:\n{0}, {1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return result;
     }
@@ -119,7 +119,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         
         if (!originalFile.exists()) {
             throw new InvokeIllegalException(MessageFormat.format("Can''t copy! Original file not found : {0}\n{1}", originalFile.getAbsolutePath(), AbstractForms
-                    .exceptionNetworker(Thread.currentThread().getStackTrace())));
+                    .networkerTrace(Thread.currentThread().getStackTrace())));
         }
         if (isNeedDelete) {
             if (copyFile(originalFile, pathToCopy)) {
@@ -146,8 +146,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 .format("{0} readied {1} kilobytes.", file, readBytes / ConstantsFor.KBYTE));
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), " see line: 136 ***");
-            bytes = AbstractForms.exceptionNetworker(e.getStackTrace()).getBytes();
+            bytes = AbstractForms.networkerTrace(e.getStackTrace()).getBytes();
         }
         return new String(bytes);
     }
@@ -173,7 +172,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
             printStream.println(objectToAppend);
-            stringBuilder.append(fileForAppend.getAbsolutePath());
+            stringBuilder.append("Object: ").append(objectToAppend).append(" added to: ").append(fileForAppend.getAbsolutePath());
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
@@ -344,7 +343,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return true;
         }
         catch (IOException e) {
-            messageToUser.errorAlert("FileSystemWorker", "writeFile", e.getMessage());
+            messageToUser.warn(FileSystemWorker.class.getSimpleName(), "writeFile", e.getMessage() + " see line: 347");
             return false;
         }
     }
@@ -357,7 +356,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 124 " + AbstractForms.exceptionNetworker(e.getStackTrace()));
+            messageToUser.error(e.getMessage() + " see line: 124 " + AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
     

@@ -2,10 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -92,6 +89,6 @@ public class ResolveUserInDataBaseTest {
         Assert.assertTrue(do0001.size() > 0);
         String listAsStr = AbstractForms.fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());
-        Assert.assertTrue(listAsStr.contains("do0001 : "), listAsStr);
+        Assert.assertTrue(listAsStr.contains("do0001"), listAsStr);
     }
 }

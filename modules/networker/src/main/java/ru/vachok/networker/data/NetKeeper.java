@@ -5,13 +5,13 @@ package ru.vachok.networker.data;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -56,7 +56,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
     
-    private static Properties properties = AppComponents.getProps();
+    private static Properties properties = InitProperties.getTheProps();
     
     private static Map<String, File> scanFiles = getScanFiles();
     
@@ -288,8 +288,8 @@ public abstract class NetKeeper implements Keeper, Serializable {
         
         
         static final String RESOLVE = "onLinesResolve";
-        
-        private Preferences userPref = AppComponents.getUserPref();
+    
+        private Preferences userPref = InitProperties.getUserPref();
         
         private int currentSize = NETLISTS_ONLINERESOLVE.size();
         

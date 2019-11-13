@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.jetbrains.annotations.Contract;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -24,7 +25,15 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     String SWING = ru.vachok.networker.restapi.message.MessageSwing.class.getTypeName();
     
-    MessageLocal MESSAGE_LOCAL = new MessageLocal(MessageToUser.class.getSimpleName());
+    MessageLocal MESSAGE_LOCAL = new MessageLocal("MessageLocal");
+    
+    String FILE = MessageFile.class.getTypeName();
+    
+    MessageToUser DB_MESSENGER = new DBMessenger("init");
+    
+    MessageToUser SWING_M = new ru.vachok.networker.restapi.message.MessageSwing("init");
+    
+    MessageToUser FILE_LOC_M = new MessageFileLocal("init");
     
     @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
@@ -33,25 +42,30 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             messengerHeader = MessageToUser.class.getSimpleName();
         }
         if (messengerType == null) {
-            return new MessageLocal(messengerHeader);
+            return MESSAGE_LOCAL;
         }
         else if (messengerType.equals(LOCAL_CONSOLE)) {
-            MESSAGE_LOCAL.setBodyMsg(messengerHeader);
+            MESSAGE_LOCAL.setBodyMsg(MessageToUser.LOCAL_CONSOLE);
+            MESSAGE_LOCAL.setTitleMsg(messengerHeader);
             return MESSAGE_LOCAL;
         }
         else if (messengerType.equals(TRAY)) {
             return MessageToTray.getInstance(messengerHeader);
         }
-        else if (messengerType.equals(DB)) {
-            return new DBMessenger(messengerHeader);
-        }
         else if (messengerType.equalsIgnoreCase(SWING)) {
-            return new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
+            MESSAGE_LOCAL.setHeaderMsg(messengerHeader);
+            return SWING_M;
+        }
+        else if (messengerType.equalsIgnoreCase(FILE)) {
+            MESSAGE_LOCAL.setHeaderMsg(messengerHeader);
+            return FILE_LOC_M;
         }
         else {
-            return new MessageLocal(messengerHeader);
+            return MESSAGE_LOCAL;
         }
     }
+    
+    void setHeaderMsg(String headerMsg);
     
     @Override
     default void infoTimer(int timeOut, String headerMsg) {

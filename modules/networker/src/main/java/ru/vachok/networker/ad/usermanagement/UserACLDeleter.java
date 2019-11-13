@@ -103,7 +103,7 @@ class UserACLDeleter extends UserACLManagerImpl {
         return sb.toString();
     }
     
-    protected void replaceOwner(Path dir) throws IOException {
+    private void replaceOwner(Path dir) throws IOException {
         UserPrincipal userPrincipal = Files.getOwner(dir);
         if (userPrincipal.equals(oldUser)) {
             Files.setOwner(dir, Files.getOwner(dir.getRoot()));

@@ -6,6 +6,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -22,6 +23,11 @@ public class DatabaseCleanerFromDuplicates implements DataConnectTo {
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.data.DatabaseCleanerFromDuplicates.dropTable( boolean ) at 25.10.2019 - (21:44)");
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("ru.vachok.networker.data.DatabaseCleanerFromDuplicates.createTable( int ) at 04.11.2019 - (13:51)");
     }
     
     @Override

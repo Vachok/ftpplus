@@ -14,6 +14,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -93,7 +94,7 @@ public class DatabaseInfo implements DataConnectTo, InformationFactory {
             return stringBuilder.toString();
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DatabaseInfo.databaseSchemaObjects", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("DatabaseInfo.databaseSchemaObjects", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             return e.getMessage();
         }
     }
@@ -106,6 +107,11 @@ public class DatabaseInfo implements DataConnectTo, InformationFactory {
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("16.10.2019 (16:34)");
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("ru.vachok.networker.sysinfo.DatabaseInfo.createTable( int ) at 04.11.2019 - (13:51)");
     }
     
     @Override

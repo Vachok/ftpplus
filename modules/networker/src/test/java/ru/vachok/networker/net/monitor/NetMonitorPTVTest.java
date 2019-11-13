@@ -3,10 +3,7 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -60,8 +57,10 @@ public class NetMonitorPTVTest {
     }
     
     @Test
+    @Ignore
     public void testGetExecution() {
         String ptvExecution = netMonitorPTV.getExecution();
+        Assert.assertTrue(new File(FileNames.PING_TV).exists());
         Assert.assertTrue(ptvExecution.contains("Bytes in stream"), ptvExecution);
     }
     
@@ -173,7 +172,7 @@ public class NetMonitorPTVTest {
                     String ip = resultSet.getString("ip");
                     Assert.assertEquals(ip, "10.200.213.85");
                     String pcName = resultSet.getString("pcName");
-                    String online = resultSet.getString("online");
+                    String online = resultSet.getString(ConstantsFor.DBFIELD_ONLINE);
                     long stamp = resultSet.getTimestamp(ConstantsFor.DBFIELD_TSTAMP).getTime();
                     Assert.assertTrue(stamp > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)), new Date(stamp).toString());
                     System.out.println(MessageFormat.format("{3}) pcName = {0} is online: {1} at {2}", pcName, online, new Date(stamp), resultSet.getInt("idRec")));

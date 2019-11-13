@@ -5,26 +5,21 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.net.monitor.PingerFromFile;
+import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 
 /**
@@ -44,10 +39,12 @@ public interface NetScanService extends Runnable {
     
     String PINGER_FILE = "PingerFromFile";
     
+    String PCNAMESSCANNER = "PcNamesScanner";
+    
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
         System.out.println("AppComponents.ipFlushDNS() = " + UsefulUtilities.ipFlushDNS());
-        Properties properties = AppComponents.getProps();
+        Properties properties = InitProperties.getTheProps();
         long pingSleep = 250;
         try {
             pingSleep = Long.parseLong(properties.getProperty(PropertiesNames.PINGSLEEP, "250"));
@@ -137,13 +134,11 @@ public interface NetScanService extends Runnable {
                 return DiapazonScan.getInstance();
             case PINGER_FILE:
                 return new PingerFromFile();
+            case PCNAMESSCANNER:
+                return new PcNamesScanner();
             default:
                 return new ScanOnline();
         }
-    }
-    
-    static void autoResolvedUsersRecord(String pcName, String lastFile) {
-        UserInfo.autoResolvedUsersRecord(pcName, lastFile);
     }
     
     static boolean writeUsersToDBFromSET() {

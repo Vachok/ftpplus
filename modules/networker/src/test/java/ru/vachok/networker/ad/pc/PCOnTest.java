@@ -4,13 +4,19 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -69,7 +75,8 @@ public class PCOnTest {
         pcInfo.setClassOption("do0045");
         String infoAbout = pcInfo.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
-        Assert.assertTrue(infoAbout.contains("do0045 : kpivovarov"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("do0045"), infoAbout);
+        Assert.assertTrue(infoAbout.contains(": kpivovarov"), infoAbout);
     }
     
     @Test

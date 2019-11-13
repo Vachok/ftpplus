@@ -6,9 +6,7 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.systray.actions.ActionExit;
-import ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFiles;
-import ru.vachok.networker.componentsrepo.systray.actions.ActionOpenProgFolder;
+import ru.vachok.networker.componentsrepo.systray.actions.*;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
@@ -24,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.systray.SystemTrayHelperTest
+ @see SystemTrayHelperTest
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
     

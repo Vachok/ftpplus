@@ -29,21 +29,25 @@ class PCOff extends PCInfo {
     
     private HTMLInfo dbPCInfo;
     
+    private final NameOrIPChecker nameOrIP;
+    
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
+        this.nameOrIP = new NameOrIPChecker(pcName);
         this.dbPCInfo = new DBPCHTMLInfo(pcName);
-        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
+        this.addressIp = nameOrIP.resolveInetAddress().getHostAddress();
     }
     
     PCOff() {
         this.dbPCInfo = new DBPCHTMLInfo(ConstantsFor.DBFIELD_PCNAME);
+        this.nameOrIP = new NameOrIPChecker("localhost");
     }
     
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
-        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
+        this.addressIp = nameOrIP.resolveInetAddress().getHostAddress();
         dbPCInfo.setClassOption(pcName);
         String counterOnOff = dbPCInfo.fillAttribute(pcName);
         return MessageFormat.format("{0}", counterOnOff);
@@ -74,7 +78,7 @@ class PCOff extends PCInfo {
     @Override
     public void setClassOption(Object option) {
         this.pcName = (String) option;
-        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
+        this.addressIp = nameOrIP.resolveInetAddress().getHostAddress();
     }
     
     @Override

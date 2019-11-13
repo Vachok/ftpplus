@@ -10,15 +10,11 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.io.File;
-import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.WatchEvent;
@@ -104,11 +100,11 @@ public class TForms {
         }
     }
     
-    public String fromEnum(Enumeration<String> enumStrings, boolean br) {
+    public String fromEnum(Enumeration<?> enumStrings, boolean br) {
         nStringBuilder.append(ConstantsFor.STR_N);
         brStringBuilder.append(ConstantsFor.STR_P);
         while (enumStrings.hasMoreElements()) {
-            String str = enumStrings.nextElement();
+            String str = enumStrings.nextElement().toString();
             nStringBuilder.append(str).append(ConstantsFor.STR_N);
             brStringBuilder.append(str).append(ConstantsFor.STR_BR);
         }
@@ -228,8 +224,10 @@ public class TForms {
         for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
             try{
                 brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_BR);
-                nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_N);}catch (RuntimeException e){
-                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).error(e.getMessage() + " see line: 227");
+                nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_N);
+            }
+            catch (RuntimeException e) {
+            
             }
         }
         
@@ -622,7 +620,7 @@ public class TForms {
     }
     
     @NotNull
-    public static String exceptionNetworker(@NotNull StackTraceElement[] trace) {
+    public static String networkerTrace(@NotNull StackTraceElement[] trace) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("\n");
         File appendFile = new File("trace.last");
@@ -632,7 +630,6 @@ public class TForms {
             if (elem.contains("ru.vachok.networker")) {
                 stringBuilder.append(elem).append("\n");
             }
-    
             FileSystemWorker.appendObjectToFile(appendFile, elem);
         }
         return stringBuilder.toString();

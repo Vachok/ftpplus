@@ -4,10 +4,10 @@ package ru.vachok.networker.componentsrepo.services;
 
 
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -22,7 +22,7 @@ public class SimpleCalculator {
 
     private String query;
     
-    private static final Properties PROPS = AppComponents.getProps();
+    private static final Properties PROPS = InitProperties.getTheProps();
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SimpleCalculator.class.getSimpleName());
     

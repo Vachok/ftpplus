@@ -7,12 +7,12 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.text.MessageFormat;
+import java.util.Properties;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -30,7 +30,12 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     String TEST = "test";
     
-    String LIB = "lib";
+    @Contract(pure = true)
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    static @NotNull Properties getTheProps() {
+        @NotNull Properties result = PropsHelper.getAppPr();
+        return result;
+    }
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
@@ -45,20 +50,25 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
         }
     }
     
-    static void reloadApplicationPropertiesFromFile() {
-        File propsFile = new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES);
-        try {
-            Files.setAttribute(propsFile.toPath(), "dos:readonly", true);
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-    
     @Override
     default MysqlDataSource getRegSourceForProperties() {
         MysqlDataSource retSource = DataConnectTo.getDefaultI().getDataSource();
-        retSource.setDatabaseName(ConstantsFor.STR_VELKOM);
+        retSource.setDatabaseName("mem");
         return retSource;
+    }
+    
+    static void setPreference(String prefName, String prefValue) {
+        Preferences userPref = getUserPref();
+        userPref.put(prefName, prefValue);
+        try {
+            userPref.sync();
+        }
+        catch (BackingStoreException e) {
+            System.err.println(MessageFormat.format("getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    }
+    
+    static Preferences getUserPref() {
+        return Preferences.userRoot();
     }
 }

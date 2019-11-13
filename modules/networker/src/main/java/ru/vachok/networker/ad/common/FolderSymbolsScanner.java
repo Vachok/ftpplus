@@ -75,7 +75,7 @@ public class FolderSymbolsScanner extends SimpleFileVisitor<Path> implements Cal
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("FolderSymbolsScanner.addToDatabase", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("FolderSymbolsScanner.addToDatabase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
     }
     

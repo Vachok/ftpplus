@@ -108,4 +108,10 @@ public enum FileNames {
     public static final String DIR_INETSTATS = "inetstats";
     
     public static final String INETIPS_SET = "inetips.set";
+    
+    public static final String SCHEDULER_TXT = "scheduler.txt";
+    
+    public static final String APP_JSON = "app.json";
+    
+    public static final String CONSTANTSFOR_PROPERTIES = "ConstantsFor.properties";
 }

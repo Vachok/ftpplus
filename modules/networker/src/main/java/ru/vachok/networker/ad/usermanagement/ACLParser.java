@@ -80,7 +80,7 @@ class ACLParser extends UserACLManagerImpl {
             return searcher.getResult();
         }
         catch (RuntimeException e) {
-            messageToUser.error(MessageFormat.format("ACLParser.getResult", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("ACLParser.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             return localRead();
         }
     }
@@ -142,7 +142,7 @@ class ACLParser extends UserACLManagerImpl {
             mapRights.put(path, collect);
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("ACLParser.readRightsFromConcreteFolder", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("ACLParser.readRightsFromConcreteFolder", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
     }
     

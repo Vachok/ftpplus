@@ -5,14 +5,15 @@ package ru.vachok.networker.mail.testserver;
 
 import com.sun.mail.smtp.SMTPMessage;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.mail.*;
 import javax.mail.event.TransportAdapter;
@@ -56,7 +57,7 @@ public class MailPOPTester implements MailTester, Runnable {
             messageToUser.error(e.getMessage());
             MatrixCtr.setMailIsOk(mailIsNotOk);
             mailIsNotOk = UsefulUtilities.getHTMLCenterColor("red", mailIsNotOk);
-            mailIsNotOk = MessageFormat.format("{3}: {0}{1}\n{2}", mailIsNotOk, e.getMessage(), new TForms().fromArray(e, false), new Date());
+            mailIsNotOk = MessageFormat.format("{3}: {0}{1}\n{2}", mailIsNotOk, e.getMessage(), AbstractForms.fromArray(e), new Date());
             FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
         }
     }
@@ -75,7 +76,7 @@ public class MailPOPTester implements MailTester, Runnable {
     @Override
     public String testComplex() throws MessagingException {
         this.stringBuilder = new StringBuilder();
-        Preferences preferences = AppComponents.getUserPref();
+        Preferences preferences = InitProperties.getUserPref();
         MAIL_SESSION.getProperties().forEach((k, v)->preferences.put(k.toString(), v.toString()));
         try {
             preferences.sync();
@@ -95,8 +96,8 @@ public class MailPOPTester implements MailTester, Runnable {
         defaultFolder.open(Folder.READ_WRITE);
         
         for (Message message : defaultFolder.getMessages()) {
-            if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
-                stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
+            if (AbstractForms.fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
+                stringBuilder.append(message.getSentDate()).append("; from: ").append(AbstractForms.fromArray(message.getFrom())).append("; Subj: ")
                     .append(message.getSubject()).append("\n");
             }
             message.setFlag(Flags.Flag.DELETED, true);
