@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.*;
 import java.util.*;
@@ -67,7 +66,6 @@ public class ServiceInfoCtrl {
     private boolean authReq;
     
     public ServiceInfoCtrl() {
-    
     }
     
     @Contract(pure = true)
@@ -93,7 +91,7 @@ public class ServiceInfoCtrl {
     public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getTotalCPUTimeInformation() + " total CPU");
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80")
-            .anyMatch(sP->request.getRemoteAddr().contains(sP));
+                .anyMatch(sP->request.getRemoteAddr().contains(sP));
         visitor = new AppComponents().visitor(request);
         if (authReq) {
             modModMaker(model, request, visitor);
@@ -105,14 +103,27 @@ public class ServiceInfoCtrl {
         }
     }
     
-    @GetMapping("/pcoff")
-    public void offPC(Model model) throws IOException {
-        if (authReq) {
-            Runtime.getRuntime().exec("SHUTDOWN /P /F");
-        }
-        else {
-            throw new AccessDeniedException("Denied for " + visitor);
-        }
+    private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
+        this.visitor = UsefulUtilities.getVis(request);
+        this.visitor = visitorParam;
+        
+        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+        NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
+        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
+        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
+        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
+        
+        model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
+        model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
+        
+        model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
+                .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+        model.addAttribute("mail", percToEnd(additionalDo()));
+        model.addAttribute("ping", getClassPath());
+        model.addAttribute("urls", makeRunningInfo(filesSizeFuture));
+        model.addAttribute("res", makeResValue());
+        model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
     }
     
     private @NotNull String prepareRequest(@NotNull HttpServletRequest request) {
@@ -120,29 +131,29 @@ public class ServiceInfoCtrl {
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
         String bBr = "</b><br>";
         stringBuilder
-            .append("HOST: ")
-            .append("<b>").append(request.getHeader("host")).append(bBr);
+                .append("HOST: ")
+                .append("<b>").append(request.getHeader("host")).append(bBr);
         stringBuilder
-            .append("upgrade-insecure-requests: ".toUpperCase())
-            .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
+                .append("upgrade-insecure-requests: ".toUpperCase())
+                .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
         stringBuilder
-            .append("user-agent: ".toUpperCase())
-            .append("<b>").append(request.getHeader("user-agent")).append(bBr);
+                .append("user-agent: ".toUpperCase())
+                .append("<b>").append(request.getHeader("user-agent")).append(bBr);
         stringBuilder
-            .append("ACCEPT: ")
-            .append("<b>").append(request.getHeader("accept")).append(bBr);
+                .append("ACCEPT: ")
+                .append("<b>").append(request.getHeader("accept")).append(bBr);
         stringBuilder
-            .append("referer: ".toUpperCase())
-            .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
+                .append("referer: ".toUpperCase())
+                .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
         stringBuilder
-            .append("accept-encoding: ".toUpperCase())
-            .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
+                .append("accept-encoding: ".toUpperCase())
+                .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
         stringBuilder
-            .append("accept-language: ".toUpperCase())
-            .append("<b>").append(request.getHeader("accept-language")).append(bBr);
+                .append("accept-language: ".toUpperCase())
+                .append("<b>").append(request.getHeader("accept-language")).append(bBr);
         stringBuilder
-            .append("cookie: ".toUpperCase())
-            .append("<b>").append(request.getHeader("cookie")).append(bBr);
+                .append("cookie: ".toUpperCase())
+                .append("<b>").append(request.getHeader("cookie")).append(bBr);
         
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
         stringBuilder.append(AbstractForms.fromEnum(request.getAttributeNames()).replace("<br>", "\n"));
@@ -179,12 +190,12 @@ public class ServiceInfoCtrl {
             int diffSec = allDaySec - toEndDaySec;
             float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
             stringBuilder
-                .append("Работаем ")
-                .append(TimeUnit.SECONDS.toMinutes(diffSec));
+                    .append("Работаем ")
+                    .append(TimeUnit.SECONDS.toMinutes(diffSec));
             stringBuilder
-                .append("(мин.). Ещё ")
-                .append(String.format("%.02f", percDay))
-                .append(" % или ");
+                    .append("(мин.). Ещё ")
+                    .append(String.format("%.02f", percDay))
+                    .append(" % или ");
         }
         else {
             stringBuilder.append("<b> GO HOME! </b><br>");
@@ -193,26 +204,21 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
-    private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
-        this.visitor = UsefulUtilities.getVis(request);
-        this.visitor = visitorParam;
-        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-        NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
-        messageToUser.info(this.getClass().getSimpleName(), "diapazonScan.writeLog()", diapazonScan.writeLog());
-        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
-        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
-        model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
-        model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
-        
-        model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
-        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
-            .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
-        model.addAttribute("mail", percToEnd(additionalDo()));
-        model.addAttribute("ping", getClassPath());
-        model.addAttribute("urls", makeRunningInfo(filesSizeFuture));
-        model.addAttribute("res", makeResValue());
-        model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
+    private Date additionalDo() {
+        Callable<Long> callWhenCome = new SpeedChecker();
+        Future<Long> whenCome = AppComponents.threadConfig().getTaskExecutor().submit(callWhenCome);
+        if (Stats.isSunday()) {
+            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((Runnable) stats);
+        }
+        Date comeD = new Date();
+        try {
+            comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return comeD;
     }
     
     private @NotNull String getClassPath() {
@@ -234,27 +240,9 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
-    private Date additionalDo() {
-        Callable<Long> callWhenCome = new SpeedChecker();
-        Future<Long> whenCome = AppComponents.threadConfig().getTaskExecutor().submit(callWhenCome);
-        if (Stats.isSunday()) {
-            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((Runnable) stats);
-        }
-        Date comeD = new Date();
-        try {
-            comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return comeD;
-    }
-    
     private static @NotNull String makeRunningInfo(@NotNull Future<String> filesSizeFuture) {
         StringBuilder stringBuilder = new StringBuilder();
-        try {
-            stringBuilder.append("Запущено - ")
+        stringBuilder.append("Запущено - ")
                 .append(new Date(ConstantsFor.START_STAMP))
                 .append(UsefulUtilities.getUpTime())
                 .append(" (<i>rnd delay is ")
@@ -265,37 +253,22 @@ public class ServiceInfoCtrl {
                 .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
                 .append(UsefulUtilities.getRunningInformation())
                 .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
-                .append("<p>")
-                .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
-        }
+                .append("<p>").append("</details></font><br>");
         return stringBuilder.toString().replace("***", "<br>");
     }
     
     private @NotNull String makeResValue() {
         return new StringBuilder()
                 .append(MyCalen.toStringS()).append("<br><br>")
-                .append("<b><i>").append(Paths.get(".")).append("</i></b><p><font color=\"orange\">")
+                .append("<b><i>").append("</i></b><p><font color=\"orange\">")
                 .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-                .append(AbstractForms.fromArray(APP_PR).replace("<br>", "\n")).append("<br>Prefs: ")
-                .append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("<br>", "\n"))
+                .append(AbstractForms.fromArray(APP_PR).replace("\n", "<br>")).append("<br>Prefs: ")
+                .append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"))
                 .append("<p>")
                 .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
                 .append("<p>")
                 .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
                 .toString();
-    }
-    
-    private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
-        Collections.sort(filesToRead);
-        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for (File fileRead : filesToRead) {
-            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
-            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
-        }
-        return readiedStrings;
     }
     
     private static String visitsPrevSessionRead() {
@@ -322,6 +295,25 @@ public class ServiceInfoCtrl {
         return AbstractForms.fromArray(retListStr);
     }
     
+    @GetMapping("/pcoff")
+    public void offPC(Model model) throws IOException {
+        if (authReq) {
+            Runtime.getRuntime().exec("SHUTDOWN /P /F");
+        }
+        else {
+            throw new AccessDeniedException("Denied for " + visitor);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
+                .add("pageFooter = " + pageFooter)
+                .add("visitor = " + visitor)
+                .add("authReq = " + authReq)
+                .toString();
+    }
+    
     @GetMapping("/stop")
     public String closeApp(HttpServletRequest request) throws AccessDeniedException {
         if (authReq) {
@@ -339,12 +331,13 @@ public class ServiceInfoCtrl {
         return "ok";
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
-            .add("pageFooter = " + pageFooter)
-            .add("visitor = " + visitor)
-            .add("authReq = " + authReq)
-            .toString();
+    private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+        Collections.sort(filesToRead);
+        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
+        for (File fileRead : filesToRead) {
+            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
+            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
+        }
+        return readiedStrings;
     }
 }

@@ -4,6 +4,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -34,6 +35,7 @@ import java.util.*;
  @see ru.vachok.networker.net.scanner.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
+@Scope(ConstantsFor.SINGLETON)
 public class ScanOnline implements NetScanService {
     
     
@@ -42,8 +44,6 @@ public class ScanOnline implements NetScanService {
     private @NotNull File fileMAXOnlines = new File(FileNames.ONLINES_MAX);
     
     private File onlinesFile = new File(FileNames.ONSCAN);
-    
-    private CheckerIpHTML checkerIpHTML;
     
     /**
      {@link MessageLocal}
@@ -100,7 +100,6 @@ public class ScanOnline implements NetScanService {
                 .append(new TForms().fromArray(maxOnList, true))
                 .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(UsefulUtilities.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append(checkerIpHTML);
         return sb.toString();
     }
     

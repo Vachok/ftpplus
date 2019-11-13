@@ -11,9 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -46,7 +44,7 @@ public class ShowAllDevCTRL {
     private NetScanService scanOnline;
     
     @Autowired
-    public ShowAllDevCTRL(NetScanService scanOnline) {
+    public ShowAllDevCTRL(ScanOnline scanOnline) {
         this.scanOnline = scanOnline;
         this.messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     }
