@@ -3,10 +3,9 @@
 package ru.vachok.networker.componentsrepo.systray;
 
 
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +31,7 @@ public class ActionDefault extends AbstractAction {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser messageToUser = new MessageCons(ActionDefault.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ActionDefault.class.getSimpleName());
     
     private String goTo;
     
@@ -43,7 +42,7 @@ public class ActionDefault extends AbstractAction {
     public ActionDefault() {
         this.goTo = HTTP_LOCALHOST8880SLASH;
         if (!SystemTray.isSupported()) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(System.getProperty("os.name"));
         }
     }
     

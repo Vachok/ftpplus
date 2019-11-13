@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
-import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -23,6 +22,7 @@ import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
 import java.lang.management.*;
@@ -40,8 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
-@Service("taskExecutor")
-public class ThreadConfig extends ThreadPoolTaskExecutor {
+public class ThreadConfig implements AppConfigurationLocal {
     
     
     /**
@@ -57,7 +56,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      Instance
      */
-    private static final ThreadConfig THREAD_CONFIG_INST = new ThreadConfig();
+    private static final AppConfigurationLocal THREAD_CONFIG_INST = new ThreadConfig();
     
     private static final int PROCESSORS = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors();
     
@@ -108,7 +107,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     
     @Contract(pure = true)
     public static ThreadConfig getI() {
-        return THREAD_CONFIG_INST;
+        return (ThreadConfig) THREAD_CONFIG_INST;
     }
     
     public @NotNull String getAllThreads() {

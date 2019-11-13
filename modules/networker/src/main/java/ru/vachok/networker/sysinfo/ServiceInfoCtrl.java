@@ -9,9 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
@@ -20,9 +18,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
@@ -40,9 +36,7 @@ import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
@@ -63,8 +57,6 @@ public class ServiceInfoCtrl {
     private static final Properties APP_PR = InitProperties.getTheProps();
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
-    
-    private static final TForms FORMS = new TForms();
     
     /**
      {@link Visitor}
@@ -153,7 +145,7 @@ public class ServiceInfoCtrl {
             .append("<b>").append(request.getHeader("cookie")).append(bBr);
         
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
-        stringBuilder.append(FORMS.fromEnum(request.getAttributeNames(), true));
+        stringBuilder.append(AbstractForms.fromEnum(request.getAttributeNames()).replace("<br>", "\n"));
         return stringBuilder.toString();
     }
     
@@ -282,6 +274,30 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString().replace("***", "<br>");
     }
     
+    private @NotNull String makeResValue() {
+        return new StringBuilder()
+                .append(MyCalen.toStringS()).append("<br><br>")
+                .append("<b><i>").append(Paths.get(".")).append("</i></b><p><font color=\"orange\">")
+                .append(ConstantsNet.getSshMapStr()).append("</font><p>")
+                .append(AbstractForms.fromArray(APP_PR).replace("<br>", "\n")).append("<br>Prefs: ")
+                .append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("<br>", "\n"))
+                .append("<p>")
+                .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
+                .append("<p>")
+                .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
+                .toString();
+    }
+    
+    private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+        Collections.sort(filesToRead);
+        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
+        for (File fileRead : filesToRead) {
+            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
+            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
+        }
+        return readiedStrings;
+    }
+    
     private static String visitsPrevSessionRead() {
         List<File> listVisitFiles = new ArrayList<>();
         for (File fileFromList : Objects.requireNonNull(new File(".").listFiles())) {
@@ -303,30 +319,7 @@ public class ServiceInfoCtrl {
                 retListStr.add(e.getMessage());
             }
         }
-        return FORMS.fromArray(retListStr, true);
-    }
-    
-    private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
-        Collections.sort(filesToRead);
-        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for (File fileRead : filesToRead) {
-            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
-            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
-        }
-        return readiedStrings;
-    }
-    
-    private @NotNull String makeResValue() {
-        return new StringBuilder()
-            .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append(Paths.get(".")).append("</i></b><p><font color=\"orange\">")
-            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-            .append(FORMS.fromArray(APP_PR, true)).append("<br>Prefs: ").append(FORMS.fromArray(InitProperties.getUserPref(), true))
-            .append("<p>")
-            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
-            .append("<p>")
-            .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
-            .toString();
+        return AbstractForms.fromArray(retListStr);
     }
     
     @GetMapping("/stop")

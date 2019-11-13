@@ -100,11 +100,11 @@ public class TForms {
         }
     }
     
-    public String fromEnum(Enumeration<String> enumStrings, boolean br) {
+    public String fromEnum(Enumeration<?> enumStrings, boolean br) {
         nStringBuilder.append(ConstantsFor.STR_N);
         brStringBuilder.append(ConstantsFor.STR_P);
         while (enumStrings.hasMoreElements()) {
-            String str = enumStrings.nextElement();
+            String str = enumStrings.nextElement().toString();
             nStringBuilder.append(str).append(ConstantsFor.STR_N);
             brStringBuilder.append(str).append(ConstantsFor.STR_BR);
         }

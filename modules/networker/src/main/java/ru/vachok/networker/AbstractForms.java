@@ -74,4 +74,12 @@ public abstract class AbstractForms {
     public static TForms getI() {
         return T_FORMS;
     }
+    
+    public static String fromEnum(Enumeration<?> enumeration) {
+        return T_FORMS.fromEnum(enumeration, true);
+    }
+    
+    public static String sshCheckerMapWithDates(Map<String, Long> map, boolean b) {
+        return T_FORMS.sshCheckerMapWithDates(map, b);
+    }
 }

@@ -8,28 +8,16 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,8 +37,6 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
     private Properties retProps = new Properties();
-    
-    private static final TForms T_FORMS = AbstractForms.getI();
     
     private String propsDBID = ConstantsFor.class.getSimpleName();
     
@@ -181,7 +167,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     @Override
     public Properties call() {
         DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
-        this.callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
+        this.callerStack = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
         return localPropertiesFinder.findRightProps();
     }
     
@@ -222,7 +208,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             final String sql = "insert props (property, valueofproperty, javaid, stack) values (?,?,?,?)";
             mysqlDataSource.setDatabaseName(ConstantsFor.STR_VELKOM);
             retBool.set(false);
-            callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
+            callerStack = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
     
             try (Connection c = mysqlDataSource.getConnection()) {
                 int executeUpdateInt = 0;
@@ -243,7 +229,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             }
             catch (SQLException e) {
                 if (!(e instanceof MySQLIntegrityConstraintViolationException)) {
-                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), T_FORMS.networkerTrace(e.getStackTrace()));
+                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
                     retBool.set(false);
                     tryWithLibsInit();
                 }

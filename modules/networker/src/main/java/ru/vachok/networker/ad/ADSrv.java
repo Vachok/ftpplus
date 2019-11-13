@@ -5,7 +5,7 @@ package ru.vachok.networker.ad;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -16,7 +16,6 @@ import java.util.List;
 /**
  @see ru.vachok.networker.ad.ADSrvTest
  @since 25.09.2018 (15:10) */
-@Service("adSrv")
 public class ADSrv {
     
     
@@ -24,18 +23,15 @@ public class ADSrv {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ADSrv.class.getSimpleName());
     
-    private ADUser adUser;
-    
     private String userInputRaw;
     
     @Contract(pure = true)
     public ADSrv() {
-        this.adUser = new ADUser();
     }
     
+    @Autowired
     public ADSrv(@NotNull ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
-        this.adUser = adUser;
     }
     
     public String getUserInputRaw() {
@@ -82,7 +78,6 @@ public class ADSrv {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ADSrv{");
-        sb.append(", adUser=").append(adUser);
         sb.append(", userInputRaw='").append(userInputRaw).append('\'');
         sb.append('}');
         return sb.toString();
