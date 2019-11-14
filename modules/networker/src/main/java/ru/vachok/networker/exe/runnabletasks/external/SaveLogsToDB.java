@@ -47,6 +47,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         try (Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT idrec FROM inetstats ORDER BY idrec DESC LIMIT 1;")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    Thread.currentThread().setName(SaveLogsToDB.class.getSimpleName());
                     //noinspection LoopStatementThatDoesntLoop
                     while (resultSet.next()) {
                         result = resultSet.getInt(1);

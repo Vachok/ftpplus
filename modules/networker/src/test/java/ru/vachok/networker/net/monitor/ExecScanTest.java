@@ -19,6 +19,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -139,6 +140,13 @@ import java.util.concurrent.LinkedBlockingDeque;
         if (vlanFile.length() > 5) {
             FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
         }
+    }
+    
+    @Test
+    public void testToString() {
+        NetScanService dia = NetScanService.getInstance(NetScanService.DIAPAZON);
+        String toStr = dia.toString();
+        Assert.assertTrue(toStr.contains("DiapazonScan{"));
     }
     
     @NotNull
