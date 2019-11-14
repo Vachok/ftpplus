@@ -266,7 +266,7 @@ public class ExecScan extends DiapazonScan {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(ExecScan.class.getSimpleName(), e.getMessage(), " see line: 263 ***");
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeToDB", e));
         }
     }
     
