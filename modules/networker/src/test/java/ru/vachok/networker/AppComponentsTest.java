@@ -12,7 +12,6 @@ import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
@@ -123,12 +122,6 @@ public class AppComponentsTest {
     }
     
     @Test
-    public void testLaunchRegRuFTPLibsUploader() {
-        String ftpLibUplString = new AppComponents().launchRegRuFTPLibsUploader();
-        Assert.assertTrue(ftpLibUplString.toLowerCase().contains("true"));
-    }
-    
-    @Test
     public void testGetUserPref() {
         Preferences pref = InitProperties.getUserPref();
         try {
@@ -201,13 +194,6 @@ public class AppComponentsTest {
     public void testTestToString() {
         String toStr = new AppComponents().toString();
         Assert.assertTrue(toStr.contains("Nothing to show..."), toStr);
-    }
-    
-    @Test
-    public void testTemporaryFullInternet() {
-        TemporaryFullInternet fullInternet = new AppComponents().temporaryFullInternet();
-        String toStr = fullInternet.toString();
-        Assert.assertTrue(toStr.contains("TemporaryFullInternet["), toStr);
     }
     
     @Test
