@@ -16,6 +16,7 @@ import org.springframework.scheduling.support.TaskUtils;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.*;
@@ -33,9 +34,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
- Конфигуратор для {@link ThreadPoolTaskExecutor}
- <p>
- 
  @see ru.vachok.networker.exe.ThreadConfigTest
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
@@ -74,6 +72,11 @@ public class ThreadConfig implements AppConfigurationLocal {
     public ThreadPoolTaskExecutor getTaskExecutor() {
         setExecutor();
         return TASK_EXECUTOR;
+    }
+    
+    @Override
+    public void run() {
+        throw new TODOException("just do it!");
     }
     
     private void setExecutor() {

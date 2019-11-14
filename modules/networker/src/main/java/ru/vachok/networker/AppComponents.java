@@ -9,10 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.*;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.FakeRequest;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
@@ -23,12 +21,12 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
 
@@ -50,7 +48,7 @@ public class AppComponents {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());
     
-    private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
+    private static final AppConfigurationLocal THREAD_CONFIG = ThreadConfig.getI();
     
     public static @NotNull Properties getMailProps() {
         Properties properties = new Properties();
@@ -123,29 +121,8 @@ public class AppComponents {
             .toString();
     }
     
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    TemporaryFullInternet temporaryFullInternet() {
-        return new TemporaryFullInternet();
-    }
-    
-    String launchRegRuFTPLibsUploader() {
-        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
-        try {
-            threadConfig().getTaskExecutor().execute(regRuFTPLibsUploader, 100);
-            return this.getClass().getSimpleName() + ".launchRegRuFTPLibsUploader: TRUE";
-        }
-        catch (RuntimeException e) {
-            return MessageFormat
-                .format("{0}.launchRegRuFTPLibsUploader: FALSE {1} {2}", AppComponents.class.getSimpleName(), e.getMessage(), Thread.currentThread().getState()
-                    .name());
-        }
-    }
-    
     @Contract(pure = true)
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
-        return THREAD_CONFIG;
+        return (ThreadConfig) THREAD_CONFIG;
     }
 }
