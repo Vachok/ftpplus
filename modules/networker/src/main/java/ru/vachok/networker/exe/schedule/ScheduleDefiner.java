@@ -12,7 +12,6 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.util.Date;
@@ -23,9 +22,6 @@ import static java.time.DayOfWeek.SUNDAY;
 
 public class ScheduleDefiner implements AppConfigurationLocal {
     
-    
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ScheduleDefiner.class.getSimpleName());
-    
     @Override
     public void run() {
         startPeriodicTasks();
@@ -33,7 +29,7 @@ public class ScheduleDefiner implements AppConfigurationLocal {
     
     private void startPeriodicTasks() {
         NetScanService netScanService = NetScanService.getInstance(NetScanService.PTV);
-        NetScanService scanOnlineRun = NetScanService.getInstance("ScanOnline");
+        NetScanService scanOnlineRun = NetScanService.getInstance(NetScanService.SCAN_ONLINE);
         NetScanService diapazonScanRun = NetScanService.getInstance(NetScanService.DIAPAZON);
         Runnable popSmtpTest = new MailPOPTester();
         
