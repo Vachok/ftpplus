@@ -1,7 +1,10 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
-import org.testng.annotations.*;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -19,7 +22,7 @@ public class OnStartTasksLoaderTest {
     
     private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    AppConfigurationLocal appConfigurationLocal = new OnStartTasksLoader();
+    private AppConfigurationLocal appConfigurationLocal = new OnStartTasksLoader();
     
     @BeforeClass
     public void setUp() {
@@ -35,5 +38,11 @@ public class OnStartTasksLoaderTest {
     @Test
     public void testRun() {
         appConfigurationLocal.run();
+    }
+    
+    @Test
+    public void testToString() {
+        String s = appConfigurationLocal.toString();
+        Assert.assertTrue(s.contains("OnStartTasksLoader{messageToUser=MessageLocal{"));
     }
 }
