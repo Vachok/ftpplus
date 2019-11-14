@@ -7,12 +7,13 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -20,12 +21,8 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-
-import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
@@ -68,7 +65,7 @@ public class AppInfoOnLoad implements Runnable {
             messageToUser.error("AppInfoOnLoad.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
-            getWeekPCStats();
+            checkFileExitLastAndWriteMiniLog();
         }
     }
     
@@ -101,24 +98,6 @@ public class AppInfoOnLoad implements Runnable {
             AppConfigurationLocal.getInstance().execute(onStartTasksLoader);
         }
     
-    }
-    
-    private void getWeekPCStats() {
-        if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
-            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            ((Runnable) stats).run();
-            stats = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT);
-            try {
-                String pcStats = (String) ((Callable) stats).call();
-                System.out.println("pcStats = " + pcStats);
-            }
-            catch (Exception e) {
-                messageToUser.error(MessageFormat.format("AppInfoOnLoad.getWeekPCStats {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
-            }
-            finally {
-                messageToUser.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
-            }
-        }
     }
     
     private boolean checkFileExitLastAndWriteMiniLog() {
