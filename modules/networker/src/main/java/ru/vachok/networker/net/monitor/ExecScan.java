@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -17,6 +18,9 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -235,6 +239,7 @@ public class ExecScan extends DiapazonScan {
             NetKeeper.getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
+            writeToDB(hostAddress, hostName);
         }
         else {
             offLines.put(byAddress.getHostAddress(), hostName);
@@ -246,8 +251,23 @@ public class ExecScan extends DiapazonScan {
             printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
         NetKeeper.setOffLines(offLines);
-        
         return stringBuilder.toString();
+    }
+    
+    private void writeToDB(String hostAddress, String hostName) {
+        final String sql = "INSERT INTO lan.online (ip, pcName) VALUES (?, ?)";
+        if (hostName == null || hostName.isEmpty()) {
+            hostName = "no name";
+        }
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("lan.online")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, hostAddress);
+                preparedStatement.setString(2, hostName);
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(ExecScan.class.getSimpleName(), e.getMessage(), " see line: 263 ***");
+        }
     }
     
     private int calcTimeOutMSec() {
