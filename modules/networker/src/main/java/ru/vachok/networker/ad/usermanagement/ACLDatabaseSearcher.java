@@ -12,10 +12,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -137,12 +134,14 @@ class ACLDatabaseSearcher extends ACLParser {
     }
     
     private void dbSearch() throws SQLException {
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            getMapRights().put(Paths.get(searchPattern).getFileName(), Collections.singletonList(sql));
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    rsNext(resultSet);
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setQueryTimeout(60);
+                getMapRights().put(Paths.get(searchPattern).getFileName(), Collections.singletonList(sql));
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        rsNext(resultSet);
+                    }
                 }
             }
         }
