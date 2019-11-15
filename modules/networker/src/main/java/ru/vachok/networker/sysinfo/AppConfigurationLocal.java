@@ -41,6 +41,22 @@ public interface AppConfigurationLocal extends Runnable {
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
     
+    default void execute(Runnable runnable, long timeOutSeconds) {
+        ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        Future<?> submit = poolExecutor.submit(runnable);
+        if (!poolExecutor.getQueue().contains(runnable)) {
+            try {
+                submit.get(timeOutSeconds, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e) {
+                e.printStackTrace();
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
+        }
+        
+    }
+    
     default void schedule(Runnable runnable, int timeInMinPerion) {
         schedule(runnable, 0, TimeUnit.MINUTES.toMillis(timeInMinPerion));
     }

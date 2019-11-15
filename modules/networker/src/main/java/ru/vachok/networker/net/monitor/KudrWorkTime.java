@@ -5,6 +5,7 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -13,6 +14,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -23,7 +25,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -163,26 +166,12 @@ public class KudrWorkTime implements NetScanService {
     }
     
     @Override
-    public String getExecution() {
-        execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
-        Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress);
-        try {
-            int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
-            if (NetScanService.isReach(do0213IP.getHostAddress())) {
-                submit.get(timeout, TimeUnit.SECONDS);
-            }
-            else {
-                doIsReach();
-            }
+    public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        if (LocalTime.now().toSecondOfDay() > LocalTime.of(7, 30).toSecondOfDay() & LocalTime.of(18, 30).toSecondOfDay() > LocalTime.now().toSecondOfDay()) {
+            FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
+            FileSystemWorker.appendObjectToFile(logFile, getExecution());
         }
-        catch (InterruptedException | ExecutionException e) {
-            messageToUser.error(MessageFormat
-                    .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        catch (TimeoutException e) {
-            FileSystemWorker.appendObjectToFile(logFile, writeLog());
-        }
-        return new TForms().fromArray(execList);
     }
     
     @Override
@@ -234,9 +223,16 @@ public class KudrWorkTime implements NetScanService {
     }
     
     @Override
-    public void run() {
-        FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
-        FileSystemWorker.appendObjectToFile(logFile, getExecution());
+    public String getExecution() {
+        execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
+        int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
+        if (NetScanService.isReach(do0213IP.getHostAddress())) {
+            AppConfigurationLocal.getInstance().execute(this::monitorAddress, timeout);
+        }
+        else {
+            doIsReach();
+        }
+        return AbstractForms.fromArray(execList);
     }
     
     private void monitorAddress() {
