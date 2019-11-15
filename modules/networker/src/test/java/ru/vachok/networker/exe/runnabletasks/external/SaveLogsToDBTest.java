@@ -5,7 +5,8 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -49,11 +50,11 @@ public class SaveLogsToDBTest {
             Assert.assertTrue(dbCallable.contains("access.log"), dbCallable);
         }
         catch (TimeoutException | ExecutionException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         catch (InterruptedException e) {
             messageToUser.error(MessageFormat
-                    .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms.fromArray(e)));
         }
     }
     
@@ -76,8 +77,11 @@ public class SaveLogsToDBTest {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        catch (TimeoutException e) {
+            messageToUser.warn(SaveLogsToDBTest.class.getSimpleName(), "testSaveAccessLogToDatabase", e.getMessage() + Thread.currentThread().getState().name());
         }
     }
     
@@ -124,7 +128,7 @@ public class SaveLogsToDBTest {
             }
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
