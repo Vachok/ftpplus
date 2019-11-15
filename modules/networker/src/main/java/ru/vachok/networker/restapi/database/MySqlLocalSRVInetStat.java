@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -118,7 +119,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
-        Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName);
+        Connection connection = null;
         if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
             this.dbName = dbName.split("\\Q.\\E")[0];
             this.tableName = dbName.split("\\Q.\\E")[1];
@@ -145,9 +146,13 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         catch (SQLException e) {
             messageToUser.warn("MySqlLocalSRVInetStat", "getDefaultConnection", e.getMessage() + " see line: 189");
-            abortConnection(connection);
         }
-        return connection;
+        if (connection != null) {
+            return connection;
+        }
+        else {
+            throw new InvokeIllegalException(MessageFormat.format("{0} DEFAULT CONNECTION ERROR! NULL!", this.getClass().getSimpleName()));
+        }
     }
     
     private void abortConnection(@NotNull Connection connection) {

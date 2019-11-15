@@ -6,14 +6,12 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.*;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -92,6 +90,7 @@ class RegRuMysqlLoc implements DataConnectTo {
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
+        this.dbName = dbName;
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(OtherKnownDevices.REG_RU_SERVER);
         defDataSource.setPort(3306);
@@ -100,7 +99,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         if (dbName.contains(".")) {
-            throw new InvokeIllegalException(MessageFormat.format("{0}. Database name must me without comma: {1}!", this.getClass().getSimpleName(), dbName));
+            dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
         }
         defDataSource.setDatabaseName(dbName);
         defDataSource.setUseSSL(false);

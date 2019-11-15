@@ -37,22 +37,26 @@ public class MessageToTrayTest {
     }
     
     @Test
+    @Ignore
     public void testErrorAlert() {
         messageToUser.errorAlert(this.getClass().getSimpleName(), "testErrorAlert", "test");
     }
     
     @Test
+    @Ignore
     public void testInfo() {
         messageToUser.info(this.getClass().getSimpleName(), "testInfo", "test");
         
     }
     
     @Test
+    @Ignore
     public void testWarn() {
         messageToUser.warn(this.getClass().getSimpleName(), "testWarn", "test");
     }
     
     @Test
+    @Ignore
     public void testConfirm() {
         try {
             messageToUser.confirm(this.getClass().getSimpleName(), "testWarn", "test");
@@ -63,6 +67,7 @@ public class MessageToTrayTest {
     }
     
     @Test
+    @Ignore
     public void testTestToString() {
         String toStr = messageToUser.toString();
         
