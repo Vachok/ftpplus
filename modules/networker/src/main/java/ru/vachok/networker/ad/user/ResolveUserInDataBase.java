@@ -32,24 +32,7 @@ class ResolveUserInDataBase extends UserInfo {
     
     private Object aboutWhat;
     
-    private String userName;
-    
     private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
-    ResolveUserInDataBase() {
-        this.aboutWhat = "No pc name set";
-    }
-    
-    ResolveUserInDataBase(String type) {
-        this.aboutWhat = type;
-    }
-    
-    @Override
-    public int hashCode() {
-        int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
-        result = 31 * result + dataConnectTo.hashCode();
-        return result;
-    }
     
     @Override
     public String getInfo() {
@@ -71,13 +54,9 @@ class ResolveUserInDataBase extends UserInfo {
         return result;
     }
     
-    private String tryPcName() {
-        try {
-            return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
-        }
-        catch (IndexOutOfBoundsException e) {
-            return e.getMessage();
-        }
+    @Override
+    public void setClassOption(Object option) {
+        this.aboutWhat = option;
     }
     
     @Override
@@ -107,7 +86,6 @@ class ResolveUserInDataBase extends UserInfo {
             this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostName();
         }
         else {
-            this.userName = aboutWhat;
             this.aboutWhat = aboutWhat;
         }
         if (this.aboutWhat.toString().contains("pp")) {
@@ -119,6 +97,29 @@ class ResolveUserInDataBase extends UserInfo {
         if (result.size() == 0) {
             result.add(aboutWhat);
         }
+        return result;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
+                .add("aboutWhat = " + aboutWhat)
+                .add("dataConnectTo = " + dataConnectTo.toString())
+                .toString();
+    }
+    
+    ResolveUserInDataBase() {
+        this.aboutWhat = "No pc name set";
+    }
+    
+    ResolveUserInDataBase(String type) {
+        this.aboutWhat = type;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
+        result = 31 * result + dataConnectTo.hashCode();
         return result;
     }
     
@@ -146,24 +147,18 @@ class ResolveUserInDataBase extends UserInfo {
         return results;
     }
     
-    @NotNull String getLoginFromStaticDB(String pcName) {
-        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.aboutWhat = pcName;
-        List<String> velkomPCUser = searchDatabase(1, "SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
-        return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
-    }
-    
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
                 preparedStatement.setInt(2, linesLimit);
+                preparedStatement.setQueryTimeout(18);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DB_FIELD_WHENQUERIED);
                         String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
-                            .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
+                                .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
                         retList.add(addStr);
                     }
                 }
@@ -177,19 +172,6 @@ class ResolveUserInDataBase extends UserInfo {
             retList.add(AbstractForms.fromArray(e));
         }
         return retList;
-    }
-    
-    @Override
-    public void setClassOption(Object option) {
-        this.aboutWhat = option;
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
-                .add("aboutWhat = " + aboutWhat)
-                .add("dataConnectTo = " + dataConnectTo.toString())
-                .toString();
     }
     
     @Contract(value = "null -> false", pure = true)
@@ -208,6 +190,22 @@ class ResolveUserInDataBase extends UserInfo {
             return false;
         }
         return dataConnectTo.equals(that.dataConnectTo);
+    }
+    
+    private String tryPcName() {
+        try {
+            return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
+    }
+    
+    @NotNull String getLoginFromStaticDB(String pcName) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.aboutWhat = pcName;
+        List<String> velkomPCUser = searchDatabase(1, "SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
+        return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
     }
     
     
