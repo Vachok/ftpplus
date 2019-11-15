@@ -146,7 +146,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
     }
     
     @Contract(pure = true)
-    public static Map<String, String> editOffLines() {
+    public static ConcurrentMap<String, String> editOffLines() {
         return NETLISTS_OFFLINES;
     }
     

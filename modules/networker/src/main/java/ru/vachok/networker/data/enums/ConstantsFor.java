@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -464,6 +462,8 @@ public enum ConstantsFor {
     public static final String DB_FIELD_WHENQUERIED = "whenQueried";
     
     public static final int LOGLEVEL = 1;
+    
+    public static final String RED = "red";
     
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
