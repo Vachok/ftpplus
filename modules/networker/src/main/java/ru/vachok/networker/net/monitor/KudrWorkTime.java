@@ -54,6 +54,10 @@ public class KudrWorkTime implements NetScanService {
     
     private boolean isTest;
     
+    public Map<String, Object> getMapOfConditionsTypeNameTypeCondition() {
+        return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
+    }
+    
     public KudrWorkTime() {
         try {
             this.samsIP = InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress());
@@ -81,8 +85,18 @@ public class KudrWorkTime implements NetScanService {
         this.mapOfConditionsTypeNameTypeCondition = mapOfConditionsTypeNameTypeCondition;
     }
     
-    public Map<String, Object> getMapOfConditionsTypeNameTypeCondition() {
-        return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
+    @Override
+    public int hashCode() {
+        int result = logFile.hashCode();
+        result = 31 * result + mapOfConditionsTypeNameTypeCondition.hashCode();
+        result = 31 * result + startPlus9Hours;
+        result = 31 * result + start;
+        result = 31 * result + messageToUser.hashCode();
+        result = 31 * result + execList.hashCode();
+        result = 31 * result + (samsIP != null ? samsIP.hashCode() : 0);
+        result = 31 * result + (do0213IP != null ? do0213IP.hashCode() : 0);
+        result = 31 * result + (isTest ? 1 : 0);
+        return result;
     }
     
     @Override
@@ -124,37 +138,6 @@ public class KudrWorkTime implements NetScanService {
     }
     
     @Override
-    public int hashCode() {
-        int result = logFile.hashCode();
-        result = 31 * result + mapOfConditionsTypeNameTypeCondition.hashCode();
-        result = 31 * result + startPlus9Hours;
-        result = 31 * result + start;
-        result = 31 * result + messageToUser.hashCode();
-        result = 31 * result + execList.hashCode();
-        result = 31 * result + (samsIP != null ? samsIP.hashCode() : 0);
-        result = 31 * result + (do0213IP != null ? do0213IP.hashCode() : 0);
-        result = 31 * result + (isTest ? 1 : 0);
-        return result;
-    }
-    
-    @Override
-    public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        List<String> retList = new ArrayList<>();
-        for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
-            boolean isDeviceOn = NetScanService.isReach(addressNameEntry.getKey().getHostAddress());
-            retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), ConstantsFor.DELAY * 10));
-        }
-        mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
-        return retList;
-    }
-    
-    @Override
-    public void run() {
-        FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
-        FileSystemWorker.appendObjectToFile(logFile, getExecution());
-    }
-    
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("KudrWorkTime{");
         sb.append("logFile=").append(logFile.getAbsolutePath());
@@ -166,6 +149,17 @@ public class KudrWorkTime implements NetScanService {
         sb.append(", isTest=").append(isTest);
         sb.append('}');
         return sb.toString();
+    }
+    
+    @Override
+    public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+        List<String> retList = new ArrayList<>();
+        for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
+            boolean isDeviceOn = NetScanService.isReach(addressNameEntry.getKey().getHostAddress());
+            retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), ConstantsFor.DELAY * 10));
+        }
+        mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
+        return retList;
     }
     
     @Override
@@ -183,12 +177,17 @@ public class KudrWorkTime implements NetScanService {
         }
         catch (InterruptedException | ExecutionException e) {
             messageToUser.error(MessageFormat
-                .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         catch (TimeoutException e) {
             FileSystemWorker.appendObjectToFile(logFile, writeLog());
         }
         return new TForms().fromArray(execList);
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        return FileSystemWorker.readFile(this.getClass().getSimpleName() + ".res");
     }
     
     @Override
@@ -225,11 +224,6 @@ public class KudrWorkTime implements NetScanService {
     }
     
     @Override
-    public String getPingResultStr() {
-        return FileSystemWorker.readFile(this.getClass().getSimpleName() + ".res");
-    }
-    
-    @Override
     public Runnable getMonitoringRunnable() {
         return this;
     }
@@ -237,6 +231,12 @@ public class KudrWorkTime implements NetScanService {
     @Override
     public String getStatistics() {
         return new TForms().fromArray(mapOfConditionsTypeNameTypeCondition);
+    }
+    
+    @Override
+    public void run() {
+        FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
+        FileSystemWorker.appendObjectToFile(logFile, getExecution());
     }
     
     private void monitorAddress() {
@@ -256,14 +256,15 @@ public class KudrWorkTime implements NetScanService {
     }
     
     private void doIsReach() {
-        boolean isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
+        int timeout = (int) TimeUnit.SECONDS.toMillis(150);
+        boolean isDOOnline = NetScanService.isReach(do0213IP.getHostAddress(), timeout);
         if (!isDOOnline) {
             do {
-                isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
+                isDOOnline = NetScanService.isReach(do0213IP.getHostAddress(), timeout);
             } while (!isDOOnline);
         }
         do {
-            isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
+            isDOOnline = NetScanService.isReach(do0213IP.getHostAddress(), timeout);
             if (!isDOOnline) {
                 FileSystemWorker.appendObjectToFile(logFile, writeLog());
                 break;
