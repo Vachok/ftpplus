@@ -3,9 +3,7 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
@@ -13,9 +11,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -23,8 +19,7 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -171,27 +166,13 @@ public class UserInfoTest {
         Assert.assertTrue(loginsStr.contains("ikudryashov"));
     }
     
-    private boolean wasOffline(String pcName) {
-        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
-        boolean retBool = false;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
-                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
-            createTable();
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
-                        System.out.println("timestamp = " + timestamp.toString());
-                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
-                            .toMillis(ConstantsFor.DELAY * 3);
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        return retBool;
+    @Test
+    public void testGetInfoAbout() {
+        UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
+        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
+        String[] arr = infoInfoAbout.split(" : ");
+        Assert.assertTrue(arr[0].contains("do0214"));
+        Assert.assertEquals(arr[1], "s.m.pavlova");
     }
     
     private static void checkDB(final String sql) {
@@ -223,7 +204,7 @@ public class UserInfoTest {
     @Test
     public void testResolvePCUserOverDB() {
         String vashaplovaUserName = UserInfo.resolvePCUserOverDB("vashaplova");
-        String expected = "do0125 : vashaplova";
+        String expected = "do0125";
         Assert.assertTrue(vashaplovaUserName.contains(expected), vashaplovaUserName);
         String vashaplovaDo0125 = UserInfo.resolvePCUserOverDB("do0125");
         Assert.assertTrue(vashaplovaDo0125.contains(expected), vashaplovaDo0125);
@@ -240,13 +221,27 @@ public class UserInfoTest {
         }
     }
     
-    @Test
-    public void testGetInfoAbout() {
-        UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
-        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
-        String[] arr = infoInfoAbout.split(" : ");
-        Assert.assertEquals(arr[0], "do0214");
-        Assert.assertEquals(arr[1], "s.m.pavlova");
+    private boolean wasOffline(String pcName) {
+        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
+        boolean retBool = false;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
+                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            createTable();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
+                        System.out.println("timestamp = " + timestamp.toString());
+                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                                .toMillis(ConstantsFor.DELAY * 3);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        return retBool;
     }
     
     @Test

@@ -4,9 +4,10 @@ package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -18,16 +19,11 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -40,7 +36,7 @@ import static ru.vachok.networker.data.enums.ConstantsNet.MAX_IN_ONE_VLAN;
  Да запуска скана из {@link DiapazonScan}
  <p>
  
- @see ru.vachok.networker.net.monitor.ExecScanTest
+ @see ExecScanTest
  @since 24.03.2019 (16:01) */
 public class ExecScan extends DiapazonScan {
     
@@ -68,6 +64,10 @@ public class ExecScan extends DiapazonScan {
     private String whatVlan;
     
     private Preferences preferences = InitProperties.getUserPref();
+    
+    private int thirdOctet;
+    
+    private int fourthOctet;
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -145,7 +145,7 @@ public class ExecScan extends DiapazonScan {
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
             boolean execScanB = execScan();
             messageToUser.info(this.getClass().getSimpleName(), MessageFormat
-                .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
+                    .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
         }
         else {
             messageToUser.error(getExecution(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
@@ -195,7 +195,7 @@ public class ExecScan extends DiapazonScan {
                     ipNameMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                 }
                 catch (IOException e) {
-                    ipNameMap.put(e.getMessage(), new TForms().fromArray(e, false));
+                    ipNameMap.put(e.getMessage(), AbstractForms.fromArray(e));
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
                     ipNameMap.put(theScannedIPHost, e.getMessage());
@@ -215,7 +215,7 @@ public class ExecScan extends DiapazonScan {
         catch (BackingStoreException e) {
             props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
             messageToUser.error(MessageFormat
-                    .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms
                             .fromArray(e)));
         }
     }
@@ -228,30 +228,39 @@ public class ExecScan extends DiapazonScan {
      @throws IOException при записи файла
      */
     private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
-        Map<String, String> offLines = NetKeeper.editOffLines();
+        this.thirdOctet = thirdOctet;
+        this.fourthOctet = fourthOctet;
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
-        StringBuilder stringBuilder = new StringBuilder();
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
+        InitProperties.setPreference(DiapazonScan.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
+    
+        return pingDev(byAddress);
+    }
+    
+    private @NotNull String pingDev(InetAddress byAddress) throws IOException {
+        String statusDevice = String.valueOf(byAddress);
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
-        InitProperties.setPreference(DiapazonScan.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
         if (byAddress.isReachable(calcTimeOutMSec())) {
             NetKeeper.getOnLinesResolve().put(hostAddress, hostName);
-            getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
-            stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
+            getAllDevLocalDeq().add(HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.GREEN, hostName));
+            statusDevice = MessageFormat.format("{0} {1} {2}", hostAddress, hostName, PAT_IS_ONLINE);
             writeToDB(hostAddress, hostName);
-        }
-        else {
-            offLines.put(byAddress.getHostAddress(), hostName);
-            getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
-            stringBuilder.append(hostAddress).append(" ").append(hostName);
-        }
-    
-        if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
             printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
-        NetKeeper.setOffLines(offLines);
-        return stringBuilder.toString();
+        else {
+            getAllDevLocalDeq().add(HTMLGeneration.getInstance("").setColor(ConstantsFor.RED, hostName));
+            statusDevice = MessageFormat.format("{0} {1}", hostAddress, hostName);
+        }
+        return statusDevice;
+    }
+    
+    private int calcTimeOutMSec() {
+        int timeOutMSec = (int) ConstantsFor.DELAY / 2;
+        if (UsefulUtilities.thisPC().equalsIgnoreCase("home")) {
+            timeOutMSec = (int) (ConstantsFor.DELAY * 2);
+        }
+        return timeOutMSec;
     }
     
     private void writeToDB(String hostAddress, String hostName) {
@@ -268,14 +277,6 @@ public class ExecScan extends DiapazonScan {
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeToDB", e));
         }
-    }
-    
-    private int calcTimeOutMSec() {
-        int timeOutMSec = (int) ConstantsFor.DELAY / 2;
-        if (UsefulUtilities.thisPC().equalsIgnoreCase("home")) {
-            timeOutMSec = (int) (ConstantsFor.DELAY * 2);
-        }
-        return timeOutMSec;
     }
     
     private void printToFile(String hostAddress, String hostName, int thirdOctet, int fourthOctet) throws IOException {

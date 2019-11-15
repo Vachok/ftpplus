@@ -3,10 +3,7 @@ package ru.vachok.networker.restapi.message;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.IntoApplication;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -27,12 +24,8 @@ public class MessageToTrayTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
-        try (ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext()) {
-            this.applicationContext = applicationContext;
-            this.messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
-        }
     }
     
     @AfterClass
@@ -44,22 +37,26 @@ public class MessageToTrayTest {
     }
     
     @Test
+    @Ignore
     public void testErrorAlert() {
         messageToUser.errorAlert(this.getClass().getSimpleName(), "testErrorAlert", "test");
     }
     
     @Test
+    @Ignore
     public void testInfo() {
         messageToUser.info(this.getClass().getSimpleName(), "testInfo", "test");
         
     }
     
     @Test
+    @Ignore
     public void testWarn() {
         messageToUser.warn(this.getClass().getSimpleName(), "testWarn", "test");
     }
     
     @Test
+    @Ignore
     public void testConfirm() {
         try {
             messageToUser.confirm(this.getClass().getSimpleName(), "testWarn", "test");
@@ -70,6 +67,7 @@ public class MessageToTrayTest {
     }
     
     @Test
+    @Ignore
     public void testTestToString() {
         String toStr = messageToUser.toString();
         

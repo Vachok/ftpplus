@@ -9,10 +9,7 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.net.monitor.PingerFromFile;
+import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -22,10 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 
 /**
@@ -93,25 +87,7 @@ public interface NetScanService extends Runnable {
     String getPingResultStr();
     
     static boolean isReach(String inetAddrStr) {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(2);
-        Thread.currentThread().setName("isReach" + inetAddrStr);
-        InetAddress byName;
-        try {
-            byName = InetAddress.getByName(inetAddrStr);
-        }
-        catch (UnknownHostException e) {
-            byName = getByName(inetAddrStr);
-            if (byName.equals(InetAddress.getLoopbackAddress())) {
-                return false;
-            }
-        }
-        try {
-            return byName.isReachable(100);
-        }
-        catch (IOException e) {
-            return false;
-        }
+        return isReach(inetAddrStr, 100);
     }
     
     static InetAddress getByName(String inetAddrStr) {
@@ -151,5 +127,27 @@ public interface NetScanService extends Runnable {
     
     static boolean writeUsersToDBFromSET() {
         return UserInfo.writeUsersToDBFromSET();
+    }
+    
+    static boolean isReach(String inetAddrStr, int timeout) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
+        Thread.currentThread().setName("ping" + inetAddrStr);
+        InetAddress byName;
+        try {
+            byName = InetAddress.getByName(inetAddrStr);
+        }
+        catch (UnknownHostException e) {
+            byName = getByName(inetAddrStr);
+            if (byName.equals(InetAddress.getLoopbackAddress())) {
+                return false;
+            }
+        }
+        try {
+            return byName.isReachable(timeout);
+        }
+        catch (IOException e) {
+            return false;
+        }
     }
 }

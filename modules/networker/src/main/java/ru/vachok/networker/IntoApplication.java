@@ -22,10 +22,7 @@ import java.awt.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
@@ -63,6 +60,7 @@ public class IntoApplication {
     }
     
     public static void main(@NotNull String[] args) {
+        Thread.currentThread().setName(IntoApplication.class.getSimpleName());
         setUTF8Enc();
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", UsefulUtilities.scheduleTrunkPcUserAuto());
         if (!Arrays.toString(args).contains("test")) {

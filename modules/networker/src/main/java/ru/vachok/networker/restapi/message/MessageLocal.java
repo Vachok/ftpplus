@@ -8,7 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.text.MessageFormat;
 import java.util.Objects;
@@ -122,12 +124,7 @@ public class MessageLocal implements MessageToUser {
             logger.error(msg);
     
         }
-        try {
-            writeToFile(typeLog);
-        }
-        catch (NetworkerStopException e) {
-            System.err.println("Log not written");
-        }
+        AppConfigurationLocal.getInstance().execute(()->writeToFile(typeLog), 10);
     }
     
     /**
@@ -135,14 +132,13 @@ public class MessageLocal implements MessageToUser {
      @throws NetworkerStopException if some message is null
      @see MessageLocalTest#testWrireLogToFile()
      */
-    private void writeToFile(@NotNull String typeLog) throws NetworkerStopException {
+    private void writeToFile(@NotNull String typeLog) {
         String[] messages = {bodyMsg, titleMsg, headerMsg};
         for (String s : messages) {
             if (s == null) {
-                throw new NetworkerStopException(getClass().getSimpleName(), "writeToFile", 133);
+                throw new InvokeIllegalException(MessageFormat.format("{0} writeToFile", getClass().getSimpleName()));
             }
         }
-        
         switch (typeLog) {
             case "err":
                 MessageToUser.getInstance(MessageToUser.FILE, headerMsg).errorAlert(headerMsg, titleMsg, bodyMsg);

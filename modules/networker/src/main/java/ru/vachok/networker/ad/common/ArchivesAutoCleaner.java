@@ -4,7 +4,7 @@ package ru.vachok.networker.ad.common;
 
 
 import org.jetbrains.annotations.Contract;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -13,7 +13,6 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -119,8 +118,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             Files.walkFileTree(Paths.get(startFolder), this);
         }
         catch (IOException e) {
-            messageToUser
-                .error(MessageFormat.format("ArchivesAutoCleaner.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error("ArchivesAutoCleaner.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
