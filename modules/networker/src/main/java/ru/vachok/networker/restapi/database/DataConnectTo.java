@@ -68,6 +68,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case TESTING:
                 return new TesterDB65SQL();
+            case H2DB:
+                return new H2DB();
             case DEFAULT_I:
             default:
                 return getDefaultI();
