@@ -6,13 +6,16 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
-import ru.vachok.tutu.conf.BackEngine;
-import ru.vachok.tutu.parser.SiteParser;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
 
@@ -31,10 +34,11 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append(" seconds elapsed (");
         stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
-        stringBuilder.append(getTrains());
+//        stringBuilder.append(getTrains());
         return stringBuilder.toString();
     }
     
+/*
     private @NotNull String getTrains() {
         BackEngine backEngine = new SiteParser();
         List<Date> comingTrains = backEngine.getComingTrains();
@@ -45,6 +49,7 @@ public class ScanMessagesCreator implements Keeper {
         }
         return stringBuilder.toString();
     }
+*/
     
     @Override
     public String toString() {

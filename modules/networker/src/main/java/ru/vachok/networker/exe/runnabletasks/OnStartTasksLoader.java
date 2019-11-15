@@ -88,7 +88,9 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             messageToUser.error("OnStartTasksLoader.ftpUploadTask", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
-            runCommonScan();
+            if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
+                runCommonScan();
+            }
         }
     }
     

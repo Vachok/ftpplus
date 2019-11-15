@@ -1,11 +1,8 @@
 package ru.vachok.networker.restapi;
 
 
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.tutu.conf.BackEngine;
-import ru.vachok.tutu.parser.SiteParser;
 
 
 public class Trains implements InformationFactory {
@@ -13,8 +10,7 @@ public class Trains implements InformationFactory {
     
     @Override
     public String getInfo() {
-        BackEngine backEngine = new SiteParser();
-        return AbstractForms.fromArray(backEngine.getComingTrains());
+        throw new TODOException("15.11.2019 (18:42)");
     }
     
     @Override

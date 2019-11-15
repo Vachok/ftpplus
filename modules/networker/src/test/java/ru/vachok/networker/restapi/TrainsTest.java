@@ -1,15 +1,13 @@
 package ru.vachok.networker.restapi;
 
 
-import org.testng.annotations.*;
-import ru.vachok.networker.AbstractForms;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.tutu.conf.BackEngine;
-import ru.vachok.tutu.parser.SiteParser;
-
-import java.util.Date;
-import java.util.List;
 
 
 public class TrainsTest {
@@ -29,9 +27,8 @@ public class TrainsTest {
     }
     
     @Test
+    @Ignore
     public void getTrains() {
-        BackEngine backEngine = new SiteParser();
-        List<Date> comingTrains = backEngine.getComingTrains();
-        System.out.println("comingTrains = " + AbstractForms.fromArray(comingTrains));
+        throw new TODOException("15.11.2019 (18:43)");
     }
 }

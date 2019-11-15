@@ -3,7 +3,9 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
@@ -11,7 +13,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -19,7 +23,8 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -121,7 +126,7 @@ public class UserInfoTest {
         
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
-                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
+            .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
             createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
@@ -211,13 +216,16 @@ public class UserInfoTest {
     }
     
     private void createTable() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("pcuser")) {
+        String dbName = "pcuser";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName)) {
+            Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:h2:mem:pcuser");
             try (PreparedStatement create = connection.prepareStatement(getCreate())) {
+                System.out.println("create = " + create.toString());
                 create.executeUpdate();
             }
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
