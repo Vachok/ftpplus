@@ -4,7 +4,7 @@ package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
@@ -18,16 +18,11 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -40,7 +35,7 @@ import static ru.vachok.networker.data.enums.ConstantsNet.MAX_IN_ONE_VLAN;
  Да запуска скана из {@link DiapazonScan}
  <p>
  
- @see ru.vachok.networker.net.monitor.ExecScanTest
+ @see ExecScanTest
  @since 24.03.2019 (16:01) */
 public class ExecScan extends DiapazonScan {
     
@@ -195,7 +190,7 @@ public class ExecScan extends DiapazonScan {
                     ipNameMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                 }
                 catch (IOException e) {
-                    ipNameMap.put(e.getMessage(), new TForms().fromArray(e, false));
+                    ipNameMap.put(e.getMessage(), AbstractForms.fromArray(e));
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
                     ipNameMap.put(theScannedIPHost, e.getMessage());
@@ -215,7 +210,7 @@ public class ExecScan extends DiapazonScan {
         catch (BackingStoreException e) {
             props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
             messageToUser.error(MessageFormat
-                    .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms
                             .fromArray(e)));
         }
     }
