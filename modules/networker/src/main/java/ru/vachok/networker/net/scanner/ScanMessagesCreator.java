@@ -10,6 +10,8 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.tutu.conf.InformationFactory;
+import ru.vachok.tutu.parser.SiteParser;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,22 +36,16 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append(" seconds elapsed (");
         stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
-//        stringBuilder.append(getTrains());
+        stringBuilder.append(getTrains());
         return stringBuilder.toString();
     }
     
-/*
+
     private @NotNull String getTrains() {
-        BackEngine backEngine = new SiteParser();
-        List<Date> comingTrains = backEngine.getComingTrains();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Date date : comingTrains) {
-            long minLeft = TimeUnit.MILLISECONDS.toMinutes(date.getTime() - System.currentTimeMillis());
-            stringBuilder.append(minLeft).append(" min left<br>");
-        }
-        return stringBuilder.toString();
+        InformationFactory backEngine = new SiteParser();
+        backEngine.setClassOption(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("trains", String.valueOf(4))));
+        return backEngine.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
     }
-*/
     
     @Override
     public String toString() {

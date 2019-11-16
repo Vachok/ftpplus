@@ -3,6 +3,15 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
     <test thread-count="5" name="networker(failed)">
         <classes>
+            <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
+                <methods>
+                    <include name="initExecutor"/>
+                    <include name="tearDown"/>
+                    <include name="testGetInfo"/>
+                    <include name="userDO0091"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
             <class name="ru.vachok.networker.ad.user.UserInfoTest">
                 <methods>
                     <include name="testRenewCounter"/>
@@ -17,22 +26,6 @@
                     <include name="testRun"/>
                 </methods>
             </class> <!-- ru.vachok.networker.net.monitor.ExecScanTest -->
-            <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
-                <methods>
-                    <include name="initExecutor"/>
-                    <include name="tearDown"/>
-                    <include name="testGetInfo"/>
-                    <include name="userDO0091"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
-            <class name="ru.vachok.networker.SSHFactoryTest">
-                <methods>
-                    <include name="testDirectCall"/>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.SSHFactoryTest -->
         </classes>
     </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
