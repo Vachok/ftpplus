@@ -14,10 +14,7 @@ import ru.vachok.tutu.conf.InformationFactory;
 import ru.vachok.tutu.parser.SiteParser;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
 
@@ -36,15 +33,21 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append(" seconds elapsed (");
         stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
-        stringBuilder.append(getTrains());
+        try {
+            stringBuilder.append(getTrains());
+        }
+        catch (NoSuchElementException e) {
+            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(2));
+            stringBuilder.append(e.getMessage());
+        }
         return stringBuilder.toString();
     }
     
-
-    private @NotNull String getTrains() {
-        InformationFactory backEngine = new SiteParser();
-        backEngine.setClassOption(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("trains", String.valueOf(4))));
-        return backEngine.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+    @NotNull
+    private String getTrains() {
+        InformationFactory factory = new SiteParser();
+        factory.setClassOption(Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.TRAINS, String.valueOf(2))));
+        return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
     }
     
     @Override
