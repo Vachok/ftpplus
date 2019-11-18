@@ -6,7 +6,6 @@ package ru.vachok.networker.componentsrepo.htmlgen;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
@@ -55,7 +54,6 @@ public class PageGenerationHelper implements HTMLGeneration {
     @Override
     public void setClassOption(Object classOption) {
         this.footerUtext = (String) classOption;
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", footerUtext);
     }
     
     @Override

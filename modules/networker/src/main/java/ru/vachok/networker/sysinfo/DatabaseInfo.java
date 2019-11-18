@@ -80,18 +80,21 @@ public class DatabaseInfo implements DataConnectTo, InformationFactory {
     
     private String databaseSchemaObjects(Object option) {
         final String sql = String.format("SHOW TABLE STATUS FROM `%s`;", option);
-        try (Connection connection = getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            StringBuilder stringBuilder = new StringBuilder();
-            while (resultSet.next()) {
-                stringBuilder.append(ConstantsFor.TABLE).append(resultSet.getString(1)).append(", ");
-                stringBuilder.append("engine: ").append(resultSet.getString(2)).append(", ");
-                stringBuilder.append("rows: ").append(resultSet.getLong(5)).append(", ");
-                stringBuilder.append("data: ").append(resultSet.getLong(7) / ConstantsFor.KBYTE).append(" kilobytes, ");
-                stringBuilder.append("comment: ").append(resultSet.getString(18)).append(".\n");
+        try (Connection connection = getDataSource().getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setQueryTimeout(18);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    while (resultSet.next()) {
+                        stringBuilder.append(ConstantsFor.TABLE).append(resultSet.getString(1)).append(", ");
+                        stringBuilder.append("engine: ").append(resultSet.getString(2)).append(", ");
+                        stringBuilder.append("rows: ").append(resultSet.getLong(5)).append(", ");
+                        stringBuilder.append("data: ").append(resultSet.getLong(7) / ConstantsFor.KBYTE).append(" kilobytes, ");
+                        stringBuilder.append("comment: ").append(resultSet.getString(18)).append(".\n");
+                    }
+                    return stringBuilder.toString();
+                }
             }
-            return stringBuilder.toString();
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("DatabaseInfo.databaseSchemaObjects", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
