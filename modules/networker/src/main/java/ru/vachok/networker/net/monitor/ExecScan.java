@@ -238,7 +238,7 @@ public class ExecScan extends DiapazonScan {
     }
     
     private @NotNull String pingDev(InetAddress byAddress) throws IOException {
-        String statusDevice = String.valueOf(byAddress);
+        String statusDevice;
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
         if (byAddress.isReachable(calcTimeOutMSec())) {
@@ -272,6 +272,7 @@ public class ExecScan extends DiapazonScan {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, hostAddress);
                 preparedStatement.setString(2, hostName);
+                preparedStatement.executeUpdate();
             }
         }
         catch (SQLException e) {
