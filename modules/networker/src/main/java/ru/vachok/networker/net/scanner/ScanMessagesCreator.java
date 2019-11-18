@@ -36,11 +36,11 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append((float) timeElapsed / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
         try {
-            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
             stringBuilder.append(getTrains());
         }
         catch (NoSuchElementException e) {
-            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(1));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(1));
             stringBuilder.append(getTrains());
         }
         return stringBuilder.toString();
@@ -48,7 +48,8 @@ public class ScanMessagesCreator implements Keeper {
     
     private @NotNull String getTrains() {
         ru.vachok.tutu.conf.InformationFactory factory = InformationFactory.getInstance();
-        factory.setClassOption(Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
+        factory.setClassOption(Integer
+            .parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
         return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
     }
     
