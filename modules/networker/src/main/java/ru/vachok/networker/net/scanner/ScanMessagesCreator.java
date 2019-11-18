@@ -39,8 +39,7 @@ public class ScanMessagesCreator implements Keeper {
             InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
             stringBuilder.append(getTrains());
         }
-        catch (NoSuchElementException e) {
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(1));
+        catch (RuntimeException e) {
             stringBuilder.append(getTrains());
         }
         return stringBuilder.toString();
@@ -50,7 +49,13 @@ public class ScanMessagesCreator implements Keeper {
         ru.vachok.tutu.conf.InformationFactory factory = InformationFactory.getInstance();
         factory.setClassOption(Integer
             .parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
-        return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        try {
+            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        }
+        catch (NoSuchElementException e) {
+            factory.setClassOption(1);
+            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        }
     }
     
     @Override
