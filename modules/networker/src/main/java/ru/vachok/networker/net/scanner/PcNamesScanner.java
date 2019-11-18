@@ -421,7 +421,7 @@ public class PcNamesScanner implements NetScanService {
             String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
             props.setProperty(PropertiesNames.TOTPC, totPC);
             InitProperties.setPreference(PropertiesNames.TOTPC, totPC);
-            InitProperties.getInstance(InitProperties.FILE).setProps(props);
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(props);
             NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
             return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }

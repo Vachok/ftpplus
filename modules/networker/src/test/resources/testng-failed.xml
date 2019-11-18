@@ -1,77 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
-    <test thread-count="5" name="networker(failed)">
-        <classes>
-            <class name="ru.vachok.networker.restapi.database.RegRuMysqlLocTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                    <include name="testGetDefaultConnection"/>
-                    <include name="initDcT"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.restapi.database.RegRuMysqlLocTest -->
-            <class name="ru.vachok.networker.net.monitor.ExecScanTest">
-                <methods>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                    <include name="testRun"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.net.monitor.ExecScanTest -->
-            <class name="ru.vachok.networker.ad.user.UserInfoTest">
-                <methods>
-                    <include name="testRenewCounter"/>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.user.UserInfoTest -->
-            <class name="ru.vachok.networker.ad.inet.AccessLogUSERTest">
-                <methods>
-                    <include name="beforeMethod"/>
-                    <include name="testBadCredentials"/>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.inet.AccessLogUSERTest -->
-            <class name="ru.vachok.networker.AppComponentsTest">
-                <methods>
-                    <include name="testDiapazonedScanInfo"/>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.AppComponentsTest -->
-            <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                    <include name="testRun"/>
-                    <include name="initScan"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.net.scanner.PcNamesScannerTest -->
-            <class name="ru.vachok.networker.ad.user.ResolveUserInDataBaseTest">
-                <methods>
-                    <include name="setResolveUserInDataBase"/>
-                    <include name="testGetInfoAbout"/>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.user.ResolveUserInDataBaseTest -->
-            <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
-                <methods>
-                    <include name="initExecutor"/>
-                    <include name="tearDown"/>
-                    <include name="testGetInfo"/>
-                    <include name="userDO0091"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
-            <class name="ru.vachok.networker.ad.common.CommonCTRLTest">
-                <methods>
-                    <include name="setUp"/>
-                    <include name="testCommonArchPOST"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.common.CommonCTRLTest -->
-        </classes>
-    </test> <!-- networker(failed) -->
+  <test thread-count="5" name="networker(failed)">
+    <classes>
+      <class name="ru.vachok.networker.data.synchronizer.InternetSyncTest">
+        <methods>
+          <include name="testCreateTable"/>
+          <include name="initSync"/>
+          <include name="setUp"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.data.synchronizer.InternetSyncTest -->
+    </classes>
+  </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

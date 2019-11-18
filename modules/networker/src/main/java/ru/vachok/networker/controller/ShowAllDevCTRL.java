@@ -28,10 +28,7 @@ import static ru.vachok.networker.data.enums.ModelAttributeNames.PCS;
 
 
 /**
- Class ru.vachok.networker.controller.ShowAllDevCTRL
- <p>
- 
- @see ru.vachok.networker.controller.ShowAllDevCTRLTest
+ @see ShowAllDevCTRLTest
  @since 20.07.2019 (10:13) */
 @Controller
 public class ShowAllDevCTRL {
