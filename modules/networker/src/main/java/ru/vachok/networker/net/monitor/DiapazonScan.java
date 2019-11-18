@@ -183,6 +183,7 @@ public class DiapazonScan implements NetScanService {
         }
         if (allDevLocalDeq.remainingCapacity() == 0) {
             allDevLocalDeq.clear();
+            Stats.getIpsInet();
         }
         AppConfigurationLocal threadExecutor = AppConfigurationLocal.getInstance();
         BlockingQueue<Runnable> queueExec = ((ThreadConfig) threadExecutor).getTaskExecutor().getThreadPoolExecutor().getQueue();
