@@ -2,7 +2,6 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
@@ -41,8 +40,8 @@ public class ScanMessagesCreator implements Keeper {
             stringBuilder.append(getTrains());
         }
         catch (NoSuchElementException e) {
-            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(2));
-            stringBuilder.append(e.getMessage()).append(" ").append(AbstractForms.fromArray(e));
+            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(1));
+            stringBuilder.append(getTrains());
         }
         return stringBuilder.toString();
     }

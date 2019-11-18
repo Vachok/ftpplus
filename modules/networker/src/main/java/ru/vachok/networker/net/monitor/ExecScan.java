@@ -13,7 +13,6 @@ import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -143,11 +142,8 @@ public class ExecScan extends DiapazonScan {
     
     private void makeJob() {
         File ipsWithInet = new File(FileNames.INETSTATSIP_CSV);
-        if (!ipsWithInet.exists() || ipsQueue.isEmpty()) {
-            Stats.getIpsInet();
-            ipsQueue.clear();
-            ipsQueue.addAll(FileSystemWorker.readFileToQueue(ipsWithInet.toPath().toAbsolutePath().normalize()));
-        }
+        ipsQueue.clear();
+        ipsQueue.addAll(FileSystemWorker.readFileToQueue(ipsWithInet.toPath().toAbsolutePath().normalize()));
         if (vlanFile != null && vlanFile.exists()) {
             String copyOldResult = MessageFormat.format("Copy {0} is: {1} ({2})", vlanFile.getAbsolutePath(), cpOldFile(), this.getClass().getSimpleName());
             messageToUser.info(copyOldResult);

@@ -52,6 +52,8 @@ class WeeklyInternetStats implements Runnable, Stats {
     
     private String fileName;
     
+    private final File ipsWithInet = new File(FileNames.INETSTATSIP_CSV);
+    
     private String sql;
     
     private InformationFactory informationFactory = InformationFactory.getInstance(INET_USAGE);
@@ -86,7 +88,7 @@ class WeeklyInternetStats implements Runnable, Stats {
     @Override
     public void run() {
         FileSystemWorker
-                .writeFile(this.getClass().getSimpleName() + "." + LocalTime.now().toSecondOfDay(), AbstractForms.networkerTrace(Thread.currentThread().getStackTrace()));
+            .writeFile(this.getClass().getSimpleName() + "." + LocalTime.now().toSecondOfDay(), AbstractForms.networkerTrace(Thread.currentThread().getStackTrace()));
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER);
         long iPsWithInet = 0;
         try {
@@ -119,7 +121,9 @@ class WeeklyInternetStats implements Runnable, Stats {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {
-                    makeIPFile(r);
+                    synchronized(ipsWithInet) {
+                        makeIPFile(r);
+                    }
                 }
             }
         }
@@ -129,12 +133,127 @@ class WeeklyInternetStats implements Runnable, Stats {
         return new File(FileNames.INETSTATSIP_CSV).length() / ConstantsFor.KBYTE;
     }
     
+    private void makeIPFile(@NotNull ResultSet r) throws SQLException {
+        try (OutputStream outputStream = new FileOutputStream(ipsWithInet)) {
+            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                while (r.next()) {
+                    String ip = r.getString("ip");
+                    printStream.println(ip);
+                }
+            }
+        }
+        catch (IOException e) {
+            messageToUser.warn(WeeklyInternetStats.class.getSimpleName(), e.getMessage(), " see line: 220 ***");
+        }
+        finally {
+            readNoSquidIPs();
+        }
+    }
+    
     private void readStatsToCSVAndDeleteFromDB() {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FileNames.INETSTATSIP_CSV).getPath());
         for (String ip : chkIps) {
             messageToUser.info(writeObj(ip, "300000"));
         }
         new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
+    }
+    
+    private @NotNull String daySunCounter() {
+        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
+        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
+        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
+    }
+    
+    private void readNoSquidIPs() {
+        SSHFactory build = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(), "sudo cat /etc/pf/vipnet;exit", this.getClass().getSimpleName())
+            .build();
+        String[] vipNetIPs = build.call().split("\n");
+        List<String> ipsList = new ArrayList<>();
+        for (String netIP : vipNetIPs) {
+            try {
+                netIP = netIP.split("#")[0];
+            }
+            catch (IndexOutOfBoundsException e) {
+                netIP = netIP.replace("<br>", "");
+            }
+            finally {
+                netIP = netIP.replace("<br>", "");
+            }
+            if (!netIP.isEmpty()) {
+                ipsList.add(netIP);
+            }
+        }
+        ipsList.forEach(ip->FileSystemWorker.appendObjectToFile(ipsWithInet, ip));
+    }
+    
+    @Override
+    public String writeObj(String ip, Object rowsLimit) {
+        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
+        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
+        String retStr = downloadConcreteIPStatistics();
+        File file = new File(fileName);
+        this.totalBytes += file.length();
+        
+        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
+        
+        if (Stats.isSunday() & file.length() > 10) {
+            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
+        }
+        return retStr;
+    }
+    
+    private String downloadConcreteIPStatistics() {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
+            .getDefaultConnection(ConstantsFor.STR_VELKOM + "." + FileNames.DIR_INETSTATS)) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                try (ResultSet r = p.executeQuery()) {
+                    try (OutputStream outputStream = new FileOutputStream(fileName)) {
+                        try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                            printConcreteIPToFile(r, printStream);
+                        }
+                    }
+                }
+            }
+            return fileName;
+        }
+        catch (SQLException | IOException | OutOfMemoryError e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
+            messageToUser.error(e.getMessage() + " see line: 210 ***");
+            return e.getMessage();
+        }
+    }
+    
+    protected long deleteFrom(String ip, String rowsLimit) {
+        this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + FileNames.DIR_INETSTATS)) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                return p.executeLargeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 223 ***");
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
+        }
+        return -1;
+    }
+    
+    private void printConcreteIPToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
+        while (r.next()) {
+            printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+            printStream.print(",");
+            printStream.print(r.getString(ConstantsFor.DBCOL_RESPONSE));
+            printStream.print(",");
+            printStream.print(r.getString(ConstantsFor.DBCOL_BYTES));
+            printStream.print(",");
+            printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+            printStream.print(",");
+            printStream.print(r.getString("site"));
+            printStream.println();
+        }
     }
     
     @Override
@@ -175,22 +294,6 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     @Override
-    public String writeObj(String ip, Object rowsLimit) {
-        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
-        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
-        String retStr = downloadConcreteIPStatistics();
-        File file = new File(fileName);
-        this.totalBytes += file.length();
-        
-        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
-        
-        if (Stats.isSunday() & file.length() > 10) {
-            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
-        }
-        return retStr;
-    }
-    
-    @Override
     public String toString() {
         StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
         stringJoiner.add("totalBytes = " + totalBytes);
@@ -201,95 +304,17 @@ class WeeklyInternetStats implements Runnable, Stats {
         return stringJoiner.toString();
     }
     
-    private @NotNull String daySunCounter() {
-        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
-        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
-        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
+    protected void setSql() {
+        this.sql = ConstantsFor.SQL_SELECTINETSTATS;
     }
     
-    private void printConcreteIPToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
-        while (r.next()) {
-            printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
-            printStream.print(",");
-            printStream.print(r.getString(ConstantsFor.DBCOL_RESPONSE));
-            printStream.print(",");
-            printStream.print(r.getString(ConstantsFor.DBCOL_BYTES));
-            printStream.print(",");
-            printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
-            printStream.print(",");
-            printStream.print(r.getString("site"));
-            printStream.println();
-        }
-    }
-    
-    private void makeIPFile(@NotNull ResultSet r) throws SQLException {
-        try (OutputStream outputStream = new FileOutputStream(FileNames.INETSTATSIP_CSV)) {
-            try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                while (r.next()) {
-                    String ip = r.getString("ip");
-                    printStream.println(ip);
-                }
-            }
-        }
-        catch (IOException e) {
-            messageToUser.warn(WeeklyInternetStats.class.getSimpleName(), e.getMessage(), " see line: 220 ***");
-        }
-        finally {
-            readNoSquidIPs();
-        }
-    }
-    
-    private void readNoSquidIPs() {
-        File inetIP = new File(FileNames.INETSTATSIP_CSV);
-        SSHFactory build = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(), "sudo cat /etc/pf/vipnet;exit", this.getClass().getSimpleName())
-            .build();
-        String[] vipNetIPs = build.call().split("\n");
-        List<String> ipsList = new ArrayList<>();
-        for (String netIP : vipNetIPs) {
-            try {
-                netIP = netIP.split("#")[0];
-            }
-            catch (IndexOutOfBoundsException e) {
-                netIP = netIP.replace("<br>", "");
-            }
-            finally {
-                netIP = netIP.replace("<br>", "");
-            }
-            if (!netIP.isEmpty()) {
-                ipsList.add(netIP);
-            }
-        }
-        ipsList.forEach(ip->FileSystemWorker.appendObjectToFile(inetIP, ip));
-    }
-    
-    private String downloadConcreteIPStatistics() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
-                .getDefaultConnection(ConstantsFor.STR_VELKOM + "." + FileNames.DIR_INETSTATS)) {
-            try (PreparedStatement p = connection.prepareStatement(sql)) {
-                try (ResultSet r = p.executeQuery()) {
-                    try (OutputStream outputStream = new FileOutputStream(fileName)) {
-                        try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                            printConcreteIPToFile(r, printStream);
-                        }
-                    }
-                }
-            }
-            return fileName;
-        }
-        catch (SQLException | IOException | OutOfMemoryError e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
-            messageToUser.error(e.getMessage() + " see line: 210 ***");
-            return e.getMessage();
-        }
-    }
-    
+
+
     private static class InetStatSorter implements Runnable {
         
         
         private static final ru.vachok.messenger.MessageToUser messageToUser = MessageToUser
-                .getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.InetStatSorter.class.getSimpleName());
+            .getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.InetStatSorter.class.getSimpleName());
         
         @Override
         public void run() {
@@ -403,25 +428,5 @@ class WeeklyInternetStats implements Runnable, Stats {
             sb.append('}');
             return sb.toString();
         }
-    }
-    
-    protected long deleteFrom(String ip, String rowsLimit) {
-        this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + FileNames.DIR_INETSTATS)) {
-            try (PreparedStatement p = connection.prepareStatement(sql)) {
-                return p.executeLargeUpdate();
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 223 ***");
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
-        }
-        return -1;
-    }
-    
-    protected void setSql() {
-        this.sql = ConstantsFor.SQL_SELECTINETSTATS;
     }
 }
