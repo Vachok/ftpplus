@@ -6,12 +6,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.tutu.conf.InformationFactory;
-import ru.vachok.tutu.parser.SiteParser;
 
 import java.io.File;
 import java.util.*;
@@ -43,10 +40,9 @@ public class ScanMessagesCreator implements Keeper {
         return stringBuilder.toString();
     }
     
-    @NotNull
-    private String getTrains() {
-        InformationFactory factory = new SiteParser();
-        factory.setClassOption(Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.TRAINS, String.valueOf(2))));
+    private @NotNull String getTrains() {
+        InformationFactory factory = InformationFactory.getInstance();
+        factory.setClassOption(Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
         return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
     }
     
