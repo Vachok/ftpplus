@@ -14,10 +14,12 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.services.LocalDBLibsUploader;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
@@ -26,6 +28,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,6 +43,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +62,10 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     @Override
     public void run() {
         delFilePatterns();
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home") && UsefulUtilities.thisPC().toLowerCase()
+            .contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, ""))) {
+            uploadLibs();
+        }
         execute(new PcNamesScanner());
         schedule(this::dbSendAppJson, 30);
         execute(this::getWeekPCStats);
@@ -69,6 +77,16 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         sb.append("messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
+    }
+    
+    private void uploadLibs() {
+        File[] libFiles = new File(Paths.get(".").normalize().toAbsolutePath().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "lib").listFiles();
+        for (File libFile : Objects.requireNonNull(libFiles, "NO LIBS")) {
+            String libName = libFile.getName().split("-")[0];
+            String libVersion = libFile.getName().split("-")[1].split("\\Q.\\E")[0];
+            Runnable jarUp = new LocalDBLibsUploader(libName, libVersion, "jar", libFile.toPath());
+            execute(jarUp);
+        }
     }
     
     private void delFilePatterns() {
@@ -88,11 +106,14 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             messageToUser.error("OnStartTasksLoader.ftpUploadTask", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
-            runCommonScan();
+            if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
+                runCommonScan();
+            }
         }
     }
     
-    private @NotNull String launchRegRuFTPLibsUploader() {
+    @NotNull
+    private String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
         try {
             execute(regRuFTPLibsUploader);
@@ -100,7 +121,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         }
         catch (RuntimeException e) {
             return MessageFormat.format("{0}.launchRegRuFTPLibsUploader: FALSE {1} {2}",
-                    AppComponents.class.getSimpleName(), e.getMessage(), Thread.currentThread().getState().name());
+                AppComponents.class.getSimpleName(), e.getMessage(), Thread.currentThread().getState().name());
         }
         finally {
             dbSendAppJson();
@@ -186,8 +207,9 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         }
     }
     
+    @NotNull
     @Contract(" -> new")
-    private @NotNull Runnable buildChecker() {
+    private Runnable buildChecker() {
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
         Path pathToSaveLogs = Paths.get(".");
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {

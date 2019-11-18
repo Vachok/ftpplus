@@ -5,6 +5,7 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -13,6 +14,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -23,7 +25,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -54,6 +57,10 @@ public class KudrWorkTime implements NetScanService {
     
     private boolean isTest;
     
+    public Map<String, Object> getMapOfConditionsTypeNameTypeCondition() {
+        return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
+    }
+    
     public KudrWorkTime() {
         try {
             this.samsIP = InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress());
@@ -81,8 +88,18 @@ public class KudrWorkTime implements NetScanService {
         this.mapOfConditionsTypeNameTypeCondition = mapOfConditionsTypeNameTypeCondition;
     }
     
-    public Map<String, Object> getMapOfConditionsTypeNameTypeCondition() {
-        return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
+    @Override
+    public int hashCode() {
+        int result = logFile.hashCode();
+        result = 31 * result + mapOfConditionsTypeNameTypeCondition.hashCode();
+        result = 31 * result + startPlus9Hours;
+        result = 31 * result + start;
+        result = 31 * result + messageToUser.hashCode();
+        result = 31 * result + execList.hashCode();
+        result = 31 * result + (samsIP != null ? samsIP.hashCode() : 0);
+        result = 31 * result + (do0213IP != null ? do0213IP.hashCode() : 0);
+        result = 31 * result + (isTest ? 1 : 0);
+        return result;
     }
     
     @Override
@@ -124,17 +141,17 @@ public class KudrWorkTime implements NetScanService {
     }
     
     @Override
-    public int hashCode() {
-        int result = logFile.hashCode();
-        result = 31 * result + mapOfConditionsTypeNameTypeCondition.hashCode();
-        result = 31 * result + startPlus9Hours;
-        result = 31 * result + start;
-        result = 31 * result + messageToUser.hashCode();
-        result = 31 * result + execList.hashCode();
-        result = 31 * result + (samsIP != null ? samsIP.hashCode() : 0);
-        result = 31 * result + (do0213IP != null ? do0213IP.hashCode() : 0);
-        result = 31 * result + (isTest ? 1 : 0);
-        return result;
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("KudrWorkTime{");
+        sb.append("logFile=").append(logFile.getAbsolutePath());
+        sb.append(", mapOfConditionsTypeNameTypeCondition=").append(mapOfConditionsTypeNameTypeCondition);
+        sb.append(", startPlus9Hours=").append(startPlus9Hours);
+        sb.append(", execList=").append(execList.size());
+        sb.append(", samsIP=").append(samsIP);
+        sb.append(", do0213IP=").append(do0213IP);
+        sb.append(", isTest=").append(isTest);
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override
@@ -150,45 +167,16 @@ public class KudrWorkTime implements NetScanService {
     
     @Override
     public void run() {
-        FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
-        FileSystemWorker.appendObjectToFile(logFile, getExecution());
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        if (LocalTime.now().toSecondOfDay() > LocalTime.of(7, 30).toSecondOfDay() & LocalTime.of(18, 30).toSecondOfDay() > LocalTime.now().toSecondOfDay()) {
+            FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
+            FileSystemWorker.appendObjectToFile(logFile, getExecution());
+        }
     }
     
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("KudrWorkTime{");
-        sb.append("logFile=").append(logFile.getAbsolutePath());
-        sb.append(", mapOfConditionsTypeNameTypeCondition=").append(mapOfConditionsTypeNameTypeCondition);
-        sb.append(", startPlus9Hours=").append(startPlus9Hours);
-        sb.append(", execList=").append(execList.size());
-        sb.append(", samsIP=").append(samsIP);
-        sb.append(", do0213IP=").append(do0213IP);
-        sb.append(", isTest=").append(isTest);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @Override
-    public String getExecution() {
-        execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
-        Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress);
-        try {
-            int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
-            if (NetScanService.isReach(do0213IP.getHostAddress())) {
-                submit.get(timeout, TimeUnit.SECONDS);
-            }
-            else {
-                doIsReach();
-            }
-        }
-        catch (InterruptedException | ExecutionException e) {
-            messageToUser.error(MessageFormat
-                .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        catch (TimeoutException e) {
-            FileSystemWorker.appendObjectToFile(logFile, writeLog());
-        }
-        return new TForms().fromArray(execList);
+    public String getPingResultStr() {
+        return FileSystemWorker.readFile(this.getClass().getSimpleName() + ".res");
     }
     
     @Override
@@ -225,11 +213,6 @@ public class KudrWorkTime implements NetScanService {
     }
     
     @Override
-    public String getPingResultStr() {
-        return FileSystemWorker.readFile(this.getClass().getSimpleName() + ".res");
-    }
-    
-    @Override
     public Runnable getMonitoringRunnable() {
         return this;
     }
@@ -237,6 +220,19 @@ public class KudrWorkTime implements NetScanService {
     @Override
     public String getStatistics() {
         return new TForms().fromArray(mapOfConditionsTypeNameTypeCondition);
+    }
+    
+    @Override
+    public String getExecution() {
+        execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
+        int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
+        if (NetScanService.isReach(do0213IP.getHostAddress())) {
+            AppConfigurationLocal.getInstance().execute(this::monitorAddress, timeout);
+        }
+        else {
+            doIsReach();
+        }
+        return AbstractForms.fromArray(execList);
     }
     
     private void monitorAddress() {
@@ -256,14 +252,15 @@ public class KudrWorkTime implements NetScanService {
     }
     
     private void doIsReach() {
-        boolean isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
+        int timeout = (int) TimeUnit.SECONDS.toMillis(150);
+        boolean isDOOnline = NetScanService.isReach(do0213IP.getHostAddress(), timeout);
         if (!isDOOnline) {
             do {
-                isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
+                isDOOnline = NetScanService.isReach(do0213IP.getHostAddress(), timeout);
             } while (!isDOOnline);
         }
         do {
-            isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
+            isDOOnline = NetScanService.isReach(do0213IP.getHostAddress(), timeout);
             if (!isDOOnline) {
                 FileSystemWorker.appendObjectToFile(logFile, writeLog());
                 break;

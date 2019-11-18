@@ -6,7 +6,7 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -48,14 +48,14 @@ public class RegRuMysqlLocTest {
     @Test
     public void testGetDefaultConnection() {
         try (Connection connection = regRuLocal.getDefaultConnection("test.test")) {
-            Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/test");
+            Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/u0466446_velkom");
             Assert.assertTrue(connection.isValid(5));
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
@@ -65,7 +65,7 @@ public class RegRuMysqlLocTest {
         try{
             System.out.println(regRuLocal.toString());
         }catch (ExceptionInInitializerError e){
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e.getStackTrace()));
         }
     }
     
@@ -82,7 +82,7 @@ public class RegRuMysqlLocTest {
             Assert.assertTrue(isDropped);
         }
         catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
@@ -92,7 +92,7 @@ public class RegRuMysqlLocTest {
             regRuLocal.uploadCollection(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
         }
         catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
 }

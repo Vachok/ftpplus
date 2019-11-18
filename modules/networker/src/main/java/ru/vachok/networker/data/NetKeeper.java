@@ -17,9 +17,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -62,7 +60,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
     
     private static String currentProvider = "Unknown yet";
     
-    private static Map<String, String> NETLISTS_OFFLINES = new ConcurrentHashMap<>();
+    private static ConcurrentMap<String, String> NETLISTS_OFFLINES = new ConcurrentHashMap<>();
     
     @Contract(pure = true)
     public static ConcurrentMap<String, String> getPcUser() {
@@ -143,12 +141,12 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return NETLISTS_ONLINERESOLVE;
     }
     
-    public static void setOffLines(Map<String, String> lines) {
+    public static void setOffLines(ConcurrentMap<String, String> lines) {
         NETLISTS_OFFLINES.putAll(lines);
     }
     
     @Contract(pure = true)
-    public static Map<String, String> editOffLines() {
+    public static ConcurrentMap<String, String> editOffLines() {
         return NETLISTS_OFFLINES;
     }
     

@@ -10,10 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.ui.Model;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -46,6 +43,7 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
  @since 21.08.2018 (14:40) */
 @SuppressWarnings("WeakerAccess")
 @Scope(ConstantsFor.SINGLETON)
+@Deprecated
 public class PcNamesScannerWorks extends PcNamesScanner {
     
     /**

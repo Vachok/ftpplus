@@ -64,7 +64,7 @@ public class MatrixSRV {
     /**
      @return {@link #countDB}
      */
-    public int getCountDB() {
+    int getCountDB() {
         return countDB;
     }
     

@@ -4,11 +4,9 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -16,10 +14,7 @@ import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.concurrent.*;
 
@@ -55,11 +50,11 @@ public class SaveLogsToDBTest {
             Assert.assertTrue(dbCallable.contains("access.log"), dbCallable);
         }
         catch (TimeoutException | ExecutionException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         catch (InterruptedException e) {
             messageToUser.error(MessageFormat
-                .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms.fromArray(e)));
         }
     }
     
@@ -82,18 +77,27 @@ public class SaveLogsToDBTest {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        catch (TimeoutException e) {
+            messageToUser.warn(SaveLogsToDBTest.class.getSimpleName(), "testSaveAccessLogToDatabase", e.getMessage() + Thread.currentThread().getState().name());
         }
     }
     
     @Test
     public void testSaveAccessLogToDatabaseWithTimeOut() {
         final int beforeID = db.getLastRecordID();
-        String infoAbout = db.saveAccessLogToDatabaseWithTimeOut("60");
-        Assert.assertTrue(infoAbout.contains("_access.log"), infoAbout);
-        int afterID = db.getLastRecordID();
-        Assert.assertTrue(beforeID < afterID, MessageFormat.format("{0} afterID-beforeID", afterID - beforeID));
+        Future<String> infoAboutFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->db.saveAccessLogToDatabaseWithTimeOut("60"));
+        try {
+            String infoAbout = infoAboutFuture.get(65, TimeUnit.SECONDS);
+            Assert.assertTrue(infoAbout.contains("_access.log"), infoAbout);
+            int afterID = db.getLastRecordID();
+            Assert.assertTrue(beforeID < afterID, MessageFormat.format("{0} afterID-beforeID", afterID - beforeID));
+        }
+        catch (InterruptedException | TimeoutException | ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
     
     @Test
@@ -124,7 +128,7 @@ public class SaveLogsToDBTest {
             }
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     

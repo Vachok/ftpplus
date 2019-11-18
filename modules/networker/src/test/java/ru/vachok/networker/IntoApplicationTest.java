@@ -4,9 +4,7 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -35,6 +33,7 @@ public class IntoApplicationTest {
     }
     
     @Test
+    @Ignore
     public void testMain() {
         try {
             IntoApplication.main(new String[]{"test"});
@@ -45,6 +44,7 @@ public class IntoApplicationTest {
     }
     
     @Test
+    @Ignore
     public void testBeforeSt() {
         IntoApplication.setUTF8Enc();
         Assert.assertTrue(new File(FileNames.SYSTEM).lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));

@@ -164,6 +164,7 @@ public class NetMonitorPTV implements NetScanService {
     private void writePingToDB(String ipAddr, String name) {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANMONITOR)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO SwitchesWiFi (`ip`, `pcName`, `online`) VALUES (?,?,?);")) {
+                preparedStatement.setQueryTimeout(2);
                 preparedStatement.setString(1, ipAddr);
                 preparedStatement.setString(2, name);
                 preparedStatement.setString(3, String.valueOf(NetScanService.isReach(ipAddr)));

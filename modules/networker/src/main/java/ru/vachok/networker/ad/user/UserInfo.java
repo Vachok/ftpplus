@@ -192,8 +192,7 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(2, userName);
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
-            String retStr = MessageFormat.format("{0}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
-                    .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
+            String retStr = MessageFormat.format("{0}: {1}", preparedStatement.executeUpdate(), preparedStatement.toString());
             ((MessageLocal) messageToUser).loggerFine(retStr);
             return retStr;
         }
@@ -304,15 +303,14 @@ public abstract class UserInfo implements InformationFactory {
                     toSort.sort(null);
                     for (String resolvedStrFromSet : toSort) {
                         exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
-                        messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
+                        messageToUser.info(MessageFormat.format("Update = {0}: {1})", exUpInt, prepStatement.toString()));
                     }
                     return exUpInt > 0;
                 }
             }
             catch (SQLException | RuntimeException e) {
                 if (e instanceof SQLException) {
-                    MessageToUser.getInstance(MessageToUser.DB, UserInfo.DatabaseWriter.class.getSimpleName())
-                            .error("DatabaseWriter.writeAllPrefixToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                    messageToUser.error("DatabaseWriter.writeAllPrefixToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
                 }
                 return false;
             }

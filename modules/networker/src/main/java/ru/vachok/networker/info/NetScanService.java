@@ -41,6 +41,8 @@ public interface NetScanService extends Runnable {
     
     String PCNAMESSCANNER = "PcNamesScanner";
     
+    String SCAN_ONLINE = "ScanOnline";
+    
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
         System.out.println("AppComponents.ipFlushDNS() = " + UsefulUtilities.ipFlushDNS());
@@ -85,25 +87,7 @@ public interface NetScanService extends Runnable {
     String getPingResultStr();
     
     static boolean isReach(String inetAddrStr) {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(2);
-        Thread.currentThread().setName("isReach" + inetAddrStr);
-        InetAddress byName;
-        try {
-            byName = InetAddress.getByName(inetAddrStr);
-        }
-        catch (UnknownHostException e) {
-            byName = getByName(inetAddrStr);
-            if (byName.equals(InetAddress.getLoopbackAddress())) {
-                return false;
-            }
-        }
-        try {
-            return byName.isReachable(100);
-        }
-        catch (IOException e) {
-            return false;
-        }
+        return isReach(inetAddrStr, 100);
     }
     
     static InetAddress getByName(String inetAddrStr) {
@@ -143,5 +127,27 @@ public interface NetScanService extends Runnable {
     
     static boolean writeUsersToDBFromSET() {
         return UserInfo.writeUsersToDBFromSET();
+    }
+    
+    static boolean isReach(String inetAddrStr, int timeout) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
+        Thread.currentThread().setName("ping" + inetAddrStr);
+        InetAddress byName;
+        try {
+            byName = InetAddress.getByName(inetAddrStr);
+        }
+        catch (UnknownHostException e) {
+            byName = getByName(inetAddrStr);
+            if (byName.equals(InetAddress.getLoopbackAddress())) {
+                return false;
+            }
+        }
+        try {
+            return byName.isReachable(timeout);
+        }
+        catch (IOException e) {
+            return false;
+        }
     }
 }

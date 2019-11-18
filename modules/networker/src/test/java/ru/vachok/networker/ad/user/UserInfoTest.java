@@ -126,7 +126,7 @@ public class UserInfoTest {
         
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
-                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
+            .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
             createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
@@ -171,27 +171,13 @@ public class UserInfoTest {
         Assert.assertTrue(loginsStr.contains("ikudryashov"));
     }
     
-    private boolean wasOffline(String pcName) {
-        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
-        boolean retBool = false;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
-                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
-            createTable();
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
-                        System.out.println("timestamp = " + timestamp.toString());
-                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
-                            .toMillis(ConstantsFor.DELAY * 3);
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        return retBool;
+    @Test
+    public void testGetInfoAbout() {
+        UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
+        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
+        String[] arr = infoInfoAbout.split(" : ");
+        Assert.assertTrue(arr[0].contains("do0214"));
+        Assert.assertEquals(arr[1], "s.m.pavlova");
     }
     
     private static void checkDB(final String sql) {
@@ -223,30 +209,47 @@ public class UserInfoTest {
     @Test
     public void testResolvePCUserOverDB() {
         String vashaplovaUserName = UserInfo.resolvePCUserOverDB("vashaplova");
-        String expected = "do0125 : vashaplova";
+        String expected = "do0125";
         Assert.assertTrue(vashaplovaUserName.contains(expected), vashaplovaUserName);
         String vashaplovaDo0125 = UserInfo.resolvePCUserOverDB("do0125");
         Assert.assertTrue(vashaplovaDo0125.contains(expected), vashaplovaDo0125);
     }
     
     private void createTable() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("pcuser")) {
+        String dbName = "pcuser";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName)) {
+            Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:h2:mem:pcuser");
             try (PreparedStatement create = connection.prepareStatement(getCreate())) {
+                System.out.println("create = " + create.toString());
                 create.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+    
+    private boolean wasOffline(String pcName) {
+        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
+        boolean retBool = false;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
+                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            createTable();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
+                        System.out.println("timestamp = " + timestamp.toString());
+                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                                .toMillis(ConstantsFor.DELAY * 3);
+                    }
+                }
             }
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-    }
-    
-    @Test
-    public void testGetInfoAbout() {
-        UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
-        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
-        String[] arr = infoInfoAbout.split(" : ");
-        Assert.assertEquals(arr[0], "do0214");
-        Assert.assertEquals(arr[1], "s.m.pavlova");
+        return retBool;
     }
     
     @Test

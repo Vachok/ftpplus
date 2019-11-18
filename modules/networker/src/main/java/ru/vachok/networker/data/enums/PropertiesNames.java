@@ -92,4 +92,6 @@ public enum PropertiesNames {
     public static final String TIMESTAMP = "timestamp";
     
     public static final String MINDELAY = "mindelay";
+    
+    public static final String TRAINS = "trains";
 }
