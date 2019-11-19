@@ -26,9 +26,14 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 public class ScanMessagesCreator implements Keeper {
     
     
-    @NotNull String getMsg() {
+    private int numOfTrains = 8;
+    
+    @NotNull
+    String getMsg() {
         long timeElapsed = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
-        
+        if (this.numOfTrains > 8) {
+            this.numOfTrains = 8;
+        }
         StringBuilder stringBuilder = new StringBuilder();
         timeElapsed = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - timeElapsed);
         stringBuilder.append(timeElapsed);
@@ -36,25 +41,25 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append((float) timeElapsed / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
         try {
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(numOfTrains));
             stringBuilder.append(getTrains());
         }
-        catch (RuntimeException e) {
-            stringBuilder.append(getTrains());
+        catch (NoSuchElementException e) {
+            this.numOfTrains--;
+            return getMsg();
         }
         return stringBuilder.toString();
     }
     
-    private @NotNull String getTrains() {
-        ru.vachok.tutu.conf.InformationFactory factory = InformationFactory.getInstance();
-        factory.setClassOption(Integer
-            .parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
-        try {
+    @NotNull
+    private String getTrains() {
+        InformationFactory factory = InformationFactory.getInstance();
+        if (numOfTrains > 0) {
+            factory.setClassOption(numOfTrains);
             return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
         }
-        catch (NoSuchElementException e) {
-            factory.setClassOption(1);
-            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        else {
+            return "NO MORE TRAINS";
         }
     }
     
@@ -65,7 +70,8 @@ public class ScanMessagesCreator implements Keeper {
         return sb.toString();
     }
     
-    @NotNull String getTitle(int currentPC) {
+    @NotNull
+    String getTitle(int currentPC) {
         StringBuilder titleBuilder = new StringBuilder();
         titleBuilder.append(currentPC);
         titleBuilder.append("/");
@@ -76,7 +82,8 @@ public class ScanMessagesCreator implements Keeper {
         return titleBuilder.toString();
     }
     
-    @NotNull String fillUserPCForWEBModel() {
+    @NotNull
+    String fillUserPCForWEBModel() {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
