@@ -47,7 +47,7 @@ public class ScanMessagesCreator implements Keeper {
             stringBuilder.append(getTrains());
         }
         catch (NoSuchElementException e) {
-            this.numOfTrains--;
+            this.numOfTrains = numOfTrains - 2;
             return getMsg();
         }
         return makeColors(stringBuilder.toString());
