@@ -2,7 +2,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
@@ -48,7 +50,7 @@ public class ScanMessagesCreator implements Keeper {
             this.numOfTrains--;
             return getMsg();
         }
-        return stringBuilder.toString();
+        return makeColors(stringBuilder.toString());
     }
     
     @NotNull
@@ -94,7 +96,7 @@ public class ScanMessagesCreator implements Keeper {
             Set<String> keySet = linksMap.keySet();
             List<String> list = new ArrayList<>(keySet.size());
             list.addAll(keySet);
-            
+        
             Collections.sort(list);
             Collections.reverse(list);
             for (String keyMap : list) {
@@ -103,6 +105,30 @@ public class ScanMessagesCreator implements Keeper {
             }
         }
         return brStringBuilder.toString().replace("true", "").replace(ConstantsFor.STR_FALSE, "");
-        
+    
+    }
+    
+    @NotNull
+    private String makeColors(@NotNull String trainsFromArray) {
+        HTMLGeneration htmlGeneration = HTMLGeneration.getInstance("");
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            String[] toColorStrings = trainsFromArray.split("<br>");
+            for (String colorString : toColorStrings) {
+                String string = colorString;
+                if (string.contains("from")) {
+                    string = htmlGeneration.setColor("#47fff6", string);
+                    stringBuilder.append(string).append("<br>");
+                }
+                else if (string.contains("to")) {
+                    string = htmlGeneration.setColor("#ffd447", string);
+                    stringBuilder.append(string).append("<br>");
+                }
+            }
+        }
+        catch (IndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage()).append("<br>").append(AbstractForms.fromArray(e));
+        }
+        return stringBuilder.toString();
     }
 }
