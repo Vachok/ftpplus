@@ -4,11 +4,11 @@ package ru.vachok.networker.sysinfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
-import java.text.MessageFormat;
 import java.util.concurrent.*;
 
 
@@ -52,15 +52,7 @@ public interface AppConfigurationLocal extends Runnable {
                 executorQueue.remove(r);
             }
         }
-        try {
-            submit.get(timeOutSeconds, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            System.err.println(MessageFormat.format("{0}.execute = {1}, {2}",
-                    AppConfigurationLocal.class.getSimpleName(), e.getMessage(), Thread.currentThread().getState().name()));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(new ThreadTimeout(submit, timeOutSeconds));
     }
     
     default void schedule(Runnable runnable, int timeInMinPerion) {
