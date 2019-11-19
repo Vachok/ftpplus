@@ -17,6 +17,7 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -176,6 +177,7 @@ public class DiapazonScan implements NetScanService {
     private void startDo() {
         if (allDevLocalDeq.remainingCapacity() == 0) {
             allDevLocalDeq.clear();
+            Stats.getIpsInet();
         }
     
         ThreadPoolExecutor threadExecutor = ((ThreadConfig) thrConfig).getTaskExecutor().getThreadPoolExecutor();

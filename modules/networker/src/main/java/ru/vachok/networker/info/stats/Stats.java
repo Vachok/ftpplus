@@ -6,8 +6,12 @@ package ru.vachok.networker.info.stats;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.info.InformationFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -35,6 +39,12 @@ public interface Stats extends InformationFactory {
     }
     
     static long getIpsInet() {
+        try {
+            Files.deleteIfExists(new File(FileNames.INETSTATSIP_CSV).toPath());
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
         return new WeeklyInternetStats().readIPsWithInet();
     }
     

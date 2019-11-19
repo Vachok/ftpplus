@@ -2,12 +2,13 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.tutu.conf.InformationFactory;
 
@@ -35,20 +36,26 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append((float) timeElapsed / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
         try {
-            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
             stringBuilder.append(getTrains());
         }
-        catch (NoSuchElementException e) {
-            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(2));
-            stringBuilder.append(e.getMessage()).append(" ").append(AbstractForms.fromArray(e));
+        catch (RuntimeException e) {
+            stringBuilder.append(getTrains());
         }
         return stringBuilder.toString();
     }
     
     private @NotNull String getTrains() {
-        InformationFactory factory = InformationFactory.getInstance();
-        factory.setClassOption(Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
-        return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        ru.vachok.tutu.conf.InformationFactory factory = InformationFactory.getInstance();
+        factory.setClassOption(Integer
+            .parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
+        try {
+            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        }
+        catch (NoSuchElementException e) {
+            factory.setClassOption(1);
+            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        }
     }
     
     @Override
