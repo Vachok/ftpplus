@@ -120,7 +120,7 @@ class AccessLogUSER extends InternetUse {
         long mbTraffic;
         float hoursResp;
         minutesResponse = TimeUnit.MILLISECONDS.toMinutes(longFromDB(SQL_RESPONSE_TIME, "inte"));
-        stringBuilder.append(minutesResponse);
+        stringBuilder.append(" ").append(minutesResponse);
         
         hoursResp = (float) minutesResponse / (float) 60;
         stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));

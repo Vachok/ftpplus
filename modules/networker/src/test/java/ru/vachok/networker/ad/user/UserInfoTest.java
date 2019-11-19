@@ -150,7 +150,8 @@ public class UserInfoTest {
         UserInfo instanceDO0045 = UserInfo.getInstance("do0125");
         List<String> logins = instanceDO0045.getLogins("do0125", 1);
         Assert.assertEquals(logins.size(), 1);
-        Assert.assertTrue(logins.get(0).contains("do0125 : vashaplova"), AbstractForms.fromArray(logins));
+        Assert.assertTrue(logins.get(0).contains("do0125"), AbstractForms.fromArray(logins));
+        Assert.assertTrue(logins.get(0).contains("vashaplova"), AbstractForms.fromArray(logins));
     
         UserInfo kudrInst = UserInfo.getInstance("ashapl");
         for (String kudrInstPCLogin : kudrInst.getLogins("ashapl", 1)) {
@@ -232,7 +233,7 @@ public class UserInfoTest {
     private boolean wasOffline(String pcName) {
         final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
         boolean retBool = false;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
                 .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

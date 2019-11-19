@@ -6,7 +6,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.tutu.conf.InformationFactory;
 
@@ -18,32 +20,42 @@ import java.util.concurrent.TimeUnit;
 import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
 
+/**
+ @see ScanMessagesCreatorTest
+ @since 18.11.2019 (10:11) */
 public class ScanMessagesCreator implements Keeper {
     
     
     @NotNull String getMsg() {
-        long timeLeft = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
+        long timeElapsed = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
         
         StringBuilder stringBuilder = new StringBuilder();
-        timeLeft = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - timeLeft);
-        stringBuilder.append(timeLeft);
+        timeElapsed = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - timeElapsed);
+        stringBuilder.append(timeElapsed);
         stringBuilder.append(" seconds elapsed (");
-        stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
+        stringBuilder.append((float) timeElapsed / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
         try {
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
             stringBuilder.append(getTrains());
         }
-        catch (NoSuchElementException e) {
-            InitProperties.getTheProps().setProperty(PropertiesNames.TRAINS, String.valueOf(2));
-            stringBuilder.append(e.getMessage());
+        catch (RuntimeException e) {
+            stringBuilder.append(getTrains());
         }
         return stringBuilder.toString();
     }
     
     private @NotNull String getTrains() {
-        InformationFactory factory = InformationFactory.getInstance();
-        factory.setClassOption(Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
-        return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        ru.vachok.tutu.conf.InformationFactory factory = InformationFactory.getInstance();
+        factory.setClassOption(Integer
+            .parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
+        try {
+            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        }
+        catch (NoSuchElementException e) {
+            factory.setClassOption(1);
+            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        }
     }
     
     @Override
