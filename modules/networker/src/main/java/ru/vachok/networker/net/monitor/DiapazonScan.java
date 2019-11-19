@@ -6,17 +6,13 @@ package ru.vachok.networker.net.monitor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -26,14 +22,8 @@ import java.lang.management.RuntimeMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -50,6 +40,9 @@ public class DiapazonScan implements NetScanService {
      {@link NetKeeper#getAllDevices()}
      */
     private final BlockingDeque<String> allDevLocalDeq = NetKeeper.getAllDevices();
+    
+    private final File inetUniqCSV = new File(FileNames.INETSTATSIP_CSV);
+    
     
     private final AppConfigurationLocal thrConfig;
     
@@ -71,7 +64,7 @@ public class DiapazonScan implements NetScanService {
         return thisInst;
     }
     
-    public long getStopClassStampLong() {
+    private long getStopClassStampLong() {
         return stopClassStampLong;
     }
     
@@ -169,26 +162,29 @@ public class DiapazonScan implements NetScanService {
     
     @Override
     public void run() {
-        Thread start = new Thread(this::startDo);
-        start.run();
+        AppConfigurationLocal.getInstance().execute(this::startDo, TimeUnit.MINUTES.toSeconds(61));
     }
     
     private void startDo() {
+        synchronized(inetUniqCSV) {
+            if (!inetUniqCSV.exists()) {
+                Stats.getIpsInet();
+            }
+        }
         if (allDevLocalDeq.remainingCapacity() == 0) {
             allDevLocalDeq.clear();
         }
-    
-        ThreadPoolExecutor threadExecutor = ((ThreadConfig) thrConfig).getTaskExecutor().getThreadPoolExecutor();
-        BlockingQueue<Runnable> queueExec = threadExecutor.getQueue();
+        AppConfigurationLocal threadExecutor = AppConfigurationLocal.getInstance();
+        BlockingQueue<Runnable> queueExec = ((ThreadConfig) threadExecutor).getTaskExecutor().getThreadPoolExecutor().getQueue();
         for (Runnable runnable : queueExec) {
             if (runnable instanceof ExecScan) {
-                queueExec.poll();
+                queueExec.remove(runnable);
             }
         }
         
         @NotNull ExecScan[] newRunnables = getRunnables();
         for (ExecScan execScan : newRunnables) {
-            threadExecutor.submit(execScan);
+            threadExecutor.execute(execScan, TimeUnit.HOURS.toSeconds(1));
         }
         scheduleTimeSetterScanMin();
     }

@@ -79,8 +79,8 @@ public class TForms {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
     
-        brStringBuilder.append(LocalDateTime.now()).append(ConstantsFor.STR_BR).append("<h3>").append(e.getMessage()).append(" Exception message.</h3><p>");
-    
+        brStringBuilder.append(LocalDateTime.now()).append(ConstantsFor.STR_BR).append("<h3>").append(e.getMessage()).append(" exception message.</h3><p>");
+        nStringBuilder.append(e.getClass().getSimpleName()).append(" - ").append(e.getMessage()).append("\n");
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             if (stackTraceElement.toString().contains("ru.vachok.")) {
                 parseTrace(stackTraceElement);

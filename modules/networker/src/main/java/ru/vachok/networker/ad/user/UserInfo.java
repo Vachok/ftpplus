@@ -9,6 +9,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
@@ -17,6 +18,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
@@ -296,6 +298,7 @@ public abstract class UserInfo implements InformationFactory {
         
         private boolean writeAllPrefixToDB() {
             int exUpInt = 0;
+            String preparedStatementS = "preparedStatementS";
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
                 try (PreparedStatement prepStatement = connection
                         .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
@@ -305,15 +308,21 @@ public abstract class UserInfo implements InformationFactory {
                         exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
                         messageToUser.info(MessageFormat.format("Update = {0}: {1})", exUpInt, prepStatement.toString()));
                     }
-                    return exUpInt > 0;
+                    preparedStatementS = prepStatement.toString();
                 }
             }
             catch (SQLException | RuntimeException e) {
+                File appendTo = new File(ConstantsFor.DB_VELKOMVELKOMPC);
                 if (e instanceof SQLException) {
-                    messageToUser.error("DatabaseWriter.writeAllPrefixToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                    messageToUser.error(getClass().getSimpleName(), "writeAllPrefixToDB", FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
                 }
-                return false;
+                FileSystemWorker.appendObjectToFile(appendTo, preparedStatementS);
+                messageToUser
+                        .warn(this.getClass().getSimpleName(),
+                                "writeAllPrefixToDB",
+                                FileSystemWorker.appendObjectToFile(appendTo, AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase())));
             }
+            return exUpInt > 0;
         }
     
         /**

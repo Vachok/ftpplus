@@ -7,9 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -20,19 +18,13 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -153,25 +145,7 @@ public class InternetSyncTest {
         Assert.assertTrue(rootF.exists());
         String tableCreate = new InternetSync("10.200.213.98").createTable("10.200.213.98");
         if (UsefulUtilities.thisPC().toLowerCase().contains("do")) {
-            Assert.assertEquals(tableCreate, "Updated: 0. Query: \n" +
-                    "CREATE TABLE if not exists `10_200_213_98` (\n" +
-                    "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
-                    "\t`stamp` BIGINT(13) UNSIGNED NOT NULL DEFAULT '442278000000',\n" +
-                    "\t`squidans` VARCHAR(20) NOT NULL DEFAULT 'unknown',\n" +
-                    "\t`bytes` INT(11) NOT NULL DEFAULT '42',\n" +
-                    "\t`timespend` INT(11) NOT NULL DEFAULT '42',\n" +
-                    "\t`site` VARCHAR(190) NOT NULL DEFAULT 'http://www.velkomfood.ru',\n" +
-                    "\tPRIMARY KEY (`idrec`),\n" +
-                    "\tUNIQUE INDEX `stampkey` (`stamp`, `site`, `bytes`) USING BTREE\n" +
-                    ")\n" +
-                    "COMMENT='Unknown user: a115.eatmeat.ru\n" +
-                    " ResolveUserInDataBase[\n" +
-                    "aboutWhat = a115,\n" +
-                    "dataConnectTo = MySqlLocalSRVInetStat{tableName='\n" +
-                    "COLLATE='utf8_general_ci'\n" +
-                    "ENGINE=MyISAM\n" +
-                    "ROW_FORMAT=COMPRESSED\n" +
-                    ";\n");
+            Assert.assertTrue(tableCreate.contains("Updated: 0. Query: \n" + "CREATE TABLE if not exists `10_200_213_98` (\n"));
         }
         else {
             Assert.assertTrue(tableCreate.contains("Updated: 0. Query: \n" +

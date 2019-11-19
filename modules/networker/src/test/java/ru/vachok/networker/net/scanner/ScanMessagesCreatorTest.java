@@ -2,9 +2,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -34,9 +32,9 @@ public class ScanMessagesCreatorTest {
     @Test
     public void testGetMsg() {
         String msg = scanMessagesCreator.getMsg();
-        Assert.assertTrue(msg.contains("seconds elapsed"));
-        Assert.assertTrue(msg.contains("from"));
-        Assert.assertTrue(msg.contains("to"));
+        Assert.assertTrue(msg.contains("seconds elapsed"), msg);
+        Assert.assertTrue(msg.contains("from"), msg);
+        Assert.assertTrue(msg.contains("to"), msg);
     }
     
     @Test

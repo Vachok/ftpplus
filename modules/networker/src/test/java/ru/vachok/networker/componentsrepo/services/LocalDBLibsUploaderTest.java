@@ -2,10 +2,7 @@ package ru.vachok.networker.componentsrepo.services;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -40,9 +37,9 @@ public class LocalDBLibsUploaderTest {
     @BeforeMethod
     public void initUpl() {
         Path p = Paths.get(".").normalize().toAbsolutePath();
-        String libPath = p.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "lib" + ConstantsFor.FILESYSTEM_SEPARATOR + "tutu-8.0.1946.jar";
+        String libPath = p.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "lib" + ConstantsFor.FILESYSTEM_SEPARATOR + "tutu-8.0.1947.jar";
         Assert.assertTrue(new File(libPath).exists());
-        this.libsUploader = new LocalDBLibsUploader("tutu", "8.0.1946", "jar", Paths.get(libPath));
+        this.libsUploader = new LocalDBLibsUploader("tutu", "8.0.1947", "jar", Paths.get(libPath));
     }
     
     @Test
