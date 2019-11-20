@@ -439,16 +439,6 @@ public class SSHFactory implements Callable<String> {
         }
     
         @Override
-        public int hashCode() {
-            int result = getUserName().hashCode();
-            result = 31 * result + (getPass() != null ? getPass().hashCode() : 0);
-            result = 31 * result + getSessionType().hashCode();
-            result = 31 * result + (getConnectToSrv() != null ? getConnectToSrv().hashCode() : 0);
-            result = 31 * result + (getCommandSSH() != null ? getCommandSSH().hashCode() : 0);
-            return result;
-        }
-    
-        @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("Builder{");
             sb.append("userName='").append(userName).append('\'');
@@ -460,6 +450,34 @@ public class SSHFactory implements Callable<String> {
             sb.append(", sshFactory=").append(sshFactory);
             sb.append('}');
             return sb.toString();
+        }
+    
+        @Override
+        public int hashCode() {
+            int result = connectToSrv != null ? connectToSrv.hashCode() : 0;
+            result = 31 * result + (classCaller != null ? classCaller.hashCode() : 0);
+            result = 31 * result + (commandSSH != null ? commandSSH.hashCode() : 0);
+            return result;
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof SSHFactory.Builder)) {
+                return false;
+            }
+        
+            SSHFactory.Builder builder = (SSHFactory.Builder) o;
+        
+            if (connectToSrv != null ? !connectToSrv.equals(builder.connectToSrv) : builder.connectToSrv != null) {
+                return false;
+            }
+            if (classCaller != null ? !classCaller.equals(builder.classCaller) : builder.classCaller != null) {
+                return false;
+            }
+            return commandSSH != null ? commandSSH.equals(builder.commandSSH) : builder.commandSSH == null;
         }
     }
 }

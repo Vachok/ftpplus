@@ -38,7 +38,7 @@ public class DatabaseInfoTest {
     
     @Test
     public void testGetInfoAbout() {
-        String databaseInfoInfoAbout = databaseInfo.getInfoAbout("mysql.slow_log");
+        String databaseInfoInfoAbout = databaseInfo.getInfoAbout(ConstantsFor.DB_SLOWLOG);
         Assert.assertTrue(databaseInfoInfoAbout.contains("host: "), databaseInfoInfoAbout);
         Assert.assertTrue(databaseInfoInfoAbout.contains(ConstantsFor.TIME), databaseInfoInfoAbout);
         Assert.assertTrue(databaseInfoInfoAbout.contains("rows sent: "), databaseInfoInfoAbout);
