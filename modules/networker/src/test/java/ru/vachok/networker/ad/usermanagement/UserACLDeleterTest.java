@@ -3,7 +3,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -40,7 +40,7 @@ public class UserACLDeleterTest {
             oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
         String removeAccess = userACLManager.removeAccess(oldUser);

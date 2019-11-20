@@ -6,6 +6,7 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.ad.inet.InternetUse;
+import ru.vachok.networker.ad.inet.ListsController;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -44,6 +45,8 @@ public interface InformationFactory {
     
     String DATABASE_INFO = "dbinfo";
     
+    String LISTS_CONTROLLER = "ListsController";
+    
     String getInfo();
     
     /**
@@ -55,6 +58,7 @@ public interface InformationFactory {
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {
+        final ListsController listsController = new ListsController();
         switch (type) {
             case INET_USAGE:
             case INET_USAGE_HTML:
@@ -71,6 +75,8 @@ public interface InformationFactory {
                 return new SaveLogsToDB();
             case DATABASE_INFO:
                 return new DatabaseInfo();
+            case LISTS_CONTROLLER:
+                return listsController;
             default:
                 return PCInfo.getInstance(type);
         }
