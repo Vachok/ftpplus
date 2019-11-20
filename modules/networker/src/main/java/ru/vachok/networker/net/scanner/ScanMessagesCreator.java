@@ -2,7 +2,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
@@ -26,9 +28,14 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 public class ScanMessagesCreator implements Keeper {
     
     
-    @NotNull String getMsg() {
+    private int numOfTrains = 8;
+    
+    @NotNull
+    String getMsg() {
         long timeElapsed = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
-        
+        if (this.numOfTrains > 8) {
+            this.numOfTrains = 8;
+        }
         StringBuilder stringBuilder = new StringBuilder();
         timeElapsed = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - timeElapsed);
         stringBuilder.append(timeElapsed);
@@ -36,25 +43,25 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append((float) timeElapsed / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
         try {
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(6));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(numOfTrains));
             stringBuilder.append(getTrains());
-        }
-        catch (RuntimeException e) {
-            stringBuilder.append(getTrains());
-        }
-        return stringBuilder.toString();
-    }
-    
-    private @NotNull String getTrains() {
-        ru.vachok.tutu.conf.InformationFactory factory = InformationFactory.getInstance();
-        factory.setClassOption(Integer
-            .parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TRAINS, String.valueOf(4))));
-        try {
-            return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
         }
         catch (NoSuchElementException e) {
-            factory.setClassOption(1);
+            this.numOfTrains = numOfTrains - 2;
+            return getMsg();
+        }
+        return makeColors(stringBuilder.toString());
+    }
+    
+    @NotNull
+    private String getTrains() {
+        InformationFactory factory = InformationFactory.getInstance();
+        if (numOfTrains > 0) {
+            factory.setClassOption(numOfTrains);
             return factory.getInfo().replace("[", "").replace(", ", "<br>").replace("]", "");
+        }
+        else {
+            return "NO MORE TRAINS";
         }
     }
     
@@ -65,7 +72,8 @@ public class ScanMessagesCreator implements Keeper {
         return sb.toString();
     }
     
-    @NotNull String getTitle(int currentPC) {
+    @NotNull
+    String getTitle(int currentPC) {
         StringBuilder titleBuilder = new StringBuilder();
         titleBuilder.append(currentPC);
         titleBuilder.append("/");
@@ -76,7 +84,8 @@ public class ScanMessagesCreator implements Keeper {
         return titleBuilder.toString();
     }
     
-    @NotNull String fillUserPCForWEBModel() {
+    @NotNull
+    String fillUserPCForWEBModel() {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
@@ -87,7 +96,7 @@ public class ScanMessagesCreator implements Keeper {
             Set<String> keySet = linksMap.keySet();
             List<String> list = new ArrayList<>(keySet.size());
             list.addAll(keySet);
-            
+        
             Collections.sort(list);
             Collections.reverse(list);
             for (String keyMap : list) {
@@ -96,6 +105,30 @@ public class ScanMessagesCreator implements Keeper {
             }
         }
         return brStringBuilder.toString().replace("true", "").replace(ConstantsFor.STR_FALSE, "");
-        
+    
+    }
+    
+    @NotNull
+    private String makeColors(@NotNull String trainsFromArray) {
+        HTMLGeneration htmlGeneration = HTMLGeneration.getInstance("");
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            String[] toColorStrings = trainsFromArray.split("<br>");
+            for (String colorString : toColorStrings) {
+                String string = colorString;
+                if (string.contains("from")) {
+                    string = htmlGeneration.setColor("#47fff6", string);
+                    stringBuilder.append(string).append("<br>");
+                }
+                else if (string.contains("to")) {
+                    string = htmlGeneration.setColor("#ffd447", string);
+                    stringBuilder.append(string).append("<br>");
+                }
+            }
+        }
+        catch (IndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage()).append("<br>").append(AbstractForms.fromArray(e));
+        }
+        return stringBuilder.toString();
     }
 }
