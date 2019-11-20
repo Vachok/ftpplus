@@ -159,10 +159,10 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     private void readNoSquidIPs() {
-        SSHFactory build = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(), "sudo cat /etc/pf/vipnet;exit", this.getClass().getSimpleName())
-            .build();
+        Set<String> ipsList = new LinkedHashSet<>();
+        SSHFactory build = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(),
+                "sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit", this.getClass().getSimpleName()).build();
         String[] vipNetIPs = build.call().split("\n");
-        List<String> ipsList = new ArrayList<>();
         for (String netIP : vipNetIPs) {
             try {
                 netIP = netIP.split("#")[0];
