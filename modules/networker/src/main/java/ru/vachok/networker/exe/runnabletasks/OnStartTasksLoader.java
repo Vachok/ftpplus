@@ -1,26 +1,17 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.*;
 import ru.vachok.networker.ad.common.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.services.LocalDBLibsUploader;
-import ru.vachok.networker.componentsrepo.services.MyCalen;
-import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.services.*;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
@@ -30,21 +21,12 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Collections;
+import java.time.*;
 import java.util.Date;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -112,8 +94,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         }
     }
     
-    @NotNull
-    private String launchRegRuFTPLibsUploader() {
+    private @NotNull String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
         try {
             execute(regRuFTPLibsUploader);
@@ -207,9 +188,8 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         }
     }
     
-    @NotNull
     @Contract(" -> new")
-    private Runnable buildChecker() {
+    private @NotNull Runnable buildChecker() {
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
         Path pathToSaveLogs = Paths.get(".");
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {

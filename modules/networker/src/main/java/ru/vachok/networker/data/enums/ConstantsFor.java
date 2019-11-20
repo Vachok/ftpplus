@@ -505,6 +505,10 @@ public enum ConstantsFor {
     
     public static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
     
+    public static final String DB_SLOWLOG = "mysql.slow_log";
+    
+    public static final String MARKEDASCRASHED = "is marked as crashed";
+    
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

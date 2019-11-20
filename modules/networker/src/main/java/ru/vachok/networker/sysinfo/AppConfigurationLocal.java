@@ -71,7 +71,6 @@ public interface AppConfigurationLocal extends Runnable {
         if (initialDelay < 0) {
             initialDelay = 0;
         }
-        
         poolExecutor.scheduleWithFixedDelay(runnable, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 }

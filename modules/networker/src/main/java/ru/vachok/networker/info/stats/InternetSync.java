@@ -1,4 +1,4 @@
-package ru.vachok.networker.data.synchronizer;
+package ru.vachok.networker.info.stats;
 
 
 import com.eclipsesource.json.Json;
@@ -14,8 +14,10 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -38,11 +40,11 @@ public class InternetSync extends SyncData implements Runnable {
     
     private String dbFullName;
     
-    InternetSync(@NotNull String type) {
-        super();
-        this.ipAddr = type;
-        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetSync.class.getSimpleName());
+    
+    @Override
+    public String getDbToSync() {
+        return ipAddr;
     }
     
     @Override
@@ -61,8 +63,8 @@ public class InternetSync extends SyncData implements Runnable {
     }
     
     @Override
-    String getDbToSync() {
-        return ipAddr;
+    public Map<String, String> makeColumns() {
+        throw new UnsupportedOperationException("See readSQLCreateQuery");
     }
     
     @Override
@@ -282,6 +284,13 @@ public class InternetSync extends SyncData implements Runnable {
         return i;
     }
     
+    public InternetSync(@NotNull String type) {
+        super();
+        this.ipAddr = type;
+        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
+    }
+    
     /**
      @param ipAddr ip-адрес
      @see InternetSyncTest#testCreateTable()
@@ -292,8 +301,7 @@ public class InternetSync extends SyncData implements Runnable {
         }
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         String readFileStr = readSQLCreateQuery();
-        readFileStr = readFileStr.replace(ConstantsFor.FIELDNAME_ADDR, ipAddr.replaceAll("\\Q.\\E", "_"))
-            .replace(ConstantsFor.DBFIELD_PCNAME, getCurrentUserPC());
+        readFileStr = readFileStr.replace(ConstantsFor.FIELDNAME_ADDR, ipAddr.replaceAll("\\Q.\\E", "_")).replace(ConstantsFor.DBFIELD_PCNAME, getCurrentUserPC());
         final String sql = readFileStr;
         FileSystemWorker.appendObjectToFile(new File("create.table"), sql);
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"))) {
@@ -306,15 +314,6 @@ public class InternetSync extends SyncData implements Runnable {
             return MessageFormat
                     .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()), sql);
         }
-    }
-    
-    private String getCurrentUserPC() {
-        String pcName = PCInfo.checkValidNameWithoutEatmeat(ipAddr);
-        String userAndPCName = UserInfo.getInstance(pcName).getInfoAbout(pcName);
-        if (userAndPCName.contains("\'")) {
-            userAndPCName = userAndPCName.split("\\Q'\\E")[0];
-        }
-        return userAndPCName;
     }
     
     private @NotNull String readSQLCreateQuery() {
@@ -366,9 +365,17 @@ public class InternetSync extends SyncData implements Runnable {
         superRun();
     }
     
-    @Override
-    Map<String, String> makeColumns() {
-        throw new UnsupportedOperationException("See readSQLCreateQuery");
+    private String getCurrentUserPC() {
+        String pcName = PCInfo.checkValidNameWithoutEatmeat(ipAddr);
+        String userAndPCName = UserInfo.getInstance(pcName).getInfoAbout(pcName);
+        if (userAndPCName.contains("\'")) {
+            userAndPCName = userAndPCName.split("\\Q'\\E")[0];
+        }
+        String splitterStr = "\n class";
+        if (userAndPCName.contains(splitterStr)) {
+            userAndPCName = userAndPCName.split(splitterStr)[0];
+        }
+        return userAndPCName;
     }
     
     

@@ -73,7 +73,7 @@ class DBRemoteDownloader extends SyncData {
     }
     
     @Override
-    String getDbToSync() {
+    public String getDbToSync() {
         return dbToSync;
     }
     
@@ -88,7 +88,7 @@ class DBRemoteDownloader extends SyncData {
     }
     
     @Override
-    Map<String, String> makeColumns() {
+    public Map<String, String> makeColumns() {
         Map<String, String> colMap = new HashMap<>();
         colMap.put("Not ready", "17.09.2019 (10:09)");
         return colMap;

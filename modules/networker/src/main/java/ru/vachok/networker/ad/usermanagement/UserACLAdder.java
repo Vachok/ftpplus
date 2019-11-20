@@ -1,24 +1,16 @@
 package ru.vachok.networker.ad.usermanagement;
 
 
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -37,14 +29,28 @@ class UserACLAdder extends UserACLManagerImpl {
     
     private List<AclEntry> neededACLs;
     
-    UserACLAdder(Path startPath) {
-        super(startPath);
-        try {
-            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
+    private String rights;
+    
+    @Override
+    public String getResult() {
+        return AbstractForms.fromArray(neededACLs);
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UserACLCommonAdder{");
+        sb.append(", newUser=").append(newUser);
+        sb.append(", foldersCounter=").append(foldersCounter);
+        sb.append(", filesCounter=").append(filesCounter);
+        sb.append(", neededACLs=").append(AbstractForms.fromArray(neededACLs));
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    UserACLAdder(Path path, UserPrincipal newUser, String rights) {
+        super(path);
+        this.rights = rights;
+        this.newUser = newUser;
     }
     
     private UserACLAdder(UserPrincipal newUser) {
@@ -67,31 +73,30 @@ class UserACLAdder extends UserACLManagerImpl {
         }
     }
     
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-        filesCounter++;
+    UserACLAdder(Path path, String rights) {
+        super(path);
         try {
-            createACLs(file);
-            List<AclEntry> tipEnters = new ArrayList<>(neededACLs);
-            Files.getFileAttributeView(file, AclFileAttributeView.class).setAcl(tipEnters); //todo 13.11.2019 (21:52) too long
-    
-            return FileVisitResult.CONTINUE;
+            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("UserACLCommonAdder.visitFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return FileVisitResult.CONTINUE;
+            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        finally {
+            this.rights = rights;
         }
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserACLCommonAdder{");
-        sb.append(", newUser=").append(newUser);
-        sb.append(", foldersCounter=").append(foldersCounter);
-        sb.append(", filesCounter=").append(filesCounter);
-        sb.append(", neededACLs=").append(new TForms().fromArray(neededACLs));
-        sb.append('}');
-        return sb.toString();
+    UserACLAdder(Path startPath) {
+        super(startPath);
+        try {
+            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        finally {
+            this.rights = "rw";
+        }
     }
     
     @Override
@@ -100,17 +105,25 @@ class UserACLAdder extends UserACLManagerImpl {
     }
     
     @Override
-    public String getResult() {
-        return new TForms().fromArray(neededACLs);
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        filesCounter++;
+        try {
+            createACLs(file);
+            List<AclEntry> tipEnters = new ArrayList<>(neededACLs);
+            Files.getFileAttributeView(file, AclFileAttributeView.class).setAcl(tipEnters);
+            return FileVisitResult.CONTINUE;
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("UserACLCommonAdder.visitFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return FileVisitResult.CONTINUE;
+        }
     }
     
     private void createACLs(Path dir) throws IOException {
-        Map<UserPrincipal, AclEntry> principalAclEntry = new HashMap<>();
         AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
-        List<AclEntry> currentACLs = aclFileAttributeView.getAcl(); //todo 13.11.2019 (21:52) too long
-        AclEntry addAcl = createACLFor(newUser, "rw");
+        List<AclEntry> currentACLs = aclFileAttributeView.getAcl();
+        AclEntry addAcl = createACLFor(newUser, rights);
         currentACLs.add(addAcl);
-        principalAclEntry.put(addAcl.principal(), addAcl);
         this.neededACLs = currentACLs;
     }
 }

@@ -52,6 +52,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
         }
         builder.setType(AclEntryType.ALLOW);
         builder.setPrincipal(userPrincipal);
+    
         if (rwInherit.toLowerCase().contains("i")) {
             builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
             builder.setFlags(AclEntryFlag.FILE_INHERIT);

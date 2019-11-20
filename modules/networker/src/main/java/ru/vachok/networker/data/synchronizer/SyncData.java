@@ -7,16 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.info.stats.InternetSync;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 
 /**
@@ -40,7 +36,7 @@ public abstract class SyncData implements DataConnectTo {
     
     private String idColName = ConstantsFor.DBCOL_IDREC;
     
-    abstract String getDbToSync();
+    public abstract String getDbToSync();
     
     public abstract void setDbToSync(String dbToSync);
     
@@ -136,7 +132,7 @@ public abstract class SyncData implements DataConnectTo {
         
     }
     
-    abstract Map<String, String> makeColumns();
+    public abstract Map<String, String> makeColumns();
     
     int getLastRemoteID(String syncDB) {
         return getDBID(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource(), syncDB);
