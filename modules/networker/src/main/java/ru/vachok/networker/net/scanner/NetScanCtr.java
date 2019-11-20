@@ -3,17 +3,21 @@
 package ru.vachok.networker.net.scanner;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -21,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +81,6 @@ public class NetScanCtr {
         this.model = model;
     }
     
-    @Contract(pure = true)
     @Autowired
     public NetScanCtr(PcNamesScanner pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
@@ -109,14 +113,28 @@ public class NetScanCtr {
         return ModelAttributeNames.NETSCAN;
     }
     
-    private void fillModel() {
-        ScanMessagesCreator creator = new ScanMessagesCreator();
-        String msg = creator.getMsg();
-        String title = creator.getTitle(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
-        String pcValue = creator.fillUserPCForWEBModel();
-        model.addAttribute("left", msg).addAttribute("pc", pcValue).addAttribute(ModelAttributeNames.TITLE, title);
-        model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", this.toString(), "FOOTER"));
-        
+    /**
+     POST /netscan
+     <p>
+ 
+     @param model {@link Model}
+     @return redirect:/ad? + {@link PcNamesScanner#getThePc()}
+     */
+    @NotNull
+    @PostMapping(STR_NETSCAN)
+    public String pcNameForInfo(Model model, @NotNull @ModelAttribute PcNamesScanner pcNamesScanner) {
+        this.pcNamesScanner = pcNamesScanner;
+        this.model = model;
+        String thePc = pcNamesScanner.getThePc();
+        if (thePc.toLowerCase().contains("user: ")) {
+            model.addAttribute("ok", this.pcNamesScanner.getExecution().trim());
+            model.addAttribute(ModelAttributeNames.TITLE, thePc);
+    
+            return "ok";
+        }
+        model.addAttribute(ModelAttributeNames.THEPC, thePc);
+        pcNamesScanner.setThePc("");
+        return "redirect:/ad?" + thePc;
     }
     
     @Override
@@ -132,26 +150,17 @@ public class NetScanCtr {
         return sb.toString();
     }
     
-    /**
-     POST /netscan
-     <p>
- 
-     @param model {@link Model}
-     @return redirect:/ad? + {@link PcNamesScanner#getThePc()}
-     */
-    @PostMapping(STR_NETSCAN)
-    public @NotNull String pcNameForInfo(Model model, @NotNull @ModelAttribute PcNamesScanner pcNamesScanner) {
-        this.pcNamesScanner = pcNamesScanner;
-        this.model = model;
-        String thePc = pcNamesScanner.getThePc();
-        if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", this.pcNamesScanner.getExecution().trim());
-            model.addAttribute(ModelAttributeNames.TITLE, thePc);
-    
-            return "ok";
+    private void fillModel() {
+        ScanMessagesCreator creator = new ScanMessagesCreator();
+        int secRemain = LocalTime.of(4, 0).toSecondOfDay() - LocalTime.now().toSecondOfDay();
+        String msg = MessageFormat.format("{0} minutes remain to trains check", TimeUnit.SECONDS.toMinutes(secRemain));
+        if (LocalTime.now().getHour() > 4) {
+            msg = creator.getMsg();
         }
-        model.addAttribute(ModelAttributeNames.THEPC, thePc);
-        pcNamesScanner.setThePc("");
-        return "redirect:/ad?" + thePc;
+        String title = creator.getTitle(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
+        String pcValue = creator.fillUserPCForWEBModel();
+        model.addAttribute("left", msg).addAttribute("pc", pcValue).addAttribute(ModelAttributeNames.TITLE, title);
+        model.addAttribute(ModelAttributeNames.FOOTER, MessageFormat.format("{0}<br>{1}", this.toString(), "FOOTER"));
+        
     }
 }
