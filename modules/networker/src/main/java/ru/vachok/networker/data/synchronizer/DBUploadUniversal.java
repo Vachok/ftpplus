@@ -1,18 +1,13 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -48,7 +43,7 @@ class DBUploadUniversal extends SyncData {
     }
     
     @Override
-    String getDbToSync() {
+    public String getDbToSync() {
         return dbToSync;
     }
     
@@ -168,7 +163,7 @@ class DBUploadUniversal extends SyncData {
     }
     
     @Override
-    Map<String, String> makeColumns() {
+    public Map<String, String> makeColumns() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.makeColumns( Map<String, String> ) at 15.09.2019 - (13:08)");
     }
     

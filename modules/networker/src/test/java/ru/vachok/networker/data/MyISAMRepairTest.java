@@ -42,11 +42,8 @@ public class MyISAMRepairTest {
         if (repairInfo.contains(asCrashed)) {
             String[] split = repairInfo.split("\n");
             for (String s : split) {
-                if (s.contains(asCrashed)) {
-                    String tableName = s.split(": ")[0];
-                    tableName = "velkom." + tableName;
-                    myISAMRepair.repairTable(String.format("REPAIR TABLE %s", tableName));
-                }
+                boolean isCrashed = s.contains(asCrashed);
+                Assert.assertFalse(isCrashed, s + " is crashed...");
             }
         }
     }
@@ -54,7 +51,7 @@ public class MyISAMRepairTest {
     @Test
     public void testGetInfoAbout() {
         String isamRepairInfoAbout = myISAMRepair.getInfoAbout("inetstats");
-        System.out.println("isamRepairInfoAbout = " + isamRepairInfoAbout);
+        Assert.assertTrue(isamRepairInfoAbout.contains("SHOW TABLE STATUS FROM inetstats"), isamRepairInfoAbout);
     }
     
     @Test
