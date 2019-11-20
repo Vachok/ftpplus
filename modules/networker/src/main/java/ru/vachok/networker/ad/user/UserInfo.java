@@ -12,10 +12,11 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -26,8 +27,13 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -71,7 +77,7 @@ public abstract class UserInfo implements InformationFactory {
     
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains(ConstantsFor.UNKNOWN_USER) | !lastFileUse.contains("not found")) {
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->DATABASE_WRITER.writeAutoresolvedUserToDB(pcName, lastFileUse));
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->DATABASE_WRITER.writeAutoResolveUserToDB(pcName, lastFileUse));
         }
         else {
             System.err.println(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
@@ -160,7 +166,7 @@ public abstract class UserInfo implements InformationFactory {
          @param pcName do0001
          @param lastFileUse 1561612688516 \\do0001.eatmeat.ru\c$\Users\estrelyaeva Thu Jun 27 08:18:08 MSK 2019 1561612688516
          */
-        private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
+        private void writeAutoResolveUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
             final String sql = "insert into pcuserauto (pcName, userName, lastmod, stamp) values(?,?,?,?)";
@@ -179,7 +185,7 @@ public abstract class UserInfo implements InformationFactory {
         }
     
         /**
-         @param preparedStatement statement from {@link #writeAutoresolvedUserToDB(java.lang.String, java.lang.String)}
+         @param preparedStatement statement from {@link #writeAutoResolveUserToDB(java.lang.String, java.lang.String)}
          @return
      
          @throws SQLException statement
@@ -195,9 +201,7 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(2, userName);
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
-            String retStr = MessageFormat.format("{0}: {1}", preparedStatement.executeUpdate(), preparedStatement.toString());
-            ((MessageLocal) messageToUser).loggerFine(retStr);
-            return retStr;
+            return MessageFormat.format("{0}: {1}", preparedStatement.executeUpdate(), preparedStatement.toString());
         }
     
         private @NotNull String uniqueUserAddToDB(String pcName, String userName) {
@@ -290,10 +294,7 @@ public abstract class UserInfo implements InformationFactory {
             timeSpend = TimeUnit.MILLISECONDS.toMinutes(timeSpend);
             try (PreparedStatement setTimeSpend = connection.prepareStatement(String
                     .format("UPDATE pcuser SET spendtime=%d WHERE pcname LIKE '%s%%'", (int) timeSpend, pcName))) {
-                messageToUser.info(
-                        this.getClass().getSimpleName(),
-                        MessageFormat.format("Time spend {0} minutes", (int) timeSpend),
-                        MessageFormat.format("updated {0} row(s)", setTimeSpend.executeUpdate()));
+                setTimeSpend.executeUpdate();
             }
         }
         

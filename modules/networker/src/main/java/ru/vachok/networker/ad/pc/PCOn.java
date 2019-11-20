@@ -13,17 +13,25 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 
 /**
@@ -143,7 +151,7 @@ class PCOn extends PCInfo {
         else {
             this.pcName = checkValidNameWithoutEatmeat(pcName);
             String currentName = pcNameWithHTMLLink();
-            messageToUser.info(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, addressIp, true, userLogin));
+            addToMap(pcName, addressIp, true, userLogin);
             NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName + "<br>", true);
             return currentName;
         }
@@ -206,7 +214,7 @@ class PCOn extends PCInfo {
             stringBuilder.append(":date:").append(Long.parseLong(timeName.split(" ")[0]));
         }
         catch (NumberFormatException e) {
-            messageToUser.error(e.getMessage() + " see line: 112 ***");
+            messageToUser.warn(PCOn.class.getSimpleName(), e.getMessage(), " see line: 209 ***");
         }
         catch (RuntimeException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));

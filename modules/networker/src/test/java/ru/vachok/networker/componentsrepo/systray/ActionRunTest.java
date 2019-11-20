@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -58,7 +59,7 @@ public class ActionRunTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         try (InputStream processInputStream = process.getInputStream();
-             InputStreamReader bufferedInputStream = new InputStreamReader(processInputStream, "IBM866");
+             InputStreamReader bufferedInputStream = new InputStreamReader(processInputStream, ConstantsFor.CHARSET_IBM866);
              BufferedReader bufferedReader = new BufferedReader(bufferedInputStream)) {
             String linesArr = Arrays.toString(bufferedReader.lines().toArray());
             Assert.assertTrue(linesArr.contains("Пакетов: отправлено = 4, получено = 4, потеряно = 0"), linesArr);

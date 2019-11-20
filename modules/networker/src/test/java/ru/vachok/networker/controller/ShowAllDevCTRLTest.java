@@ -8,10 +8,11 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ShowAllDevCTRLTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetScanService.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ShowAllDevCTRLTest.class.getSimpleName(), System
         .nanoTime());
     
     @BeforeClass
@@ -57,8 +58,10 @@ public class ShowAllDevCTRLTest {
                 "<font size=\"1\"><p align=\"right\">By Vachok. (c) 2019</font></p>. Left: 15045 IPs.");
         Assert.assertEquals(model.asMap().get("head"), "<center><font color=\"\"><a href=\"/\">Главная</a>\n" +
                 "</font></center><center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
-        Assert.assertTrue(model.asMap().get("pcs").toString().contains("<b>Since <i>Thu Jan 01 03:00:00 MSK 1970 last ExecScan:"));
-        Assert.assertTrue(model.asMap().get("ok").toString().isEmpty());
+        String pcsAttribute = model.asMap().get("pcs").toString();
+        Assert.assertTrue(pcsAttribute.contains("<b>Since <i>Thu Jan 01 03:10:38 MSK 1970 last ExecScan: "), pcsAttribute);
+        String okAttribute = model.asMap().get("ok").toString();
+        Assert.assertFalse(okAttribute.isEmpty(), okAttribute);
         
         Assert.assertTrue(modelMake.equals("ok"));
     }
