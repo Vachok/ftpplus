@@ -1,4 +1,4 @@
-package ru.vachok.networker.data.synchronizer;
+package ru.vachok.networker.info.stats;
 
 
 import com.eclipsesource.json.Json;
@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;

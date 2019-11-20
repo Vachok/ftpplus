@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
@@ -315,10 +316,13 @@ public abstract class UserInfo implements InformationFactory {
                 File appendTo = new File(ConstantsFor.DB_VELKOMVELKOMPC);
                 if (e instanceof SQLException) {
                     messageToUser.error(getClass().getSimpleName(), "writeAllPrefixToDB", FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
+                    if (e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
+                        String repairTable = new MyISAMRepair().repairTable("REPAIR TABLE " + ConstantsFor.DB_VELKOMVELKOMPC);
+                        FileSystemWorker.appendObjectToFile(appendTo, repairTable);
+                    }
                 }
                 FileSystemWorker.appendObjectToFile(appendTo, preparedStatementS);
-                messageToUser
-                        .warn(this.getClass().getSimpleName(),
+                messageToUser.warn(this.getClass().getSimpleName(),
                                 "writeAllPrefixToDB",
                                 FileSystemWorker.appendObjectToFile(appendTo, AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase())));
             }

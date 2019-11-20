@@ -5,10 +5,7 @@ package ru.vachok.networker.ad.common;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -22,10 +19,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -61,6 +55,7 @@ public class CleanerTest {
      @see Cleaner#call()
      */
     @Test
+    @Ignore
     public void testCall() {
         Future<String> stringFuture = AppComponents.threadConfig().getTaskExecutor().submit(()->cleaner.call());
         try {
@@ -77,6 +72,7 @@ public class CleanerTest {
     }
     
     @Test
+    @Ignore
     public void testGetPathAttrMap() {
         Map<Path, String> map = cleaner.getPathAttrMap();
         String strMap = new TForms().fromArray(map);
@@ -84,6 +80,7 @@ public class CleanerTest {
     }
     
     @Test
+    @Ignore
     public void testTestToString() {
         Assert.assertTrue(cleaner.toString().contains("Cleaner{"), cleaner.toString());
     }

@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.common;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -43,6 +41,7 @@ public class ArchivesAutoCleanerTest {
     }
     
     @Test
+    @Ignore
     public void testRun() {
         File cleanLog = new File(FileNames.CLEANERLOG_TXT);
         try {

@@ -70,14 +70,6 @@ public class SSHFactory implements Callable<String> {
     
     private String builderToStr;
     
-    protected SSHFactory(@NotNull SSHFactory.Builder builder) {
-        this.connectToSrv = builder.connectToSrv;
-        this.commandSSH = builder.commandSSH;
-        this.sessionType = builder.sessionType;
-        this.userName = builder.userName;
-        this.classCaller = builder.classCaller;
-    }
-    
     public Path getTempFile() {
         return tempFile;
     }
@@ -115,6 +107,14 @@ public class SSHFactory implements Callable<String> {
         this.commandSSH = commandSSH;
     }
     
+    protected SSHFactory(@NotNull SSHFactory.Builder builder) {
+        this.connectToSrv = builder.connectToSrv;
+        this.commandSSH = builder.commandSSH;
+        this.sessionType = builder.sessionType;
+        this.userName = builder.userName;
+        this.classCaller = builder.classCaller;
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SSHFactory{");
@@ -143,8 +143,6 @@ public class SSHFactory implements Callable<String> {
                             break;
                         }
                         outputStream.write(bytes, 0, readBytes);
-                        messageToUser.info(this.getClass().getSimpleName(), tempFile.toAbsolutePath().toString(), " is " + readBytes + " (file.len = " + tempFile.toFile()
-                                .length() + ")");
                     }
                 }
             }
@@ -171,36 +169,18 @@ public class SSHFactory implements Callable<String> {
         catch (RuntimeException e) {
             setRespChannelToField();
             messageToUser.error(MessageFormat
-                .format("SSHFactory.connect\n{0}: {1}\nParameters: []\nReturn: java.io.InputStream\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
+                    .format("SSHFactory.connect\n{0}: {1}\nParameters: []\nReturn: java.io.InputStream\nStack:\n{2}", e.getClass().getTypeName(), e
+                            .getMessage(), new TForms().fromArray(e)));
         }
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
-                respChannel.toString(), NetScanService.isReach(connectToSrv), connectToSrv, triedIP()));
+                    respChannel.toString(), NetScanService.isReach(connectToSrv), connectToSrv, triedIP()));
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
             return respChannel.getInputStream();
-        }
-    }
-    
-    private InetAddress triedIP() {
-        return new NameOrIPChecker(this.connectToSrv).resolveInetAddress();
-    }
-    
-    private void tryReconnection() {
-        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(ConstantsFor.ONE_DAY_HOURS);
-        final String showTime = this + "\nTries for: " + new Date(startTries);
-        while (true) {
-            boolean isTimeOut = System.currentTimeMillis() > (startTries);
-            if (isTimeOut) {
-                System.err.println(this + " is timed out.");
-                break;
-            }
-            System.out.println(showTime);
-            setRespChannelToField();
         }
     }
     
@@ -248,6 +228,10 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(respChannel);
     }
     
+    private InetAddress triedIP() {
+        return new NameOrIPChecker(this.connectToSrv).resolveInetAddress();
+    }
+    
     @Contract(pure = true)
     private String getConnectToSrv() {
         return connectToSrv;
@@ -288,6 +272,22 @@ public class SSHFactory implements Callable<String> {
         return pemFile.getAbsolutePath();
     }
     
+    private void tryReconnection() {
+        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(ConstantsFor.ONE_DAY_HOURS);
+        final String showTime = this + "\nTries for: " + new Date(startTries);
+        while (true) {
+            boolean isTimeOut = System.currentTimeMillis() > (startTries);
+            if (isTimeOut) {
+                System.err.println(this + " is timed out.");
+                break;
+            }
+            System.out.println(showTime);
+            setRespChannelToField();
+        }
+    }
+    
+
+
     /**
      BuildBinger.
      <p>
@@ -312,17 +312,6 @@ public class SSHFactory implements Callable<String> {
         private String commandSSH;
     
         private SSHFactory sshFactory;
-    
-        public Builder(String connectToSrv, String commandSSH, String classCaller) {
-            this.commandSSH = commandSSH;
-            this.connectToSrv = connectToSrv;
-            this.classCaller = classCaller;
-            this.sshFactory = new SSHFactory(this);
-        }
-    
-        @Contract(pure = true)
-        protected Builder() {
-        }
     
         /**
          Gets command sshactions.
@@ -424,9 +413,20 @@ public class SSHFactory implements Callable<String> {
             return this;
         }
     
+        public Builder(String connectToSrv, String commandSSH, String classCaller) {
+            this.commandSSH = commandSSH;
+            this.connectToSrv = connectToSrv;
+            this.classCaller = classCaller;
+            this.sshFactory = new SSHFactory(this);
+        }
+    
+        @Contract(pure = true)
+        protected Builder() {
+        }
+        
         /**
          Build sshactions factory.
-     
+ 
          @return the sshactions factory
          */
         public SSHFactory build() {
@@ -440,12 +440,30 @@ public class SSHFactory implements Callable<String> {
     
         @Override
         public int hashCode() {
-            int result = getUserName().hashCode();
-            result = 31 * result + (getPass() != null ? getPass().hashCode() : 0);
-            result = 31 * result + getSessionType().hashCode();
-            result = 31 * result + (getConnectToSrv() != null ? getConnectToSrv().hashCode() : 0);
-            result = 31 * result + (getCommandSSH() != null ? getCommandSSH().hashCode() : 0);
+            int result = connectToSrv != null ? connectToSrv.hashCode() : 0;
+            result = 31 * result + (classCaller != null ? classCaller.hashCode() : 0);
+            result = 31 * result + (commandSSH != null ? commandSSH.hashCode() : 0);
             return result;
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof SSHFactory.Builder)) {
+                return false;
+            }
+        
+            SSHFactory.Builder builder = (SSHFactory.Builder) o;
+        
+            if (connectToSrv != null ? !connectToSrv.equals(builder.connectToSrv) : builder.connectToSrv != null) {
+                return false;
+            }
+            if (classCaller != null ? !classCaller.equals(builder.classCaller) : builder.classCaller != null) {
+                return false;
+            }
+            return commandSSH != null ? commandSSH.equals(builder.commandSSH) : builder.commandSSH == null;
         }
     
         @Override
