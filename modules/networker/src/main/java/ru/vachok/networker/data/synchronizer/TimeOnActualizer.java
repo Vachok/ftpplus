@@ -50,7 +50,7 @@ public class TimeOnActualizer implements Runnable {
                             actualizeDB(idrec, pcName);
                         }
                         else {
-                            System.out.println("preparedStatement = " + preparedStatement.toString());
+                            messageToUser.warn(this.getClass().getSimpleName(), "setTimeOnFromBigDB", preparedStatement.toString());
                         }
                     }
                 }
@@ -105,6 +105,7 @@ public class TimeOnActualizer implements Runnable {
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setTimestamp(1, actualTimeOn);
             preparedStatement.executeUpdate();
+            messageToUser.info(this.getClass().getSimpleName(), "setInPcUserDB executeUpdate: ", preparedStatement.toString());
         }
         catch (SQLException e) {
             messageToUser.error("TimeOnActualizer.setInPcUserDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));

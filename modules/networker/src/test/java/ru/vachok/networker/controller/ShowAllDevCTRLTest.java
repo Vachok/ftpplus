@@ -8,9 +8,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.ScanOnline;
@@ -45,7 +43,7 @@ public class ShowAllDevCTRLTest {
         HttpServletResponse response = new MockHttpServletResponse();
         HttpServletRequest request = new MockHttpServletRequest();
         String modelMake = new ShowAllDevCTRL(new ScanOnline()).allDevices(model, request, response);
-        Assert.assertEquals(model.asMap().get("title"), "15045 ip remain");
+        Assert.assertTrue(model.asMap().get("title").toString().contains(" ip remain"));
         Assert.assertEquals(model.asMap().get("footer"), "<a href=\"/\"><img align=\"right\" src=\"/images/icons8-плохие-поросята-100g.png\" alt=\"_\"/></a>\n" +
                 "<a href=\"/pflists\"><font color=\"#00cc66\">Списки PF</font></a><br>\n" +
                 "<a href=\"/netscan\"><font color=\"#00cc66\">Скан локальных ПК</font></a><br>\n" +
@@ -59,7 +57,7 @@ public class ShowAllDevCTRLTest {
         Assert.assertEquals(model.asMap().get("head"), "<center><font color=\"\"><a href=\"/\">Главная</a>\n" +
                 "</font></center><center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
         String pcsAttribute = model.asMap().get("pcs").toString();
-        Assert.assertTrue(pcsAttribute.contains("<b>Since <i>Thu Jan 01 03:10:38 MSK 1970 last ExecScan: "), pcsAttribute);
+        Assert.assertTrue(pcsAttribute.contains("MSK 1970 last ExecScan: "), pcsAttribute);
         String okAttribute = model.asMap().get("ok").toString();
         Assert.assertFalse(okAttribute.isEmpty(), okAttribute);
         

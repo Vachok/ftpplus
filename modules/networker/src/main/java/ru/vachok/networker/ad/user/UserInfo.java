@@ -208,7 +208,7 @@ public abstract class UserInfo implements InformationFactory {
             }
         }
     
-        private String updTime(String pcName, boolean isOffline) {
+        private @NotNull String updTime(String pcName, boolean isOffline) {
             this.pcName = pcName;
             AppConfigurationLocal.getInstance().execute(this::countWorkTime, 10);
             StringBuilder stringBuilder = new StringBuilder();
@@ -288,8 +288,8 @@ public abstract class UserInfo implements InformationFactory {
             Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
             long timeSpend = lastOn.getTime() - timeOn.getTime();
             timeSpend = TimeUnit.MILLISECONDS.toMinutes(timeSpend);
-            try (PreparedStatement setTimeSpend = connection
-                    .prepareStatement(String.format("UPDATE pcuser SET spendtime=%d WHERE pcname LIKE '%s%%'", (int) timeSpend, pcName))) {
+            final String sql = String.format("UPDATE pcuser SET spendtime=%d WHERE pcname LIKE '%s%%'", (int) timeSpend, pcName);
+            try (PreparedStatement setTimeSpend = connection.prepareStatement(sql)) {
                 setTimeSpend.executeUpdate();
             }
         }
