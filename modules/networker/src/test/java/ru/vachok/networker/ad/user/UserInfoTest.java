@@ -157,7 +157,8 @@ public class UserInfoTest {
     
     @Test
     public void testRenewOffCounter() {
-        UserInfo.renewOffCounter("test", new Random().nextBoolean());
+        UserInfo.renewOffCounter("test.eat", false);
+        UserInfo.renewOffCounter("test.off", true);
     }
     
     @Test

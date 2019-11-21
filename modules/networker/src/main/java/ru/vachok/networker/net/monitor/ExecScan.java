@@ -20,19 +20,12 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -270,7 +263,7 @@ public class ExecScan extends DiapazonScan {
         if (hostName == null || hostName.isEmpty()) {
             hostName = "no name";
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("lan.online")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setQueryTimeout(18);
                 preparedStatement.setString(1, hostAddress);

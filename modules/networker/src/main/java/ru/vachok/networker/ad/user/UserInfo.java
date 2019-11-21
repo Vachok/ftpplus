@@ -12,11 +12,13 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.synchronizer.TimeOnActualizer;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -208,6 +210,7 @@ public abstract class UserInfo implements InformationFactory {
     
         private String updTime(String pcName, boolean isOffline) {
             this.pcName = pcName;
+            AppConfigurationLocal.getInstance().execute(this::countWorkTime, 10);
             StringBuilder stringBuilder = new StringBuilder();
             String sql;
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
@@ -215,19 +218,23 @@ public abstract class UserInfo implements InformationFactory {
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
             if (isOffline) {
                 sql = sqlOff;
+                stringBuilder.append("ISOFFLINE\n");
             }
             else {
+                stringBuilder.append("ONLINE (ELSE)\n");
                 long nowMinusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY + 10);
                 boolean startSmallerDelay = ConstantsFor.START_STAMP <= nowMinusDelay;
-    
                 sql = sqlOn;
-                if (startSmallerDelay && wasOffline()) {
+                if (wasOffline()) {
+                    stringBuilder.append("*WAS OFFLINE*: ");
                     sql = String
                             .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                                     .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
                 }
+                if (startSmallerDelay) {
+                    AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName));
+                }
             }
-            stringBuilder.append("On: ").append(sql).append(" off: ").append(sqlOff).append("\n");
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.setString(1, String.format("%s%%", pcName));
@@ -250,7 +257,7 @@ public abstract class UserInfo implements InformationFactory {
                 while (resultSet.next()) {
                     Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
                     long defaultStampMinutes = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(Year.now().getValue() - 1984);
-                    retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, defaultStampMinutes);
+                    retBool = timestamp.getTime() < defaultStampMinutes;
                 }
             }
             catch (SQLException e) {
