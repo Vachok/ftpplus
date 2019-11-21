@@ -9,6 +9,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,15 +43,17 @@ public class TimeOnActualizer implements Runnable {
             for (String pcName : pcNames) {
                 final String sql = "SELECT idrec FROM velkompc WHERE NamePP LIKE '" + pcName
                         .replace(ConstantsFor.DOMAIN_EATMEATRU, "") + "%' AND OnlineNow = 0 ORDER BY idrec DESC LIMIT 1";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                     ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        int idrec = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
-                        if (idrec > 0) {
-                            actualizeDB(idrec, pcName);
-                        }
-                        else {
-                            messageToUser.warn(this.getClass().getSimpleName(), "setTimeOnFromBigDB", preparedStatement.toString());
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setQueryTimeout(150);
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            int idrec = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
+                            if (idrec > 0) {
+                                actualizeDB(idrec, pcName);
+                            }
+                            else {
+                                messageToUser.warn(this.getClass().getSimpleName(), "setTimeOnFromBigDB", preparedStatement.toString());
+                            }
                         }
                     }
                 }
@@ -104,8 +107,9 @@ public class TimeOnActualizer implements Runnable {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setTimestamp(1, actualTimeOn);
-            preparedStatement.executeUpdate();
-            messageToUser.info(this.getClass().getSimpleName(), "setInPcUserDB executeUpdate: ", preparedStatement.toString());
+    
+            messageToUser.info(this.getClass().getSimpleName(),
+                MessageFormat.format("setInPcUserDB executeUpdate: {0}\n", preparedStatement.executeUpdate()), preparedStatement.toString());
         }
         catch (SQLException e) {
             messageToUser.error("TimeOnActualizer.setInPcUserDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));

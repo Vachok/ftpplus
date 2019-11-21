@@ -27,7 +27,10 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 
@@ -222,17 +225,24 @@ public abstract class UserInfo implements InformationFactory {
             }
             else {
                 stringBuilder.append("ONLINE (ELSE)\n");
-                long nowMinusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY + 10);
-                boolean startSmallerDelay = ConstantsFor.START_STAMP <= nowMinusDelay;
-                sql = sqlOn;
-                if (wasOffline()) {
-                    stringBuilder.append("*WAS OFFLINE*: ");
-                    sql = String
-                            .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-                                    .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
-                }
+                long nowMinusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
+                System.out.println("new Date(nowMinusDelay) = " + new Date(nowMinusDelay));
+                System.out.println("START_STAMP = " + new Date(ConstantsFor.START_STAMP));
+                boolean startSmallerDelay = ConstantsFor.START_STAMP >= nowMinusDelay;
+    
                 if (startSmallerDelay) {
                     AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName));
+                    sql = sqlOn;
+                }
+                else if (wasOffline()) {
+                    stringBuilder.append("*WAS OFFLINE*: ");
+                    sql = String
+                        .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+                            .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
+    
+                }
+                else {
+                    sql = sqlOn;
                 }
             }
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
