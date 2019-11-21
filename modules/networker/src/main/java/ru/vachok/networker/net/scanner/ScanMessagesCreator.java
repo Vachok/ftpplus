@@ -8,9 +8,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.tutu.conf.InformationFactory;
 
@@ -53,8 +51,7 @@ public class ScanMessagesCreator implements Keeper {
         return makeColors(stringBuilder.toString());
     }
     
-    @NotNull
-    private String getTrains() {
+    private @NotNull String getTrains() {
         InformationFactory factory = InformationFactory.getInstance();
         if (numOfTrains > 0) {
             factory.setClassOption(numOfTrains);
@@ -108,8 +105,7 @@ public class ScanMessagesCreator implements Keeper {
     
     }
     
-    @NotNull
-    private String makeColors(@NotNull String trainsFromArray) {
+    private @NotNull String makeColors(@NotNull String trainsFromArray) {
         HTMLGeneration htmlGeneration = HTMLGeneration.getInstance("");
         StringBuilder stringBuilder = new StringBuilder();
         try {
@@ -122,6 +118,9 @@ public class ScanMessagesCreator implements Keeper {
                 }
                 else if (string.contains("to")) {
                     string = htmlGeneration.setColor("#ffd447", string);
+                    stringBuilder.append(string).append("<br>");
+                }
+                else {
                     stringBuilder.append(string).append("<br>");
                 }
             }

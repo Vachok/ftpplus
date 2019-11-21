@@ -13,6 +13,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -41,15 +42,15 @@ public abstract class PCInfo implements InformationFactory {
         }
         else {
             if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-                UserInfo.renewOffCounter(pcName, false);
+                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, false), 10);
                 return new PCOn(aboutWhat);
             }
             else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-                UserInfo.renewOffCounter(pcName, true);
+                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true), 10);
                 return new PCOff(aboutWhat);
             }
             else if (aboutWhat.equals(PCOff.class.getSimpleName())) {
-                UserInfo.renewOffCounter(pcName, true);
+                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true), 10);
                 return new PCOff();
             }
             else {

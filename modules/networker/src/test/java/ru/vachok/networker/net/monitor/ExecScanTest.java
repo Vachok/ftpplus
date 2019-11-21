@@ -8,6 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -22,6 +23,7 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -68,11 +70,18 @@ import java.util.concurrent.LinkedBlockingDeque;
     public void testRun() {
         File fileTestVlan = new File("test-213.scan");
         ExecScan scan = new ExecScan(213, 214, "10.200.", fileTestVlan, true);
-        scan.run();
-        Assert.assertTrue(fileTestVlan.exists());
-        String fileAsString = FileSystemWorker.readFile(fileTestVlan.getAbsolutePath());
-        Assert.assertTrue(fileAsString.contains("10.200.213.1"), fileAsString);
-        fileTestVlan.deleteOnExit();
+        AppConfigurationLocal.getInstance().execute(scan, 6);
+        try {
+            Thread.sleep(7000);
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        finally {
+            Assert.assertTrue(fileTestVlan.exists());
+            fileTestVlan.deleteOnExit();
+        }
+        
     }
     
     @Test

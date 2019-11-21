@@ -509,6 +509,10 @@ public enum ConstantsFor {
     
     public static final String MARKEDASCRASHED = "is marked as crashed";
     
+    public static final String CHARSET_IBM866 = "IBM866";
+    
+    public static final String DB_LANONLINE = "lan.online";
+    
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

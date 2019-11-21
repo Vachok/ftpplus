@@ -6,26 +6,19 @@ package ru.vachok.networker.componentsrepo.services;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
@@ -53,7 +46,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
             submit.get(30, TimeUnit.SECONDS);
         }
         catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
@@ -71,7 +64,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
             ftpClient.configure(config);
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     

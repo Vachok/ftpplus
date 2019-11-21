@@ -5,7 +5,6 @@ package ru.vachok.networker.data;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.*;
@@ -13,17 +12,20 @@ import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -37,6 +39,8 @@ public abstract class NetKeeper implements Keeper, Serializable {
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(ConstantsNet.IPS_IN_VELKOM_VLAN);
     
     private static final Map<String, File> SCAN_FILES = new ConcurrentHashMap<>(9);
+    
+    private static Map<String, File> scanFiles = getScanFiles();
     
     private static final List<String> CURRENT_SCAN_LIST = new ArrayList<>();
     
@@ -55,8 +59,6 @@ public abstract class NetKeeper implements Keeper, Serializable {
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
     
     private static Properties properties = InitProperties.getTheProps();
-    
-    private static Map<String, File> scanFiles = getScanFiles();
     
     private static String currentProvider = "Unknown yet";
     
@@ -94,7 +96,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return new ArrayList<>(CURRENT_SCAN_LIST);
     }
     
-    public static @NotNull Map<InetAddress, String> getMapAddr() {
+    public static @NotNull Map<InetAddress, String> getENUMAddresses() {
         Map<InetAddress, String> retDeq = new ConcurrentHashMap<>();
         Field[] fields = OtherKnownDevices.class.getFields();
         for (Field field : fields) {
@@ -116,18 +118,44 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return retDeq;
     }
     
-    private static boolean checkAlreadyExistingFiles() {
-        try {
-            for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
-                String scanFileName = scanFile.getName();
-                if (scanFile.length() > 0 & scanFileName.contains("lan_")) {
-                    messageToUser.info(copyToLanDir(scanFile));
-                }
-            }
-            return true;
-        }
-        catch (NullPointerException e) {
-            throw new ScanFilesException("No lan_ files found");
+    public static void setOffLines(ConcurrentMap<String, String> lines) {
+        NETLISTS_OFFLINES.putAll(lines);
+    }
+    
+    @Contract(pure = true)
+    public static ConcurrentMap<String, String> editOffLines() {
+        return NETLISTS_OFFLINES;
+    }
+    
+    private static void makeFilesMap() {
+        if (checkAlreadyExistingFiles()) {
+            
+            File lan205 = new File(FileNames.NEWLAN205);
+            scanFiles.put(FileNames.NEWLAN205, lan205);
+            
+            File lan210 = new File(FileNames.NEWLAN210);
+            scanFiles.put(FileNames.NEWLAN210, lan210);
+            
+            File lan215 = new File(FileNames.NEWLAN215);
+            scanFiles.put(FileNames.NEWLAN215, lan215);
+            
+            File lan220 = new File(FileNames.NEWLAN220);
+            scanFiles.put(FileNames.NEWLAN220, lan220);
+            
+            File oldLan0 = new File(FileNames.OLDLANTXT0);
+            scanFiles.put(FileNames.OLDLANTXT0, oldLan0);
+            
+            File oldLan1 = new File(FileNames.OLDLANTXT1);
+            scanFiles.put(FileNames.OLDLANTXT1, oldLan1);
+            
+            File srv10 = new File(FileNames.SERVTXT_10SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_10SRVTXT, srv10);
+            
+            File srv21 = new File(FileNames.SERVTXT_21SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_21SRVTXT, srv21);
+            
+            File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
         }
     }
     
@@ -139,15 +167,6 @@ public abstract class NetKeeper implements Keeper, Serializable {
     @Contract(pure = true)
     public static ConcurrentMap<String, String> getOnLinesResolve() {
         return NETLISTS_ONLINERESOLVE;
-    }
-    
-    public static void setOffLines(ConcurrentMap<String, String> lines) {
-        NETLISTS_OFFLINES.putAll(lines);
-    }
-    
-    @Contract(pure = true)
-    public static ConcurrentMap<String, String> editOffLines() {
-        return NETLISTS_OFFLINES;
     }
     
     /**
@@ -195,12 +214,19 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return retList;
     }
     
-    private static @NotNull List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
-        List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
-        Collections.sort(listOfIPAsStrings);
-        List<InetAddress> retList = new ArrayList<>(listOfIPAsStrings.size());
-        listOfIPAsStrings.forEach(addr->retList.add(parseInetAddress(addr)));
-        return retList;
+    private static boolean checkAlreadyExistingFiles() {
+        try {
+            for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
+                String scanFileName = scanFile.getName();
+                if (scanFile.length() > 0 & scanFileName.contains("lan_")) {
+                    messageToUser.info(copyToLanDir(scanFile));
+                }
+            }
+            return true;
+        }
+        catch (NullPointerException e) {
+            throw new ScanFilesException("No lan_ files found");
+        }
     }
     
     private static InetAddress parseInetAddress(@NotNull String inetAddressString) {
@@ -234,38 +260,6 @@ public abstract class NetKeeper implements Keeper, Serializable {
         NetKeeper.currentProvider = currentProvider;
     }
     
-    private static void makeFilesMap() {
-        if (checkAlreadyExistingFiles()) {
-            
-            File lan205 = new File(FileNames.NEWLAN205);
-            scanFiles.put(FileNames.NEWLAN205, lan205);
-            
-            File lan210 = new File(FileNames.NEWLAN210);
-            scanFiles.put(FileNames.NEWLAN210, lan210);
-            
-            File lan215 = new File(FileNames.NEWLAN215);
-            scanFiles.put(FileNames.NEWLAN215, lan215);
-            
-            File lan220 = new File(FileNames.NEWLAN220);
-            scanFiles.put(FileNames.NEWLAN220, lan220);
-            
-            File oldLan0 = new File(FileNames.OLDLANTXT0);
-            scanFiles.put(FileNames.OLDLANTXT0, oldLan0);
-            
-            File oldLan1 = new File(FileNames.OLDLANTXT1);
-            scanFiles.put(FileNames.OLDLANTXT1, oldLan1);
-            
-            File srv10 = new File(FileNames.SERVTXT_10SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_10SRVTXT, srv10);
-            
-            File srv21 = new File(FileNames.SERVTXT_21SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_21SRVTXT, srv21);
-            
-            File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
-        }
-    }
-    
     private static @NotNull String copyToLanDir(@NotNull File scanFile) {
         StringBuilder sb = new StringBuilder();
         String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
@@ -274,7 +268,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
         boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
         
         sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
-                .append(" kilobytes)");
+            .append(" kilobytes)");
         sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
         if (scanFile.exists()) {
             scanFile.deleteOnExit();
@@ -282,58 +276,11 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return sb.toString();
     }
     
-    private class ChkOnlinePCsSizeChange implements Runnable {
-        
-        
-        static final String RESOLVE = "onLinesResolve";
-    
-        private Preferences userPref = InitProperties.getUserPref();
-        
-        private int currentSize = NETLISTS_ONLINERESOLVE.size();
-        
-        private int wasSize;
-        
-        private String nameOfExtObject = getClass().getSimpleName() + FileNames.ONLINESRESOLVE_MAP;
-        
-        ChkOnlinePCsSizeChange() {
-            this.wasSize = Integer.parseInt(userPref.get(RESOLVE, "0"));
-        }
-        
-        @Override
-        public void run() {
-            if (wasSize < currentSize) {
-                try (OutputStream outputStream = new FileOutputStream(nameOfExtObject)) {
-                    new ExitApp(NETLISTS_ONLINERESOLVE).writeExternal(new ObjectOutputStream(outputStream));
-                }
-                catch (IOException e) {
-                    messageToUser.error(e.getMessage() + " see line: 144");
-                }
-                userPref.put(RESOLVE, String.valueOf(NETLISTS_ONLINERESOLVE.size()));
-            }
-            else {
-                readMap();
-            }
-        }
-        
-        private void readMap() {
-            try (InputStream inputStream = new FileInputStream(nameOfExtObject);
-                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
-            ) {
-                Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
-                NETLISTS_ONLINERESOLVE.putAll(fromFileMap);
-            }
-            catch (IOException | ClassNotFoundException ignore) {
-                //
-            }
-        }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ChkOnlinePCsSizeChange{");
-            sb.append(", currentSize=").append(currentSize);
-            sb.append(", wasSize=").append(wasSize);
-            sb.append('}');
-            return sb.toString();
-        }
+    private static @NotNull List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
+        List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
+        Collections.sort(listOfIPAsStrings);
+        List<InetAddress> retList = new ArrayList<>(listOfIPAsStrings.size());
+        listOfIPAsStrings.forEach(address->retList.add(parseInetAddress(address)));
+        return retList;
     }
 }

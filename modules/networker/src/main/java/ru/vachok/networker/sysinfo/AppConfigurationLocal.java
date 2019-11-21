@@ -8,6 +8,7 @@ import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
 import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.concurrent.*;
 
@@ -36,7 +37,6 @@ public interface AppConfigurationLocal extends Runnable {
             default:
                 return AppComponents.threadConfig();
         }
-        
     }
     
     default void execute(Runnable runnable) {
@@ -48,7 +48,8 @@ public interface AppConfigurationLocal extends Runnable {
         Future<?> submit = poolExecutor.submit(runnable);
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         for (Runnable r : executorQueue) {
-            if (r instanceof DBMessenger) {
+            if (r instanceof DBMessenger || r.equals(runnable)) {
+                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }
         }
