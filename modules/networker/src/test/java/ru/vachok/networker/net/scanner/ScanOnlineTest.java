@@ -4,9 +4,13 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -123,7 +127,7 @@ public class ScanOnlineTest {
     @Test
     public void testPingDevices() {
         try {
-            List<String> pingedDevices = new ScanOnline().pingDevices(NetKeeper.getMapAddr());
+            List<String> pingedDevices = new ScanOnline().pingDevices(NetKeeper.getENUMAddresses());
             Assert.assertNotNull(pingedDevices);
             if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
                 Assert.assertTrue(pingedDevices.size() == 21, MessageFormat

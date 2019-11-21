@@ -20,13 +20,19 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.StringJoiner;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -140,11 +146,14 @@ public class ExecScan extends DiapazonScan {
         File ipsWithInet = new File(FileNames.INETSTATSIP_CSV);
         ipsQueue.clear();
         ipsQueue.addAll(FileSystemWorker.readFileToQueue(ipsWithInet.toPath().toAbsolutePath().normalize()));
-        if (vlanFile != null && vlanFile.exists()) {
+        boolean isFileNotNullAndExists = vlanFile != null && vlanFile.exists();
+        boolean isLocalDequeCapacityBiggerZero = getAllDevLocalDeq().remainingCapacity() > 0;
+        if (isFileNotNullAndExists) {
             String copyOldResult = MessageFormat.format("Copy {0} is: {1} ({2})", vlanFile.getAbsolutePath(), cpOldFile(), this.getClass().getSimpleName());
             messageToUser.info(copyOldResult);
         }
-        if (getAllDevLocalDeq().remainingCapacity() > 0) {
+        if (isLocalDequeCapacityBiggerZero) {
+            
             boolean execScanB = execScan();
             messageToUser.info(this.getClass().getSimpleName(), MessageFormat
                 .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
@@ -165,12 +174,13 @@ public class ExecScan extends DiapazonScan {
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
         try {
+            Files.createFile(vlanFile.toPath());
             scanVlans(fromVlan, toVlan);
             preferences.putLong(DiapazonScan.class.getSimpleName(), System.currentTimeMillis());
             preferences.sync();
             return true;
         }
-        catch (RuntimeException | BackingStoreException e) {
+        catch (RuntimeException | BackingStoreException | IOException e) {
             messageToUser.error(MessageFormat.format("ExecScan.execScan says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
             return false;
         }
@@ -234,13 +244,13 @@ public class ExecScan extends DiapazonScan {
         if (byAddress.isReachable(calcTimeOutMSec())) {
             NetKeeper.getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add(HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.GREEN, hostName));
+            printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
             if (UsefulUtilities.thisPC().toLowerCase().contains("rups") || UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
                 AppConfigurationLocal.getInstance().execute(()->writeToDB(hostAddress, hostName), 19);
             }
             else {
                 messageToUser.info(this.getClass().getSimpleName(), "writeToDB", hostAddress);
             }
-            printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
         else {
             getAllDevLocalDeq().add(HTMLGeneration.getInstance("").setColor(ConstantsFor.RED, hostName));
