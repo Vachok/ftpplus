@@ -28,7 +28,7 @@ class ResolveUserInDataBase extends UserInfo {
     
     private static final String RESULTS = "Results: ";
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
     
     private Object aboutWhat;
     
@@ -139,9 +139,6 @@ class ResolveUserInDataBase extends UserInfo {
             if (results.size() <= 0 | AbstractForms.fromArray(results).contains(ConstantsFor.USERS)) {
                 this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostName();
                 results = searchDatabase(resultsLimit, "select * from velkom.pcuser where pcName like ? limit ?");
-            }
-            else {
-                messageToUser.info(this.getClass().getSimpleName(), RESULTS, String.valueOf(results.size()));
             }
         }
         return results;

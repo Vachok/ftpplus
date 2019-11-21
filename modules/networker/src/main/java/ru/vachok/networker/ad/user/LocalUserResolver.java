@@ -26,9 +26,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
  @since 22.08.2019 (14:14) */
 class LocalUserResolver extends UserInfo {
     
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.class.getSimpleName());
-    
     private Object pcName;
     
     private String userName;
@@ -70,9 +67,6 @@ class LocalUserResolver extends UserInfo {
         }
         catch (IndexOutOfBoundsException e) {
             this.userName = new UnknownUser(this.getClass().getSimpleName()).getInfo();
-        }
-        finally {
-            messageToUser.info(this.getClass().getSimpleName(), "split", Arrays.toString(splitBySpace));
         }
         return splitBySpace;
     }
@@ -132,7 +126,6 @@ class LocalUserResolver extends UserInfo {
             ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
             Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
             String futureString = stringFuture.get(10, TimeUnit.SECONDS);
-            messageToUser.info(this.getClass().getSimpleName(), "c:\\users", futureString);
             timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         }
         catch (InterruptedException e) {
