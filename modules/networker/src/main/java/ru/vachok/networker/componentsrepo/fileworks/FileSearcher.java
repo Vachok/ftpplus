@@ -19,8 +19,14 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -257,6 +263,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
                 .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
         dropSemaphore.release();
+        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(AbstractForms.fromArray(resSet));
     }
     
     /**

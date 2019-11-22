@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -133,9 +132,6 @@ class ChkMailAndUpdateDB implements Callable<Long> {
                 if (writeDB(subject, dayOfWeek, timeSt)) {
                     delMessage(mailMessage);
                 }
-                String todayInfoStr = todayInfo();
-                messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + UsefulUtilities.thisPC(), true + " sending to base",
-                    todayInfoStr + "\n" + chDB);
             }
             else {
                 messageToUser.info(getClass().getSimpleName() + MSG, "mailMessages", " = " + mailMessages.getInbox().getMessageCount());
@@ -143,6 +139,9 @@ class ChkMailAndUpdateDB implements Callable<Long> {
         }
         catch (MessagingException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + MSG, e));
+        }
+        finally {
+            messageToUser.info(todayInfo());
         }
     }
     
@@ -186,7 +185,8 @@ class ChkMailAndUpdateDB implements Callable<Long> {
             p.setTimestamp(5, timestamp);
             
             int rowsUpdate = p.executeUpdate();
-            messageToUser.info("DB updated: " + rowsUpdate + "\n", IS_ + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
+            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
+                .info("DB updated: " + rowsUpdate + "\n", IS_ + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
             this.timeStamp = timeSt;
             return rowsUpdate > 0;
         }
@@ -216,11 +216,11 @@ class ChkMailAndUpdateDB implements Callable<Long> {
         ) {
             p.setInt(1, (LocalDate.now().getDayOfWeek().getValue() + 1));
             try (ResultSet r = p.executeQuery()) {
-                stringBuilder.append(parseResultSet(r));
+                stringBuilder.append(parseResultSet(r)).append("\n");
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.warn(ChkMailAndUpdateDB.class.getSimpleName(), e.getMessage(), " see line: 221 ***");
         }
         return stringBuilder.toString();
     }

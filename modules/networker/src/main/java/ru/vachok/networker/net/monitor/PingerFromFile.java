@@ -6,7 +6,7 @@ package ru.vachok.networker.net.monitor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -18,6 +18,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.BufferedReader;
@@ -71,8 +72,7 @@ public class PingerFromFile implements NetScanService {
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PingerFromFile.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PingerFromFile.class.getSimpleName());
     
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
     
@@ -234,6 +234,7 @@ public class PingerFromFile implements NetScanService {
         });
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
         FileSystemWorker.writeFile(FileNames.PINGRESULT, pingsList.stream());
+        MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).info(AbstractForms.fromArray(pingsList));
     }
     
     private void parseAddr(String readLine) {
