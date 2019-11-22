@@ -111,6 +111,7 @@ public class IntoApplication {
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
         MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName()).info(UsefulUtilities.thisPC(), "appInfoStarter", MessageFormat
             .format("{0} is {1} \n{2}", configurableApplicationContext.getDisplayName(), configurableApplicationContext
-                .isActive(), new Date(ConstantsFor.START_STAMP)) + "\nhttp://" + new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress() + ":8880/");
+                .isActive(), new Date(ConstantsFor.START_STAMP)) + "\nhttp://" + new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress()
+            .getHostAddress() + ":8880/");
     }
 }

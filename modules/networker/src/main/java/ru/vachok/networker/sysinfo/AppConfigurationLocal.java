@@ -4,7 +4,6 @@ package ru.vachok.networker.sysinfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
@@ -51,13 +50,12 @@ public interface AppConfigurationLocal extends Runnable {
             System.out.println("submit.get() = " + submit.get(timeOutSeconds, TimeUnit.SECONDS));
         }
         catch (InterruptedException e) {
-            FileSystemWorker.error(getClass().getSimpleName() + ".execute", e);
+            System.err.println(e.getMessage());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            FileSystemWorker.error(getClass().getSimpleName() + ".execute", e);
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
     
