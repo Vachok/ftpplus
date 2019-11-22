@@ -1,14 +1,9 @@
 package ru.vachok.networker.restapi.message;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.*;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
@@ -31,9 +26,9 @@ public class MessageLocalTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(MessageLocal.class
-        .getSimpleName(), System.nanoTime());
+            .getSimpleName(), System.nanoTime());
     
-    private MessageToUser messageToUser;
+    private MessageLocal messageToUser;
     
     @BeforeClass
     public void setUp() {
@@ -54,7 +49,7 @@ public class MessageLocalTest {
     @Test
     public void testIgExc() {
         try {
-            ((MessageLocal) messageToUser).igExc(new InvokeEmptyMethodException("test"));
+            messageToUser.igExc(new InvokeEmptyMethodException("test"));
         }
         catch (InvokeEmptyMethodException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -95,7 +90,7 @@ public class MessageLocalTest {
     
     @Test
     public void testLoggerFine() {
-        ((MessageLocal) messageToUser).loggerFine("test");
+        messageToUser.loggerFine("test");
     }
     
     @Test
@@ -107,8 +102,16 @@ public class MessageLocalTest {
     @Test
     public void testWrireLogToFile() {
         File file = new File(FileNames.APP_JSON);
-        Assert.assertTrue(file.delete());
+        if (file.exists()) {
+            Assert.assertTrue(file.delete());
+        }
         messageToUser.errorAlert("test", "test", "test");
+        try {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
         Assert.assertTrue(file.exists());
         Queue<String> appJson = FileSystemWorker.readFileToQueue(file.toPath().normalize().toAbsolutePath());
         while (!appJson.isEmpty()) {
@@ -121,7 +124,7 @@ public class MessageLocalTest {
             catch (ParseException e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
-            
+            file.deleteOnExit();
         }
     }
 }

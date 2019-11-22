@@ -33,35 +33,36 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("null, !null -> new")
     static @NotNull MessageToUser getInstance(String messengerType, @NotNull String messengerHeader) {
-    
-        final MessageToUser localMsg = new MessageLocal(messengerHeader);
-        final MessageToUser DB_MESSENGER = new DBMessenger(messengerHeader);
-        final MessageToUser swingMsg = new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
-        final MessageToUser fileMsg = new MessageFileLocal(messengerHeader);
-        final MessageToUser eMail = new MessageEmail(messengerHeader);
-        final MessageToUser trayMsg = MessageToTray.getInstance(messengerHeader);
+        final MessageToUser messageToUser;
+        
         
         if (messengerType == null) {
-            return localMsg;
+            messageToUser = new MessageLocal(messengerHeader);
+            return messageToUser;
         }
         else if (messengerType.equals(LOCAL_CONSOLE)) {
-            return localMsg;
+            messageToUser = new MessageLocal(messengerHeader);
+            return messageToUser;
         }
         else if (messengerType.equals(TRAY)) {
-            trayMsg.setHeaderMsg(messengerHeader);
-            return trayMsg;
+            messageToUser = MessageToTray.getInstance(messengerHeader);
+            messageToUser.setHeaderMsg(messengerHeader);
+            return messageToUser;
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
-            return swingMsg;
+            messageToUser = new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
+            return messageToUser;
         }
         else if (messengerType.equalsIgnoreCase(FILE)) {
-            return fileMsg;
+            messageToUser = new MessageFileLocal(messengerHeader);
+            return messageToUser;
         }
         else if (messengerType.equalsIgnoreCase(EMAIL)) {
-            return eMail;
+            messageToUser = new MessageEmail(messengerHeader);
+            return messageToUser;
         }
         else {
-            return localMsg;
+            return new MessageLocal(messengerHeader);
         }
     }
     

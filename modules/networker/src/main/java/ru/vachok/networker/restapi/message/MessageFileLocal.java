@@ -3,12 +3,9 @@ package ru.vachok.networker.restapi.message;
 
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 
 import java.io.*;
-import java.text.MessageFormat;
 
 
 class MessageFileLocal implements MessageToUser {
@@ -32,8 +29,8 @@ class MessageFileLocal implements MessageToUser {
     }
     
     @Contract(pure = true)
-    MessageFileLocal(String titleMsg) {
-        this.titleMsg = titleMsg;
+    MessageFileLocal(String headerMsg) {
+        this.headerMsg = headerMsg;
     }
     
     @Override
@@ -41,7 +38,12 @@ class MessageFileLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.bodyMsg = bodyMsg;
         this.titleMsg = titleMsg;
-        pringAppLog(ConstantsFor.STR_ERROR);
+        try {
+            pringAppLog(ConstantsFor.STR_ERROR);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     @Override
@@ -108,22 +110,15 @@ class MessageFileLocal implements MessageToUser {
     
     private void pringAppLog(String logType) {
         JsonObject jsonObject = new JsonObject();
-        try {
-            jsonObject.set(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
-            jsonObject.set(logType, this.headerMsg);
-            jsonObject.set(titleMsg, bodyMsg);
+        try (OutputStream outputStream = new FileOutputStream(appLog, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+            jsonObject.add(logType, this.headerMsg);
+            jsonObject.add(titleMsg, bodyMsg);
+            printStream.println(jsonObject.toString());
         }
-        catch (RuntimeException e) {
-            jsonObject.set("JSON Error", e.getClass().getSimpleName());
-        }
-        finally {
-            try (OutputStream outputStream = new FileOutputStream(appLog, true);
-                 PrintStream printStream = new PrintStream(outputStream, true)) {
-                printStream.println(jsonObject.toString());
-            }
-            catch (IOException e) {
-                System.err.println(MessageFormat.format("{0}: {1} see line: 124 ***", MessageFileLocal.class.getSimpleName(), e.getMessage()));
-            }
+        catch (RuntimeException | IOException e) {
+            e.printStackTrace();
         }
     }
     

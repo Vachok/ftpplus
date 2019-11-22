@@ -40,6 +40,7 @@ public class TimeOnActualizer implements Runnable {
             pcNames.add(pcName);
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             for (String pcName : pcNames) {
                 final String sql = "SELECT idrec FROM velkompc WHERE NamePP LIKE '" + pcName
                         .replace(ConstantsFor.DOMAIN_EATMEATRU, "") + "%' AND OnlineNow = 0 ORDER BY idrec DESC LIMIT 1";
