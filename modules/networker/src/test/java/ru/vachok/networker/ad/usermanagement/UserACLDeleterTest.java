@@ -44,7 +44,7 @@ public class UserACLDeleterTest {
         }
         UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
 
-//        UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs\\Common_new\\Проекты\\Проекты_Строительство\\Проект_KFC"));
+//        UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\БАЗЫ\\"));
         String removeAccess = userACLManager.removeAccess(oldUser);
     }
 }
