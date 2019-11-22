@@ -513,6 +513,8 @@ public enum ConstantsFor {
     
     public static final String DB_LANONLINE = "lan.online";
     
+    public static final String DB_LOGNETWORKER = "log.networker";
+    
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

@@ -5,15 +5,11 @@ package ru.vachok.networker.info;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -49,13 +45,6 @@ public class PageGenerationHelperTest {
         Assert.assertTrue(infoAboutFooter.contains("<a href=\"/netscan\"><font color=\"#00cc66\">Скан локальных ПК</font></a><br>"), infoAboutFooter);
         Assert.assertTrue(infoAboutFooter.contains("<a href=\"/\"><img align=\"right\" src=\"/images/icons8-плохие-поросята-100g.png\" alt=\"_\"/></a>"), infoAboutFooter);
         
-    }
-    
-    @Test
-    public void testSetInfo() {
-        INFORMATION_FACTORY.setClassOption(FileSystemWorker.readFile("exit.last"));
-        Assert.assertTrue(new File(PageGenerationHelper.class.getSimpleName() + ".log").exists());
-        Assert.assertTrue(new File(PageGenerationHelper.class.getSimpleName() + ".log").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
     @Test

@@ -30,8 +30,8 @@ public class UserACLAdderTest {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
             Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
-//            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Проекты\\Проекты_Строительство\\Проект_KFC");
-            this.commonAdder = new UserACLAdder(startPath, owner, "rw");
+//            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\БАЗЫ\\");
+            this.commonAdder = new UserACLAdder(startPath, owner, "r");
             Files.walkFileTree(startPath, commonAdder);
             this.attributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
             AclEntry acl;

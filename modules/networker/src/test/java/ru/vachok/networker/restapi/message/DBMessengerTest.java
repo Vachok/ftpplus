@@ -4,27 +4,17 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.*;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -81,8 +71,8 @@ public class DBMessengerTest {
         String dbName = ConstantsFor.DBBASENAME_U0466446_WEBAPP;
         String retStr = "bad";
         Timestamp executePS;
-        
-        try (Connection c = dataConnectTo.getDefaultConnection("log.networker");
+    
+        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_LOGNETWORKER);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet resultSet = p.executeQuery();
         ) {

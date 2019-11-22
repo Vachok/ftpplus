@@ -139,11 +139,16 @@ public class MessageLocal implements MessageToUser {
                 throw new InvokeIllegalException(MessageFormat.format("{0} writeToFile", getClass().getSimpleName()));
             }
         }
-        switch (typeLog) {
-            case "err":
-                MessageToUser.getInstance(MessageToUser.FILE, headerMsg).errorAlert(headerMsg, titleMsg, bodyMsg);
-            case "warn":
-                MessageToUser.getInstance(MessageToUser.FILE, headerMsg).warning(headerMsg, titleMsg, bodyMsg);
+        try {
+            switch (typeLog) {
+                case "err":
+                    MessageToUser.getInstance(MessageToUser.FILE, headerMsg).errorAlert(headerMsg, titleMsg, bodyMsg);
+                case "warn":
+                    MessageToUser.getInstance(MessageToUser.FILE, headerMsg).warning(headerMsg, titleMsg, bodyMsg);
+            }
+        }
+        catch (RuntimeException e) {
+            e.printStackTrace();
         }
         if (UsefulUtilities.getLogLevel() > 1 & typeLog.equalsIgnoreCase("info")) {
             MessageToUser.getInstance(MessageToUser.FILE, headerMsg).error(headerMsg, titleMsg, bodyMsg);

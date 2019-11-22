@@ -42,9 +42,29 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         return difference;
     }
     
+    @Override
+    public String getInfo() {
+        return saveAccessLogToDatabase();
+    }
+    
+    @Override
+    public String call() {
+        return saveAccessLogToDatabase();
+    }
+    
+    private String saveAccessLogToDatabase() {
+        final int idBefore = getLastRecordID();
+        String infoAboutLogs = logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+        setComentInDB(idBefore);
+        return infoAboutLogs;
+    }
+    
     public static int getLastRecordID() {
         int result = -1;
         try (Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
+            connection.setAutoCommit(false);
+            connection.setSavepoint();
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT idrec FROM inetstats ORDER BY idrec DESC LIMIT 1;")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     Thread.currentThread().setName(SaveLogsToDB.class.getSimpleName());
@@ -53,6 +73,9 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
                         result = resultSet.getInt(1);
                         break;
                     }
+                }
+                catch (SQLException e) {
+                    connection.rollback();
                 }
             }
             catch (RuntimeException e) {
@@ -67,6 +90,21 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         return result;
     }
     
+    private void setComentInDB(final int idBefore) {
+        int diffRows = (getLastRecordID() - idBefore);
+        Thread.currentThread().setName(MessageFormat.format("inetdiff{0}", diffRows));
+        final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s at %s';", diffRows, UsefulUtilities.thisPC(), new Date());
+        ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo
+                .getInstance(ru.vachok.networker.restapi.database.DataConnectTo.DEFAULT_I);
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            messageToUser.info(this.getClass().getSimpleName(), sql, "comment updated: " + preparedStatement.executeUpdate());
+        }
+        catch (SQLException ignore) {
+            //19.10.2019 (0:22)
+        }
+    }
+    
     public String saveAccessLogToDatabaseWithTimeOut(String timeOut) {
         this.extTimeOut = Integer.parseInt(timeOut);
         ru.vachok.stats.data.DataConnectTo option = DataConnectTo.getInstance("SQLSrvInetstat");
@@ -79,24 +117,6 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         catch (NumberFormatException e) {
             return this.logsToDB.getInfoAbout("60");
         }
-    }
-    
-    @Override
-    public String call() {
-        return saveAccessLogToDatabase();
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
-            .toString();
-    }
-    
-    private String saveAccessLogToDatabase() {
-        final int idBefore = getLastRecordID();
-        String infoAboutLogs = logsToDB.getInfoAbout(String.valueOf(extTimeOut));
-        setComentInDB(idBefore);
-        return infoAboutLogs;
     }
     
     @Override
@@ -129,19 +149,10 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         return logsToDB.equals(db.logsToDB);
     }
     
-    private void setComentInDB(final int idBefore) {
-        int diffRows = (getLastRecordID() - idBefore);
-        Thread.currentThread().setName(MessageFormat.format("inetdiff{0}", diffRows));
-        final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s at %s';", diffRows, UsefulUtilities.thisPC(), new Date());
-        ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo
-            .getInstance(ru.vachok.networker.restapi.database.DataConnectTo.DEFAULT_I);
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            messageToUser.info(this.getClass().getSimpleName(), sql, "comment updated: " + preparedStatement.executeUpdate());
-        }
-        catch (SQLException ignore) {
-            //19.10.2019 (0:22)
-        }
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
+                .toString();
     }
     
     @Override
@@ -157,11 +168,6 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         else {
             throw new InvokeIllegalException("Must be Integer");
         }
-    }
-    
-    @Override
-    public String getInfo() {
-        return saveAccessLogToDatabase();
     }
     
 }

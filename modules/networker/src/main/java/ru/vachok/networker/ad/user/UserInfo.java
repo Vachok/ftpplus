@@ -27,10 +27,8 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -237,9 +235,9 @@ public abstract class UserInfo implements InformationFactory {
                 else if (wasOffline()) {
                     stringBuilder.append("*WAS OFFLINE*: ");
                     sql = String
-                        .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-                            .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
-    
+                            .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+                                    .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
+                    
                 }
                 else {
                     sql = sqlOn;
@@ -258,6 +256,23 @@ public abstract class UserInfo implements InformationFactory {
             return stringBuilder.toString();
         }
     
+        private void countWorkTime() {
+            final String sql = "select * from pcuser where pcname like ?";
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setString(1, String.format("%s%%", pcName));
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            countTime(connection, resultSet);
+                        }
+                    }
+                }
+            }
+            catch (SQLException e) {
+                messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName(), "countWorkTime", e.getMessage() + Thread.currentThread().getState().name());
+            }
+        }
+        
         private boolean wasOffline() {
             @SuppressWarnings("DuplicateStringLiteralInspection") final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
             boolean retBool = false;
@@ -276,23 +291,6 @@ public abstract class UserInfo implements InformationFactory {
             return retBool;
         }
         
-        private void countWorkTime() {
-            final String sql = "select * from pcuser where pcname like ?";
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                    preparedStatement.setString(1, String.format("%s%%", pcName));
-                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                        while (resultSet.next()) {
-                            countTime(connection, resultSet);
-                        }
-                    }
-                }
-            }
-            catch (SQLException e) {
-                messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName(), "countWorkTime", e.getMessage() + Thread.currentThread().getState().name());
-            }
-        }
-    
         private void countTime(@NotNull Connection connection, @NotNull ResultSet resultSet) throws SQLException {
             Timestamp timeOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON);
             Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
@@ -307,6 +305,9 @@ public abstract class UserInfo implements InformationFactory {
         private boolean writeAllPrefixToDB() {
             int exUpInt = 0;
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
+                connection.setAutoCommit(false);
+                connection.setSavepoint();
+                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
                 try (PreparedStatement prepStatement = connection
                         .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
                     List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
@@ -315,6 +316,10 @@ public abstract class UserInfo implements InformationFactory {
                         exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
                         messageToUser.info(MessageFormat.format("Update = {0}: {1})", exUpInt, prepStatement.toString()));
                     }
+                    connection.commit();
+                }
+                catch (SQLException e) {
+                    connection.rollback();
                 }
             }
             catch (SQLException | RuntimeException e) {
