@@ -102,6 +102,8 @@ public class IntoApplication {
     static void appInfoStarter() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
+        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName()).info(MessageFormat
+                .format("{0} is {1}", configurableApplicationContext.getDisplayName(), configurableApplicationContext.isActive()));
     }
     
     @Override

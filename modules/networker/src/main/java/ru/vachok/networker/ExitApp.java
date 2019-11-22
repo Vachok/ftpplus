@@ -10,9 +10,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -21,9 +19,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -230,6 +226,7 @@ public class ExitApp extends Thread implements Externalizable {
             FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
             miniLoggerLast.add(FileSystemWorker.delTemp());
             context.stop();
+            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(AbstractForms.fromArray(miniLoggerLast));
             System.exit(Math.toIntExact(toMinutes));
         }
         catch (RuntimeException e) {

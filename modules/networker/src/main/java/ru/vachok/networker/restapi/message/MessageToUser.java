@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
@@ -25,43 +26,42 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     String SWING = ru.vachok.networker.restapi.message.MessageSwing.class.getTypeName();
     
-    MessageLocal MESSAGE_LOCAL = new MessageLocal("MessageLocal");
-    
     String FILE = MessageFile.class.getTypeName();
     
-    MessageToUser DB_MESSENGER = new DBMessenger("init");
+    String EMAIL = "MessageEmail";
     
-    MessageToUser SWING_M = new ru.vachok.networker.restapi.message.MessageSwing("init");
-    
-    MessageToUser FILE_LOC_M = new MessageFileLocal("init");
-    
-    @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static MessageToUser getInstance(String messengerType, String messengerHeader) {
-        if (messengerHeader == null) {
-            messengerHeader = MessageToUser.class.getSimpleName();
-        }
+    @Contract("null, !null -> new")
+    static @NotNull MessageToUser getInstance(String messengerType, @NotNull String messengerHeader) {
+    
+        final MessageToUser localMsg = new MessageLocal(messengerHeader);
+        final MessageToUser DB_MESSENGER = new DBMessenger(messengerHeader);
+        final MessageToUser swingMsg = new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
+        final MessageToUser fileMsg = new MessageFileLocal(messengerHeader);
+        final MessageToUser eMail = new MessageEmail(messengerHeader);
+        final MessageToUser trayMsg = MessageToTray.getInstance(messengerHeader);
+        
         if (messengerType == null) {
-            return MESSAGE_LOCAL;
+            return localMsg;
         }
         else if (messengerType.equals(LOCAL_CONSOLE)) {
-            MESSAGE_LOCAL.setBodyMsg(MessageToUser.LOCAL_CONSOLE);
-            MESSAGE_LOCAL.setTitleMsg(messengerHeader);
-            return MESSAGE_LOCAL;
+            return localMsg;
         }
         else if (messengerType.equals(TRAY)) {
-            return MessageToTray.getInstance(messengerHeader);
+            trayMsg.setHeaderMsg(messengerHeader);
+            return trayMsg;
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
-            MESSAGE_LOCAL.setHeaderMsg(messengerHeader);
-            return SWING_M;
+            return swingMsg;
         }
         else if (messengerType.equalsIgnoreCase(FILE)) {
-            MESSAGE_LOCAL.setHeaderMsg(messengerHeader);
-            return FILE_LOC_M;
+            return fileMsg;
+        }
+        else if (messengerType.equalsIgnoreCase(EMAIL)) {
+            return eMail;
         }
         else {
-            return MESSAGE_LOCAL;
+            return localMsg;
         }
     }
     

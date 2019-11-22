@@ -32,6 +32,10 @@ import java.util.prefs.Preferences;
 public class MailPOPTester implements MailTester, Runnable {
     
     
+    protected static Session getMailSession() {
+        return MAIL_SESSION;
+    }
+    
     private static final Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
 
     private static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";

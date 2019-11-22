@@ -3,7 +3,7 @@ package ru.vachok.networker.restapi.message;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -36,22 +36,11 @@ public class MessageToUserTest {
             testInst.infoTimer(10, "TEST");
         }
         catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        testInst = MessageToUser.getInstance(null, null);
+        testInst = MessageToUser.getInstance(null, "null");
         testInst.info(testInst.toString());
-        testInst = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, null);
+        testInst = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "null");
         testInst.info(testInst.toString());
-    }
-    
-    @Test
-    public void testConfirm() {
-        MessageToUser emptyStringsInst = MessageToUser.getInstance("", "");
-        try {
-            emptyStringsInst.confirm("", "", "");
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
     }
 }
