@@ -114,7 +114,7 @@ public class PcNamesScanner implements NetScanService {
     public void run() {
         String fileName = this.getClass().getSimpleName() + "." + hashCode();
         FileSystemWorker.writeFile(fileName, AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
-        isMapSizeBigger(Integer.parseInt(InitProperties.getUserPref().get(PropertiesNames.TOTPC, "269")));
+        isMapSizeBigger(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TOTPC, "269")));
         new File(fileName).deleteOnExit();
     }
     
@@ -324,8 +324,6 @@ public class PcNamesScanner implements NetScanService {
         InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(InitProperties.getTheProps());
     }
     
-
-
     private class ScannerUSR implements NetScanService {
     
     
@@ -410,7 +408,7 @@ public class PcNamesScanner implements NetScanService {
             showScreenMessage();
             messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
             String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
-            props.setProperty(PropertiesNames.TOTPC, totPC);
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TOTPC, totPC);
             InitProperties.setPreference(PropertiesNames.TOTPC, totPC);
             InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(props);
             NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();

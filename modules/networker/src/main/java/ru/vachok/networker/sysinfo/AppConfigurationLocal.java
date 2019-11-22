@@ -4,6 +4,7 @@ package ru.vachok.networker.sysinfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
@@ -41,6 +42,23 @@ public interface AppConfigurationLocal extends Runnable {
     
     default void execute(Runnable runnable) {
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
+    }
+    
+    default void execute(Callable<?> callable, int timeOutSeconds) {
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        Future<?> submit = executor.submit(callable);
+        try {
+            System.out.println("submit.get() = " + submit.get(timeOutSeconds, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException e) {
+            FileSystemWorker.error(getClass().getSimpleName() + ".execute", e);
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            FileSystemWorker.error(getClass().getSimpleName() + ".execute", e);
+            e.printStackTrace();
+        }
     }
     
     default void execute(Runnable runnable, long timeOutSeconds) {
