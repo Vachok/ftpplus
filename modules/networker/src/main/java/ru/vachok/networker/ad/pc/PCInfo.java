@@ -42,15 +42,15 @@ public abstract class PCInfo implements InformationFactory {
         }
         else {
             if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, false), 10);
+                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, false));
                 return new PCOn(aboutWhat);
             }
             else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true), 10);
+                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true));
                 return new PCOff(aboutWhat);
             }
             else if (aboutWhat.equals(PCOff.class.getSimpleName())) {
-                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true), 10);
+                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true));
                 return new PCOff();
             }
             else {

@@ -3,7 +3,9 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
@@ -11,7 +13,9 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -19,7 +23,8 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -31,6 +36,10 @@ public class UserInfoTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UserInfoTest.class.getSimpleName(), System.nanoTime());
+    
+    private @NotNull String getCreate() {
+        return FileSystemWorker.readRawFile(getClass().getResource("/create.pcuser.txt").getFile());
+    }
     
     @BeforeClass
     public void setUp() {
@@ -88,17 +97,6 @@ public class UserInfoTest {
     }
     
     @Test
-    public void testUniqueUsersTableRecord() {
-        InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
-        String manDBStr = UserInfo.uniqueUsersTableRecord("pc1", "user1");
-        Assert.assertEquals(manDBStr, "user1 already exists in database velkom.pcuser on pc1");
-    }
-    
-    private @NotNull String getCreate() {
-        return FileSystemWorker.readRawFile(getClass().getResource("/create.pcuser.txt").getFile());
-    }
-    
-    @Test
     public void testRenewCounter() {
         boolean isOffline = new Random().nextBoolean();
         String pcName = "test";
@@ -112,13 +110,13 @@ public class UserInfoTest {
         }
         else {
             sql = sqlOn;
-        
+    
             if (wasOff) {
                 sql = String
                     .format("UPDATE `pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                         .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now()));
             }
-        
+    
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
             .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
@@ -131,6 +129,36 @@ public class UserInfoTest {
         catch (SQLException | RuntimeException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
+    }
+    
+    @Test
+    public void testUniqueUsersTableRecord() {
+        InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
+        String manDBStr = UserInfo.uniqueUsersTableRecord("pc1", "user1");
+        Assert.assertEquals(manDBStr, "user1 already exists in database velkom.pcuser on pc1");
+    }
+    
+    private boolean wasOffline(String pcName) {
+        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
+        boolean retBool = false;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
+            .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            createTable();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
+                        System.out.println("timestamp = " + timestamp.toString());
+                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                            .toMillis(ConstantsFor.DELAY * 3);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        return retBool;
     }
     
     @Test
@@ -177,23 +205,6 @@ public class UserInfoTest {
         Assert.assertEquals(arr[1], "s.m.pavlova");
     }
     
-    private static void checkDB(final String sql) {
-        
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
-            Thread.sleep(1000);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                int updRows = preparedStatement.executeUpdate();
-                Assert.assertTrue(updRows > 0);
-            }
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        catch (InterruptedException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
     @Test
     public void testWriteUsersToDBFromSET() {
         String infoPc = PCInfo.getInstance("do0006.eatmeat.ru").getInfo();
@@ -212,6 +223,13 @@ public class UserInfoTest {
         Assert.assertTrue(vashaplovaDo0125.contains(expected), vashaplovaDo0125);
     }
     
+    @Test
+    public void testToString() {
+        UserInfo userInfo = UserInfo.getInstance("kudr");
+        String toStr = userInfo.toString();
+        Assert.assertTrue(toStr.contains("ResolveUserInDataBase["), toStr);
+    }
+    
     private void createTable() {
         String dbName = "pcuser";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName)) {
@@ -226,33 +244,20 @@ public class UserInfoTest {
         }
     }
     
-    private boolean wasOffline(String pcName) {
-        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
-        boolean retBool = false;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
-                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
-            createTable();
+    private static void checkDB(final String sql) {
+        
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
+            Thread.sleep(1000);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
-                        System.out.println("timestamp = " + timestamp.toString());
-                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
-                                .toMillis(ConstantsFor.DELAY * 3);
-                    }
-                }
+                int updRows = preparedStatement.executeUpdate();
+                Assert.assertTrue(updRows > 0);
             }
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        return retBool;
-    }
-    
-    @Test
-    public void testToString() {
-        UserInfo userInfo = UserInfo.getInstance("kudr");
-        String toStr = userInfo.toString();
-        Assert.assertTrue(toStr.contains("ResolveUserInDataBase["), toStr);
+        catch (InterruptedException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }
