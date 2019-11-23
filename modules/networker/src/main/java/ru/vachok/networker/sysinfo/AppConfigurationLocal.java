@@ -64,7 +64,7 @@ public interface AppConfigurationLocal extends Runnable {
         Future<?> submit = poolExecutor.submit(runnable);
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         for (Runnable r : executorQueue) {
-            if (r instanceof DBMessenger || r.equals(runnable)) {
+            if (r.equals(runnable) || r instanceof DBMessenger) {
                 MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }

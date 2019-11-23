@@ -19,11 +19,12 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -86,58 +87,6 @@ public class KudrWorkTime implements NetScanService {
     @Contract(pure = true)
     protected KudrWorkTime(Map<String, Object> mapOfConditionsTypeNameTypeCondition) {
         this.mapOfConditionsTypeNameTypeCondition = mapOfConditionsTypeNameTypeCondition;
-    }
-    
-    @Override
-    public int hashCode() {
-        int result = logFile.hashCode();
-        result = 31 * result + mapOfConditionsTypeNameTypeCondition.hashCode();
-        result = 31 * result + startPlus9Hours;
-        result = 31 * result + start;
-        result = 31 * result + messageToUser.hashCode();
-        result = 31 * result + execList.hashCode();
-        result = 31 * result + (samsIP != null ? samsIP.hashCode() : 0);
-        result = 31 * result + (do0213IP != null ? do0213IP.hashCode() : 0);
-        result = 31 * result + (isTest ? 1 : 0);
-        return result;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        
-        KudrWorkTime time = (KudrWorkTime) o;
-        
-        if (startPlus9Hours != time.startPlus9Hours) {
-            return false;
-        }
-        if (start != time.start) {
-            return false;
-        }
-        if (isTest != time.isTest) {
-            return false;
-        }
-        if (!logFile.equals(time.logFile)) {
-            return false;
-        }
-        if (!mapOfConditionsTypeNameTypeCondition.equals(time.mapOfConditionsTypeNameTypeCondition)) {
-            return false;
-        }
-        if (!messageToUser.equals(time.messageToUser)) {
-            return false;
-        }
-        if (!execList.equals(time.execList)) {
-            return false;
-        }
-        if (samsIP != null ? !samsIP.equals(time.samsIP) : time.samsIP != null) {
-            return false;
-        }
-        return do0213IP != null ? do0213IP.equals(time.do0213IP) : time.do0213IP == null;
     }
     
     @Override
@@ -233,6 +182,31 @@ public class KudrWorkTime implements NetScanService {
             doIsReach();
         }
         return AbstractForms.fromArray(execList);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(logFile, mapOfConditionsTypeNameTypeCondition, startPlus9Hours, start, messageToUser, execList, samsIP, do0213IP, isTest);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        KudrWorkTime time = (KudrWorkTime) o;
+        return startPlus9Hours == time.startPlus9Hours &&
+            start == time.start &&
+            isTest == time.isTest &&
+            Objects.equals(logFile, time.logFile) &&
+            mapOfConditionsTypeNameTypeCondition.equals(time.mapOfConditionsTypeNameTypeCondition) &&
+            messageToUser.equals(time.messageToUser) &&
+            Objects.equals(execList, time.execList) &&
+            Objects.equals(samsIP, time.samsIP) &&
+            Objects.equals(do0213IP, time.do0213IP);
     }
     
     private void monitorAddress() {

@@ -2,16 +2,21 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.jetbrains.annotations.Contract;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherConstants;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 
 /**
@@ -21,7 +26,20 @@ class PropsHelper {
     
     private static final Properties APP_PR = new Properties();
     
+    private static final Properties MAIL_PR = new Properties();
+    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PropsHelper.class.getSimpleName());
+    
+    @Contract(pure = true)
+    static Properties getMailPr() {
+        if (MAIL_PR.size() > 0) {
+            return MAIL_PR;
+        }
+        else {
+            MAIL_PR.putAll(new DBRegProperties(PropertiesNames.ID_MAILREGRU).getProps());
+            return MAIL_PR;
+        }
+    }
     
     public static void reloadApplicationPropertiesFromFile() {
         File propsFile = new File(FileNames.CONSTANTSFOR_PROPERTIES);
@@ -73,4 +91,6 @@ class PropsHelper {
             InitProperties.setPreference(entry.getKey().toString(), entry.getValue().toString());
         }
     }
+    
+    
 }

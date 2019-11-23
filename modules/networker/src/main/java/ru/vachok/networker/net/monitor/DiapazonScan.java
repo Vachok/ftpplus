@@ -27,10 +27,7 @@ import java.lang.management.RuntimeMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -173,6 +170,26 @@ public class DiapazonScan implements NetScanService {
     @Override
     public void run() {
         AppConfigurationLocal.getInstance().execute(this::startDo, TimeUnit.MINUTES.toSeconds(61));
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(allDevLocalDeq, inetUniqCSV, thrConfig, stopClassStampLong);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DiapazonScan scan = (DiapazonScan) o;
+        return stopClassStampLong == scan.stopClassStampLong &&
+            allDevLocalDeq.equals(scan.allDevLocalDeq) &&
+            Objects.equals(inetUniqCSV, scan.inetUniqCSV) &&
+            Objects.equals(thrConfig, scan.thrConfig);
     }
     
     private void startDo() {

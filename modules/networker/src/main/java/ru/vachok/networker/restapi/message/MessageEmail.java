@@ -4,13 +4,13 @@ package ru.vachok.networker.restapi.message;
 import com.sun.mail.smtp.SMTPMessage;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import java.text.MessageFormat;
-import java.util.Properties;
+import java.util.Objects;
 
 
 /**
@@ -26,15 +26,15 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     
     private String bodyMsg;
     
-    @Override
-    public void setHeaderMsg(String headerMsg) {
-        this.headerMsg = headerMsg;
-    }
-    
     @Contract(pure = true)
     MessageEmail(String headerMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = "Message from Networker ";
+    }
+    
+    @Override
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
     }
     
     @Override
@@ -46,32 +46,22 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     @Override
-    public void info(String headerMsg, String titleMsg, String bodyMsg) {
-        this.headerMsg = headerMsg;
-        this.titleMsg = titleMsg;
-        this.bodyMsg = bodyMsg;
-        sendEmail();
+    public int hashCode() {
+        return Objects.hash(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
-    public void infoNoTitles(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        this.titleMsg = titleMsg + ": information";
-        info(headerMsg, titleMsg, bodyMsg);
-    }
-    
-    @Override
-    public void info(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        this.titleMsg = titleMsg + ": information";
-        info(headerMsg, titleMsg, bodyMsg);
-    }
-    
-    @Override
-    public void error(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        this.titleMsg = MessageFormat.format("{0}: ERROR", titleMsg);
-        error(headerMsg, titleMsg, bodyMsg);
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MessageEmail email = (MessageEmail) o;
+        return Objects.equals(headerMsg, email.headerMsg) &&
+            Objects.equals(titleMsg, email.titleMsg) &&
+            Objects.equals(bodyMsg, email.bodyMsg);
     }
     
     @Override
@@ -79,7 +69,15 @@ public class MessageEmail extends MailMessages implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        sendEmail();
+        AppConfigurationLocal.getInstance().execute(this::sendEmail, 15);
+    }
+    
+    @Override
+    public void info(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        AppConfigurationLocal.getInstance().execute(this::sendEmail, 15);
     }
     
     @Override
@@ -91,6 +89,13 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     @Override
+    public void infoNoTitles(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = titleMsg + ": information";
+        info(headerMsg, titleMsg, bodyMsg);
+    }
+    
+    @Override
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         this.titleMsg = MessageFormat.format("{0}: Warning", titleMsg);
@@ -98,11 +103,25 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     @Override
+    public void info(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = titleMsg + ": information";
+        info(headerMsg, titleMsg, bodyMsg);
+    }
+    
+    @Override
     public void warning(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        sendEmail();
+        AppConfigurationLocal.getInstance().execute(this::sendEmail, 15);
+    }
+    
+    @Override
+    public void error(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = MessageFormat.format("{0}: ERROR", titleMsg);
+        error(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
@@ -113,7 +132,8 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     private void sendEmail() {
-        Session session = Session.getDefaultInstance(getProps(), new AuthMail());
+    
+        Session session = Session.getDefaultInstance(InitProperties.getMAilPr(), new AuthMail());
         SMTPMessage smtpMessage = new SMTPMessage(session);
         try {
             Address address = new InternetAddress("vachok@vachok.ru");
@@ -134,11 +154,6 @@ public class MessageEmail extends MailMessages implements MessageToUser {
         }
     }
     
-    private Properties getProps() {
-        InitProperties initProperties = new DBRegProperties("mail-regru");
-        return initProperties.getProps();
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MessageEmail{");
@@ -157,4 +172,6 @@ public class MessageEmail extends MailMessages implements MessageToUser {
             return new PasswordAuthentication("bot@chess.vachok.ru", "S15cQFO8kk50FKj");
         }
     }
+    
+    
 }

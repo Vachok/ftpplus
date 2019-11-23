@@ -50,6 +50,11 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
         }
     }
     
+    @Contract(pure = true)
+    static Properties getMAilPr() {
+        return PropsHelper.getMailPr();
+    }
+    
     @Override
     default MysqlDataSource getRegSourceForProperties() {
         MysqlDataSource retSource = DataConnectTo.getDefaultI().getDataSource();

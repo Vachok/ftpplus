@@ -28,10 +28,8 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -121,28 +119,6 @@ public abstract class UserInfo implements InformationFactory {
         private DatabaseWriter() {
         }
     
-        @Override
-        public int hashCode() {
-            int result = pcName != null ? pcName.hashCode() : 0;
-            result = 31 * result + (userName != null ? userName.hashCode() : 0);
-            return result;
-        }
-    
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-        
-            UserInfo.DatabaseWriter writer = (UserInfo.DatabaseWriter) o;
-    
-            return (pcName != null ? pcName.equals(writer.pcName) : writer.pcName == null) && (userName != null ? userName
-                .equals(writer.userName) : writer.userName == null);
-        }
-        
         @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
@@ -291,7 +267,25 @@ public abstract class UserInfo implements InformationFactory {
             }
             return retBool;
         }
-        
+    
+        @Override
+        public int hashCode() {
+            return Objects.hash(pcName, userName);
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            UserInfo.DatabaseWriter writer = (UserInfo.DatabaseWriter) o;
+            return Objects.equals(pcName, writer.pcName) &&
+                Objects.equals(userName, writer.userName);
+        }
+    
         private void countTime(@NotNull Connection connection, @NotNull ResultSet resultSet) throws SQLException {
             Timestamp timeOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON);
             Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
