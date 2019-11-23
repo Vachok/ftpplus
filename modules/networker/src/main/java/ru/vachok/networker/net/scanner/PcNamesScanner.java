@@ -113,7 +113,6 @@ public class PcNamesScanner implements NetScanService {
     @Override
     public void run() {
         String fileName = this.getClass().getSimpleName() + "." + hashCode();
-        FileSystemWorker.writeFile(fileName, AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
         isMapSizeBigger(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TOTPC, "269")));
         new File(fileName).deleteOnExit();
     }

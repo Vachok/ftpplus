@@ -14,8 +14,6 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -24,7 +22,10 @@ import java.awt.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 
 /**
@@ -80,7 +81,9 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         System.setProperty(PropertiesNames.ENCODING, "UTF8");
         stringBuilder.append(AbstractForms.fromArray(System.getProperties()));
-        FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
+        stringBuilder.append("http://").append(new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress().getHostAddress()).append(":8880/");
+        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName())
+            .info(UsefulUtilities.thisPC(), "appInfoStarter", stringBuilder.toString());
     }
     
     @Override
@@ -109,9 +112,5 @@ public class IntoApplication {
     static void appInfoStarter() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
-        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName()).info(UsefulUtilities.thisPC(), "appInfoStarter", MessageFormat
-            .format("{0} is {1} \n{2}", configurableApplicationContext.getDisplayName(), configurableApplicationContext
-                .isActive(), new Date(ConstantsFor.START_STAMP)) + "\nhttp://" + new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress()
-            .getHostAddress() + ":8880/");
     }
 }

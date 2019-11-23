@@ -45,6 +45,8 @@ class ChkMailAndUpdateDB implements Callable<Long> {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.NULL, ChkMailAndUpdateDB.class.getSimpleName());
     
+    private static final MessageToUser emailMsg = MessageToUser.getInstance(MessageToUser.EMAIL, ChkMailAndUpdateDB.class.getSimpleName());
+    
     private long timeStamp = 1;
     
     ChkMailAndUpdateDB(SpeedChecker checker) {
@@ -185,8 +187,8 @@ class ChkMailAndUpdateDB implements Callable<Long> {
             p.setTimestamp(5, timestamp);
             
             int rowsUpdate = p.executeUpdate();
-            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
-                .info("DB updated: " + rowsUpdate + "\n", IS_ + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
+    
+            emailMsg.info("DB updated: " + rowsUpdate + "\n", IS_ + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
             this.timeStamp = timeSt;
             return rowsUpdate > 0;
         }

@@ -10,14 +10,24 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -137,20 +147,6 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         return retProps;
     }
     
-    private Properties fromDB() {
-        final String sql = "select * from velkom.props";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.props");
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                retProps.put(resultSet.getString("property"), resultSet.getString("valueofproperty"));
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.warn(DBPropsCallable.class.getSimpleName(), "getProps", e.getMessage() + Thread.currentThread().getState().name());
-        }
-        return retProps;
-    }
     @Override
     public boolean setProps(Properties properties) {
         DBPropsCallable.LocalPropertiesFinder localPropsFinder = new DBPropsCallable.LocalPropertiesFinder();
@@ -211,6 +207,9 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             callerStack = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
     
             try (Connection c = mysqlDataSource.getConnection()) {
+                c.setAutoCommit(false);
+                c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+                c.setSavepoint();
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                     retBool.set(delProps());
@@ -223,6 +222,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                         preparedStatement.setString(3, propsDBID);
                         preparedStatement.setString(4, callerStack);
                         executeUpdateInt += preparedStatement.executeUpdate();
+                        c.commit();
                     }
                     retBool.set(executeUpdateInt > 0);
                 }
