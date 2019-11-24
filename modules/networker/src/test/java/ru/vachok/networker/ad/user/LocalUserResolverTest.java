@@ -2,11 +2,15 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.NetScanService;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -57,12 +61,8 @@ public class LocalUserResolverTest {
     public void testGetInfo() {
         localUserResolver.setClassOption("do0086");
         String info = localUserResolver.getInfo();
-        boolean isUser = info.contains("msc") || info.contains("d.yu.podbuckii") || info.contains("a.v.nikolaev");
+        boolean isUser = Stream.of("msc", "d.yu.podbuckii", "a.v.nikolaev").anyMatch(info::contains);
         Assert.assertTrue(isUser, info);
-    
-        localUserResolver.setClassOption("do0091");
-        info = localUserResolver.getInfo();
-        Assert.assertEquals(info, "do0091 : vkuharenko");
     }
     
     @Test
@@ -97,7 +97,7 @@ public class LocalUserResolverTest {
     public void userDO0091() {
         localUserResolver.setClassOption("do0091");
         String resolverInfo = localUserResolver.getInfo();
-        Assert.assertEquals(resolverInfo, "do0091 : vkuharenko");
+        Assert.assertEquals(resolverInfo, "do0091 : vkuharenko"); //todo 24.11.2019 (17:43)
     }
     
     @Test
@@ -115,10 +115,15 @@ public class LocalUserResolverTest {
     public void complexInfoAboutDO0213() {
         localUserResolver.setClassOption("do0213");
         String info = localUserResolver.getInfo();
-        Assert.assertEquals(info, "do0213 : ikudryashov");
-        String infoAbout = localUserResolver.getInfoAbout("do0213");
-        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
-        List<String> userResolverLogins = localUserResolver.getLogins("do0213", 4);
-        Assert.assertTrue(AbstractForms.fromArray(userResolverLogins).contains("ikudryashov"));
+        if (NetScanService.isReach("do0213")) {
+            String infoAbout = localUserResolver.getInfoAbout("do0213");
+            Assert.assertEquals(info, "do0213 : ikudryashov");
+            Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
+            List<String> userResolverLogins = localUserResolver.getLogins("do0213", 4);
+            Assert.assertTrue(AbstractForms.fromArray(userResolverLogins).contains("ikudryashov"));
+        }
+        else {
+            Assert.assertTrue(info.contains("do0213 : Unknown"), info);
+        }
     }
 }

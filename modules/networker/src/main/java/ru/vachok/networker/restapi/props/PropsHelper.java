@@ -2,7 +2,6 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.jetbrains.annotations.Contract;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.FileNames;
@@ -36,7 +35,7 @@ class PropsHelper {
             return MAIL_PR;
         }
         else {
-            MAIL_PR.putAll(new DBRegProperties(PropertiesNames.ID_MAILREGRU).getProps());
+            MAIL_PR.putAll(new DBPropsCallable(PropertiesNames.ID_MAILREGRU).getProps());
             return MAIL_PR;
         }
     }

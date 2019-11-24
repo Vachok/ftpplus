@@ -24,8 +24,6 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     String FILE = "file";
     
-    String ATAPT = "adapt";
-    
     String DB_LOCAL = "srv-inetstat";
     
     String TEST = "test";
@@ -41,12 +39,14 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     @Contract("_ -> new")
     static @NotNull InitProperties getInstance(@NotNull String type) {
         switch (type) {
+            case FILE:
+                return new FilePropsLocal(ConstantsFor.class.getSimpleName());
             case DB_MEMTABLE:
                 return new MemoryProperties();
             case DB_LOCAL:
                 return new DBPropsCallable(ConstantsFor.class.getSimpleName());
             default:
-                return new FilePropsLocal(ConstantsFor.class.getSimpleName());
+                return new DBPropsCallable(type);
         }
     }
     
@@ -57,8 +57,8 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     @Override
     default MysqlDataSource getRegSourceForProperties() {
-        MysqlDataSource retSource = DataConnectTo.getDefaultI().getDataSource();
-        retSource.setDatabaseName("mem");
+        MysqlDataSource retSource = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource();
+        retSource.setDatabaseName(ConstantsFor.STR_VELKOM);
         return retSource;
     }
     

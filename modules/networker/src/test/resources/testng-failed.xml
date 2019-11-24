@@ -3,35 +3,6 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.net.ssh.SshActsTest">
-        <methods>
-          <include name="testAllowDomainDel"/>
-          <include name="testAllowDomainAdd"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.net.ssh.SshActsTest -->
-      <class name="ru.vachok.networker.info.PageGenerationHelperTest">
-        <methods>
-          <include name="testSetInfo"/>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.info.PageGenerationHelperTest -->
-      <class name="ru.vachok.networker.restapi.message.MessageLocalTest">
-        <methods>
-          <include name="initMsgToUser"/>
-          <include name="setUp"/>
-          <include name="testWrireLogToFile"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.restapi.message.MessageLocalTest -->
-      <class name="ru.vachok.networker.ad.inet.TemporaryFullInternetTest">
-        <methods>
-          <include name="testRunCheck"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testRunAdd"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.inet.TemporaryFullInternetTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

@@ -8,7 +8,6 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -17,6 +16,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -248,7 +248,7 @@ public class RegRuFTPLibsUploader implements Runnable {
     }
     
     private String chkPass() {
-        Properties properties = new DBRegProperties(PropertiesNames.PROPERTIESID_GENERAL_PASS).getProps();
+        Properties properties = InitProperties.getInstance(PropertiesNames.PROPERTIESID_GENERAL_PASS).getProps();
         String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
         if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
             return properties.getProperty(PropertiesNames.REALFTPPASS);
