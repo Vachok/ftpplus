@@ -249,6 +249,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             catch (SQLException e) {
                 messageToUser.warn(DBPropsCallable.LocalPropertiesFinder.class.getSimpleName(), e.getMessage(), " see line: 250 ***");
             }
+            retProps.putAll(properties);
             return properties;
         }
     

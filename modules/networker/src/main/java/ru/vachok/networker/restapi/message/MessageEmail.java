@@ -142,7 +142,7 @@ public class MessageEmail extends MailMessages implements MessageToUser {
             smtpMessage.setSubject(MessageFormat.format("{0}: {1}", headerMsg, titleMsg));
             smtpMessage.setText(bodyMsg);
             smtpMessage.setRecipient(Message.RecipientType.TO, address);
-            sessionTransport.connect("smtp.chess.vachok.ru", "bot@chess.vachok.ru", "S15cQFO8kk50FKj");
+            sessionTransport.connect("mail.chess.vachok.ru", "bot@chess.vachok.ru", "S15cQFO8kk50FKj");
             sessionTransport.sendMessage(smtpMessage, new Address[]{address});
             sessionTransport.close();
         }
@@ -150,7 +150,7 @@ public class MessageEmail extends MailMessages implements MessageToUser {
             e.printStackTrace();
         }
         finally {
-            System.out.println("smtpMessage = " + smtpMessage.getEnvelopeFrom());
+            Runtime.getRuntime().runFinalization();
         }
     }
     
