@@ -3,51 +3,14 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.componentsrepo.services.LocalDBLibsUploaderTest">
+      <class name="ru.vachok.networker.ad.user.ResolveUserInDataBaseTest">
         <methods>
-          <include name="initUpl"/>
-          <include name="tearDown"/>
-          <include name="testRun"/>
-          <include name="testTestToString"/>
-          <include name="setUp"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.componentsrepo.services.LocalDBLibsUploaderTest -->
-      <class name="ru.vachok.networker.net.monitor.ExecScanTest">
-        <methods>
+          <include name="setResolveUserInDataBase"/>
+          <include name="testGetLogins"/>
           <include name="setUp"/>
           <include name="tearDown"/>
-          <include name="testRun"/>
         </methods>
-      </class> <!-- ru.vachok.networker.net.monitor.ExecScanTest -->
-      <class name="ru.vachok.networker.ad.pc.PCInfoTest">
-        <methods>
-          <include name="testCheckValidNameWithoutEatmeat"/>
-          <include name="setUp"/>
-          <include name="initPCInfo"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.pc.PCInfoTest -->
-      <class name="ru.vachok.networker.ad.pc.PCOffTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="testGetInfo"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.pc.PCOffTest -->
-      <class name="ru.vachok.networker.controller.ShowAllDevCTRLTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testModel"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.controller.ShowAllDevCTRLTest -->
-      <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest">
-        <methods>
-          <include name="testSaveAccessLogToDatabaseWithTimeOut"/>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest -->
+      </class> <!-- ru.vachok.networker.ad.user.ResolveUserInDataBaseTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
