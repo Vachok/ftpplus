@@ -231,7 +231,7 @@ public class ExitApp extends Thread implements Externalizable {
             miniLoggerLast.add(FileSystemWorker.delTemp());
             context.stop();
             MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
-                .info(getClass().getSimpleName(), "runtime: " + toMinutes, AbstractForms.fromArray(miniLoggerLast));
+                .warn(getClass().getSimpleName(), "runtime: " + toMinutes, AbstractForms.fromArray(miniLoggerLast));
             System.exit(Math.toIntExact(toMinutes));
         }
         catch (RuntimeException e) {

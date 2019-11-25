@@ -36,7 +36,7 @@ public class MyISAMRepair implements InformationFactory {
         }
         finally {
             stringBuilder.append("ru.vachok.networker.data.MyISAMRepair.repairTable complete ***\n");
-            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(stringBuilder.toString());
+            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).error(stringBuilder.toString());
         }
         return stringBuilder.toString();
     }

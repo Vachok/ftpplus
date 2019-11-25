@@ -110,7 +110,7 @@ public class MessageEmail extends MailMessages implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        AppConfigurationLocal.getInstance().execute(this::sendEmail, 15);
+        sendEmail();
     }
     
     @Override
@@ -133,7 +133,7 @@ public class MessageEmail extends MailMessages implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        AppConfigurationLocal.getInstance().execute(this::sendEmail, 15);
+        sendEmail();
     }
     
     @Override
