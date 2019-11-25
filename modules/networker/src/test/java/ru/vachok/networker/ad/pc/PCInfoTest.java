@@ -122,10 +122,10 @@ public class PCInfoTest {
     @Test
     public void testCheckValidNameWithoutEatmeat() {
         String do0213 = informationFactory.checkValidNameWithoutEatmeat("do0213");
-        Assert.assertEquals(do0213, "do0213");
+        Assert.assertEquals(do0213.toLowerCase(), "do0213");
         
         String do0213E = informationFactory.checkValidNameWithoutEatmeat("do0213.eatmeat.ru");
-        Assert.assertEquals(do0213E, "do0213");
+        Assert.assertEquals(do0213E.toLowerCase(), "do0213");
     }
     
     @Test

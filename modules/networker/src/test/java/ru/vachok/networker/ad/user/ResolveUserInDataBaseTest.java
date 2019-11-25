@@ -56,7 +56,8 @@ public class ResolveUserInDataBaseTest {
     public void testGetLogins() {
         List<String> loginsPC = resolveUserInDataBase.getLogins("do0136", 1);
         String logStr = new TForms().fromArray(loginsPC);
-        Assert.assertTrue(logStr.contains("do0136 : Acs"), logStr);
+        Assert.assertTrue(logStr.contains("do0136"), logStr);
+        Assert.assertTrue(logStr.contains("Acs"), logStr);
         List<String> kudrLogins = resolveUserInDataBase.getLogins("Acs", 1);
         String logStrKudr = new TForms().fromArray(kudrLogins);
         Assert.assertEquals(logStr, logStr);

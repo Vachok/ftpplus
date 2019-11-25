@@ -7,17 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -120,9 +115,8 @@ public class NetScanCtr {
      @param model {@link Model}
      @return redirect:/ad? + {@link PcNamesScanner#getThePc()}
      */
-    @NotNull
     @PostMapping(STR_NETSCAN)
-    public String pcNameForInfo(Model model, @NotNull @ModelAttribute PcNamesScanner pcNamesScanner) {
+    public @NotNull String pcNameForInfo(Model model, @NotNull @ModelAttribute PcNamesScanner pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
         this.model = model;
         String thePc = pcNamesScanner.getThePc();
@@ -155,7 +149,12 @@ public class NetScanCtr {
         int secRemain = LocalTime.of(4, 0).toSecondOfDay() - LocalTime.now().toSecondOfDay();
         String msg = MessageFormat.format("{0} minutes remain to trains check", TimeUnit.SECONDS.toMinutes(secRemain));
         if (LocalTime.now().getHour() > 4) {
-            msg = creator.getMsg();
+            try {
+                msg = creator.getMsg();
+            }
+            catch (RuntimeException e) {
+                msg = "Can't get trains! " + e.getClass().getSimpleName() + " " + e.getMessage();
+            }
         }
         String title = creator.getTitle(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
         String pcValue = creator.fillUserPCForWEBModel();

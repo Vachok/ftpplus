@@ -4,9 +4,7 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -53,12 +51,5 @@ public class SpeedCheckerTest {
         catch (InterruptedException e) {
             messageToUser.error(e.getMessage());
         }
-    }
-    
-    @Test
-    public void testRun() {
-        new SpeedChecker().runMe();
-        Assert.assertTrue(chkMailFile.exists());
-        Assert.assertTrue(chkMailFile.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(3));
     }
 }
