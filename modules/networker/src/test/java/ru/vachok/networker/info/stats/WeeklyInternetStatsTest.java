@@ -71,8 +71,8 @@ public class WeeklyInternetStatsTest {
     
     @Test
     public void testReadIPsWithInet() {
-        long kb = stats.readIPsWithInet();
-        Assert.assertTrue(kb > 1);
+        long bytesSize = stats.readIPsWithInet(false);
+        Assert.assertTrue(bytesSize > 100);
     }
 
     @Test

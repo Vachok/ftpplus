@@ -100,7 +100,8 @@ public class ServiceInfoCtrlTest {
                 .parse("18:00")
                 .toSecondOfDay());
             if (isTime | Stats.isSunday()) {
-                Assert.assertTrue(mapMod.get("mail").toString().contains("</b><br>"), mapMod.get("mail").toString());
+                final boolean mailContains = mapMod.get("mail").toString().contains("</b><br>") || mapMod.get("Работаем").toString().contains("</b><br>");
+                Assert.assertTrue(mailContains, mapMod.get("mail").toString());
             }
             else {
                 Assert.assertTrue(mapMod.get("mail").toString().contains("Работаем"), mapMod.get("mail").toString());

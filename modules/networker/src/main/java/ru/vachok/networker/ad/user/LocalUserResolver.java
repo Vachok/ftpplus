@@ -3,11 +3,10 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,15 +14,16 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
- @see ru.vachok.networker.ad.user.LocalUserResolverTest
+ @see LocalUserResolverTest
  @since 22.08.2019 (14:14) */
+@SuppressWarnings("InstanceVariableOfConcreteClass")
 class LocalUserResolver extends UserInfo {
     
     private Object pcName;
@@ -123,18 +123,10 @@ class LocalUserResolver extends UserInfo {
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
         List<String> timePath = null;
         try {
-            ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-            Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
-            String futureString = stringFuture.get(10, TimeUnit.SECONDS);
+            AppConfigurationLocal.getInstance().execute(scanUSERSFolder, 8);
             timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
-            finished = result.size() > 0;
-        }
-        catch (ExecutionException | TimeoutException e) {
+        catch (RuntimeException e) {
             result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
             finished = result.size() > 0;
         }
@@ -223,6 +215,8 @@ class LocalUserResolver extends UserInfo {
         
         @Override
         public String call() {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().setPriority(1);
             if (pcName.contains(ConstantsFor.STR_UNKNOWN)) {
                 return "Bad PC: " + this.toString();
             }
@@ -239,6 +233,7 @@ class LocalUserResolver extends UserInfo {
         }
         
         private void walkUsersFolderIfPCOnline() {
+    
             try {
                 Path startPath = Paths.get(pathAsStr);
                 Thread.currentThread().setName(startPath.getFileName().toString());

@@ -8,7 +8,9 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.tutu.conf.InformationFactory;
 
@@ -64,9 +66,9 @@ public class ScanMessagesCreator implements Keeper {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ScanMessagesCreator{");
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(",\n", ScanMessagesCreator.class.getSimpleName() + "[\n", "\n]")
+            .add("numOfTrains = " + numOfTrains)
+            .toString();
     }
     
     @NotNull
@@ -74,35 +76,11 @@ public class ScanMessagesCreator implements Keeper {
         StringBuilder titleBuilder = new StringBuilder();
         titleBuilder.append(currentPC);
         titleBuilder.append("/");
-        titleBuilder.append(InitProperties.getTheProps().getProperty(PropertiesNames.TOTPC));
+        titleBuilder.append(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TOTPC, "269"));
         titleBuilder.append(" PCs (");
         titleBuilder.append(InitProperties.getTheProps().getProperty(PropertiesNames.ONLINEPC, "0"));
         titleBuilder.append(")");
         return titleBuilder.toString();
-    }
-    
-    @NotNull
-    String fillUserPCForWEBModel() {
-        StringBuilder brStringBuilder = new StringBuilder();
-        brStringBuilder.append(STR_P);
-        ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-        if (linksMap.size() < 50) {
-            brStringBuilder.append(FileSystemWorker.readRawFile(new File(FileNames.LASTNETSCAN_TXT).getAbsolutePath()));
-        }
-        else {
-            Set<String> keySet = linksMap.keySet();
-            List<String> list = new ArrayList<>(keySet.size());
-            list.addAll(keySet);
-        
-            Collections.sort(list);
-            Collections.reverse(list);
-            for (String keyMap : list) {
-                String valueMap = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().get(keyMap));
-                brStringBuilder.append(keyMap).append(" ").append(valueMap);
-            }
-        }
-        return brStringBuilder.toString().replace("true", "").replace(ConstantsFor.STR_FALSE, "");
-    
     }
     
     private @NotNull String makeColors(@NotNull String trainsFromArray) {
@@ -129,5 +107,29 @@ public class ScanMessagesCreator implements Keeper {
             stringBuilder.append(e.getMessage()).append("<br>").append(AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
+    }
+    
+    @NotNull
+    String fillUserPCForWEBModel() {
+        StringBuilder brStringBuilder = new StringBuilder();
+        brStringBuilder.append(STR_P);
+        ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+        if (linksMap.size() < 50) {
+            brStringBuilder.append(FileSystemWorker.readRawFile(new File(FileNames.LASTNETSCAN_TXT).getAbsolutePath()));
+        }
+        else {
+            Set<String> keySet = linksMap.keySet();
+            List<String> list = new ArrayList<>(keySet.size());
+            list.addAll(keySet);
+            
+            Collections.sort(list);
+            Collections.reverse(list);
+            for (String keyMap : list) {
+                String valueMap = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().get(keyMap));
+                brStringBuilder.append(keyMap).append(" ").append(valueMap);
+            }
+        }
+        return brStringBuilder.toString().replace("true", "").replace(ConstantsFor.STR_FALSE, "");
+        
     }
 }

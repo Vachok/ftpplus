@@ -43,12 +43,28 @@ public interface AppConfigurationLocal extends Runnable {
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
     
+    default void execute(Callable<?> callable, int timeOutSeconds) {
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        Future<?> submit = executor.submit(callable);
+        try {
+            System.out.println("submit.get() = " + submit.get(timeOutSeconds, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+    
     default void execute(Runnable runnable, long timeOutSeconds) {
         ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         Future<?> submit = poolExecutor.submit(runnable);
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         for (Runnable r : executorQueue) {
-            if (r instanceof DBMessenger || r.equals(runnable)) {
+            if (r.equals(runnable) || r instanceof DBMessenger) {
                 MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }

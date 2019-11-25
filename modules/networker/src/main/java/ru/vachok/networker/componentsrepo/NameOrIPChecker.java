@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 
 /**
- @see ru.vachok.networker.componentsrepo.NameOrIPCheckerTest
+ @see NameOrIPCheckerTest
  @since 03.12.2018 (16:42) */
 public class NameOrIPChecker {
     
@@ -89,7 +89,26 @@ public class NameOrIPChecker {
         if (mIP.matches()) {
             inetAddress = ipMach();
         }
+        if (nameOrIpStr.equalsIgnoreCase(UsefulUtilities.thisPC())) {
+            inetAddress = returnLocalIP();
+        }
         return inetAddress;
+    }
+    
+    private InetAddress returnLocalIP() {
+        InetAddress retAddress = InetAddress.getLoopbackAddress();
+        try {
+            InetAddress[] inetNames = InetAddress.getAllByName(UsefulUtilities.thisPC());
+            for (InetAddress inetName : inetNames) {
+                if (inetName.toString().contains("10.10") || inetName.toString().contains("10.200")) {
+                    retAddress = inetName;
+                }
+            }
+        }
+        catch (UnknownHostException e) {
+            messageToUser.warn(NameOrIPChecker.class.getSimpleName(), e.getMessage(), " see line: 103 ***");
+        }
+        return retAddress;
     }
     
     private InetAddress nameMach() {

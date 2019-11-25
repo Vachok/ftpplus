@@ -5,13 +5,17 @@ package ru.vachok.networker.info.stats;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -21,12 +25,19 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -37,11 +48,11 @@ class WeeklyInternetStats implements Runnable, Stats {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.class.getSimpleName());
     
+    private final File ipsWithInet = new File(FileNames.INETSTATSIP_CSV);
+    
     private long totalBytes = 0;
     
     private String fileName;
-    
-    private final File ipsWithInet = new File(FileNames.INETSTATSIP_CSV);
     
     private String sql;
     
@@ -86,7 +97,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER);
         long iPsWithInet = 0;
         try {
-            iPsWithInet = readIPsWithInet();
+            iPsWithInet = readIPsWithInet(false);
         }
         catch (RuntimeException e) {
             messageToUser.error("WeeklyInternetStats.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
@@ -107,16 +118,16 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     /**
-     @return inetstatsIP.csv length in kilobytes.
+     @return inetstatsIP.csv length in bytes.
      
      @see WeeklyInternetStatsTest#testReadIPsWithInet
      */
-    long readIPsWithInet() {
+    long readIPsWithInet(boolean isNoSquidNeedRead) {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {
                     synchronized(ipsWithInet) {
-                        makeIPFile(r);
+                        makeIPFile(r, isNoSquidNeedRead);
                     }
                 }
             }
@@ -124,14 +135,14 @@ class WeeklyInternetStats implements Runnable, Stats {
         catch (SQLException e) {
             messageToUser.error(e.getMessage() + " see line: 112 ***");
         }
-        return new File(FileNames.INETSTATSIP_CSV).length() / ConstantsFor.KBYTE;
+        return new File(FileNames.INETSTATSIP_CSV).length();
     }
     
-    private void makeIPFile(@NotNull ResultSet r) throws SQLException {
+    private void makeIPFile(@NotNull ResultSet resultSet, boolean isNoSquidNeedRead) throws SQLException {
         try (OutputStream outputStream = new FileOutputStream(ipsWithInet)) {
             try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                while (r.next()) {
-                    String ip = r.getString("ip");
+                while (resultSet.next()) {
+                    String ip = resultSet.getString("ip");
                     printStream.println(ip);
                 }
             }
@@ -140,7 +151,9 @@ class WeeklyInternetStats implements Runnable, Stats {
             messageToUser.warn(WeeklyInternetStats.class.getSimpleName(), e.getMessage(), " see line: 220 ***");
         }
         finally {
-            readNoSquidIPs();
+            if (isNoSquidNeedRead) {
+                readNoSquidIPs();
+            }
         }
     }
     
@@ -161,20 +174,21 @@ class WeeklyInternetStats implements Runnable, Stats {
     private void readNoSquidIPs() {
         Set<String> ipsList = new LinkedHashSet<>();
         SSHFactory build = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(),
-                "sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit", this.getClass().getSimpleName()).build();
+            "sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit", this.getClass().getSimpleName()).build();
         String[] vipNetIPs = build.call().split("\n");
         for (String netIP : vipNetIPs) {
+            String ip = netIP;
             try {
-                netIP = netIP.split("#")[0];
+                ip = ip.split("#")[0];
             }
             catch (IndexOutOfBoundsException e) {
-                netIP = netIP.replace("<br>", "");
+                ip = ip.replace("<br>", "");
             }
             finally {
-                netIP = netIP.replace("<br>", "");
+                ip = ip.replace("<br>", "");
             }
-            if (!netIP.isEmpty()) {
-                ipsList.add(netIP);
+            if (!ip.isEmpty()) {
+                ipsList.add(ip);
             }
         }
         ipsList.forEach(ip->FileSystemWorker.appendObjectToFile(ipsWithInet, ip));
@@ -194,6 +208,17 @@ class WeeklyInternetStats implements Runnable, Stats {
             retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
         }
         return retStr;
+    }
+    
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
+        stringJoiner.add("totalBytes = " + totalBytes);
+        if (!Stats.isSunday()) {
+            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+            stringJoiner.add(daySunCounter());
+        }
+        return stringJoiner.toString();
     }
     
     private String downloadConcreteIPStatistics() {
@@ -287,17 +312,6 @@ class WeeklyInternetStats implements Runnable, Stats {
         return informationFactory.equals(stats.informationFactory);
     }
     
-    @Override
-    public String toString() {
-        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
-        stringJoiner.add("totalBytes = " + totalBytes);
-        if (!Stats.isSunday()) {
-            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
-            stringJoiner.add(daySunCounter());
-        }
-        return stringJoiner.toString();
-    }
-    
     protected void setSql() {
         this.sql = ConstantsFor.SQL_SELECTINETSTATS;
     }
@@ -307,7 +321,8 @@ class WeeklyInternetStats implements Runnable, Stats {
     private static class InetStatSorter implements Runnable {
     
     
-        private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.InetStatSorter.class.getSimpleName());
+        private static final MessageToUser messageToUser = MessageToUser
+            .getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.InetStatSorter.class.getSimpleName());
         
         @Override
         public void run() {
@@ -383,8 +398,13 @@ class WeeklyInternetStats implements Runnable, Stats {
                 messageToUser.info(this.getClass().getSimpleName(), "Adding statistics to: ", finalFile.getAbsolutePath());
                 boolean isDelete = false;
                 for (File nextFile : queueCSVFilesFromRoot) {
-                    toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(nextFile.toPath()));
-                    isDelete = nextFile.delete();
+                    if (nextFile.length() < 2) {
+                        isDelete = nextFile.delete();
+                    }
+                    else {
+                        toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(nextFile.toPath()));
+                        isDelete = nextFile.delete();
+                    }
                     if (!isDelete) {
                         nextFile.deleteOnExit();
                     }

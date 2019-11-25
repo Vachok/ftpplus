@@ -83,7 +83,7 @@ public class SpeedChecker implements Callable<Long> {
             connectToDB(connection);
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.warn(SpeedChecker.class.getSimpleName(), e.getMessage(), " see line: 86 ***");
         }
     }
     
@@ -98,7 +98,7 @@ public class SpeedChecker implements Callable<Long> {
                         String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
                         this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
                         APP_PR.setProperty(PropertiesNames.LASTWORKSTART, String.valueOf(rtLong));
-                        messageToUser.info(msg);
+                        messageToUser.info(this.getClass().getSimpleName(), "connectToDB", msg);
                     }
                 }
             }

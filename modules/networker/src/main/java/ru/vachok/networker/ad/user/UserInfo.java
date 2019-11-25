@@ -14,6 +14,7 @@ import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.NetSegments;
 import ru.vachok.networker.data.synchronizer.TimeOnActualizer;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -119,30 +120,6 @@ public abstract class UserInfo implements InformationFactory {
         }
     
         @Override
-        public int hashCode() {
-            int result = pcName != null ? pcName.hashCode() : 0;
-            result = 31 * result + (userName != null ? userName.hashCode() : 0);
-            return result;
-        }
-    
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-        
-            UserInfo.DatabaseWriter writer = (UserInfo.DatabaseWriter) o;
-        
-            if (pcName != null ? !pcName.equals(writer.pcName) : writer.pcName != null) {
-                return false;
-            }
-            return userName != null ? userName.equals(writer.userName) : writer.userName == null;
-        }
-        
-        @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
                     .toString();
@@ -173,7 +150,7 @@ public abstract class UserInfo implements InformationFactory {
     
         /**
          @param preparedStatement statement from {@link #writeAutoResolveUserToDB(java.lang.String, java.lang.String)}
-         @return
+         @return preparedStatement.executeUpdate(), preparedStatement.toString()
      
          @throws SQLException statement
          @throws IndexOutOfBoundsException String[] split = userName.split(" ");
@@ -290,7 +267,25 @@ public abstract class UserInfo implements InformationFactory {
             }
             return retBool;
         }
-        
+    
+        @Override
+        public int hashCode() {
+            return Objects.hash(pcName, userName);
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            UserInfo.DatabaseWriter writer = (UserInfo.DatabaseWriter) o;
+            return Objects.equals(pcName, writer.pcName) &&
+                Objects.equals(userName, writer.userName);
+        }
+    
         private void countTime(@NotNull Connection connection, @NotNull ResultSet resultSet) throws SQLException {
             Timestamp timeOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON);
             Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
@@ -339,11 +334,12 @@ public abstract class UserInfo implements InformationFactory {
         @SuppressWarnings("OverlyLongMethod")
         private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
             String pcSegment;
+            //noinspection IfStatementWithTooManyBranches
             if (resolvedStrFromSet.contains("200.200")) {
                 pcSegment = "Торговый дом";
             }
             else if (resolvedStrFromSet.contains("200.201")) {
-                pcSegment = "IP телефоны";
+                pcSegment = NetSegments.IPPHONE;
             }
             else if (resolvedStrFromSet.contains("200.202")) {
                 pcSegment = "Техслужба";
@@ -420,17 +416,19 @@ public abstract class UserInfo implements InformationFactory {
         }
     
         private void bigDatabaseException(Exception e) {
+            String methName = "writeAllPrefixToDB";
             File appendTo = new File(ConstantsFor.DB_VELKOMVELKOMPC);
             if (e instanceof SQLException) {
-                messageToUser.error(getClass().getSimpleName(), "writeAllPrefixToDB", FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
+                messageToUser.error(getClass().getSimpleName(), methName, FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
                 if (e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
                     String repairTable = new MyISAMRepair().repairTable("REPAIR TABLE " + ConstantsFor.DB_VELKOMVELKOMPC);
                     FileSystemWorker.appendObjectToFile(appendTo, repairTable);
                 }
             }
             FileSystemWorker.appendObjectToFile(appendTo, e.getClass().getSimpleName());
-            messageToUser.warn(this.getClass().getSimpleName(),
-                    "writeAllPrefixToDB",
+            messageToUser.warn(
+                this.getClass().getSimpleName(),
+                methName,
                     FileSystemWorker.appendObjectToFile(appendTo, AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase())));
         
         }

@@ -3,17 +3,25 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
-import org.apache.commons.net.ftp.*;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
+import org.apache.commons.net.ftp.FTPFile;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
@@ -227,22 +235,20 @@ public class RegRuFTPLibsUploader implements Runnable {
         
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
         String format = simpleDateFormat.format(new Date());
-        String appVersion = "8.0." + format;
+    
         Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
         try {
             pathRoot = pathRoot.getRoot();
-            for (Path path : Files.walkFileTree(pathRoot, new SearchForLibs())) {
-                System.out.println(path.toAbsolutePath());
-            }
+            Files.walkFileTree(pathRoot, new SearchForLibs());
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.warn(RegRuFTPLibsUploader.class.getSimpleName(), e.getMessage(), " see line: 237 ***");
         }
         return retMassive;
     }
     
     private String chkPass() {
-        Properties properties = new DBRegProperties(PropertiesNames.PROPERTIESID_GENERAL_PASS).getProps();
+        Properties properties = InitProperties.getInstance(PropertiesNames.PROPERTIESID_GENERAL_PASS).getProps();
         String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
         if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
             return properties.getProperty(PropertiesNames.REALFTPPASS);
@@ -297,10 +303,10 @@ public class RegRuFTPLibsUploader implements Runnable {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
             String format = simpleDateFormat.format(new Date());
             String appVersion = "8.0." + format;
-            if (file.toFile().getName().contains("networker-" + appVersion + ".jar")) {
+            if (file.getFileName().toString().contains("networker-" + appVersion + ".jar")) {
                 retMassive[0] = file.toFile();
             }
-            if (file.toFile().getName().contains(ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar")) {
+            if (file.getFileName().toString().contains(ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar")) {
                 retMassive[1] = file.toFile();
             }
             return FileVisitResult.CONTINUE;

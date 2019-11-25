@@ -45,7 +45,7 @@ public interface Stats extends InformationFactory {
         catch (IOException e) {
             System.err.println(e.getMessage());
         }
-        return new WeeklyInternetStats().readIPsWithInet();
+        return new WeeklyInternetStats().readIPsWithInet(true);
     }
     
     @Override

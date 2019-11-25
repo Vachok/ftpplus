@@ -20,12 +20,19 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.nio.file.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.StringJoiner;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -256,6 +263,35 @@ public class ExecScan extends DiapazonScan {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
         }
         return timeOutMSec;
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), vlanFile, isTest, stArt, fromVlan, toVlan, ipsQueue, whatVlan, preferences, thirdOctet, fourthOctet);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ExecScan scan = (ExecScan) o;
+        return isTest == scan.isTest &&
+            stArt == scan.stArt &&
+            fromVlan == scan.fromVlan &&
+            toVlan == scan.toVlan &&
+            thirdOctet == scan.thirdOctet &&
+            fourthOctet == scan.fourthOctet &&
+            Objects.equals(vlanFile, scan.vlanFile) &&
+            ipsQueue.equals(scan.ipsQueue) &&
+            Objects.equals(whatVlan, scan.whatVlan) &&
+            preferences.equals(scan.preferences);
     }
     
     private void writeToDB(String hostAddress, String hostName) {

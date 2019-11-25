@@ -10,10 +10,10 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -22,7 +22,10 @@ import java.awt.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 
 /**
@@ -44,7 +47,6 @@ public class IntoApplication {
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
     
     private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
-    
     
     @Contract(pure = true)
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
@@ -79,7 +81,15 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         System.setProperty(PropertiesNames.ENCODING, "UTF8");
         stringBuilder.append(AbstractForms.fromArray(System.getProperties()));
-        FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
+        stringBuilder.append("http://").append(new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress().getHostAddress()).append(":8880/");
+        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName())
+            .info(UsefulUtilities.thisPC(), "appInfoStarter", stringBuilder.toString());
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
     
     static void checkTray() {
@@ -92,7 +102,7 @@ public class IntoApplication {
         }
         catch (HeadlessException e) {
             MESSAGE_LOCAL.error(MessageFormat
-                    .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms.fromArray(e)));
+                .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), AbstractForms.fromArray(e)));
         }
         finally {
             appInfoStarter();
@@ -104,11 +114,5 @@ public class IntoApplication {
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
         MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName()).info(MessageFormat
                 .format("{0} is {1}", configurableApplicationContext.getDisplayName(), configurableApplicationContext.isActive()));
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
-                .toString();
     }
 }
