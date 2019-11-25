@@ -4,6 +4,9 @@ package ru.vachok.networker.restapi.message;
 import com.sun.mail.smtp.SMTPMessage;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -26,15 +29,15 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     
     private String bodyMsg;
     
+    @Override
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
+    }
+    
     @Contract(pure = true)
     MessageEmail(String headerMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = "Message from Networker ";
-    }
-    
-    @Override
-    public void setHeaderMsg(String headerMsg) {
-        this.headerMsg = headerMsg;
     }
     
     @Override
@@ -51,6 +54,14 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     @Override
+    public void info(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        AppConfigurationLocal.getInstance().execute(this::sendEmail, 15);
+    }
+    
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -60,20 +71,42 @@ public class MessageEmail extends MailMessages implements MessageToUser {
         }
         MessageEmail email = (MessageEmail) o;
         return Objects.equals(headerMsg, email.headerMsg) &&
-            Objects.equals(titleMsg, email.titleMsg) &&
-            Objects.equals(bodyMsg, email.bodyMsg);
+                Objects.equals(titleMsg, email.titleMsg) &&
+                Objects.equals(bodyMsg, email.bodyMsg);
+    }
+    
+    @Override
+    public void infoNoTitles(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = titleMsg + ": information";
+        info(headerMsg, titleMsg, bodyMsg);
+    }
+    
+    private class AuthMail extends Authenticator {
+        
+        
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication("bot@chess.vachok.ru", getMailPass());
+        }
+    }
+    
+    @Override
+    public void info(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = titleMsg + ": information";
+        info(headerMsg, titleMsg, bodyMsg);
+    }
+    
+    @Override
+    public void error(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = MessageFormat.format("{0}: ERROR", titleMsg);
+        error(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
     public void error(String headerMsg, String titleMsg, String bodyMsg) {
-        this.headerMsg = headerMsg;
-        this.titleMsg = titleMsg;
-        this.bodyMsg = bodyMsg;
-        AppConfigurationLocal.getInstance().execute(this::sendEmail, 15);
-    }
-    
-    @Override
-    public void info(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
@@ -89,24 +122,10 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     @Override
-    public void infoNoTitles(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        this.titleMsg = titleMsg + ": information";
-        info(headerMsg, titleMsg, bodyMsg);
-    }
-    
-    @Override
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         this.titleMsg = MessageFormat.format("{0}: Warning", titleMsg);
         warning(headerMsg, titleMsg, bodyMsg);
-    }
-    
-    @Override
-    public void info(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        this.titleMsg = titleMsg + ": information";
-        info(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
@@ -118,13 +137,6 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     @Override
-    public void error(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        this.titleMsg = MessageFormat.format("{0}: ERROR", titleMsg);
-        error(headerMsg, titleMsg, bodyMsg);
-    }
-    
-    @Override
     public void warning(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         this.titleMsg = MessageFormat.format("{0}: Warning", titleMsg);
@@ -132,7 +144,6 @@ public class MessageEmail extends MailMessages implements MessageToUser {
     }
     
     private void sendEmail() {
-    
         Session session = Session.getDefaultInstance(InitProperties.getMAilPr(), new AuthMail());
         SMTPMessage smtpMessage = new SMTPMessage(session);
         try {
@@ -142,17 +153,26 @@ public class MessageEmail extends MailMessages implements MessageToUser {
             smtpMessage.setSubject(MessageFormat.format("{0}: {1}", headerMsg, titleMsg));
             smtpMessage.setText(bodyMsg);
             smtpMessage.setRecipient(Message.RecipientType.TO, address);
-            sessionTransport.connect("mail.chess.vachok.ru", "bot@chess.vachok.ru", "S15cQFO8kk50FKj");
+            sessionTransport.connect(ConstantsFor.MAIL_SERVERREGRU, "bot@chess.vachok.ru", getMailPass());
             sessionTransport.sendMessage(smtpMessage, new Address[]{address});
             sessionTransport.close();
         }
         catch (MessagingException e) {
-            e.printStackTrace();
+            FileSystemWorker.error(getClass().getSimpleName() + ".sendEmail", e);
         }
         finally {
-            Runtime.getRuntime().runFinalization();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
+    
+    private String getMailPass() {
+        return InitProperties.getMAilPr().getProperty(PropertiesNames.PASSWORD);
+    }
+    
+
+    
+
     
     @Override
     public String toString() {
@@ -162,15 +182,6 @@ public class MessageEmail extends MailMessages implements MessageToUser {
         sb.append(", bodyMsg='").append(bodyMsg).append('\'');
         sb.append('}');
         return sb.toString();
-    }
-    
-    private class AuthMail extends Authenticator {
-        
-        
-        @Override
-        protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication("bot@chess.vachok.ru", "S15cQFO8kk50FKj");
-        }
     }
     
     

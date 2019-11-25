@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -516,6 +514,10 @@ public enum ConstantsFor {
     public static final String DB_LANONLINE = "lan.online";
     
     public static final String DB_LOGNETWORKER = "log.networker";
+    
+    public static final String MAIL_SERVERREGRU = "mail.chess.vachok.ru";
+    
+    public static final String DB_LIFERPGSPEED = "liferpg.speed";
     
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     

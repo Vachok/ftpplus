@@ -37,9 +37,9 @@ public class LocalDBLibsUploaderTest {
     @BeforeMethod
     public void initUpl() {
         Path p = Paths.get(".").normalize().toAbsolutePath();
-        String libPath = p.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "lib" + ConstantsFor.FILESYSTEM_SEPARATOR + "tutu-8.0.1947.jar";
+        String libPath = p.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "lib" + ConstantsFor.FILESYSTEM_SEPARATOR + "tutu-8.0.1948.jar";
         Assert.assertTrue(new File(libPath).exists());
-        this.libsUploader = new LocalDBLibsUploader("tutu", "8.0.1947", "jar", Paths.get(libPath));
+        this.libsUploader = new LocalDBLibsUploader("tutu", "8.0.1948", "jar", Paths.get(libPath));
     }
     
     @Test

@@ -96,4 +96,6 @@ public enum PropertiesNames {
     public static final String TRAINS = "trains";
     
     public static final String ID_MAILREGRU = "mail-regru";
+    
+    public static final String PASSWORD = "password";
 }

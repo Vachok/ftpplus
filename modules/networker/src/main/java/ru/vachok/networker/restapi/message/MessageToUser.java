@@ -34,8 +34,6 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     @Contract("null, !null -> new")
     static @NotNull MessageToUser getInstance(String messengerType, @NotNull String messengerHeader) {
         final MessageToUser messageToUser;
-        
-        
         if (messengerType == null) {
             messageToUser = new MessageLocal(messengerHeader);
             return messageToUser;

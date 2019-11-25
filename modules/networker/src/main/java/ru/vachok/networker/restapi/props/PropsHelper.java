@@ -4,18 +4,14 @@ package ru.vachok.networker.restapi.props;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherConstants;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -36,6 +32,8 @@ class PropsHelper {
         }
         else {
             MAIL_PR.putAll(new DBPropsCallable(PropertiesNames.ID_MAILREGRU).getProps());
+            InitProperties initProperties = new FilePropsLocal("mail");
+            initProperties.setProps(MAIL_PR);
             return MAIL_PR;
         }
     }
