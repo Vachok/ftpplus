@@ -56,7 +56,7 @@ public class TemporaryFullInternetTest {
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(tmpInet);
         try {
-            String getStr = submit.get(35, TimeUnit.SECONDS);
+            String getStr = submit.get(150, TimeUnit.SECONDS);
             Assert.assertTrue(getStr.contains("8.8.8.8"));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {

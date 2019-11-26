@@ -16,8 +16,8 @@ import javax.mail.*;
 import java.net.MalformedURLException;
 import java.sql.*;
 import java.time.*;
-import java.util.Date;
-import java.util.*;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +28,7 @@ import static java.time.DayOfWeek.SUNDAY;
 /**
  @see ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest */
 public class SpeedChecker implements Callable<Long> {
+    
     
     private static final Properties APP_PR = InitProperties.getTheProps();
     
@@ -141,36 +142,28 @@ public class SpeedChecker implements Callable<Long> {
         subject = subject.split(":")[1];
         double speed = Double.parseDouble(subject.split(" ")[0]);
         int road = Integer.parseInt(subject.split(" ")[1]);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LIFERPGSPEED);
-             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO speed ('Speed', 'Road', 'WeekDay', 'TimeStamp') values (?, ?, ?, ?)")) {
-            preparedStatement.setDouble(1, speed);
-            preparedStatement.setInt(2, road);
-            LocalDateTime time = LocalDateTime.ofEpochSecond(rtLong / 1000, 0, ZoneOffset.ofHours(3));
-            preparedStatement.setInt(3, time.getDayOfWeek().getValue());
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(time));
-            return preparedStatement.executeUpdate() > 0;
+        float timeSpend;
+        if (road == 0) {
+            timeSpend = (float) (ConstantsFor.KM_A107 / speed) * 60;
+        }
+        else {
+            timeSpend = (float) (ConstantsFor.KM_M9 / speed) * 60;
+        }
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LIFERPGSPEED)) {
+            final String sql = "INSERT INTO `liferpg`.`speed` (`Speed`, `Road`, `WeekDay`, `TimeSpend`, `TimeStamp`) VALUES (?, ?, ?, ?, ?);";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setDouble(1, speed);
+                preparedStatement.setInt(2, road);
+                LocalDateTime time = LocalDateTime.ofEpochSecond(rtLong / 1000, 0, ZoneOffset.ofHours(3));
+                preparedStatement.setInt(3, time.getDayOfWeek().getValue() + 1);
+                preparedStatement.setFloat(4, timeSpend);
+                preparedStatement.setTimestamp(5, Timestamp.valueOf(time));
+                return preparedStatement.executeUpdate() > 0;
+            }
         }
         catch (SQLException e) {
             messageToUser.error("SpeedChecker.writeToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             return false;
-        }
-    }
-    
-    private void connectToDB(Connection connection) throws SQLException {
-        try (PreparedStatement p = connection.prepareStatement(ConstantsFor.DBQUERY_SELECTFROMSPEED)) {
-            p.setQueryTimeout((int) ConstantsFor.DELAY);
-            try (ResultSet r = p.executeQuery()) {
-                while (r.next()) {
-                    if (r.last()) {
-                        double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
-                        long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
-                        String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
-                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
-                        APP_PR.setProperty(PropertiesNames.LASTWORKSTART, String.valueOf(rtLong));
-                        messageToUser.info(this.getClass().getSimpleName(), "connectToDB", msg);
-                    }
-                }
-            }
         }
     }
 }
