@@ -6,6 +6,7 @@ package ru.vachok.networker.exe.runnabletasks;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -41,7 +42,7 @@ public class SpeedCheckerTest {
     @Test
     public void testCall() {
         try {
-            Future<Long> aLongFuture = Executors.newSingleThreadExecutor().submit(new SpeedChecker());
+            Future<Long> aLongFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new SpeedChecker());
             long aLong = aLongFuture.get(30, TimeUnit.SECONDS);
             Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(3) > System.currentTimeMillis(), new Date(aLong).toString());
         }
