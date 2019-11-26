@@ -53,8 +53,8 @@ public class AppInfoOnLoad implements Runnable {
         AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, (int) ConstantsFor.DELAY);
     
         AppConfigurationLocal.getInstance().execute(syncData::superRun);
-        
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
+    
+        if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
             AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun);
         }
