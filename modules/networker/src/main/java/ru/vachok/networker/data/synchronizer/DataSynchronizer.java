@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
+ @see DataSynchronizerTest
  @since 26.11.2019 (21:39) */
 public class DataSynchronizer extends SyncData {
     
@@ -166,6 +167,35 @@ public class DataSynchronizer extends SyncData {
     
     @Override
     public void superRun() {
-        syncData();
+        List<String> tblNames = new ArrayList<>();
+        List<String> dbNames = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String dbName = resultSet.getString(1);
+                dbNames.add(dbName);
+                System.out.println("dbName = " + dbName);
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("DataSynchronizer.superRun", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement("SHOW TABLE STATUS FROM `velkom`");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                tblNames.add(resultSet.getString("Name"));
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("DataSynchronizer.superRun", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        for (String dbName : dbNames) {
+            for (String tblName : tblNames) {
+                this.dbToSync = dbName + "." + tblName;
+                syncData();
+            }
+        }
     }
 }

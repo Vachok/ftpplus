@@ -56,7 +56,7 @@ public class AppInfoOnLoad implements Runnable {
     
         if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-            AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun);
+            AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 600);
         }
         try {
             infoForU();
