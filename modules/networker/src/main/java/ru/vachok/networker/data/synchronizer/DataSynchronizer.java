@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 
 /**
@@ -146,16 +147,15 @@ public class DataSynchronizer extends SyncData {
                     retInt += preparedStatement.executeUpdate();
                 }
                 catch (SQLException e) {
-                    messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 146 ***");
                     retInt -= retInt;
                 }
             }
             connection.commit();
         }
-        catch (SQLException | RuntimeException e) {
+        catch (NumberFormatException | SQLException e) {
             messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
             retInt = -666;
-            
+    
         }
         return retInt;
     }
@@ -175,7 +175,12 @@ public class DataSynchronizer extends SyncData {
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 String dbName = resultSet.getString(1);
-                dbNames.add(dbName);
+                if (Stream.of("_schema", "mysql", "log", "lan").anyMatch(dbName::contains)) {
+                    System.out.println("dbName = " + dbName);
+                }
+                else {
+                    dbNames.add(dbName);
+                }
                 Thread.currentThread().setName(dbName);
             }
         }
@@ -196,9 +201,14 @@ public class DataSynchronizer extends SyncData {
             }
             for (String tblName : tblNames) {
                 this.dbToSync = dbName + "." + tblName;
-                syncData();
+                try {
+                    syncData();
+                }
+                catch (RuntimeException ignore) {
+                    //27.11.2019 (0:06)
+                }
             }
-        
+    
         }
     }
 }

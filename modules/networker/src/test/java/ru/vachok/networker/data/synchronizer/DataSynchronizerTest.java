@@ -8,7 +8,6 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 
 public class DataSynchronizerTest {
@@ -43,7 +42,7 @@ public class DataSynchronizerTest {
     
     @Test
     public void testSuperRun() {
-        AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 30);
+        dataSynchronizer.superRun();
     }
     
     @Test
