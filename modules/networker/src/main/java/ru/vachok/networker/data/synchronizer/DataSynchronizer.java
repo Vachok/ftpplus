@@ -167,7 +167,7 @@ public class DataSynchronizer extends SyncData {
     
     @Override
     public void superRun() {
-        List<String> tblNames = new ArrayList<>();
+    
         List<String> dbNames = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
              PreparedStatement preparedStatement = connection.prepareStatement("show databases");
@@ -181,21 +181,23 @@ public class DataSynchronizer extends SyncData {
         catch (SQLException e) {
             messageToUser.error("DataSynchronizer.superRun", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement("SHOW TABLE STATUS FROM `velkom`");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                tblNames.add(resultSet.getString("Name"));
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error("DataSynchronizer.superRun", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
         for (String dbName : dbNames) {
+            List<String> tblNames = new ArrayList<>();
+            try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+                 PreparedStatement preparedStatement = connection.prepareStatement("SHOW TABLE STATUS FROM `" + dbName + "`");
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    tblNames.add(resultSet.getString("Name"));
+                }
+            }
+            catch (SQLException e) {
+                messageToUser.error("DataSynchronizer.superRun", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
             for (String tblName : tblNames) {
                 this.dbToSync = dbName + "." + tblName;
                 syncData();
             }
+        
         }
     }
 }
