@@ -79,7 +79,7 @@ public abstract class UserInfo implements InformationFactory {
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->DATABASE_WRITER.writeAutoResolveUserToDB(pcName, lastFileUse));
         }
         else {
-            System.err.println(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
+            messageToUser.warn(UserInfo.class.getSimpleName(), "autoResolvedUsersRecord", MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
         }
     }
     

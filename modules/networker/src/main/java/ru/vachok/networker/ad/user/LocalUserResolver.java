@@ -47,12 +47,7 @@ class LocalUserResolver extends UserInfo {
             this.userName = Paths.get(splitBySpace[1]).getFileName().toString();
         }
         catch (RuntimeException e) {
-            if (e instanceof InvalidPathException) {
-                this.userName = splitBySpace[2];
-            }
-            else {
-                this.userName = new UnknownUser(this.getClass().getSimpleName()).getInfo();
-            }
+            this.userName = e instanceof InvalidPathException ? splitBySpace[2] : new UnknownUser(this.getClass().getSimpleName()).getInfo();
         }
         finally {
             retStr = pcName + " : " + userName;
