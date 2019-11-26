@@ -97,6 +97,7 @@ public class DataSynchronizer extends SyncData {
         else {
             throw new InvokeIllegalException(stringBuilder.toString());
         }
+        messageToUser.warn(this.getClass().getSimpleName(), "syncData", stringBuilder.toString());
         return stringBuilder.toString();
     }
     
@@ -142,7 +143,6 @@ public class DataSynchronizer extends SyncData {
                     for (int j = 2; j < columnsNum + 1; j++) {
                         preparedStatement.setString(j, colNames.get(j));
                     }
-                    System.out.println("preparedStatement = " + preparedStatement.toString());
                     retInt += preparedStatement.executeUpdate();
                 }
                 catch (SQLException e) {
@@ -167,7 +167,8 @@ public class DataSynchronizer extends SyncData {
     
     @Override
     public void superRun() {
-    
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(3);
         List<String> dbNames = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
              PreparedStatement preparedStatement = connection.prepareStatement("show databases");
@@ -175,7 +176,7 @@ public class DataSynchronizer extends SyncData {
             while (resultSet.next()) {
                 String dbName = resultSet.getString(1);
                 dbNames.add(dbName);
-                System.out.println("dbName = " + dbName);
+                Thread.currentThread().setName(dbName);
             }
         }
         catch (SQLException e) {
