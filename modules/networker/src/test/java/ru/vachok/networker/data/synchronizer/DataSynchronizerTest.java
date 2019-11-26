@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 
 public class DataSynchronizerTest {
@@ -42,7 +43,7 @@ public class DataSynchronizerTest {
     
     @Test
     public void testSuperRun() {
-        throw new InvokeEmptyMethodException("SuperRun created 26.11.2019 at 21:49");
+        AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 30);
     }
     
     @Test

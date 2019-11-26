@@ -166,6 +166,6 @@ public class DataSynchronizer extends SyncData {
     
     @Override
     public void superRun() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.DBSyncronizer.superRun( void ) at 26.11.2019 - (21:39)");
+        syncData();
     }
 }
