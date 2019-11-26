@@ -5,7 +5,7 @@ package ru.vachok.networker.exe.runnabletasks;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -46,7 +46,7 @@ public class SpeedCheckerTest {
             Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(3) > System.currentTimeMillis(), new Date(aLong).toString());
         }
         catch (ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         catch (InterruptedException e) {
             messageToUser.error(e.getMessage());
