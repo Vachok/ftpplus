@@ -8,13 +8,16 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 
@@ -33,6 +36,10 @@ public class DataSynchronizer extends SyncData {
     private Map<Integer, String> colNames = new ConcurrentHashMap<>();
     
     private int columnsNum = 0;
+    
+    private int totalRows = 0;
+    
+    private final long startStamp = System.currentTimeMillis();
     
     DataSynchronizer() {
     }
@@ -68,14 +75,40 @@ public class DataSynchronizer extends SyncData {
             .toString();
     }
     
+    private int workWithObject(@NotNull Object object, Connection connection) throws SQLException {
+        int retInt = 0;
+        JsonObject jsonObject = Json.parse(object.toString()).asObject();
+        String sql = "null";
+        try {
+            sql = genSQL(jsonObject);
+        }
+        catch (RuntimeException e) {
+            messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 146 ***");
+            retInt = -666;
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, Integer.parseInt(colNames.get(1)));
+            for (int j = 2; j < columnsNum + 1; j++) {
+                preparedStatement.setString(j, colNames.get(j));
+            }
+            retInt += preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            retInt -= retInt;
+            connection.rollback();
+        }
+        finally {
+            colNames.clear();
+        }
+        return retInt;
+    }
+    
     @Override
     public String syncData() {
         final String sql = String.format("SELECT * FROM %s WHERE %s > %d", dbToSync, columnName, getLastLocalID(dbToSync));
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(sql).append("\n");
-        
         List<JsonObject> dbObjects = new ArrayList<>();
-        
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String[] columns = getColumns(preparedStatement);
@@ -102,7 +135,8 @@ public class DataSynchronizer extends SyncData {
         else {
             throw new InvokeIllegalException(stringBuilder.toString());
         }
-        messageToUser.warn(this.getClass().getSimpleName(), "syncData", stringBuilder.toString());
+        messageToUser.info(this.getClass().getSimpleName(), "syncData", stringBuilder.toString());
+        this.totalRows += uploadedCount;
         return stringBuilder.toString();
     }
     
@@ -131,34 +165,11 @@ public class DataSynchronizer extends SyncData {
         catch (NumberFormatException | SQLException e) {
             messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
             retInt = -666;
-    
         }
         return retInt;
     }
     
-    private int workWithObject(@NotNull Object object, Connection connection) {
-        int retInt = 0;
-        JsonObject jsonObject = Json.parse(object.toString()).asObject();
-        String sql = "null";
-        try {
-            sql = genSQL(jsonObject);
-        }
-        catch (RuntimeException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 146 ***");
-            retInt = -666;
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, Integer.parseInt(colNames.get(1)));
-            for (int j = 2; j < columnsNum + 1; j++) {
-                preparedStatement.setString(j, colNames.get(j));
-            }
-            retInt += preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            retInt -= retInt;
-        }
-        return retInt;
-    }
+
     
     private @NotNull String genSQL(@NotNull JsonObject jsonObject) {
         StringBuilder sqlBuilder = new StringBuilder();
@@ -185,6 +196,7 @@ public class DataSynchronizer extends SyncData {
         throw new UnsupportedOperationException("27.11.2019 (21:03)");
     }
     
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     @Override
     public void superRun() {
         Thread.currentThread().checkAccess();
@@ -201,8 +213,14 @@ public class DataSynchronizer extends SyncData {
                     //27.11.2019 (0:06)
                 }
             }
-    
+            
         }
+        messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
+        MessageToUser.getInstance(MessageToUser.FILE, this.getClass().getSimpleName())
+            .info(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
+        MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
+            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
+                .format("Total {0} rows affected\nTime spend: {1} sec.", totalRows, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp)));
     }
     
     private @NotNull List<String> getTblNames(String dbName) {
@@ -244,5 +262,5 @@ public class DataSynchronizer extends SyncData {
         return dbNames;
     }
     
-
+    
 }
