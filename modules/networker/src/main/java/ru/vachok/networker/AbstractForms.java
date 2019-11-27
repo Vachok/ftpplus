@@ -4,6 +4,7 @@ package ru.vachok.networker;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -16,6 +17,39 @@ public abstract class AbstractForms {
     
     public static @NotNull String networkerTrace(StackTraceElement[] trace) {
         return T_FORMS.networkerTrace(trace);
+    }
+    
+    public static @NotNull String networkerTrace(@NotNull Exception e) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append("\n");
+        stringBuilder.append(T_FORMS.networkerTrace(e.getStackTrace())).append("\n");
+        try {
+            stringBuilder.append(checkSu(e));
+        }
+        catch (RuntimeException su) {
+            stringBuilder.append("NO Suppressed".toUpperCase());
+            LoggerFactory.getLogger(AbstractForms.class.getSimpleName()).warn(AbstractForms.class.getSimpleName(), e.getMessage(), " see line: 29 ***");
+        }
+        return stringBuilder.toString();
+    }
+    
+    private static @NotNull String checkSu(@NotNull Throwable e) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Throwable[] suppressedIfExists = e.getSuppressed();
+        if (suppressedIfExists.length > 0) {
+            for (Throwable throwable : suppressedIfExists) {
+                stringBuilder.append(throwable.getClass().getSimpleName()).append(": ").append(throwable.getMessage()).append("\n");
+                stringBuilder.append(T_FORMS.networkerTrace(throwable.getStackTrace())).append("\n");
+                if (throwable.getSuppressed() != null) {
+                    checkSu(throwable);
+                }
+                else {
+                    stringBuilder.append("End Suppressed").append("\n");
+                }
+            }
+            
+        }
+        return stringBuilder.toString();
     }
     
     public static String fromArray(Properties props) {

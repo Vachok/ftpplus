@@ -1,11 +1,14 @@
 package ru.vachok.networker.data.synchronizer;
 
 
+import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
+
+import java.util.Collections;
 
 
 public class DataSynchronizerTest {
@@ -35,21 +38,40 @@ public class DataSynchronizerTest {
     @Test
     public void testSyncData() {
         String syncDataResult = dataSynchronizer.syncData();
-        System.out.println("syncDataResult = " + syncDataResult);
+        Assert.assertTrue(syncDataResult.contains("SELECT * FROM velkom.velkompc WHERE idrec >"));
     }
     
     @Test
+    @Ignore
     public void testSuperRun() {
         AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 30);
     }
     
     @Test
     public void testUploadCollection() {
-        throw new InvokeEmptyMethodException("UploadCollection created 26.11.2019 at 21:49");
+        int isUpl = dataSynchronizer.uploadCollection(Collections.EMPTY_LIST, "test.test");
+        Assert.assertTrue(isUpl == 0);
     }
     
     @Test
     public void testMakeColumns() {
-        throw new InvokeEmptyMethodException("MakeColumns created 26.11.2019 at 21:49");
+        try {
+            dataSynchronizer.makeColumns();
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = dataSynchronizer.toString();
+        Assert.assertEquals(toStr, "DataSynchronizer[\n" +
+            "dbToSync = 'velkom.velkompc',\n" +
+            "columnName = 'idrec',\n" +
+            "dataConnectTo = MySqlLocalSRVInetStat{\"tableName\":\"velkom\",\"dbName\":\"velkom\"},\n" +
+            "colNames = {},\n" +
+            "columnsNum = 0\n" +
+            "]");
     }
 }
