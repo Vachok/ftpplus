@@ -12,9 +12,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.NetSegments;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.data.synchronizer.TimeOnActualizer;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -314,11 +312,11 @@ public abstract class UserInfo implements InformationFactory {
                     connection.commit();
                 }
                 catch (SQLException e) {
+                    bigDatabaseException(e);
                     connection.rollback();
                 }
             }
             catch (SQLException | RuntimeException e) {
-                bigDatabaseException(e);
                 exUpInt = -666;
             }
             return exUpInt > 0;

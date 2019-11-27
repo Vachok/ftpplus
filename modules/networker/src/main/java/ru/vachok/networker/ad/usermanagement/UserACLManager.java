@@ -31,17 +31,13 @@ public interface UserACLManager {
     
     void setClassOption(Object classOption);
     
+    String getResult();
+    
     @Contract("_, _ -> new")
-    static @NotNull UserACLManager getInstance(@NotNull String type, Path startPath) {
-        switch (type) {
-            case ACL_PARSING:
-                return new ACLParser();
-            case DB_SEARCH:
-                return new ACLDatabaseSearcher();
+    static @NotNull UserACLManager getInstance(@NotNull String parsing, Path path) {
+        switch (parsing) {
             default:
-                return UserACLManagerImpl.getI(type, startPath);
+                return new ACLParser();
         }
     }
-    
-    String getResult();
 }
