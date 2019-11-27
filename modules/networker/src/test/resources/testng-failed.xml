@@ -8,17 +8,9 @@
           <include name="tearDown"/>
           <include name="setUp"/>
           <include name="incorrectIntegerValueDO0058"/>
-          <include name="testGetInfoAbout"/>
           <include name="initON"/>
         </methods>
       </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
-      <class name="ru.vachok.networker.controller.ShowAllDevCTRLTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testModel"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.controller.ShowAllDevCTRLTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

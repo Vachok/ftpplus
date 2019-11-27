@@ -5,13 +5,21 @@ package ru.vachok.networker.ad.inet;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -56,7 +64,7 @@ public class TemporaryFullInternetTest {
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(tmpInet);
         try {
-            String getStr = submit.get(150, TimeUnit.SECONDS);
+            String getStr = submit.get(15, TimeUnit.SECONDS);
             Assert.assertTrue(getStr.contains("8.8.8.8"));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {

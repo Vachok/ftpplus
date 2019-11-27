@@ -94,13 +94,6 @@ public class LocalUserResolverTest {
     }
     
     @Test
-    public void userDO0091() {
-        localUserResolver.setClassOption("do0091");
-        String resolverInfo = localUserResolver.getInfo();
-        Assert.assertEquals(resolverInfo, "do0091 : vkuharenko"); //todo 24.11.2019 (17:43)
-    }
-    
-    @Test
     public void badCredentials() {
         String pcName = "d00";
         String info = localUserResolver.getInfo();

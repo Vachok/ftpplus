@@ -11,8 +11,13 @@ import ru.vachok.networker.info.stats.InternetSync;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -94,8 +99,26 @@ public abstract class SyncData implements DataConnectTo {
         return getDBID(source, syncDB);
     }
     
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @Contract("_ -> new")
+    public static @NotNull SyncData getInstance(@NotNull String type) {
+        switch (type) {
+            case BACKUPER:
+                return new DataSynchronizer();
+            case DOWNLOADER:
+                return new DBRemoteDownloader(0);
+            case UPUNIVERSAL:
+                return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
+            case INETSYNC:
+                return new InternetSync("10.200.213.85");
+            default:
+                return new InternetSync(type);
+        }
+        
+    }
+    
     private int getDBID(@NotNull MysqlDataSource source, String syncDB) {
-        messageToUser.info(this.getClass().getSimpleName(), "Searchin for ID Rec", source.getURL());
+        messageToUser.info(this.getClass().getSimpleName(), "Search in for ID Rec", source.getURL());
         try (Connection connection = source.getConnection()) {
             final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -114,22 +137,6 @@ public abstract class SyncData implements DataConnectTo {
             messageToUser.error(e.getMessage() + " see line: 169 ***");
             return -666;
         }
-    }
-    
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    @Contract("_ -> new")
-    public static @NotNull SyncData getInstance(@NotNull String type) {
-        switch (type) {
-            case DOWNLOADER:
-                return new DBRemoteDownloader(0);
-            case UPUNIVERSAL:
-                return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
-            case INETSYNC:
-                return new InternetSync("10.200.213.85");
-            default:
-                return new InternetSync(type);
-        }
-        
     }
     
     public abstract Map<String, String> makeColumns();
