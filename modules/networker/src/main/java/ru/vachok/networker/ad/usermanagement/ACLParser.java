@@ -6,13 +6,13 @@ package ru.vachok.networker.ad.usermanagement;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.nio.file.*;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  @see ru.vachok.networker.ad.usermanagement.ACLParserTest
  @since 04.07.2019 (9:48) */
-class ACLParser extends UserACLManagerImpl {
+class ACLParser implements UserACLManager {
     
     
     private Map<Path, List<String>> mapRights = new ConcurrentSkipListMap<>();
@@ -46,6 +46,22 @@ class ACLParser extends UserACLManagerImpl {
     @Contract(pure = true)
     Map<Path, List<String>> getMapRights() {
         return mapRights;
+    }
+    
+    public ACLParser() {
+    
+    }
+    
+    @Override
+    public String addAccess(UserPrincipal newUser) {
+        throw new TODOException("null");
+        
+    }
+    
+    @Override
+    public String removeAccess(UserPrincipal oldUser) {
+        throw new TODOException("null");
+        
     }
     
     @Override
@@ -156,8 +172,10 @@ class ACLParser extends UserACLManagerImpl {
         }
     }
     
-    public ACLParser() {
-        super(Paths.get("."));
+    @Override
+    public String replaceUsers(UserPrincipal oldUser, UserPrincipal newUser) {
+        throw new TODOException("null");
+        
     }
     
     private void alterParsing(@NotNull String line) {

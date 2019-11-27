@@ -205,7 +205,6 @@ public class UserInfoTest {
         String infoPc = PCInfo.getInstance("do0006.eatmeat.ru").getInfo();
         NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online test<br>");
         Assert.assertTrue(UserInfo.writeUsersToDBFromSET(), AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase()));
-        
         checkDB("DELETE FROM `velkompc` WHERE `AddressPP` LIKE '10.200.213.85 online test'");
     }
     

@@ -20,7 +20,7 @@ import java.util.*;
 /**
  @see UserACLManagerImplTest
  @since 17.07.2019 (11:44) */
-abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements UserACLManager {
+abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
     
     
     protected Path startPath;
@@ -99,7 +99,6 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
         return permList;
     }
     
-    @Override
     public String addAccess(UserPrincipal newUser) {
         try {
             this.aclManager = new UserACLAdder(startPath);
@@ -112,13 +111,10 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
         return startPath + " added " + newUser.getName();
     }
     
-    @Override
-    public String removeAccess(UserPrincipal oldUser) {
-    
+    public static String removeAccess(UserPrincipal oldUser, Path startPath) {
         try {
-            this.aclManager = new UserACLDeleter(startPath);
-            aclManager.setClassOption(oldUser);
-            Files.walkFileTree(startPath, aclManager);
+    
+            Files.walkFileTree(startPath, new UserACLDeleter(oldUser));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
@@ -127,7 +123,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
         return startPath + " removed " + oldUser.getName();
     }
     
-    @Override
+
     public String replaceUsers(UserPrincipal oldUser, UserPrincipal newUser) {
         this.oldUser = oldUser;
         this.newUser = newUser;
@@ -148,10 +144,8 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
         return MessageFormat.format("{0} users changed.\nWAS: {1} ; NOW: {2}", startPath, oldUser, newUser);
     }
     
-    @Override
     public abstract void setClassOption(Object classOption);
     
-    @Override
     public abstract String getResult();
     
     private void aclFromFile(Path foldersFilePath) {
