@@ -1,13 +1,11 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 
 public class DataSynchronizerTest {
@@ -42,7 +40,7 @@ public class DataSynchronizerTest {
     
     @Test
     public void testSuperRun() {
-        dataSynchronizer.superRun();
+        AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 30);
     }
     
     @Test
