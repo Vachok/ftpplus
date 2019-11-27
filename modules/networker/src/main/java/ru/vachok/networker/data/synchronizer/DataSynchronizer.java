@@ -168,7 +168,7 @@ public class DataSynchronizer extends SyncData {
     @Override
     public void superRun() {
         Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(3);
+        Thread.currentThread().setPriority(2);
         List<String> dbNames = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
              PreparedStatement preparedStatement = connection.prepareStatement("show databases");
