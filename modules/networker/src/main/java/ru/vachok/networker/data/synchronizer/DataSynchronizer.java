@@ -28,50 +28,89 @@ import java.util.stream.Stream;
  @see DataSynchronizerTest
  @since 26.11.2019 (21:39) */
 public class DataSynchronizer extends SyncData {
-    
-    
+
+
     private final long startStamp = System.currentTimeMillis();
-    
+
     private String dbToSync = ConstantsFor.DB_VELKOMVELKOMPC;
-    
+
     private String columnName = ConstantsFor.DBCOL_IDREC;
-    
+
     private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
+
     private Map<Integer, String> colNames = new ConcurrentHashMap<>();
-    
+
     private int columnsNum = 0;
-    
+
     private int totalRows = 0;
-    
-    private File dbObj = new File(dbToSync);
-    
+
+    private File dbObj = new File(getClass().getSimpleName() + ".log");
+
+    DataSynchronizer() {
+    }
+
     @Override
     public String getDbToSync() {
         return dbToSync;
     }
-    
+
     @Override
     public void setDbToSync(String dbToSync) {
         this.dbToSync = dbToSync;
     }
-    
-    DataSynchronizer() {
+
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", DataSynchronizer.class.getSimpleName() + "[\n", "\n]")
+            .add("dbToSync = '" + dbToSync + "'")
+            .add("columnName = '" + columnName + "'")
+            .add("dataConnectTo = " + dataConnectTo)
+            .add("colNames = " + colNames)
+            .add("columnsNum = " + columnsNum)
+            .toString();
     }
-    
+
+    @Contract(pure = true)
+    private @NotNull List<String> getColumnsCreate(String sql) {
+        List<String> retList = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            @NotNull String[] columns = getColumns(preparedStatement);
+            for (String column : columns) {
+                retList.add(column.split(",")[0] + " " + column.split(",")[1] + ", ");
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.warn(DataSynchronizer.class.getSimpleName(), "getColumnsCreate", e.getMessage() + Thread.currentThread().getState().name());
+        }
+        finally {
+            createTable(dbToSync, retList);
+        }
+        return retList;
+    }
+
+    private @NotNull String[] getColumns(@NotNull PreparedStatement preparedStatement) throws SQLException {
+        ResultSetMetaData metaData = preparedStatement.getMetaData();
+        int countCol = metaData.getColumnCount();
+        String[] retArr = new String[countCol];
+        for (int i = 0; i < countCol; i++) {
+            retArr[i] = metaData.getColumnName(i + 1) + "," + metaData.getColumnTypeName(i + 1);
+        }
+        return retArr;
+    }
+
     @Override
     public int uploadCollection(Collection stringsCollection, String tableName) {
-        int retInt = columnsNum;
-        List jsonObjects = new ArrayList<Object>(stringsCollection);
-        try (Connection connection = dataConnectTo.getDefaultConnection(tableName)) {
+        int retInt = 0;
+        Queue<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             connection.setSavepoint();
             for (Object jsonObject : jsonObjects) {
                 retInt += workWithObject(jsonObject, connection);
-                connection.commit();
-                FileSystemWorker.appendObjectToFile(dbObj, jsonObject);
             }
+            connection.commit();
         }
         catch (NumberFormatException | SQLException e) {
             messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
@@ -79,26 +118,15 @@ public class DataSynchronizer extends SyncData {
         }
         return retInt;
     }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", DataSynchronizer.class.getSimpleName() + "[\n", "\n]")
-                .add("dbToSync = '" + dbToSync + "'")
-                .add("columnName = '" + columnName + "'")
-                .add("dataConnectTo = " + dataConnectTo)
-                .add("colNames = " + colNames)
-                .add("columnsNum = " + columnsNum)
-                .toString();
-    }
-    
+
     @Override
     public int createTable(String dbPointTable, @NotNull List<String> additionalColumns) {
         int retInt;
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("CREATE TABLE ")
-                .append(dbPointTable)
-                .append(" (`idrec` INT NOT NULL AUTO_INCREMENT, ")
-                .append("`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(), ");
+            .append(dbPointTable)
+            .append(" (`idrec` INT NOT NULL AUTO_INCREMENT, ")
+            .append("`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(), ");
         if (additionalColumns.size() > 0) {
             additionalColumns.forEach(sqlBuilder::append);
         }
@@ -121,7 +149,18 @@ public class DataSynchronizer extends SyncData {
         this.dbToSync = dbPointTable;
         return retInt;
     }
-    
+
+    private void addComment() {
+        String sql = String.format("ALTER TABLE %s COMMENT='Automatically created by %s, at %s';", dbToSync, this.getClass().getTypeName(), new Date());
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.warn(DataSynchronizer.class.getSimpleName(), "addComment", e.getMessage() + Thread.currentThread().getState().name());
+        }
+    }
+
     @Override
     public void setOption(Object option) {
         if (option instanceof DataConnectTo) {
@@ -131,29 +170,10 @@ public class DataSynchronizer extends SyncData {
             throw new InvokeIllegalException("Set " + DataConnectTo.class.getSimpleName());
         }
     }
-    
-    @Contract(pure = true)
-    private @NotNull List<String> getColumnsCreate(String sql) {
-        List<String> retList = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            @NotNull String[] columns = getColumns(preparedStatement);
-            for (String column : columns) {
-                retList.add(column.split(",")[0] + " " + column.split(",")[1] + ", ");
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), "getColumnsCreate", e.getMessage() + Thread.currentThread().getState().name());
-        }
-        finally {
-            createTable(dbToSync, retList);
-        }
-        return retList;
-    }
-    
+
     /**
      @return results
-     
+
      @see DataSynchronizerTest#testSyncData()
      */
     @Override
@@ -161,7 +181,8 @@ public class DataSynchronizer extends SyncData {
         final String sql = String.format("SELECT * FROM %s WHERE %s > %d", dbToSync, columnName, getLastLocalID(dbToSync));
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(sql).append("\n");
-        int uploadedCount = 0;
+        int uploadedCount;
+        Queue<JsonObject> jsonObjects = new LinkedList<>();
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String[] columns = getColumns(preparedStatement);
@@ -174,7 +195,7 @@ public class DataSynchronizer extends SyncData {
                         for (int i = 0; i < columns.length; i++) {
                             jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
                         }
-                        uploadedCount = uploadedCount + uploadCollection(Collections.singleton(jsonObject), dbToSync);
+                        jsonObjects.add(jsonObject);
                     }
                 }
             }
@@ -182,6 +203,7 @@ public class DataSynchronizer extends SyncData {
         catch (SQLException | IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
+        uploadedCount = uploadCollection(jsonObjects, dbToSync);
         if (uploadedCount != -666) {
             stringBuilder.append(uploadedCount).append(" items uploaded").append("\n");
         }
@@ -192,19 +214,7 @@ public class DataSynchronizer extends SyncData {
         this.totalRows += uploadedCount;
         return stringBuilder.toString();
     }
-    
-    private void addComment() {
-        String sql = String.format("ALTER TABLE %s COMMENT='Automatically created by %s, at %s';", dbToSync, this.getClass().getTypeName(), new Date());
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), "addComment", e.getMessage() + Thread.currentThread().getState().name());
-        }
-    }
-    
-    @SuppressWarnings("DuplicateStringLiteralInspection")
+
     @Override
     public void superRun() {
         Thread.currentThread().checkAccess();
@@ -221,21 +231,18 @@ public class DataSynchronizer extends SyncData {
                     //27.11.2019 (0:06)
                 }
             }
-            
         }
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
-        MessageToUser.getInstance(MessageToUser.FILE, this.getClass().getSimpleName())
-                .info(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
         MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
-                .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
-                        .format("Total {0} rows affected\nTime spend: {1} sec.", totalRows, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp)));
+            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
+                .format("Total {0} rows affected\nTime spend: {1} sec.", totalRows, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp)));
     }
-    
+
     @Override
     public Map<String, String> makeColumns() {
         throw new UnsupportedOperationException("27.11.2019 (21:03)");
     }
-    
+
     private @NotNull List<String> getDbNames() {
         List<String> dbNames = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
@@ -258,7 +265,7 @@ public class DataSynchronizer extends SyncData {
         }
         return dbNames;
     }
-    
+
     private @NotNull List<String> getTblNames(String dbName) {
         List<String> tblNames = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
@@ -274,17 +281,7 @@ public class DataSynchronizer extends SyncData {
         }
         return tblNames;
     }
-    
-    private @NotNull String[] getColumns(@NotNull PreparedStatement preparedStatement) throws SQLException {
-        ResultSetMetaData metaData = preparedStatement.getMetaData();
-        int countCol = metaData.getColumnCount();
-        String[] retArr = new String[countCol];
-        for (int i = 0; i < countCol; i++) {
-            retArr[i] = metaData.getColumnName(i + 1) + "," + metaData.getColumnTypeName(i + 1);
-        }
-        return retArr;
-    }
-    
+
     private int workWithObject(@NotNull Object object, Connection connection) throws SQLException {
         int retInt = 0;
         JsonObject jsonObject = Json.parse(object.toString()).asObject();
@@ -301,6 +298,7 @@ public class DataSynchronizer extends SyncData {
                 preparedStatement.setString(j, colNames.get(j));
             }
             retInt += preparedStatement.executeUpdate();
+            FileSystemWorker.appendObjectToFile(dbObj, jsonObject);
         }
         catch (SQLException e) {
             retInt -= retInt;
@@ -311,7 +309,7 @@ public class DataSynchronizer extends SyncData {
         }
         return retInt;
     }
-    
+
     private @NotNull String genSQL(@NotNull JsonObject jsonObject) {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("INSERT INTO ").append(dbToSync).append(" (");
@@ -331,6 +329,6 @@ public class DataSynchronizer extends SyncData {
         sqlBuilder.append(")");
         return sqlBuilder.toString();
     }
-    
-    
+
+
 }

@@ -8,7 +8,9 @@ import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 
 
@@ -17,12 +19,12 @@ import java.util.List;
  @since 05.10.2019 (16:27) */
 @SuppressWarnings({"resource", "JDBCResourceOpenedButNotSafelyClosed"})
 public class TesterDB65SQL extends MySqlLocalSRVInetStat {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TesterDB65SQL.class.getSimpleName());
-    
+
     private String dbName;
-    
+
     @Override
     public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
         final String sql = String
@@ -38,7 +40,7 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         }
         return retInt;
     }
-    
+
     @Override
     public MysqlDataSource getDataSource() {
         if (!NetScanService.isReach(OtherKnownDevices.SRVMYSQL_HOME)) {
@@ -49,9 +51,16 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         source.setCreateDatabaseIfNotExist(true);
         source.setUser("kudr");
         source.setPassword("36e42yoak8");
+        source.setUseCompression(true);
+        source.setUseInformationSchema(true);
+        source.setAutoReconnect(true);
+        source.setReconnectAtTxEnd(true);
+        source.setCachePreparedStatements(true);
+        source.setCacheCallableStatements(true);
+        source.setContinueBatchOnError(true);
         return source;
     }
-    
+
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
         this.dbName = dbName;
@@ -81,11 +90,11 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         }
         return connection;
     }
-    
+
     private Connection alternateConnection() {
         return DataConnectTo.getInstance(DataConnectTo.REGRUCONNECTION).getDefaultConnection(dbName.split("\\Q.\\E")[1]);
     }
-    
+
     @Override
     public boolean dropTable(String dbPointTable) {
         final String sql = String.format("drop table `%s`", dbPointTable);
@@ -98,7 +107,7 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
             return false;
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TesterDB65SQL{");
