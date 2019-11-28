@@ -4,19 +4,22 @@ package ru.vachok.networker.data.synchronizer;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
+import java.io.File;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 public class DataSynchronizerTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DataSynchronizerTest.class.getSimpleName(), System
-        .nanoTime());
+            .nanoTime());
     
     private DataSynchronizer dataSynchronizer;
     
@@ -39,8 +42,21 @@ public class DataSynchronizerTest {
     @Test
     public void testSyncData() {
         dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.H2DB));
-        String syncDataResult = dataSynchronizer.syncData();
-        Assert.assertTrue(syncDataResult.contains("SELECT * FROM velkom.velkompc WHERE idrec >"));
+        Future<String> syncFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->dataSynchronizer.syncData());
+        try {
+            String syncDataResult = syncFuture.get(15, TimeUnit.SECONDS);
+            Assert.assertTrue(syncDataResult.contains("SELECT * FROM velkom.velkompc WHERE idrec >"));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        finally {
+            Assert.assertTrue(new File("velkom.velkompc").exists());
+        }
     }
     
     @Test
@@ -69,12 +85,12 @@ public class DataSynchronizerTest {
     public void testToString() {
         String toStr = dataSynchronizer.toString();
         Assert.assertEquals(toStr, "DataSynchronizer[\n" +
-            "dbToSync = 'velkom.velkompc',\n" +
-            "columnName = 'idrec',\n" +
-            "dataConnectTo = MySqlLocalSRVInetStat{\"tableName\":\"velkom\",\"dbName\":\"velkom\"},\n" +
-            "colNames = {},\n" +
-            "columnsNum = 0\n" +
-            "]");
+                "dbToSync = 'velkom.velkompc',\n" +
+                "columnName = 'idrec',\n" +
+                "dataConnectTo = MySqlLocalSRVInetStat{\"tableName\":\"velkom\",\"dbName\":\"velkom\"},\n" +
+                "colNames = {},\n" +
+                "columnsNum = 0\n" +
+                "]");
     }
     
     /**
