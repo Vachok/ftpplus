@@ -98,4 +98,12 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
             return false;
         }
     }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TesterDB65SQL{");
+        sb.append("dbName='").append(dbName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }
