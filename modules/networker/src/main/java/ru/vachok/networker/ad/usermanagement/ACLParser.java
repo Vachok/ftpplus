@@ -6,13 +6,17 @@ package ru.vachok.networker.ad.usermanagement;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -54,13 +58,13 @@ class ACLParser implements UserACLManager {
     
     @Override
     public String addAccess(UserPrincipal newUser) {
-        throw new TODOException("null");
+        throw new UnsupportedOperationException("27.11.2019 (21:54) TRY: " + UserACLManagerImpl.class.getTypeName());
         
     }
     
     @Override
     public String removeAccess(UserPrincipal oldUser) {
-        throw new TODOException("null");
+        throw new UnsupportedOperationException("27.11.2019 (21:54) TRY: " + UserACLManagerImpl.class.getTypeName());
         
     }
     
@@ -174,7 +178,7 @@ class ACLParser implements UserACLManager {
     
     @Override
     public String replaceUsers(UserPrincipal oldUser, UserPrincipal newUser) {
-        throw new TODOException("null");
+        throw new UnsupportedOperationException("27.11.2019 (21:54) TRY: " + UserACLManagerImpl.class.getTypeName());
         
     }
     

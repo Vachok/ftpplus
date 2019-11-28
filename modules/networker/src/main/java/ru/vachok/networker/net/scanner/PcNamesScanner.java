@@ -430,7 +430,7 @@ public class PcNamesScanner implements NetScanService {
                 .format("Online: {0}.\n{1} min uptime. \n{2} next run\n",
                     props.getProperty(PropertiesNames.ONLINEPC, "0"), upTime, new Date(lastScanStamp));
             try {
-                AppComponents.getMessageSwing(this.getClass().getSimpleName()).infoTimer((int) ConstantsFor.DELAY, bodyMsg);
+                MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName()).info(bodyMsg);
             }
             finally {
                 defineNewTask();
