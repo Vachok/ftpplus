@@ -28,6 +28,7 @@ import java.util.List;
 /**
  @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
+@SuppressWarnings("ClassUnconnectedToPackage")
 public class AppInfoOnLoad implements Runnable {
 
 
@@ -100,13 +101,13 @@ public class AppInfoOnLoad implements Runnable {
 
     }
 
-    private boolean checkFileExitLastAndWriteMiniLog() {
+    private void checkFileExitLastAndWriteMiniLog() {
         StringBuilder exitLast = new StringBuilder();
         if (new File("exit.last").exists()) {
             exitLast.append(AbstractForms.fromArray(FileSystemWorker.readFileToList("exit.last")));
         }
         getMiniLogger().add(exitLast.toString());
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
 
     @Override
