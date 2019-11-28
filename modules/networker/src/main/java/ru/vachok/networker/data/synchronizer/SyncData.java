@@ -11,13 +11,8 @@ import ru.vachok.networker.info.stats.InternetSync;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 
 /**
@@ -25,9 +20,9 @@ import java.util.Map;
 public abstract class SyncData implements DataConnectTo {
     
     
-    private static final String UPUNIVERSAL = "DBUploadUniversal";
-    
     public static final String INETSYNC = "InternetSync";
+    
+    public static final String BACKUPER = "BackupDB";
     
     static final DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getRemoteReg();
     
@@ -35,9 +30,9 @@ public abstract class SyncData implements DataConnectTo {
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
-    private static final String DOWNLOADER = "DBRemoteDownloader";
+    private static final String UPUNIVERSAL = "DBUploadUniversal";
     
-    public static final String BACKUPER = "BackupDB";
+    private static final String DOWNLOADER = "DBRemoteDownloader";
     
     private String idColName = ConstantsFor.DBCOL_IDREC;
     
@@ -45,20 +40,12 @@ public abstract class SyncData implements DataConnectTo {
     
     public abstract void setDbToSync(String dbToSync);
     
-    @Contract(pure = true)
-    private String getIdColName() {
-        return idColName;
+    @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
+        source.setDatabaseName(FileNames.DIR_INETSTATS);
+        return source;
     }
-    
-    public abstract void setOption(Object option);
-    
-    public void setIdColName(String idColName) {
-        this.idColName = idColName;
-    }
-    
-    public abstract String syncData();
-    
-    public abstract void superRun();
     
     @Override
     public abstract int uploadCollection(Collection stringsCollection, String tableName);
@@ -68,17 +55,21 @@ public abstract class SyncData implements DataConnectTo {
         throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
     }
     
+    /**
+     @param dbPointTable dbname.table
+     @param additionalColumns unstandart column names <b>with type</b>
+     @return {@link PreparedStatement} executeUpdate();
+     
+     @see SyncDataTest
+     */
     @Override
-    public int createTable(String dbPointTable, List<String> additionalColumns) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.createTable( int ) at 04.11.2019 - (13:49)");
-    }
+    public abstract int createTable(String dbPointTable, List<String> additionalColumns);
     
-    @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
-        source.setDatabaseName(FileNames.DIR_INETSTATS);
-        return source;
-    }
+    public abstract void setOption(Object option);
+    
+    public abstract String syncData();
+    
+    public abstract void superRun();
     
     @Override
     public Connection getDefaultConnection(String dbName) {
@@ -91,12 +82,6 @@ public abstract class SyncData implements DataConnectTo {
             messageToUser.error(e.getMessage() + " see line: 76 ***");
             return DataConnectTo.getDefaultI().getDefaultConnection(dbName);
         }
-    }
-    
-    int getLastLocalID(String syncDB) {
-        DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.TESTING);
-        MysqlDataSource source = dctInst.getDataSource();
-        return getDBID(source, syncDB);
     }
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
@@ -117,32 +102,49 @@ public abstract class SyncData implements DataConnectTo {
         
     }
     
-    private int getDBID(@NotNull MysqlDataSource source, String syncDB) {
-        messageToUser.info(this.getClass().getSimpleName(), "Search in for ID Rec", source.getURL());
-        try (Connection connection = source.getConnection()) {
-            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    int retInt = 0;
-                    while (resultSet.next()) {
-                        if (resultSet.last()) {
-                            retInt = resultSet.getInt(getIdColName());
-                        }
+    public abstract Map<String, String> makeColumns();
+    
+    int getLastLocalID(String syncDB) {
+        DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.H2DB);
+        return getDBID(dctInst.getDefaultConnection(syncDB), syncDB);
+    }
+    
+    private int getDBID(@NotNull Connection connection, String syncDB) {
+        int retInt = 0;
+        final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                
+                while (resultSet.next()) {
+                    if (resultSet.last()) {
+                        retInt = resultSet.getInt(getIdColName());
                     }
-                    return retInt;
                 }
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 169 ***");
-            return -666;
+            if (e.getMessage().contains("не найден")) {
+                retInt = DataConnectTo.getInstance(DataConnectTo.H2DB).createTable(syncDB, Collections.EMPTY_LIST);
+            }
+            else {
+                messageToUser.error(e.getMessage() + " see line: 169 ***");
+                retInt = -666;
+            }
         }
+        return retInt;
     }
     
-    public abstract Map<String, String> makeColumns();
+    @Contract(pure = true)
+    private String getIdColName() {
+        return idColName;
+    }
+    
+    public void setIdColName(String idColName) {
+        this.idColName = idColName;
+    }
     
     int getLastRemoteID(String syncDB) {
-        return getDBID(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource(), syncDB);
+        return getDBID(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(syncDB), syncDB);
     }
     
 }

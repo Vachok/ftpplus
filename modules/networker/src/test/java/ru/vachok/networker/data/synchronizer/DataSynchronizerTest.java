@@ -6,9 +6,10 @@ import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
-import java.util.Collections;
+import java.util.*;
 
 
 public class DataSynchronizerTest {
@@ -37,6 +38,7 @@ public class DataSynchronizerTest {
     
     @Test
     public void testSyncData() {
+        dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.H2DB));
         String syncDataResult = dataSynchronizer.syncData();
         Assert.assertTrue(syncDataResult.contains("SELECT * FROM velkom.velkompc WHERE idrec >"));
     }
@@ -64,7 +66,7 @@ public class DataSynchronizerTest {
     }
     
     @Test
-    public void testTestToString() {
+    public void testToString() {
         String toStr = dataSynchronizer.toString();
         Assert.assertEquals(toStr, "DataSynchronizer[\n" +
             "dbToSync = 'velkom.velkompc',\n" +
@@ -73,5 +75,17 @@ public class DataSynchronizerTest {
             "colNames = {},\n" +
             "columnsNum = 0\n" +
             "]");
+    }
+    
+    /**
+     @see DataSynchronizer#createTable(String, List)
+     */
+    @Test
+    public void testCreateTable() {
+        List<String> addCol = new ArrayList<>();
+        addCol.add("txt TEXT NOT NULL, ");
+        int synchronizerTable = dataSynchronizer.createTable("test.creator", addCol);
+        System.out.println("synchronizerTable = " + synchronizerTable);
+        Assert.assertFalse(synchronizerTable == -666, String.valueOf(synchronizerTable));
     }
 }

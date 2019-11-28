@@ -360,6 +360,12 @@ public class InternetSync extends SyncData implements Runnable {
     }
     
     @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new UnsupportedOperationException("Creating tables already exists in this class");
+        
+    }
+    
+    @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         superRun();

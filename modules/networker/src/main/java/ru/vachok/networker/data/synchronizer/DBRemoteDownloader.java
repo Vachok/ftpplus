@@ -6,6 +6,7 @@ import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
@@ -70,6 +71,12 @@ class DBRemoteDownloader extends SyncData {
     @Override
     public int uploadCollection(Collection stringsCollection, String tableName) {
         return new DBUploadUniversal(stringsCollection, tableName).uploadCollection(stringsCollection, tableName);
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("0");
+        
     }
     
     @Override

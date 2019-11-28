@@ -99,6 +99,12 @@ class DBUploadUniversal extends SyncData {
         return columnsList.size();
     }
     
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("0");
+        
+    }
+    
     @Contract(pure = true)
     private @NotNull String getCreateQuery() {
         return "CREATE TABLE `build_gradle` (\n" +
