@@ -44,6 +44,7 @@ public class ListsControllerTest {
     }
     
     @Test
+    @Ignore
     public void testGetInfoAbout() {
         String[] fileNames = listsController.getInfo().split("\n");
         for (int i = 0; i < 3; i++) {
