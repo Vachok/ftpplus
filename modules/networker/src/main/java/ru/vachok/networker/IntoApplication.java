@@ -98,12 +98,12 @@ public class IntoApplication {
 
     protected static void setUTF8Enc() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("\n\nSystem time: ").append(new Date(System.currentTimeMillis())).append(" atom time: ")
+            .append(new Date(UsefulUtilities.getAtomicTime())).append("\n\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         System.setProperty(PropertiesNames.ENCODING, "UTF8");
         stringBuilder.append(AbstractForms.fromArray(System.getProperties()));
         stringBuilder.append("http://").append(new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress().getHostAddress()).append(":8880/");
-        stringBuilder.append("\n\nSystem time: ").append(new Date(System.currentTimeMillis())).append(" atom time: ")
-            .append(new Date(UsefulUtilities.getAtomicTime())).append("\n\n");
         MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName())
             .info(UsefulUtilities.thisPC(), "appInfoStarter", stringBuilder.toString());
     }
@@ -111,7 +111,5 @@ public class IntoApplication {
     static void appInfoStarter() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
-        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName()).info(MessageFormat
-            .format("{0} is {1}", configurableApplicationContext.getDisplayName(), configurableApplicationContext.isActive()));
     }
 }
