@@ -3,14 +3,6 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.ad.pc.PCOnTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="incorrectIntegerValueDO0058"/>
-          <include name="initON"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
