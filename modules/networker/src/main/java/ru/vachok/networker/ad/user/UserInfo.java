@@ -12,7 +12,9 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.NetSegments;
 import ru.vachok.networker.data.synchronizer.TimeOnActualizer;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -34,45 +36,49 @@ import java.util.concurrent.TimeUnit;
 /**
  @see UserInfoTest */
 public abstract class UserInfo implements InformationFactory {
-    
-    
+
+
     private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_PCUSERAUTO_FULL;
-    
+
     @SuppressWarnings("StaticVariableOfConcreteClass") private static final UserInfo.DatabaseWriter DATABASE_WRITER = new UserInfo.DatabaseWriter();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.class.getSimpleName());
-    
+
     @Override
     public abstract String getInfo();
-    
+
     @Override
     public abstract void setClassOption(Object option);
-    
+
     @Override
     public abstract String getInfoAbout(String aboutWhat);
-    
+
     @Contract("null -> new")
     public static @NotNull UserInfo getInstance(String type) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setName(type);
         return type == null ? new UnknownUser(UserInfo.class.getSimpleName()) : checkType(type);
     }
-    
+
     @Contract("null -> new")
     private static @NotNull UserInfo checkType(String type) {
         PCInfo.checkValidNameWithoutEatmeat(type);
         return ModelAttributeNames.ADUSER.equals(type) ? new LocalUserResolver() : new ResolveUserInDataBase(type);
-        
+
     }
-    
+
     /**
      @return written or not
-     
+
      @see UserInfoTest#testWriteUsersToDBFromSET()
      */
     public static boolean writeUsersToDBFromSET() {
         return DATABASE_WRITER.writeAllPrefixToDB();
     }
-    
+
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setName(pcName);
         if (!lastFileUse.contains(ConstantsFor.UNKNOWN_USER) | !lastFileUse.contains("not found")) {
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(()->DATABASE_WRITER.writeAutoResolveUserToDB(pcName, lastFileUse));
         }
@@ -80,7 +86,7 @@ public abstract class UserInfo implements InformationFactory {
             messageToUser.warn(UserInfo.class.getSimpleName(), "autoResolvedUsersRecord", MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
         }
     }
-    
+
     /**
      @param pcName имя ПК
      @param isOffline состояние
@@ -91,38 +97,38 @@ public abstract class UserInfo implements InformationFactory {
         String updateResults = DATABASE_WRITER.updTime(pcName, isOffline);
         messageToUser.warn(UserInfo.class.getSimpleName(), methName, updateResults);
     }
-    
+
     public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
         return DATABASE_WRITER.uniqueUserAddToDB(pcName, lastFileUse);
     }
-    
+
     public abstract List<String> getLogins(String pcName, int resultsLimit);
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
                 .toString();
     }
-    
+
     private static class DatabaseWriter {
-    
-    
+
+
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.DatabaseWriter.class.getSimpleName());
-        
+
         private String pcName;
-        
+
         private String userName;
-    
+
         @Contract(pure = true)
         private DatabaseWriter() {
         }
-    
+
         @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
                     .toString();
         }
-    
+
         /**
          @param pcName do0001
          @param lastFileUse 1561612688516 \\do0001.eatmeat.ru\c$\Users\estrelyaeva Thu Jun 27 08:18:08 MSK 2019 1561612688516
@@ -132,7 +138,7 @@ public abstract class UserInfo implements InformationFactory {
             this.userName = lastFileUse;
             final String sql = "insert into pcuserauto (pcName, userName, lastmod, stamp) values(?,?,?,?)";
             StringBuilder stringBuilder = new StringBuilder();
-    
+
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     stringBuilder.append(execAutoResolvedUser(preparedStatement));
@@ -145,11 +151,11 @@ public abstract class UserInfo implements InformationFactory {
                 messageToUser.error("DatabaseWriter.writeAutoResolveUserToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
         }
-    
+
         /**
          @param preparedStatement statement from {@link #writeAutoResolveUserToDB(java.lang.String, java.lang.String)}
          @return preparedStatement.executeUpdate(), preparedStatement.toString()
-     
+
          @throws SQLException statement
          @throws IndexOutOfBoundsException String[] split = userName.split(" ");
          */
@@ -165,7 +171,7 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(4, split[0]);
             return MessageFormat.format("{0}: {1}", preparedStatement.executeUpdate(), preparedStatement.toString());
         }
-    
+
         private @NotNull String uniqueUserAddToDB(String pcName, String userName) {
             this.pcName = pcName;
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
@@ -183,7 +189,7 @@ public abstract class UserInfo implements InformationFactory {
                 return MessageFormat.format("{0} already exists in database {1} on {2}", userName, ConstantsFor.DB_VELKOMPCUSER, pcName);
             }
         }
-    
+
         private @NotNull String updTime(String pcName, boolean isOffline) {
             this.pcName = pcName;
             AppConfigurationLocal.getInstance().execute(this::countWorkTime, 10);
@@ -202,7 +208,7 @@ public abstract class UserInfo implements InformationFactory {
                 System.out.println("new Date(nowMinusDelay) = " + new Date(nowMinusDelay));
                 System.out.println("START_STAMP = " + new Date(ConstantsFor.START_STAMP));
                 boolean startSmallerDelay = ConstantsFor.START_STAMP >= nowMinusDelay;
-    
+
                 if (startSmallerDelay) {
                     AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName));
                     sql = sqlOn;
@@ -212,7 +218,7 @@ public abstract class UserInfo implements InformationFactory {
                     sql = String
                             .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                                     .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
-                    
+
                 }
                 else {
                     sql = sqlOn;
@@ -230,7 +236,7 @@ public abstract class UserInfo implements InformationFactory {
             }
             return stringBuilder.toString();
         }
-    
+
         private void countWorkTime() {
             final String sql = "select * from pcuser where pcname like ?";
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
@@ -247,7 +253,7 @@ public abstract class UserInfo implements InformationFactory {
                 messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName(), "countWorkTime", e.getMessage() + Thread.currentThread().getState().name());
             }
         }
-        
+
         private boolean wasOffline() {
             @SuppressWarnings("DuplicateStringLiteralInspection") final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
             boolean retBool = false;
@@ -265,12 +271,12 @@ public abstract class UserInfo implements InformationFactory {
             }
             return retBool;
         }
-    
+
         @Override
         public int hashCode() {
             return Objects.hash(pcName, userName);
         }
-    
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -283,7 +289,7 @@ public abstract class UserInfo implements InformationFactory {
             return Objects.equals(pcName, writer.pcName) &&
                 Objects.equals(userName, writer.userName);
         }
-    
+
         private void countTime(@NotNull Connection connection, @NotNull ResultSet resultSet) throws SQLException {
             Timestamp timeOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON);
             Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
@@ -294,7 +300,7 @@ public abstract class UserInfo implements InformationFactory {
                 setTimeSpend.executeUpdate();
             }
         }
-        
+
         private boolean writeAllPrefixToDB() {
             int exUpInt = 0;
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
@@ -321,12 +327,12 @@ public abstract class UserInfo implements InformationFactory {
             }
             return exUpInt > 0;
         }
-    
+
         /**
          @param resolvedStrFromSet строка {@link NetKeeper#getPcNamesForSendToDatabase()} {@code do0009:10.200.213.132 online true}
          @param prStatement {@link PreparedStatement}
          @return {@link PreparedStatement#executeUpdate()}
-     
+
          @throws SQLException insert into  velkompc
          */
         @SuppressWarnings("OverlyLongMethod")
@@ -400,19 +406,19 @@ public abstract class UserInfo implements InformationFactory {
             String namePP = resolvedStrFromSet.split(":")[0];
             String addressPP = resolvedStrFromSet.split(":")[1];
             String resolveUser = addressPP.split("<")[1];
-            
+
             prStatement.setString(1, namePP);
             prStatement.setString(2, addressPP.split("<")[0]);
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
             prStatement.setString(5, UsefulUtilities.thisPC());
             prStatement.setString(6, resolveUser);
-    
+
             messageToUser.info(this.getClass().getSimpleName(), "executing statement", MessageFormat
                     .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
             return prStatement.executeUpdate();
         }
-    
+
         private void bigDatabaseException(Exception e) {
             String methName = "writeAllPrefixToDB";
             File appendTo = new File(ConstantsFor.DB_VELKOMVELKOMPC);
@@ -428,10 +434,10 @@ public abstract class UserInfo implements InformationFactory {
                 this.getClass().getSimpleName(),
                 methName,
                     FileSystemWorker.appendObjectToFile(appendTo, AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase())));
-        
+
         }
     }
-    
+
     static String resolvePCUserOverDB(String pcOrUser) {
         String result;
         try {
