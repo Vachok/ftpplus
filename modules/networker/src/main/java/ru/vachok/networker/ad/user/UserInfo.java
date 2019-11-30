@@ -95,7 +95,7 @@ public abstract class UserInfo implements InformationFactory {
     public static void renewOffCounter(String pcName, boolean isOffline) {
         String methName = "UserInfo.renewOffCounter";
         String updateResults = DATABASE_WRITER.updTime(pcName, isOffline);
-        messageToUser.warn(UserInfo.class.getSimpleName(), methName, updateResults);
+        messageToUser.info(UserInfo.class.getSimpleName(), methName, updateResults);
     }
 
     public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
