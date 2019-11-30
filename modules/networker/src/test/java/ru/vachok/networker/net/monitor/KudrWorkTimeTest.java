@@ -23,59 +23,64 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 
 /**
  @see KudrWorkTime
  @since 12.07.2019 (0:46) */
+@Ignore
 public class KudrWorkTimeTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private final File logFile = new File(this.getClass().getSimpleName() + ".res");
-    
+
     private InetAddress samsIP;
-    
+
     private InetAddress do0213IP;
-    
+
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
+
     private List<String> execList = NetKeeper.getKudrWorkTime();
-    
+
     private NetScanService kudrService = new KudrWorkTime(true);
-    
+
     private int startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay();
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @BeforeMethod
     public void initInetAddr() {
         try {
-            
+
             this.samsIP = InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress());
         }
         catch (UnknownHostException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void kudrMonitorTest() {
         Runnable runnable = kudrService.getMonitoringRunnable();
@@ -91,14 +96,14 @@ public class KudrWorkTimeTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testGetMapOfConditionsTypeNameTypeCondition() {
         Map<String, Object> condition = ((KudrWorkTime) kudrService).getMapOfConditionsTypeNameTypeCondition();
         Assert.assertNotNull(condition);
         Assert.assertTrue(condition.isEmpty());
     }
-    
+
     @Test
     public void testPingDevices() {
         Map<InetAddress, String> devToPing = new HashMap<>();
@@ -107,13 +112,13 @@ public class KudrWorkTimeTest {
         String fromArray = new TForms().fromArray(pingedDevs);
         Assert.assertTrue(fromArray.contains("Pinging local, with timeout "), fromArray);
     }
-    
+
     @Test
     public void testIsReach() {
         boolean isReachIP = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
         Assert.assertTrue(isReachIP);
     }
-    
+
     @Test(enabled = false)
     public void testGetExecution() {
         try {
@@ -125,7 +130,7 @@ public class KudrWorkTimeTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testGetPingResultStr() {
         try {
@@ -137,7 +142,7 @@ public class KudrWorkTimeTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testWriteLog() {
         try {
@@ -151,19 +156,19 @@ public class KudrWorkTimeTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testGetStatistics() {
         String statistics = kudrService.getStatistics();
         Assert.assertTrue(statistics.isEmpty(), statistics);
     }
-    
+
     @Test
     public void testTestToString() {
         String toStr = kudrService.toString();
         Assert.assertTrue(toStr.contains("KudrWorkTime{logFile="), toStr);
     }
-    
+
     @Test
     public void getExecution$$COPY() {
         execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
@@ -180,7 +185,7 @@ public class KudrWorkTimeTest {
             Assert.assertNotNull(e);
         }
     }
-    
+
     @Test(enabled = false)
     public void monitorAddress$$COPY() {
         this.startPlus9Hours = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay();
@@ -193,10 +198,10 @@ public class KudrWorkTimeTest {
                 break;
             }
         } while (true);
-        
+
         doIsReach$$COPY();
     }
-    
+
     @Test
     public void testRun() {
         Future<?> submit = Executors.newSingleThreadExecutor().submit(kudrService);
@@ -207,22 +212,22 @@ public class KudrWorkTimeTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testGetMonitoringRunnable() {
         Assert.assertTrue(kudrService.equals(kudrService.getMonitoringRunnable()));
     }
-    
+
     @Test
     public void testTestEquals() {
         Assert.assertFalse(kudrService.equals(NetScanService.getInstance(NetScanService.WORK_SERVICE)));
     }
-    
+
     @Test
     public void testTestHashCode() {
         Assert.assertTrue(kudrService.hashCode() != NetScanService.getInstance(NetScanService.WORK_SERVICE).hashCode());
     }
-    
+
     private void doIsReach$$COPY() {
         final int start = LocalTime.now().toSecondOfDay();
         this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
@@ -231,7 +236,7 @@ public class KudrWorkTimeTest {
             isDOOnline = isReach$$COPY(do0213IP);
         } while (isDOOnline);
     }
-    
+
     private boolean isReach$$COPY(@NotNull InetAddress address) {
         try {
             return address.isReachable((int) TimeUnit.SECONDS.toMillis(5));
@@ -241,7 +246,7 @@ public class KudrWorkTimeTest {
             return false;
         }
     }
-    
+
     private String writeLog$$COPY() {
         String sql = "INSERT INTO worktime (Date, Timein, Timeout) VALUES (?, ?, ?);";
         try (Connection c = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("test.worktime")) {
