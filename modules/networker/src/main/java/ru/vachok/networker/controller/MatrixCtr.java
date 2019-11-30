@@ -7,15 +7,21 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.componentsrepo.services.WhoIsWithSRV;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -29,133 +35,68 @@ import java.util.stream.Stream;
 
 
 /**
- @see  ru.vachok.networker.controller.MatrixCtrTest
+ @see ru.vachok.networker.controller.MatrixCtrTest
  @since 07.09.2018 (0:35) */
 @Controller
 public class MatrixCtr {
-    
+
+
     /**
      /matrix
      */
     private static final String GET_MATRIX = "/matrix";
-    
+
     /**
      dinner
      */
     private static final String ATT_DINNER = "dinner";
-    
+
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
-    
+
     private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TV);
-    
+
     private static String mailIsOk = ConstantsFor.STR_FALSE;
-    
+
     /**
      {@link MatrixSRV}
      */
     private MatrixSRV matrixSRV;
-    
+
+    private Model model;
+
     /**
      {@link Visitor}
      */
     private Visitor visitorInst;
-    
+
     /**
      {@link System#currentTimeMillis()}. Время инициализации класса.
      */
     private long metricMatrixStartLong = System.currentTimeMillis();
-    
+
+    public static String setMailIsOk(String mailIsOk) {
+        MatrixCtr.mailIsOk = mailIsOk;
+        return MatrixCtr.mailIsOk;
+    }
+
     @Autowired
     public MatrixCtr(MatrixSRV matrixSRV) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         this.matrixSRV = matrixSRV;
     }
-    
-    public static void setMailIsOk(String mailIsOk) {
-        MatrixCtr.mailIsOk = mailIsOk;
-    }
-    
+
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, @NotNull HttpServletResponse response) {
         this.visitorInst = UsefulUtilities.getVis(request);
         qIsNull(model, request);
         model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,
-                "Since: " + InitProperties.getUserPref().get(FileNames.PING_TV, "No date") + informationFactory
+            "Since: " + InitProperties.getUserPref().get(FileNames.PING_TV, "No date") + informationFactory
                 .getInfoAbout("tv") + NetKeeper.getCurrentProvider() + "<br>" + mailIsOk);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return ConstantsFor.STARTING;
     }
-    
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    @PostMapping(GET_MATRIX)
-    public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, Model model) {
-        this.matrixSRV = matrixSRV;
-        String workPos = matrixSRV.getWorkPos();
-        if (workPos.toLowerCase().contains("whois:")) {
-            return whoisStat(workPos, model);
-        }
-        else if (Stream.of(ConstantsFor.COMMAND_CALCTIME, ConstantsFor.COMMAND_CALCTIMES, "t:", "T:").anyMatch(s->workPos.toLowerCase().contains(s))) {
-            timeStamp(new SimpleCalculator(), model, workPos);
-        }
-        else {
-            return matrixAccess(workPos, model);
-        }
-        return ConstantsFor.BEANNAME_MATRIX;
-    }
-    
-    /**
-     Вывод результата.
-     <p>
-     1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
-     2. {@link MatrixSRV#getWorkPos()}. Пользовательский ввод. <br>
-     3. {@link PageGenerationHelper#getFooterUtext()}, 4. new {@link PageGenerationHelper}, 5. {@link Visitor#toString()}. Компонент модели {@link ModelAttributeNames#FOOTER} <br>
-     6. {@link MatrixSRV#getCountDB()}. Компонент {@code headtitle}
-     <p>
-     
-     @param request {@link HttpServletRequest}
-     @param response {@link HttpServletResponse}
-     @param model {@link Model}
-     @return {@link ConstantsFor#BEANNAME_MATRIX}.html
-     
-     @throws IOException обработка {@link HttpServletResponse#sendError(int, java.lang.String)}
-     */
-    @GetMapping(GET_MATRIX)
-    public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
-        this.visitorInst = UsefulUtilities.getVis(request);
-        model.addAttribute(ConstantsFor.BEANNAME_MATRIX, matrixSRV);
-        String workPos;
-        try {
-            workPos = matrixSRV.getWorkPos();
-        }
-        catch (NullPointerException e) {
-            response.sendError(139, "");
-    
-            throw new IllegalStateException("<br>Строка ввода должности не инициализирована!<br>" +
-                this.getClass().getName() + "<br>");
-        }
-        model.addAttribute(ModelAttributeNames.WORKPOS, workPos);
-        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
-        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<p>" + visitorInst);
-        model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
-            System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
-        metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
-        return ConstantsFor.BEANNAME_MATRIX;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MatrixCtr{");
-        sb.append("currentProvider='").append(NetKeeper.getCurrentProvider()).append('\'');
-        sb.append(", metricMatrixStartLong=").append(new Date(metricMatrixStartLong));
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private static String getUserPC(@NotNull HttpServletRequest request) {
-        return request.getRemoteAddr();
-    }
-    
+
     private void qIsNull(Model model, HttpServletRequest request) {
         String userIP = MessageFormat
             .format("{0}<-{1}|CPU {2}", UsefulUtilities.getUpTime(), TimeUnit.SECONDS
@@ -164,20 +105,62 @@ public class MatrixCtr {
             userIP = "ping to srv-git.eatmeat.ru is " + false;
         }
         model.addAttribute("yourip", userIP);
+        model.addAttribute("yourip", userIP);
         model.addAttribute(ConstantsFor.BEANNAME_MATRIX, new MatrixSRV());
         model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
         if (getUserPC(request).toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) ||
-                getUserPC(request).toLowerCase().contains("0:0:0:0")) {
+            getUserPC(request).toLowerCase().contains("0:0:0:0")) {
             model.addAttribute(ModelAttributeNames.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
         }
     }
-    
+
+    private static String getUserPC(@NotNull HttpServletRequest request) {
+        return request.getRemoteAddr();
+    }
+
+    @PostMapping(GET_MATRIX)
+    public String getWorkPosition(@NotNull @ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, Model model) {
+        this.matrixSRV = matrixSRV;
+        this.model = model;
+        String workPos = matrixSRV.getWorkPos();
+        return workPos.toLowerCase().contains("whois:") ? whoisStat(workPos, model) : parseEntered(workPos);
+    }
+
+    private static String whoisStat(String workPos, @NotNull Model model) {
+        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+        workPos = workPos.split(": ")[1].trim();
+        String attributeValue = whoIsWithSRV.whoIs(workPos);
+        model.addAttribute(ModelAttributeNames.ATT_WHOIS, attributeValue);
+        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
+        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
+        return ConstantsFor.BEANNAME_MATRIX;
+    }
+
+    private @NotNull String parseEntered(String workPos) {
+        boolean containsT = Stream.of(ConstantsFor.COMMAND_CALCTIME, ConstantsFor.COMMAND_CALCTIMES, "t:", "T:").anyMatch(s->workPos.toLowerCase().contains(s));
+        long enteredLong;
+        String retString = ConstantsFor.BEANNAME_MATRIX;
+        try {
+            enteredLong = Long.parseLong(workPos);
+            timeStamp(new SimpleCalculator(), model, String.format("t:%d", enteredLong));
+        }
+        catch (NumberFormatException ignore) {
+            if (containsT) {
+                timeStamp(new SimpleCalculator(), model, workPos);
+            }
+            else {
+                retString = matrixAccess(workPos, model);
+            }
+        }
+        return retString;
+    }
+
     /**
      Перевод времени из long в {@link Date} и обратно.
      <p>
      1. {@link SimpleCalculator#getStampFromDate(java.lang.String)} метод перевода.
      <p>
- 
+
      @param simpleCalculator {@link SimpleCalculator}
      @param model {@link Model}
      @param workPos {@link MatrixSRV#getWorkPos()}
@@ -189,17 +172,7 @@ public class MatrixCtr {
         model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
         return "redirect:/calculate";
     }
-    
-    private static String whoisStat(String workPos, @NotNull Model model) {
-        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-        workPos = workPos.split(": ")[1].trim();
-        String attributeValue = whoIsWithSRV.whoIs(workPos);
-        model.addAttribute(ModelAttributeNames.ATT_WHOIS, attributeValue);
-        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
-        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
-        return ConstantsFor.BEANNAME_MATRIX;
-    }
-    
+
     private @NotNull String matrixAccess(String workPos, @NotNull Model model) {
         String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
@@ -207,5 +180,51 @@ public class MatrixCtr {
         model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
+    }
+
+    /**
+     Вывод результата.
+     <p>
+     1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
+     2. {@link MatrixSRV#getWorkPos()}. Пользовательский ввод. <br>
+     3. {@link PageGenerationHelper#getFooterUtext()}, 4. new {@link PageGenerationHelper}, 5. {@link Visitor#toString()}. Компонент модели {@link ModelAttributeNames#FOOTER} <br>
+     6. {@link MatrixSRV#getCountDB()}. Компонент {@code headtitle}
+     <p>
+
+     @param request {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @param model {@link Model}
+     @return {@link ConstantsFor#BEANNAME_MATRIX}.html
+
+     @throws IOException обработка {@link HttpServletResponse#sendError(int, java.lang.String)}
+     */
+    @GetMapping(GET_MATRIX)
+    public String showResults(HttpServletRequest request, HttpServletResponse response, @NotNull Model model) throws IOException {
+        this.visitorInst = UsefulUtilities.getVis(request);
+        model.addAttribute(ConstantsFor.BEANNAME_MATRIX, matrixSRV);
+        String workPos;
+        try {
+            workPos = matrixSRV.getWorkPos();
+        }
+        catch (RuntimeException e) {
+            response.sendError(139, "");
+            throw new InvokeIllegalException(MessageFormat.format("<br>Строка ввода должности не инициализирована!<br>{0}<br>", this.getClass().getName()));
+        }
+        model.addAttribute(ModelAttributeNames.WORKPOS, workPos);
+        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
+        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<p>" + visitorInst);
+        model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
+            System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
+        metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
+        return ConstantsFor.BEANNAME_MATRIX;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MatrixCtr{");
+        sb.append("currentProvider='").append(NetKeeper.getCurrentProvider()).append('\'');
+        sb.append(", metricMatrixStartLong=").append(new Date(metricMatrixStartLong));
+        sb.append('}');
+        return sb.toString();
     }
 }
