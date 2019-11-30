@@ -56,7 +56,7 @@ public abstract class UserInfo implements InformationFactory {
     @Contract("null -> new")
     public static @NotNull UserInfo getInstance(String type) {
         Thread.currentThread().checkAccess();
-        Thread.currentThread().setName(type);
+        Thread.currentThread().setName(UserInfo.class.getSimpleName());
         return type == null ? new UnknownUser(UserInfo.class.getSimpleName()) : checkType(type);
     }
 

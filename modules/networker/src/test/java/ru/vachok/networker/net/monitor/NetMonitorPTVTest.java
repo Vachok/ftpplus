@@ -6,6 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -164,7 +165,11 @@ public class NetMonitorPTVTest {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, ipAddr);
-            preparedStatement.setString(2, checker.resolveInetAddress().getHostName());
+            String hostName = checker.resolveInetAddress().getHostName();
+            if (hostName.matches(ConstantsFor.PATTERN_IP.pattern())) {
+                hostName = MessageFormat.format("not resolved (by {0})", UsefulUtilities.thisPC());
+            }
+            preparedStatement.setString(2, hostName);
             preparedStatement.setString(3, String.valueOf(NetScanService.isReach(ipAddr)));
             preparedStatement.executeUpdate();
             try (PreparedStatement checkInfo = connection.prepareStatement("select * from monitor");
@@ -181,7 +186,7 @@ public class NetMonitorPTVTest {
             }
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
 }

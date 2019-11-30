@@ -3,6 +3,23 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
+        <class name="ru.vachok.networker.ad.user.UserInfoTest">
+            <methods>
+                <include name="testRenewCounter"/>
+                <include name="setUp"/>
+                <include name="testGetInstance"/>
+                <include name="testGetPCLogins"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.user.UserInfoTest -->
+        <class name="ru.vachok.networker.net.monitor.NetMonitorPTVTest">
+            <methods>
+                <include name="newLogicTest"/>
+                <include name="initPTV"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.net.monitor.NetMonitorPTVTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
