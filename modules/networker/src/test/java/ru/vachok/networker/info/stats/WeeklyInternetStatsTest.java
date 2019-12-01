@@ -8,8 +8,8 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -40,11 +40,11 @@ import static org.testng.Assert.assertTrue;
  @see WeeklyInternetStats */
 @SuppressWarnings("ALL")
 public class WeeklyInternetStatsTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
-    private WeeklyInternetStats stats = new WeeklyInternetStats();
+    private WeeklyInternetStats stats = WeeklyInternetStats.getInstance();
 
     @BeforeClass
     public void setUp() {
@@ -68,7 +68,7 @@ public class WeeklyInternetStatsTest {
             Assert.assertTrue(stats.toString().contains(LocalDate.now().getDayOfWeek().toString()), stats.toString());
         }
     }
-    
+
     @Test
     public void testReadIPsWithInet() {
         long bytesSize = stats.readIPsWithInet(false);
@@ -84,17 +84,16 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testRun() {
-        WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
         try {
-            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(weeklyInternetStats);
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(stats);
             submit.get(4, TimeUnit.SECONDS);
         }
         catch (InvokeIllegalException e) {
             if (Stats.isSunday()) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
             else {
-                Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+                Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
         }
         catch (InterruptedException e) {
@@ -102,15 +101,15 @@ public class WeeklyInternetStatsTest {
             Thread.currentThread().interrupt();
         }
         catch (TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         catch (ExecutionException e) {
             if (Stats.isSunday()) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
         }
     }
-    
+
     @Test
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
@@ -119,11 +118,11 @@ public class WeeklyInternetStatsTest {
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
         if (!Stats.isSunday()) {
-            assertTrue(csvStats.size() == 1, new TForms().fromArray(csvStats));
+            assertTrue(csvStats.size() == 1, AbstractForms.fromArray(csvStats));
         }
         statFile.deleteOnExit();
     }
-    
+
     @Test
     public void testDeleteFrom() {
         long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.114", "1");
@@ -131,7 +130,7 @@ public class WeeklyInternetStatsTest {
             Assert.assertTrue(i == 1, i + " rows deleted for 10.200.213.114");
         }
     }
-    
+
     @Test
     public void testGetInfoAbout() {
         String infoAbout = stats.getInfoAbout("do0001");
@@ -139,7 +138,7 @@ public class WeeklyInternetStatsTest {
             Assert.assertTrue(infoAbout.contains("I will NOT start before"), infoAbout);
         }
     }
-    
+
     @Test
     public void testGetInfo() {
         String info = stats.getInfo();
@@ -147,14 +146,14 @@ public class WeeklyInternetStatsTest {
             Assert.assertTrue(info.contains("hours left"), info);
         }
     }
-    
+
     @Test
     public void testTestToString() {
         if (!Stats.isSunday()) {
             Assert.assertTrue(stats.toString().contains("hours left"), stats.toString());
         }
     }
-    
+
     @Test
     public void testWriteLog() {
         try {
@@ -166,42 +165,42 @@ public class WeeklyInternetStatsTest {
                 Assert.assertNotNull(e);
             }
             else {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
         }
     }
-    
+
     @Test
     public void testTestEquals() {
         Assert.assertFalse(stats.equals(Stats.getInstance(Stats.STATS_WEEKLY_INTERNET)));
     }
-    
+
     @Test
     public void testTestHashCode() {
         Assert.assertTrue(stats.hashCode() != Stats.getInstance(Stats.STATS_WEEKLY_INTERNET).hashCode());
     }
-    
+
     /**
      @see WeeklyInternetStats.InetStatSorter
      @since 15.06.2019 (9:25)
      */
     @SuppressWarnings("ALL")
     private static class InetStatSorterTest {
-        
-        
+
+
         private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-        
+
         @BeforeClass
         public void setUp() {
             Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
             testConfigureThreadsLogMaker.before();
         }
-        
+
         @AfterClass
         public void tearDown() {
             testConfigureThreadsLogMaker.after();
         }
-        
+
         /**
          @see WeeklyInternetStats.InetStatSorter#sortFiles()
          */
@@ -210,7 +209,7 @@ public class WeeklyInternetStatsTest {
             File[] rootFiles = new File(".").listFiles();
             Map<File, String> mapFileStringIP = new TreeMap<>();
             Set<String> ipsSet = new TreeSet<>();
-    
+
             for (File fileFromRoot : Objects.requireNonNull(rootFiles)) {
                 if (fileFromRoot.getName().toLowerCase().contains(".csv")) {
                     try {
@@ -239,14 +238,14 @@ public class WeeklyInternetStatsTest {
                 FileSystemWorker.writeFile(FileNames.INETIPS_SET, ipsSet.stream());
             }
         }
-        
+
         private void makeCSV(String ip, @NotNull Queue<File> queueCSVFilesFromRoot) {
             String fileSepar = System.getProperty(PropertiesNames.SYS_SEPARATOR);
             String pathInetStats = Paths.get(".").toAbsolutePath().normalize().toString() + fileSepar + FileNames.DIR_INETSTATS + fileSepar;
             File finalFile = new File(pathInetStats + ip + ".csv");
-            
+
             Set<String> toWriteStatsSet = new TreeSet<>();
-            
+
             if (finalFile.exists() & queueCSVFilesFromRoot.size() > 0) {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(finalFile.toPath()));
             }
@@ -265,14 +264,14 @@ public class WeeklyInternetStatsTest {
                 System.out.println(finalFile.getAbsolutePath() + " is NOT modified.");
             }
         }
-        
+
         private void copyToFolder(File file) {
             String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
-            
+
             String fileSepar = System.getProperty(PropertiesNames.SYS_SEPARATOR);
             File inetStatsDir = new File(absPath + fileSepar + FileNames.DIR_INETSTATS);
             boolean isDirExist = inetStatsDir.isDirectory();
-            
+
             if (!isDirExist) {
                 try {
                     Files.createDirectories(inetStatsDir.toPath());
@@ -281,7 +280,7 @@ public class WeeklyInternetStatsTest {
                     Assert.assertNull(e, e.getMessage());
                 }
             }
-            
+
             try {
                 Path copyPath = Files.copy(Paths.get(absPath + fileSepar + file.getName()), file.toPath());
                 if (file.equals(copyPath.toFile())) {
@@ -291,7 +290,7 @@ public class WeeklyInternetStatsTest {
             catch (IOException e) {
                 Assert.assertNull(e, e.getMessage());
             }
-            
+
         }
     }
 }

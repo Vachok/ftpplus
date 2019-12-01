@@ -50,6 +50,16 @@ class WeeklyInternetStats implements Runnable, Stats {
 
     private final File ipsWithInet = new File(FileNames.INETSTATSIP_CSV);
 
+    private static final WeeklyInternetStats INST = new WeeklyInternetStats();
+
+    @Contract(value = " -> new", pure = true)
+    public static @NotNull WeeklyInternetStats getInstance() {
+        return INST;
+    }
+
+    private WeeklyInternetStats() {
+    }
+
     private long totalBytes = 0;
 
     private String fileName;

@@ -46,7 +46,7 @@ public class RegRuFTPLibsUploader implements Runnable {
 
     @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
 
-    private static File[] retMassive = new File[2];
+    private static File[] retMassive = new File[3];
 
     private String ftpPass = chkPass();
 
@@ -96,7 +96,7 @@ public class RegRuFTPLibsUploader implements Runnable {
     }
 
     private @NotNull String uploadLibs() throws AccessDeniedException {
-        String pc = UsefulUtilities.thisPC();
+        String pc;
         if (ftpPass != null) {
             try {
                 return makeConnectionAndStoreLibs();
@@ -238,7 +238,7 @@ public class RegRuFTPLibsUploader implements Runnable {
         if (nameFTPFile.contains(ConstantsFor.PREF_NODE_NAME) & nameFTPFile.toLowerCase().contains(".jar")) {
             nameFTPFile = "n.jar";
         }
-        else if (nameFTPFile.toLowerCase().contains("ostpst-")) {
+        else if (nameFTPFile.toLowerCase().contains(ConstantsFor.PROGNAME_OSTPST)) {
             nameFTPFile = "ost.jar";
         }
         else {
@@ -307,6 +307,9 @@ public class RegRuFTPLibsUploader implements Runnable {
             }
             if (file.getFileName().toString().contains(ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar")) {
                 retMassive[1] = file.toFile();
+            }
+            if (file.getFileName().toString().contains("app-release.apk")) {
+                retMassive[2] = file.toFile();
             }
             return FileVisitResult.CONTINUE;
         }
