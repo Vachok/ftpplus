@@ -110,4 +110,6 @@ public enum FileNames {
     public static final String APP_JSON = "app.json";
 
     public static final String CONSTANTSFOR_PROPERTIES = "ConstantsFor.properties";
+
+    public static final String USERLOGINCOUNTER_TXT = "user_login_counter.txt";
 }
