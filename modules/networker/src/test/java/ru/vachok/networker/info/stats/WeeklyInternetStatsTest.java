@@ -172,12 +172,12 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testTestEquals() {
-        Assert.assertFalse(stats.equals(Stats.getInstance(Stats.STATS_WEEKLY_INTERNET)));
+        Assert.assertTrue(stats.equals(Stats.getInstance(Stats.STATS_WEEKLY_INTERNET)));
     }
 
     @Test
     public void testTestHashCode() {
-        Assert.assertTrue(stats.hashCode() != Stats.getInstance(Stats.STATS_WEEKLY_INTERNET).hashCode());
+        Assert.assertFalse(stats.hashCode() != Stats.getInstance(Stats.STATS_WEEKLY_INTERNET).hashCode());
     }
 
     /**

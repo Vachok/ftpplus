@@ -21,6 +21,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -102,9 +103,6 @@ class WeeklyInternetStats implements Runnable, Stats {
 
     @Override
     public void run() {
-        FileSystemWorker
-            .writeFile(this.getClass().getSimpleName() + "." + LocalTime.now().toSecondOfDay(), AbstractForms.networkerTrace(Thread.currentThread().getStackTrace()));
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER);
         long iPsWithInet = 0;
         try {
             iPsWithInet = readIPsWithInet(false);
@@ -119,7 +117,7 @@ class WeeklyInternetStats implements Runnable, Stats {
 
         if (Stats.isSunday()) {
             readStatsToCSVAndDeleteFromDB();
-            AppComponents.threadConfig().getTaskExecutor().execute(new WeeklyInternetStats.InetStatSorter(), 10);
+            AppConfigurationLocal.getInstance().execute(new WeeklyInternetStats.InetStatSorter());
         }
         else {
             throw new InvokeIllegalException(LocalDate.now().getDayOfWeek().name() + " not best day for stats...");
