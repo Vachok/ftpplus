@@ -4,7 +4,10 @@ package ru.vachok.networker.ad.common;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -22,24 +25,25 @@ import java.util.concurrent.*;
  @see ArchivesAutoCleaner
  @since 17.06.2019 (10:51) */
 @SuppressWarnings("ALL")
+@Ignore
 public class ArchivesAutoCleanerTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     @Ignore
     public void testRun() {

@@ -15,9 +15,14 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
@@ -25,14 +30,14 @@ import java.util.regex.Pattern;
  @see MySqlLocalSRVInetStatTest
  @since 04.09.2019 (16:42) */
 class MySqlLocalSRVInetStat implements DataConnectTo {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MySqlLocalSRVInetStat.class.getSimpleName());
-    
+
     private String dbName = ConstantsFor.STR_VELKOM;
-    
+
     private String tableName = ConstantsFor.STR_VELKOM;
-    
+
     @Override
     public MysqlDataSource getDataSource() {
         MysqlDataSource retSource = new MysqlDataSource();
@@ -60,16 +65,16 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         return retSource;
     }
-    
+
     @Override
     public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
         this.dbName = dbPointTableName;
         int resultsUpload = 0;
-        
+
         if (!dbPointTableName.contains(".")) {
             dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
         }
-        
+
         this.dbName = dbPointTableName.split("\\Q.\\E")[0];
         this.tableName = dbPointTableName.split("\\Q.\\E")[1];
         final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `json`) VALUES (?, ?)", dbName, tableName);
@@ -77,7 +82,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         source.setDatabaseName(dbName);
         source.setContinueBatchOnError(true);
         List<String> colList = new ArrayList<>(strings);
-        
+
         try (Connection connection = source.getConnection()) {
             try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
                 for (String s : colList) {
@@ -116,9 +121,10 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         return resultsUpload;
     }
-    
+
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         Connection connection = null;
         if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
             this.dbName = dbName.split("\\Q.\\E")[0];
@@ -128,7 +134,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             throw new IllegalArgumentException(dbName);
         }
         MysqlDataSource defDataSource = new MysqlDataSource();
-        
+
         defDataSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
         defDataSource.setPort(3306);
         defDataSource.setPassword("1qaz@WSX");
@@ -154,7 +160,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             throw new InvokeIllegalException(MessageFormat.format("{0} DEFAULT CONNECTION ERROR! NULL!", this.getClass().getSimpleName()));
         }
     }
-    
+
     private void abortConnection(@NotNull Connection connection) {
         try {
             connection.abort(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor());
@@ -163,7 +169,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             messageToUser.error("MySqlLocalSRVInetStat.abortConnection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
@@ -172,7 +178,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Contract("_, _ -> new")
     private @NotNull String getCreateQuery(@NotNull String dbPointTableName, List<String> additionalColumns) {
         if (!dbPointTableName.contains(".")) {
@@ -183,7 +189,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             throw new IllegalArgumentException(dbTable[1]);
         }
         String engine = ConstantsFor.DBENGINE_MEMORY;
-        
+
         if (dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
             engine = "MyISAM";
         }
@@ -208,7 +214,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         stringBuilder.append(") ENGINE=").append(engine).append(" MAX_ROWS=100000;\n");
         return stringBuilder.toString();
     }
-    
+
     @Override
     public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
         this.dbName = dbPointTable.split("\\Q.\\E")[0];
@@ -226,7 +232,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         return createInt;
     }
-    
+
     @Override
     public boolean dropTable(String dbPointTable) {
         this.dbName = dbPointTable;
@@ -246,8 +252,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         return retBool;
     }
-    
 
-    
-    
+
 }

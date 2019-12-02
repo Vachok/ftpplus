@@ -83,7 +83,7 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         }
         try {
             String url = connection.getMetaData().getURL();
-            messageToUser.warn(this.getClass().getSimpleName(), "return connect to: ", url);
+            messageToUser.info(this.getClass().getSimpleName(), "return connect to: ", url);
         }
         catch (SQLException e) {
             messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 43 ***");

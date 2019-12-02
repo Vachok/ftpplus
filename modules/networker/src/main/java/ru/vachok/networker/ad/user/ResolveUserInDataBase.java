@@ -22,18 +22,18 @@ import java.util.*;
  @see ResolveUserInDataBaseTest
  @since 02.04.2019 (10:25) */
 class ResolveUserInDataBase extends UserInfo {
-    
-    
+
+
     private static final String SQL_GETLOGINS = "SELECT * FROM velkom.pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?";
-    
+
     private static final String RESULTS = "Results: ";
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
-    
+
     private Object aboutWhat;
-    
+
     private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
+
     @Override
     public String getInfo() {
         String result;
@@ -53,12 +53,12 @@ class ResolveUserInDataBase extends UserInfo {
         }
         return result;
     }
-    
+
     @Override
     public void setClassOption(Object option) {
         this.aboutWhat = option;
     }
-    
+
     @Override
     public String getInfoAbout(String aboutWhat) {
         String res;
@@ -78,9 +78,10 @@ class ResolveUserInDataBase extends UserInfo {
         }
         return res;
     }
-    
+
     @Override
     public List<String> getLogins(String aboutWhat, int resultsLimit) {
+        Thread.currentThread().setName(getClass().getSimpleName());
         List<String> result;
         if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostName();
@@ -99,7 +100,7 @@ class ResolveUserInDataBase extends UserInfo {
         }
         return result;
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
@@ -107,22 +108,22 @@ class ResolveUserInDataBase extends UserInfo {
                 .add("dataConnectTo = " + dataConnectTo.toString())
                 .toString();
     }
-    
+
     ResolveUserInDataBase() {
         this.aboutWhat = "No pc name set";
     }
-    
+
     ResolveUserInDataBase(String type) {
         this.aboutWhat = type;
     }
-    
+
     @Override
     public int hashCode() {
         int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
         result = 31 * result + dataConnectTo.hashCode();
         return result;
     }
-    
+
     private @NotNull List<String> checkDataBase(String aboutWhat, int resultsLimit) {
         List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
         if (results.size() > 0) {
@@ -143,7 +144,7 @@ class ResolveUserInDataBase extends UserInfo {
         }
         return results;
     }
-    
+
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
@@ -170,7 +171,7 @@ class ResolveUserInDataBase extends UserInfo {
         }
         return retList;
     }
-    
+
     @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
@@ -180,15 +181,15 @@ class ResolveUserInDataBase extends UserInfo {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        
+
         ResolveUserInDataBase that = (ResolveUserInDataBase) o;
-        
+
         if (aboutWhat != null ? !aboutWhat.equals(that.aboutWhat) : that.aboutWhat != null) {
             return false;
         }
         return dataConnectTo.equals(that.dataConnectTo);
     }
-    
+
     private String tryPcName() {
         try {
             return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
@@ -197,13 +198,13 @@ class ResolveUserInDataBase extends UserInfo {
             return e.getMessage();
         }
     }
-    
+
     @NotNull String getLoginFromStaticDB(String pcName) {
         pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.aboutWhat = pcName;
         List<String> velkomPCUser = searchDatabase(1, "SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
         return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
     }
-    
-    
+
+
 }

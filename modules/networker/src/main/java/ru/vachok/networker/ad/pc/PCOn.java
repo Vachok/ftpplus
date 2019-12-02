@@ -38,20 +38,20 @@ import java.util.StringJoiner;
  @see PCOnTest
  @since 31.01.2019 (0:20) */
 class PCOn extends PCInfo {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOn.class.getSimpleName());
-    
+
     private Set<String> ipsWithInet = FileSystemWorker.readFileToSet(new File(FileNames.INETSTATSIP_CSV).toPath().toAbsolutePath().normalize());
-    
+
     private @NotNull String sql;
-    
+
     private String pcName;
-    
+
     private String userLogin;
-    
+
     private String addressIp;
-    
+
     public PCOn(@NotNull String pcName) {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
         this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
@@ -59,8 +59,10 @@ class PCOn extends PCInfo {
         messageToUser.info(this.pcName, this.userLogin, MessageFormat.format("{0} pc online", englargeOnCounter()));
         this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
     }
-    
+
     private @NotNull String getUserLogin() {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setName("getUserLogin");
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         String namesToFile;
         try {
@@ -72,10 +74,10 @@ class PCOn extends PCInfo {
         catch (RuntimeException e) {
             namesToFile = ConstantsFor.ISNTRESOLVED;
         }
-        
+
         return namesToFile;
     }
-    
+
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = checkValidNameWithoutEatmeat(aboutWhat).toLowerCase();
@@ -86,10 +88,10 @@ class PCOn extends PCInfo {
             return pcNameWithHTMLLink();
         }
     }
-    
+
     /**
      timeName должен отдавать строки вида {@code 1565794123799 \\do0213.eatmeat.ru\c$\Users\ikudryashov Wed Aug 14 17:48:43 MSK 2019 1565794123799}
-     
+
      @return Крайнее имя пользователя на ПК do0213 - ikudryashov (Wed Aug 14 17:48:43 MSK 2019)
      */
     private @NotNull String getHTMLCurrentUserName() {
@@ -104,7 +106,7 @@ class PCOn extends PCInfo {
         }
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
-    
+
         for (String userFolderFile : timeName) {
             String userFolderAndTimeStamp = parseUserFolders(userFolderFile);
             stringBuilder.append(userFolderAndTimeStamp);
@@ -112,9 +114,9 @@ class PCOn extends PCInfo {
         long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + ")";
         return format + stringBuilder.toString();
-    
+
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCOn.class.getSimpleName() + "[\n", "\n]")
@@ -122,12 +124,12 @@ class PCOn extends PCInfo {
                 .add("pcName = '" + pcName + "'")
                 .toString();
     }
-    
+
     @Override
     public void setClassOption(Object option) {
         this.pcName = (String) option;
     }
-    
+
     private @NotNull String parseUserFolders(@NotNull String userFolderFile) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] strings = userFolderFile.split(" ");
@@ -142,7 +144,7 @@ class PCOn extends PCInfo {
         stringBuilder.append("<br>");
         return stringBuilder.toString();
     }
-    
+
     @Override
     public String getInfo() {
         if (pcName == null || pcName.contains("unknown")) {
@@ -156,7 +158,7 @@ class PCOn extends PCInfo {
             return currentName;
         }
     }
-    
+
     @NotNull String pcNameWithHTMLLink() {
         String lastUserRaw = pcName + " : " + userLogin; // pcName : userName
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
@@ -179,7 +181,7 @@ class PCOn extends PCInfo {
         }
         return builder.toString().replaceAll("\n", " ");
     }
-    
+
     private String getTimeOn() {
         final String sql = "SELECT * FROM pcuser WHERE pcname LIKE ?";
         String retStr = sql;
@@ -198,7 +200,7 @@ class PCOn extends PCInfo {
         }
         return retStr;
     }
-    
+
     private int englargeOnCounter() {
         int onlinePC = InitProperties.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
@@ -206,7 +208,7 @@ class PCOn extends PCInfo {
         InitProperties.getTheProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
         return onlinePC;
     }
-    
+
     private @NotNull String timeNameAndDate(@NotNull String timeName) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Paths.get(timeName.split(" ")[1]).getFileName().toString());
@@ -221,5 +223,5 @@ class PCOn extends PCInfo {
         }
         return stringBuilder.toString();
     }
-    
+
 }

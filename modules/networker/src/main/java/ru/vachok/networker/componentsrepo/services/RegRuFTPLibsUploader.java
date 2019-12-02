@@ -36,23 +36,23 @@ import java.util.concurrent.TimeUnit;
  @since 01.06.2019 (4:19) */
 @SuppressWarnings("ClassUnconnectedToPackage")
 public class RegRuFTPLibsUploader implements Runnable {
-    
-    
+
+
     private static final String FTP_SERVER = "31.31.196.85";
-    
+
     private final FTPClient ftpClient = getFtpClient();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuFTPLibsUploader.class.getSimpleName());
-    
+
     @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
-    
-    private static File[] retMassive = new File[2];
-    
+
+    private static File[] retMassive = new File[3];
+
     private String ftpPass = chkPass();
-    
+
     private @NotNull FTPClient getFtpClient() {
         FTPClient client = new FTPClient();
-        
+
         try {
             client.connect(getHost(), ConstantsFor.FTP_PORT);
         }
@@ -64,7 +64,7 @@ public class RegRuFTPLibsUploader implements Runnable {
         client.configure(config);
         return client;
     }
-    
+
     protected InetAddress getHost() {
         InetAddress ftpAddress = InetAddress.getLoopbackAddress();
         try {
@@ -76,9 +76,10 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
         return ftpAddress;
     }
-    
+
     @Override
     public void run() {
+        Thread.currentThread().setName(getClass().getSimpleName());
         if (chkPC()) {
             try {
                 String connectTo = uploadLibs();
@@ -93,9 +94,9 @@ public class RegRuFTPLibsUploader implements Runnable {
             System.err.println(UsefulUtilities.thisPC() + " this PC is not develop PC!");
         }
     }
-    
+
     private @NotNull String uploadLibs() throws AccessDeniedException {
-        String pc = UsefulUtilities.thisPC();
+        String pc;
         if (ftpPass != null) {
             try {
                 return makeConnectionAndStoreLibs();
@@ -109,7 +110,7 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
         return pc;
     }
-    
+
     private @NotNull String makeConnectionAndStoreLibs() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
@@ -131,10 +132,10 @@ public class RegRuFTPLibsUploader implements Runnable {
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + "LOGIN ERROR", e));
         }
-        
+
         ftpClient.setAutodetectUTF8(true);
         stringBuilder.append(ftpClient.getReplyString());
-        
+
         try {
             ftpClient.changeWorkingDirectory("/lib");
             stringBuilder.append(ftpClient.getReplyString());
@@ -145,12 +146,12 @@ public class RegRuFTPLibsUploader implements Runnable {
         stringBuilder.append(uploadToServer(new LinkedList<>()));
         return stringBuilder.toString();
     }
-    
+
     private boolean chkPC() {
         return UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase()
             .contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]);
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("RegRuFTPLibsUploader{");
@@ -163,35 +164,35 @@ public class RegRuFTPLibsUploader implements Runnable {
         sb.append('}');
         return sb.toString();
     }
-    
+
     private @NotNull String uploadToServer(@NotNull Queue<Path> pathQueue) {
         StringBuilder stringBuilder = new StringBuilder();
-        
+
         while (!pathQueue.isEmpty()) {
             uploadFile(pathQueue.poll().toFile());
         }
         for (File file : getLibFiles()) {
             stringBuilder.append(uploadFile(file));
         }
-        
+
         return stringBuilder.toString();
     }
-    
+
     private @NotNull String uploadFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Objects.requireNonNull(file).getAbsolutePath()).append(" local file. ");
         String nameFTPFile = getName(file);
         ftpClient.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
         stringBuilder.append(ftpClient.getReplyString());
-        
+
         try (InputStream inputStream = new FileInputStream(file)) {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             System.out.println(ftpClient.getReplyString());
             stringBuilder.append(nameFTPFile).append(" remote name.\n");
-    
+
             ftpClient.enterLocalPassiveMode();
             stringBuilder.append(ftpClient.getReplyString());
-    
+
             stringBuilder.append("Is file stored to server: ");
             boolean isStore;
             try {
@@ -215,27 +216,12 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
         return stringBuilder.toString();
     }
-    
-    private static @NotNull String getName(@NotNull File file) {
-        String nameFTPFile = file.getName();
-        if (nameFTPFile.contains(ConstantsFor.PREF_NODE_NAME) & nameFTPFile.toLowerCase().contains(".jar")) {
-            nameFTPFile = "n.jar";
-        }
-        else if (nameFTPFile.toLowerCase().contains("ostpst-")) {
-            nameFTPFile = "ost.jar";
-        }
-        else {
-            nameFTPFile = file.getName();
-        }
-        
-        return nameFTPFile;
-    }
-    
+
     File[] getLibFiles() {
-        
+
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
         String format = simpleDateFormat.format(new Date());
-    
+
         Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
         try {
             pathRoot = pathRoot.getRoot();
@@ -246,7 +232,22 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
         return retMassive;
     }
-    
+
+    private static @NotNull String getName(@NotNull File file) {
+        String nameFTPFile = file.getName();
+        if (nameFTPFile.contains(ConstantsFor.PREF_NODE_NAME) & nameFTPFile.toLowerCase().contains(".jar")) {
+            nameFTPFile = "n.jar";
+        }
+        else if (nameFTPFile.toLowerCase().contains(ConstantsFor.PROGNAME_OSTPST)) {
+            nameFTPFile = "ost.jar";
+        }
+        else {
+            nameFTPFile = file.getName();
+        }
+
+        return nameFTPFile;
+    }
+
     private String chkPass() {
         Properties properties = InitProperties.getInstance(PropertiesNames.PROPERTIESID_GENERAL_PASS).getProps();
         String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
@@ -257,7 +258,7 @@ public class RegRuFTPLibsUploader implements Runnable {
             return ConstantsFor.WRONG_PASS;
         }
     }
-    
+
     private @NotNull String checkDir(final String dirRelative) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         boolean changeWorkingDirectory = ftpClient.changeWorkingDirectory("/cover");
@@ -272,11 +273,11 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
         return stringBuilder.toString();
     }
-    
+
     private void checkDirContent(String dirRelative) throws IOException {
         ftpClient.changeWorkingDirectory(dirRelative);
         System.out.println(ftpClient.getReplyString());
-        
+
         for (FTPFile ftpFile : ftpClient.listFiles()) {
             boolean deleteFile = ftpClient.deleteFile(ftpFile.getLink());
             System.out.println(ftpClient.getReplyString());
@@ -287,17 +288,15 @@ public class RegRuFTPLibsUploader implements Runnable {
             System.out.println(checkDir(ftpDir.getLink()));
         }
     }
-    
-
 
     private class SearchForLibs extends SimpleFileVisitor<Path> {
-        
-        
+
+
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
             return FileVisitResult.CONTINUE;
         }
-        
+
         @Override
         public FileVisitResult visitFile(@NotNull Path file, BasicFileAttributes attrs) throws IOException {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
@@ -309,14 +308,17 @@ public class RegRuFTPLibsUploader implements Runnable {
             if (file.getFileName().toString().contains(ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar")) {
                 retMassive[1] = file.toFile();
             }
+            if (file.getFileName().toString().contains("app-release.apk")) {
+                retMassive[2] = file.toFile();
+            }
             return FileVisitResult.CONTINUE;
         }
-        
+
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
             return FileVisitResult.CONTINUE;
         }
-        
+
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
             return FileVisitResult.CONTINUE;

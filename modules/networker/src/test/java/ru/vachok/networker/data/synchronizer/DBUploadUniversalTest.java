@@ -14,36 +14,40 @@ import ru.vachok.networker.data.enums.FileNames;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
  @see DBUploadUniversal
  @since 15.09.2019 (13:14) */
+@Ignore
 public class DBUploadUniversalTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DBUploadUniversalTest.class.getSimpleName(), System
         .nanoTime());
-    
+
     private DBUploadUniversal dbUploadUniversal;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void initTest() {
         this.dbUploadUniversal = new DBUploadUniversal(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
     }
-    
+
     @Test
     @Ignore
     public void testSyncData() {
@@ -61,7 +65,7 @@ public class DBUploadUniversalTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testUploadFileTo() {
         Deque<String> fileToQueue = new LinkedList<>();
@@ -71,7 +75,7 @@ public class DBUploadUniversalTest {
         dbUploadUniversal.setDbToSync("test.test");
         String syncData = dbUploadUniversal.syncData();
     }
-    
+
     @Test
     public void testMakeColumns() {
         try {
@@ -82,7 +86,7 @@ public class DBUploadUniversalTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testSuperRun() {
         try {
@@ -93,7 +97,7 @@ public class DBUploadUniversalTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testToString() {
         String s = dbUploadUniversal.toString();

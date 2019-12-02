@@ -3,14 +3,23 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.ad.pc.PCOnTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="incorrectIntegerValueDO0058"/>
-          <include name="initON"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
+        <class name="ru.vachok.networker.info.stats.WeeklyInternetStatsTest">
+            <methods>
+                <include name="testReadIPsWithInet"/>
+                <include name="testTestHashCode"/>
+                <include name="testTestEquals"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.info.stats.WeeklyInternetStatsTest -->
+        <class name="ru.vachok.networker.ad.inet.TemporaryFullInternetTest">
+            <methods>
+                <include name="testRunCheck"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+                <include name="testRunAdd"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.inet.TemporaryFullInternetTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

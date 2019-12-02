@@ -6,6 +6,7 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -18,22 +19,23 @@ import java.util.concurrent.*;
 /**
  @see ActionDelTMP
  @since 30.07.2019 (10:57) */
+@Ignore
 public class ActionDelTMPTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testActionPerformed() {
         ActionDelTMP actionDelTMP = new ActionDelTMP(Executors.newSingleThreadExecutor(), 5, new MenuItem(), new PopupMenu());
@@ -46,7 +48,7 @@ public class ActionDelTMPTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testTestToString() {
         String toStr = new ActionDelTMP(Executors.newSingleThreadExecutor(), 5, new MenuItem(), new PopupMenu()).toString();

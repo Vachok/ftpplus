@@ -30,24 +30,25 @@ import java.util.concurrent.TimeoutException;
 
 /**
  @since 17.06.2019 (14:41) */
+@Ignore
 public class OldBigFilesInfoCollectorTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private final OldBigFilesInfoCollector infoCollector = new OldBigFilesInfoCollector();
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testCall() {
         String startPath = infoCollector.getStartPath();
@@ -62,19 +63,19 @@ public class OldBigFilesInfoCollectorTest {
             Thread.currentThread().interrupt();
         }
     }
-    
+
     @Test
     public void testTestToString() {
         Assert.assertTrue(infoCollector.toString().contains("OldBigFilesInfoCollector{"), infoCollector.toString());
     }
-    
+
     @Test
     @Ignore
     public void realCall(){
         OldBigFilesInfoCollector oldBigFilesInfoCollector = new OldBigFilesInfoCollector();
         oldBigFilesInfoCollector.call();
     }
-    
+
     @Test
     public void testInDB(){
         MysqlDataSource dataSource = DataConnectTo.getDefaultI().getDataSource();
@@ -93,7 +94,7 @@ public class OldBigFilesInfoCollectorTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     @Ignore
     public void testConfirm() {
@@ -105,6 +106,6 @@ public class OldBigFilesInfoCollectorTest {
         catch (UnsupportedOperationException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        
+
     }
 }

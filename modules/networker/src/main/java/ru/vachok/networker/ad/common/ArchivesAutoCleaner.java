@@ -19,38 +19,38 @@ import java.util.concurrent.TimeUnit;
 
 /**
  Очистка папки \\192.168.14.10\IT-Backup\SRV-FS\Archives
- 
- @see ru.vachok.networker.ad.common.ArchivesAutoCleanerTest
+
+ @see ArchivesAutoCleanerTest
  @see SystemTrayHelper
  @since 15.11.2018 (14:09) */
 @SuppressWarnings("Singleton")
 public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ArchivesAutoCleaner.class.getClass().getSimpleName());
-    
+
     private static ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
-    
+
     /**
      Первоначальная папка
      */
     private String startFolder = "";
-    
+
     private List<String> copyList = new ArrayList<>();
-    
+
     public ArchivesAutoCleaner(boolean isTest) {
         this.startFolder = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\";
     }
-    
+
     private ArchivesAutoCleaner() {
         this.startFolder = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
     }
-    
+
     @Contract(pure = true)
     public static ArchivesAutoCleaner getInstance() {
         return autoCleaner;
     }
-    
+
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         String msg = new StringBuilder().append("Cleaning the directory: ")
@@ -61,7 +61,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         messageToUser.info(msg);
         return FileVisitResult.CONTINUE;
     }
-    
+
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         File ditToCopyFiles = new File("\\\\192.168.14.10\\IT-Backup\\SRV-FS\\bluray\\");
@@ -88,14 +88,14 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             return FileVisitResult.CONTINUE;
         }
     }
-    
+
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         String size = exc.getMessage() + " visit failed (" + file.toAbsolutePath() + ")";
         messageToUser.error(size);
         return FileVisitResult.CONTINUE;
     }
-    
+
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         try {
@@ -110,7 +110,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             return FileVisitResult.CONTINUE;
         }
     }
-    
+
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
@@ -123,7 +123,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             Thread.currentThread().interrupt();
         }
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", ArchivesAutoCleaner.class.getSimpleName() + "[\n", "\n]")

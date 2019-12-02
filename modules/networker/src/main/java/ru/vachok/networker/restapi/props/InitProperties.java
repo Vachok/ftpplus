@@ -18,23 +18,23 @@ import java.util.prefs.Preferences;
 /**
  @since 14.07.2019 (17:33) */
 public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProperties {
-    
-    
+
+
     String DB_MEMTABLE = "db";
-    
+
     String FILE = "file";
-    
+
     String DB_LOCAL = "srv-inetstat";
-    
+
     String TEST = "test";
-    
+
     @Contract(pure = true)
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     static @NotNull Properties getTheProps() {
         @NotNull Properties result = PropsHelper.getAppPr();
         return result;
     }
-    
+
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     static @NotNull InitProperties getInstance(@NotNull String type) {
@@ -49,19 +49,20 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
                 return new DBPropsCallable(type);
         }
     }
-    
+
     @Contract(pure = true)
     static Properties getMAilPr() {
+        Thread.currentThread().setName(InitProperties.class.getSimpleName());
         return PropsHelper.getMailPr();
     }
-    
+
     @Override
     default MysqlDataSource getRegSourceForProperties() {
         MysqlDataSource retSource = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource();
         retSource.setDatabaseName(ConstantsFor.STR_VELKOM);
         return retSource;
     }
-    
+
     static void setPreference(String prefName, String prefValue) {
         Preferences userPref = getUserPref();
         userPref.put(prefName, prefValue);
@@ -72,7 +73,7 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
             System.err.println(MessageFormat.format("getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
-    
+
     static Preferences getUserPref() {
         return Preferences.userRoot();
     }
