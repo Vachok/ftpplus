@@ -3,13 +3,10 @@
 package ru.vachok.networker.controller;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
@@ -33,7 +30,6 @@ public class FileCleanerCTRL {
 
     private final HTMLGeneration informationFactory = new PageGenerationHelper();
 
-    @Contract(pure = true)
     public FileCleanerCTRL() {
     }
 

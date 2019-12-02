@@ -16,10 +16,7 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -134,18 +131,18 @@ public class NetMonitorPTVTest {
         Assert.assertEquals(toString, "H2DB{}");
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_LANMONITOR)) {
             String url = connection.getMetaData().getURL();
-            boolean contains = url.contains("jdbc:h2:mem:lan.monitor") || url.contains("jdbc:mysql://srv-mysql.home:3306/lan");
-            Assert.assertTrue(contains);
+            boolean contains = url.contains("jdbc:h2:mem:velkompc") || url.contains("jdbc:mysql://srv-mysql.home:3306/lan");
+            Assert.assertTrue(contains, url);
             Assert.assertTrue(connection.isValid(5));
             try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS monitor (\n" +
-                "\t`idRec` INT(6) NOT NULL AUTO_INCREMENT,\n" +
-                "\t`ip` VARCHAR(16) NOT NULL DEFAULT '127.0.0.1',\n" +
-                "\t`pcName` VARCHAR(50) NOT NULL DEFAULT 'unresolved',\n" +
-                "\t`online` ENUM('true','false') NOT NULL DEFAULT 'false',\n" +
-                "\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n" +
-                "\tPRIMARY KEY (`idRec`),\n" +
-                "\tUNIQUE INDEX `ip_pcName` (`ip`, `pcName`)\n" +
-                ")\n" +
+                    "\t`idRec` INT(6) NOT NULL AUTO_INCREMENT,\n" +
+                    "\t`ip` VARCHAR(16) NOT NULL DEFAULT '127.0.0.1',\n" +
+                    "\t`pcName` VARCHAR(50) NOT NULL DEFAULT 'unresolved',\n" +
+                    "\t`online` ENUM('true','false') NOT NULL DEFAULT 'false',\n" +
+                    "\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n" +
+                    "\tPRIMARY KEY (`idRec`),\n" +
+                    "\tUNIQUE INDEX `ip_pcName` (`ip`, `pcName`)\n" +
+                    ")\n" +
                     "ENGINE=InnoDB\n" +
                     ";\n")) {
                 preparedStatement.executeUpdate();

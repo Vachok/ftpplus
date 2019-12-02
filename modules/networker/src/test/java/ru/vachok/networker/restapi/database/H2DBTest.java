@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi.database;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -39,7 +38,7 @@ public class H2DBTest {
     
     @BeforeMethod
     public void initH2() {
-        this.h2DB = new H2DB();
+        this.h2DB = (H2DB) DataConnectTo.getInstance(DataConnectTo.H2DB);
     }
     
     @Test
@@ -106,7 +105,7 @@ public class H2DBTest {
         try {
             h2DB.uploadCollection(Collections.singleton("test"), "test");
         }
-        catch (TODOException e) {
+        catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
@@ -116,7 +115,7 @@ public class H2DBTest {
         try {
             h2DB.dropTable("test");
         }
-        catch (TODOException e) {
+        catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }

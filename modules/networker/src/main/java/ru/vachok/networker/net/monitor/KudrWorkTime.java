@@ -3,7 +3,6 @@
 package ru.vachok.networker.net.monitor;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
@@ -19,12 +18,11 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +82,6 @@ public class KudrWorkTime implements NetScanService {
         
     }
     
-    @Contract(pure = true)
     protected KudrWorkTime(Map<String, Object> mapOfConditionsTypeNameTypeCondition) {
         this.mapOfConditionsTypeNameTypeCondition = mapOfConditionsTypeNameTypeCondition;
     }
