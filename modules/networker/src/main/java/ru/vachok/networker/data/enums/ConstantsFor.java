@@ -519,12 +519,15 @@ public enum ConstantsFor {
     
     public static final String DB_LIFERPGSPEED = "liferpg.speed";
     
+    public static final String DB_COMMONOLDFILES = "common.oldfiles";
+    
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     
-    public static @NotNull String[] getExcludedFoldersForCleaner() {
+    @NotNull
+    public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));
-        excludeFolders.addAll(FileSystemWorker.readFileToList(new File("cleanstop.txt").getAbsolutePath()));
+        excludeFolders.addAll(FileSystemWorker.readFileToList(new File(FileNames.CLEANSTOP_TXT).getAbsolutePath()));
         return excludeFolders.toArray(new String[0]);
     }
 }

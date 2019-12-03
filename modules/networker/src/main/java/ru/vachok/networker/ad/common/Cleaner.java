@@ -3,122 +3,99 @@
 package ru.vachok.networker.ad.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
+import java.nio.file.*;
+import java.sql.*;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
- @see ru.vachok.networker.ad.common.CleanerTest
+ @see CleanerTest
  @since 25.06.2019 (11:37) */
 public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String> {
     
     
-    private Map<Path, String> pathAttrMap = new ConcurrentHashMap<>();
-    
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, Cleaner.class.getSimpleName());
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, Cleaner.class.getSimpleName());
     
-    private long lastModifiedLog;
+    private Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
+    
+    private long lastModifiedLog = MyCalen.getLongFromDate(3, 12, 2019, 15, 15);
     
     private List<String> remainFiles = new ArrayList<>();
+    
+    private int deleteTodayLimit = 0;
+    
+    private int getTotalFiles() {
+        return SyncData.getLastRecId(DataConnectTo.getDefaultI(), ConstantsFor.DB_COMMONOLDFILES);
+    }
     
     /**
      @return имя файла-лога, с информацией об удалениях.
      */
     @Override
     public String call() {
-        if (pathAttrMap.size() == 0) {
-            fillMapFromDB();
-        }
-        else makeDeletions();
-        
-        return MessageFormat.format("{0} complete: {1}", this.getClass().getSimpleName(), makeDeletions());
+        return makeDeletions();
     }
     
-    private void fillMapFromDB() {
-        Random random = new Random();
-        int deleteTodayLimit = limitOfDeleteFiles();
-        
-        for (int i = 0; i < deleteTodayLimit; i++) {
-            int index = random.nextInt(remainFiles.size());
-            String deleteFileAsString = remainFiles.get(index);
+    @NotNull
+    private String makeDeletions() {
+        fillPaths();
+        for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
+            Random random = new Random();
+            int index = random.nextInt(indexPath.size());
+            Path sourceDel = indexPath.get(index);
             try {
-                String[] pathAndAttrs = deleteFileAsString.split(", ,");
-                pathAttrMap.putIfAbsent(Paths.get(pathAndAttrs[0]), pathAndAttrs[1]);
-                remainFiles.remove(index);
-            }
-            catch (IndexOutOfBoundsException | NullPointerException e) {
-                messageToUser.error(e.getMessage());
-            }
-        }
-    }
-    
-    private void getDBInformation() {
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-             ResultSet resultSet= preparedStatement.getResultSet();){
-            resultSet.setFetchSize(3);
-            while (resultSet.next()){
-                remainFiles.add(resultSet.getString(2));
-            }
-        }catch (SQLException e){
-            messageToUser.error(e.getMessage() + " see line: 70");
-        }
-    }
-    
-    private boolean makeDeletions() {
-        boolean retBool = false;
-        long releasedSpace = 0;
-        for (Map.Entry<Path, String> pathStringEntry : pathAttrMap.entrySet()) {
-            try (OutputStream outputStream = new FileOutputStream(getClass().getSimpleName() + ".log", true);
-                 PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
-            ) {
-                Path keyPathToDelete = pathStringEntry.getKey();
-                System.out.println("Trying remove: " + keyPathToDelete + " (" + keyPathToDelete.toFile()
-                        .length() / ConstantsFor.MBYTE + " megabytes, attributes: " + pathStringEntry
-                        .getValue() + ")");
-                
-                if (Files.deleteIfExists(keyPathToDelete)) {
-                    releasedSpace += keyPathToDelete.toFile().length();
-                    releasedSpace /= ConstantsFor.GBYTE;
-                    printStream.println(keyPathToDelete + " : " + pathStringEntry.getValue() + " is DELETED. Total space released in gigabytes: " + releasedSpace);
-                    retBool = true;
-                }
-                else {
-                    printStream.println(pathStringEntry.getKey() + " : " + pathStringEntry.getValue());
-                }
+                Files.copy(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
+                        .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
             }
             catch (IOException e) {
-                messageToUser.error(e.getMessage());
-                retBool = false;
+                e.printStackTrace();
+            }
+            
+            try {
+                Files.deleteIfExists(sourceDel);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            finally {
+                messageToUser.warn(this.getClass().getSimpleName(), "deleted", sourceDel.normalize().toString());
             }
         }
-        return retBool;
+        return "";
     }
     
-    private int limitOfDeleteFiles() {
-        int stringsInLogFile = remainFiles.size();
+    @NotNull
+    private void fillPaths() {
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from common.oldfiles");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                indexPath.put(resultSet.getInt(1), Paths.get(resultSet.getString(2)));
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 70");
+        }
+        finally {
+            this.deleteTodayLimit = limitOfDeleteFiles(indexPath.size());
+            messageToUser.warn(this.getClass().getSimpleName(), "Today LIMIT is ", String.valueOf(deleteTodayLimit));
+        }
         
-        if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.DAYS.toMillis(1)) {
+    }
+    
+    private int limitOfDeleteFiles(int stringsInLogFile) {
+        
+        if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.SECONDS.toMillis(1)) {
             System.out.println(stringsInLogFile = (stringsInLogFile / 100) * 10);
         }
         else if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.DAYS.toMillis(2)) {
@@ -130,21 +107,7 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
         else {
             System.out.println(stringsInLogFile);
         }
-        
+        this.deleteTodayLimit = stringsInLogFile;
         return stringsInLogFile;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Cleaner{");
-        sb.append("pathAttrMap=").append(pathAttrMap);
-        
-        sb.append(", lastModifiedLog=").append(lastModifiedLog);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    protected Map<Path, String> getPathAttrMap() {
-        return Collections.unmodifiableMap(pathAttrMap);
     }
 }

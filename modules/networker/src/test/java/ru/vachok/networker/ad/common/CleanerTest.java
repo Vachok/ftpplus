@@ -72,15 +72,11 @@ public class CleanerTest {
     }
     
     @Test
-    @Ignore
-    public void testGetPathAttrMap() {
-        Map<Path, String> map = cleaner.getPathAttrMap();
-        String strMap = new TForms().fromArray(map);
-        Assert.assertTrue(strMap.isEmpty(), strMap);
+    public void testBlockCall() {
+        cleaner.call();
     }
     
     @Test
-    @Ignore
     public void testTestToString() {
         Assert.assertTrue(cleaner.toString().contains("Cleaner{"), cleaner.toString());
     }
