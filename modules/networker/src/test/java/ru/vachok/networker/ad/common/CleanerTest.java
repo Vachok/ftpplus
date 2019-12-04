@@ -12,14 +12,11 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -29,6 +26,7 @@ import java.util.concurrent.*;
 /**
  @see Cleaner
  @since 25.06.2019 (10:28) */
+@Ignore
 public class CleanerTest {
     
     
@@ -120,25 +118,4 @@ public class CleanerTest {
         
         return stringsInLogFile;
     }
-    
-    @Test
-    @Ignore
-    public void testDeletedRS(){
-        Set<String> retSet = new ConcurrentSkipListSet<>();
-    
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-             ResultSet resultSet= preparedStatement.executeQuery();){
-            
-            ResultSet preparedStatementResultSet = preparedStatement.getResultSet();
-            while (preparedStatementResultSet.next()){
-                int concurrency = preparedStatement.getResultSetConcurrency();
-                System.out.println("resultSet = " + preparedStatementResultSet.getString(2));
-                preparedStatementResultSet.deleteRow();
-            }
-        }catch (SQLException e){
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
 }

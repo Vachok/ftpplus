@@ -13,6 +13,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.IOException;
 import java.nio.file.*;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -46,35 +47,17 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
         return makeDeletions();
     }
     
-    @NotNull
-    private String makeDeletions() {
-        fillPaths();
-        for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
-            Random random = new Random();
-            int index = random.nextInt(indexPath.size());
-            Path sourceDel = indexPath.get(index);
-            try {
-                Files.copy(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
-                        .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            
-            try {
-                Files.deleteIfExists(sourceDel);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            finally {
-                messageToUser.warn(this.getClass().getSimpleName(), "deleted", sourceDel.normalize().toString());
-            }
-        }
-        return "";
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Cleaner{");
+        sb.append("remainFiles=").append(remainFiles);
+        sb.append(", lastModifiedLog=").append(lastModifiedLog);
+        sb.append(", indexPath=").append(indexPath);
+        sb.append(", deleteTodayLimit=").append(deleteTodayLimit);
+        sb.append('}');
+        return sb.toString();
     }
     
-    @NotNull
     private void fillPaths() {
         try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
              PreparedStatement preparedStatement = connection.prepareStatement("select * from common.oldfiles");
@@ -93,19 +76,44 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
         
     }
     
+    @NotNull
+    private String makeDeletions() {
+        fillPaths();
+        for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
+            Random random = new Random();
+            int index = random.nextInt(indexPath.size());
+            Path sourceDel = indexPath.get(index);
+            Path copyPath = Paths.get("null");
+            try {
+                
+                copyPath = Files.copy(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
+                        .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
+                if (copyPath.toFile().exists()) {
+                    Files.deleteIfExists(sourceDel);
+                }
+            }
+            catch (IOException e) {
+                messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", e.getMessage() + Thread.currentThread().getState().name());
+            }
+            finally {
+                messageToUser.warning(this.getClass().getSimpleName(), "makeDeletions", MessageFormat
+                        .format("{0} {1}:{2} remain {3}", sourceDel.normalize().toAbsolutePath().toString(), String.valueOf(sourceDel.toFile().exists()), String
+                                .valueOf(copyPath.toFile().exists()), limitOfDeleteFiles(indexPath.size()) - i));
+            }
+        }
+        return "";
+    }
+    
     private int limitOfDeleteFiles(int stringsInLogFile) {
         
         if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.SECONDS.toMillis(1)) {
-            System.out.println(stringsInLogFile = (stringsInLogFile / 100) * 10);
+            stringsInLogFile = (stringsInLogFile / 100) * 10;
         }
         else if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.DAYS.toMillis(2)) {
-            System.out.println(stringsInLogFile = (stringsInLogFile / 100) * 25);
+            stringsInLogFile = (stringsInLogFile / 100) * 25;
         }
         else if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.DAYS.toMillis(3)) {
-            System.out.println(stringsInLogFile = (stringsInLogFile / 100) * 75);
-        }
-        else {
-            System.out.println(stringsInLogFile);
+            stringsInLogFile = (stringsInLogFile / 100) * 75;
         }
         this.deleteTodayLimit = stringsInLogFile;
         return stringsInLogFile;
