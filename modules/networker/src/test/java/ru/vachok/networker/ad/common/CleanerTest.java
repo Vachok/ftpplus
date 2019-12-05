@@ -26,6 +26,7 @@ import java.util.concurrent.*;
 /**
  @see Cleaner
  @since 25.06.2019 (10:28) */
+@Ignore
 public class CleanerTest {
     
     
