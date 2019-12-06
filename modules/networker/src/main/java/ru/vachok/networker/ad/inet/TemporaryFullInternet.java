@@ -14,6 +14,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.sql.*;
 import java.text.MessageFormat;
@@ -142,7 +143,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             tempString24HRSBuilder.append(AbstractForms.fromArray(e).replace("<br>", "\n"));
         }
         finally {
-            writeLog();
+            AppConfigurationLocal.getInstance().execute(this::writeLog, 21);
         }
         return tempString24HRSBuilder.toString();
     }
@@ -160,13 +161,25 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return comSSHBuilder;
     }
     
-    private void execOldMeth() {
-        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(this::sshChecker);
-        Date nextStart = new Date(UsefulUtilities.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
-        String fromArray = AbstractForms.fromArray(SSH_CHECKER_MAP);
-        MINI_LOGGER.add(fromArray);
-        MINI_LOGGER.add(nextStart.toString());
-        writeLog();
+    private void writeLog() {
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        messageToUser.info(this.getClass().getSimpleName(), "creating table ", String
+                .valueOf(dataConnectTo.createTable(ConstantsFor.DBTABLE_LOGTEMPINET, Collections.emptyList())));
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("class", this.getClass().getSimpleName());
+        jsonObject.add("called", whoCalls);
+        jsonObject.add("log", AbstractForms.fromArray(MINI_LOGGER));
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBTABLE_LOGTEMPINET)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `log`.`tempinet` (`upstring`, `json`) VALUES (?, ?)")) {
+                preparedStatement.setQueryTimeout(20);
+                preparedStatement.setString(1, MessageFormat.format("{0} called: {1}", optionToDo, whoCalls));
+                preparedStatement.setString(2, jsonObject.toString());
+                preparedStatement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("TemporaryFullInternet.writeLog", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
     }
     
     @SuppressWarnings("FeatureEnvy")
@@ -201,23 +214,13 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return initNewConfig;
     }
     
-    private void writeLog() {
-        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        messageToUser.info(this.getClass().getSimpleName(), "creating table ", String
-                .valueOf(dataConnectTo.createTable(ConstantsFor.DBTABLE_LOGTEMPINET, Collections.emptyList())));
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add("class", this.getClass().getSimpleName());
-        jsonObject.add("called", whoCalls);
-        jsonObject.add("log", AbstractForms.fromArray(MINI_LOGGER));
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBTABLE_LOGTEMPINET);
-             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `log`.`tempinet` (`upstring`, `json`) VALUES (?, ?)")) {
-            preparedStatement.setString(1, MessageFormat.format("{0} called: {1}", optionToDo, whoCalls));
-            preparedStatement.setString(2, jsonObject.toString());
-            preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            messageToUser.error(TemporaryFullInternet.class.getSimpleName(), e.getMessage(), " see line: 244 ***");
-        }
+    private void execOldMeth() {
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(this::sshChecker);
+        Date nextStart = new Date(UsefulUtilities.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        String fromArray = AbstractForms.fromArray(SSH_CHECKER_MAP);
+        MINI_LOGGER.add(fromArray);
+        MINI_LOGGER.add(nextStart.toString());
+        AppConfigurationLocal.getInstance().execute(this::writeLog, 21);
     }
     
     private void sshChecker() {
@@ -227,7 +230,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         
         if (fromSSH24HrsList.isEmpty()) {
             MINI_LOGGER.add("fromSSH24HrsList.isEmpty()");
-            writeLog();
+            AppConfigurationLocal.getInstance().execute(this::writeLog, 21);
             throw new InvokeIllegalException(getClass().getSimpleName() + " fromSSH24HrsList.isEmpty()");
         }
         else {

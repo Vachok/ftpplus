@@ -4,9 +4,7 @@ package ru.vachok.networker.info.stats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -24,6 +22,8 @@ public class ComputerUserResolvedStatsTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private ComputerUserResolvedStats computerUserResolvedStats;
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -35,15 +35,19 @@ public class ComputerUserResolvedStatsTest {
         testConfigureThreadsLogMaker.after();
     }
     
+    @BeforeMethod
+    public void initStats() {
+        this.computerUserResolvedStats = new ComputerUserResolvedStats();
+    }
     
     /**
-     * @see ComputerUserResolvedStats#call()
+     @see ComputerUserResolvedStats#call()
      */
     @Test
     public void testCall() {
         ComputerUserResolvedStats computerUserResolvedStats = new ComputerUserResolvedStats();
         String call = computerUserResolvedStats.call();
-        Assert.assertTrue(new File("user_login_counter.txt").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(new File(FileNames.USERLOGINCOUNTER_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     
     /**
@@ -55,5 +59,29 @@ public class ComputerUserResolvedStatsTest {
         int selectedRows = computerUserResolvedStats.selectFrom();
         Assert.assertTrue(selectedRows > 100, MessageFormat.format("selectedRows : {0}", selectedRows));
         Assert.assertTrue(new File(FileNames.VELKOMPCUSERAUTO_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+    }
+    
+    @Test
+    public void testRun() {
+        computerUserResolvedStats.run();
+    }
+    
+    @Test
+    public void testGetInfo() {
+        String statsInfo = computerUserResolvedStats.getInfo();
+        Assert.assertTrue(statsInfo.contains("total pc:"), statsInfo);
+        Assert.assertTrue(Integer.parseInt(statsInfo.split(": ")[1]) > 0);
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String statsInfoAbout = computerUserResolvedStats.getInfoAbout("");
+        Assert.assertTrue(statsInfoAbout.contains("total pc:"), statsInfoAbout);
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toString = computerUserResolvedStats.toString();
+        Assert.assertTrue(toString.contains("ComputerUserResolvedStats["));
     }
 }

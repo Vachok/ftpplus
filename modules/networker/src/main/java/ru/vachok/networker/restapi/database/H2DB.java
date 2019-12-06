@@ -4,11 +4,14 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,73 +24,70 @@ public class H2DB implements DataConnectTo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, H2DB.class.getSimpleName());
     
+    private static final String TESTS_ONLY = "4 tests only";
     
-    static {
-        try {
-            Driver driver = new org.h2.Driver();
-            DriverManager.registerDriver(driver);
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("H2DB.static initializer", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
-        }
-        
-    }
+    private final Connection connection;
+    
+    private String dbName;
     
     @Override
     public MysqlDataSource getDataSource() {
-        throw new UnsupportedOperationException(toString());
+        throw new UnsupportedOperationException(TESTS_ONLY);
     }
     
     @Override
     public int uploadCollection(Collection stringsCollection, String tableName) {
-        throw new TODOException("01.11.2019 (9:22)");
+        throw new UnsupportedOperationException(TESTS_ONLY);
     }
     
     @Override
     public boolean dropTable(String dbPointTable) {
-        throw new TODOException("01.11.2019 (9:22)");
+        throw new UnsupportedOperationException(TESTS_ONLY);
     }
     
     @Override
     public int createTable(@NotNull String dbPointTable, @NotNull List<String> additionalColumns) {
+        if (this.connection == null) {
+            getDefaultConnection(dbPointTable);
+        }
+        String dbName = "null";
         if (dbPointTable.contains(".")) {
-            dbPointTable = dbPointTable.split("\\Q.\\E")[1];
+            dbName = dbPointTable.split("\\Q.\\E")[0];
         }
-        StringBuilder preSQL = new StringBuilder()
-            .append("CREATE TABLE ").append(dbPointTable).append(" (\n")
-            .append("\t`idRec` INT NOT NULL AUTO_INCREMENT,\n\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),\n");
-        if (additionalColumns.size() > 0) {
-            for (String collumn : additionalColumns) {
-                preSQL.append("\t");
-                preSQL.append(collumn);
-                preSQL.append(",\n");
-            }
+        final String sql = "CREATE SCHEMA " + dbName;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            return preparedStatement.executeUpdate();
         }
-        preSQL.append("\tPRIMARY KEY (`idRec`)")
-            .append(");");
-        final String sql = preSQL.toString();
-        try (Connection connection = getDefaultConnection(dbPointTable)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                return preparedStatement.executeUpdate();
-            }
-        }
+
         catch (SQLException e) {
             messageToUser.error("H2DB.createTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             return -666;
         }
     }
     
-    @SuppressWarnings({"resource", "JDBCResourceOpenedButNotSafelyClosed"})
     @Override
     public Connection getDefaultConnection(String dbName) {
-        Connection connection = null;
+        this.dbName = dbName;
+        if (NetScanService.isReach(OtherKnownDevices.SRVMYSQL_HOME)) {
+            return DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbName);
+        }
+        else {
+            return this.connection;
+        }
+    }
+    
+    H2DB() throws NetworkerStopException {
         try {
-            connection = DriverManager.getConnection("jdbc:h2:mem:" + dbName + ";MODE=MYSQL;DATABASE_TO_LOWER=TRUE");
+            this.dbName = ConstantsFor.DB_VELKOMVELKOMPC;
+            Driver driver = new org.h2.Driver();
+            DriverManager.registerDriver(driver);
+            Connection connection = null;
+            this.connection = DriverManager.getConnection("jdbc:h2:mem:" + dbName.split("\\Q.\\E")[1] + ";MODE=MYSQL;DATABASE_TO_LOWER=TRUE");
         }
         catch (SQLException e) {
-            messageToUser.warn(H2DB.class.getSimpleName(), "getDefaultConnection", e.getMessage() + Thread.currentThread().getState().name());
+            messageToUser.error(getClass().getSimpleName(), "H2DB", FileSystemWorker.error(getClass().getSimpleName() + ".H2DB", e));
+            throw new NetworkerStopException(this.getClass().getSimpleName(), "public H2DB()", 91);
         }
-        return connection;
     }
     
     @Override

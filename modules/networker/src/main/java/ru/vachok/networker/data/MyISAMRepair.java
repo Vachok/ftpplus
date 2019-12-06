@@ -6,6 +6,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
 
@@ -35,6 +36,7 @@ public class MyISAMRepair implements InformationFactory {
         }
         finally {
             stringBuilder.append("ru.vachok.networker.data.MyISAMRepair.repairTable complete ***\n");
+            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).error(stringBuilder.toString());
         }
         return stringBuilder.toString();
     }

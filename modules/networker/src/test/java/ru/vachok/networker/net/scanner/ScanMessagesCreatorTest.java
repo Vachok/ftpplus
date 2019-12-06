@@ -2,7 +2,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -40,7 +42,9 @@ public class ScanMessagesCreatorTest {
     @Test
     public void testTestToString() {
         String s = scanMessagesCreator.toString();
-        Assert.assertEquals(s, "ScanMessagesCreator{}");
+        Assert.assertEquals(s, "ScanMessagesCreator[\n" +
+            "numOfTrains = 8\n" +
+            "]");
     }
     
     @Test

@@ -6,6 +6,7 @@ package ru.vachok.networker.componentsrepo.systray.actions;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -18,22 +19,23 @@ import java.io.File;
 /**
  @see ActionMakeInfoAboutOldCommonFiles
  @since 30.07.2019 (11:00) */
+@Ignore
 public class ActionMakeInfoAboutOldCommonFilesTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testActionPerformed() {
         File oldFile = new File(FileNames.FILES_OLD + "." + Math.random());
@@ -49,7 +51,7 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
         }
         oldFile.deleteOnExit();
     }
-    
+
     @Test
     public void testTestToString() {
         Assert.assertTrue(new ActionMakeInfoAboutOldCommonFiles().toString().contains("ActionMakeInfoAboutOldCommonFiles["));

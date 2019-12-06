@@ -11,7 +11,6 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class ACLDatabaseSearcherTest {
     
     private long linesLimit = Integer.MAX_VALUE;
     
-    private UserACLManager dbSearcher;
+    private ACLDatabaseSearcher dbSearcher;
     
     private int countDirectories;
     
@@ -44,7 +43,7 @@ public class ACLDatabaseSearcherTest {
     
     @BeforeMethod
     public void initSearcher() {
-        this.dbSearcher = UserACLManager.getInstance(UserACLManager.DB_SEARCH, Paths.get("."));
+        this.dbSearcher = new ACLDatabaseSearcher();
     }
     
     @Test
@@ -86,6 +85,6 @@ public class ACLDatabaseSearcherTest {
     @Test
     public void testTestToString() {
         String string = dbSearcher.toString();
-        Assert.assertTrue(string.contains("ACLDatabaseSearcher{"));
+        Assert.assertTrue(string.contains("ACLDatabaseSearcher{"), string);
     }
 }

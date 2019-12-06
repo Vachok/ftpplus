@@ -21,23 +21,8 @@ import java.time.LocalDate;
  @see StatsTest
  @since 19.05.2019 (23:04) */
 public interface Stats extends InformationFactory {
-    
-    @Contract("_ -> new")
-    static @NotNull Stats getInstance(@NotNull String type) {
-        switch (type) {
-            case InformationFactory.STATS_WEEKLY_INTERNET:
-                return new WeeklyInternetStats();
-            case InformationFactory.STATS_SUDNAY_PC_SORT:
-                return new ComputerUserResolvedStats();
-            default:
-                throw new InvokeIllegalException(MessageFormat.format("NOT CORRECT INSTANCE: {0} in {1}", type, Stats.class.getSimpleName()));
-        }
-    }
-    
-    static boolean isSunday() {
-        return LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY);
-    }
-    
+
+
     static long getIpsInet() {
         try {
             Files.deleteIfExists(new File(FileNames.INETSTATSIP_CSV).toPath());
@@ -45,15 +30,31 @@ public interface Stats extends InformationFactory {
         catch (IOException e) {
             System.err.println(e.getMessage());
         }
-        return new WeeklyInternetStats().readIPsWithInet();
+        return WeeklyInternetStats.getInstance().readIPsWithInet(true);
     }
-    
+
+    static boolean isSunday() {
+        return LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY);
+    }
+
+    @Contract("_ -> new")
+    static @NotNull Stats getInstance(@NotNull String type) {
+        switch (type) {
+            case InformationFactory.STATS_WEEKLY_INTERNET:
+                return WeeklyInternetStats.getInstance();
+            case InformationFactory.STATS_SUDNAY_PC_SORT:
+                return new ComputerUserResolvedStats();
+            default:
+                throw new InvokeIllegalException(MessageFormat.format("NOT CORRECT INSTANCE: {0} in {1}", type, Stats.class.getSimpleName()));
+        }
+    }
+
     @Override
     String getInfoAbout(String aboutWhat);
-    
+
     @Override
     String getInfo();
-    
+
     @Override
     void setClassOption(Object option);
 }

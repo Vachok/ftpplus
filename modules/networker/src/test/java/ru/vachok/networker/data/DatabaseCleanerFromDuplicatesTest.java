@@ -23,7 +23,7 @@ public class DatabaseCleanerFromDuplicatesTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DatabaseCleanerFromDuplicatesTest.class
-        .getSimpleName(), System.nanoTime());
+            .getSimpleName(), System.nanoTime());
     
     private DatabaseCleanerFromDuplicates databaseCleanerFromDuplicates;
     
@@ -112,6 +112,27 @@ public class DatabaseCleanerFromDuplicatesTest {
             Assert.assertTrue(goodIDs.size() > 1, "No IDs collected...");
             System.out.println("goodIDs = " + goodIDs.size());
             delOther(goodIDs);
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testCreateTable() {
+        try {
+            int duplicatesTable = databaseCleanerFromDuplicates.createTable("test.dbLCleanDupl", Collections.singletonList("duplicate"));
+            System.out.println("duplicatesTable = " + duplicatesTable);
+        }
+        catch (TODOException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testGetDefaultConnection() {
+        try (Connection defaultConnection = databaseCleanerFromDuplicates.getDefaultConnection("")) {
+            Assert.assertTrue(defaultConnection.isValid(5));
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));

@@ -7,7 +7,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
-import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.util.concurrent.*;
 
@@ -15,17 +14,17 @@ import java.util.concurrent.*;
 @FunctionalInterface
 @SuppressWarnings("MethodWithMultipleReturnPoints")
 public interface AppConfigurationLocal extends Runnable {
-    
-    
+
+
     String ON_START_LOADER = "OnStartTasksLoader";
-    
+
     String SCHEDULE_DEFINER = "ScheduleDefiner";
-    
+
     @Contract(pure = true)
     static AppConfigurationLocal getInstance() {
         return getInstance("");
     }
-    
+
     @Contract(pure = true)
     static AppConfigurationLocal getInstance(@NotNull String type) {
         switch (type) {
@@ -36,29 +35,41 @@ public interface AppConfigurationLocal extends Runnable {
             default:
                 return AppComponents.threadConfig();
         }
-        
     }
-    
+
     default void execute(Runnable runnable) {
-        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        AppComponents.threadConfig().cleanQueue(executor, runnable);
+        executor.execute(runnable);
     }
-    
+
+    default void execute(Callable<?> callable, int timeOutSeconds) {
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        Future<?> submit = executor.submit(callable);
+        try {
+            System.out.println("submit.get() = " + submit.get(timeOutSeconds, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
     default void execute(Runnable runnable, long timeOutSeconds) {
         ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         Future<?> submit = poolExecutor.submit(runnable);
-        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
-        for (Runnable r : executorQueue) {
-            if (r instanceof DBMessenger) {
-                executorQueue.remove(r);
-            }
-        }
+        AppComponents.threadConfig().cleanQueue(poolExecutor, runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(new ThreadTimeout(submit, timeOutSeconds));
     }
-    
+
     default void schedule(Runnable runnable, int timeInMinPerion) {
         schedule(runnable, 0, TimeUnit.MINUTES.toMillis(timeInMinPerion));
     }
-    
+
     default void schedule(Runnable runnable, long timeFirstRun, long period) {
         ScheduledThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();

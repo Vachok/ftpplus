@@ -29,8 +29,10 @@ public class UserACLAdderTest {
     private void booleanAddTest() {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
-            this.commonAdder = new UserACLAdder(startPath, owner, "rw");
+//            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
+            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Проекты\\Проекты _УИ\\");
+            UserACLManagerImpl.removeAccess(owner, startPath);
+            this.commonAdder = new UserACLAdder(startPath, owner, "r");
             Files.walkFileTree(startPath, commonAdder);
             this.attributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
             AclEntry acl;
@@ -69,7 +71,7 @@ public class UserACLAdderTest {
             }
         }
         catch (IOException | SQLException e) {
-            e.printStackTrace();
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
 }

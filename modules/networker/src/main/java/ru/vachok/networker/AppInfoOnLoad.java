@@ -28,36 +28,33 @@ import java.util.List;
 /**
  @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
+@SuppressWarnings("ClassUnconnectedToPackage")
 public class AppInfoOnLoad implements Runnable {
-    
-    
+
+
     private static final List<String> MINI_LOGGER = new ArrayList<>();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
-    
+
     private final AppConfigurationLocal scheduleDefiner = AppConfigurationLocal.getInstance(AppConfigurationLocal.SCHEDULE_DEFINER);
-    
+
     private final AppConfigurationLocal onStartTasksLoader = new OnStartTasksLoader();
-    
+
     private static int thisDelay = UsefulUtilities.getScansDelay();
-    
+
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
-    
+
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
-    
+
         AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, (int) ConstantsFor.DELAY);
-    
+
         AppConfigurationLocal.getInstance().execute(syncData::superRun);
-        
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
-            SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-            AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun);
-        }
+
         try {
             infoForU();
         }
@@ -66,9 +63,13 @@ public class AppInfoOnLoad implements Runnable {
         }
         finally {
             checkFileExitLastAndWriteMiniLog();
+            if (Runtime.getRuntime().freeMemory() > (350 * ConstantsFor.MBYTE) && NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
+                SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
+                AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 600);
+            }
         }
     }
-    
+
     private void setCurrentProvider() {
         try {
             NetKeeper.setCurrentProvider(new Tracerouting().call());
@@ -78,7 +79,7 @@ public class AppInfoOnLoad implements Runnable {
             Thread.currentThread().interrupt();
         }
     }
-    
+
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(UsefulUtilities.getBuildStamp());
@@ -97,18 +98,18 @@ public class AppInfoOnLoad implements Runnable {
         finally {
             AppConfigurationLocal.getInstance().execute(onStartTasksLoader);
         }
-    
+
     }
-    
-    private boolean checkFileExitLastAndWriteMiniLog() {
+
+    private void checkFileExitLastAndWriteMiniLog() {
         StringBuilder exitLast = new StringBuilder();
         if (new File("exit.last").exists()) {
             exitLast.append(AbstractForms.fromArray(FileSystemWorker.readFileToList("exit.last")));
         }
         getMiniLogger().add(exitLast.toString());
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
@@ -118,10 +119,10 @@ public class AppInfoOnLoad implements Runnable {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Contract(pure = true)
     public static List<String> getMiniLogger() {
         return MINI_LOGGER;
     }
-    
+
 }

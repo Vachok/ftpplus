@@ -5,14 +5,12 @@ package ru.vachok.networker.sysinfo;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
@@ -36,15 +34,16 @@ import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.text.MessageFormat;
 import java.time.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Date;
+import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoUnit.HOURS;
 
 
 /**
- @see ru.vachok.networker.sysinfo.ServiceInfoCtrlTest
+ @see ServiceInfoCtrlTest
  @since 21.09.2018 (11:33) */
 @SuppressWarnings("FeatureEnvy")
 @Controller
@@ -52,8 +51,6 @@ public class ServiceInfoCtrl {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ServiceInfoCtrl.class.getSimpleName());
-    
-    private static final Properties APP_PR = InitProperties.getTheProps();
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
@@ -106,11 +103,7 @@ public class ServiceInfoCtrl {
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
-        
-        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
         NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
-        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
-        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
         String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
         
         model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
@@ -119,7 +112,7 @@ public class ServiceInfoCtrl {
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
                 .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
-        model.addAttribute("mail", percToEnd(additionalDo()));
+        model.addAttribute("mail", percToEnd(getDateWhenCome()));
         model.addAttribute("ping", getClassPath());
         model.addAttribute("urls", makeRunningInfo());
         model.addAttribute("res", makeResValue());
@@ -167,58 +160,56 @@ public class ServiceInfoCtrl {
     /**
      Считает время до конца дня.
      <p>
-     
-     @param timeStart - время старта
+ 
+     @param dateWhenCome - время старта
      @return время до 17:30 в процентах от 8:30
      */
-    private static @NotNull String percToEnd(@NotNull Date timeStart) {
+    private static @NotNull String percToEnd(@NotNull Date dateWhenCome) {
         StringBuilder stringBuilder = new StringBuilder();
-        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(dateWhenCome.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
         LocalTime endDay = startDay.plus(9, HOURS);
-        
-        final int secDayEnd = endDay.toSecondOfDay();
-        final int startSec = startDay.toSecondOfDay();
-        final int allDaySec = secDayEnd - startSec;
-        
-        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
-        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
-        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+    
+        LocalTime toEnd = endDay.minusHours(LocalTime.now().getHour());
+        toEnd = toEnd.minusMinutes(LocalTime.now().getMinute());
+        toEnd = toEnd.minusSeconds(LocalTime.now().getSecond());
         boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
         if (workHours) {
-            int toEndDaySec = localTime.toSecondOfDay();
-            int diffSec = allDaySec - toEndDaySec;
-            float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
-            stringBuilder
-                    .append("Работаем ")
-                    .append(TimeUnit.SECONDS.toMinutes(diffSec));
-            stringBuilder
-                    .append("(мин.). Ещё ")
-                    .append(String.format("%.02f", percDay))
-                    .append(" % или ");
+            stringBuilder.append(parseWorkHours(startDay, toEnd));
         }
         else {
             stringBuilder.append("<b> GO HOME! </b><br>");
         }
-        stringBuilder.append(localTime);
+        stringBuilder.append(toEnd);
         return stringBuilder.toString();
     }
     
-    private Date additionalDo() {
-        Callable<Long> callWhenCome = new SpeedChecker();
-        Future<Long> whenCome = AppComponents.threadConfig().getTaskExecutor().submit(callWhenCome);
+    private Date getDateWhenCome() {
         if (Stats.isSunday()) {
             Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((Runnable) stats);
+            AppConfigurationLocal.getInstance().execute((Runnable) stats, 150);
         }
-        Date comeD = new Date();
-        try {
-            comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return comeD;
+        return new Date(new SpeedChecker().call());
+    }
+    
+    private static @NotNull String parseWorkHours(LocalTime startDay, LocalTime toEnd) {
+        LocalTime endDay = startDay.plus(9, HOURS);
+        final int secDayEnd = endDay.toSecondOfDay();
+        final int startSec = startDay.toSecondOfDay();
+        StringBuilder stringBuilder = new StringBuilder();
+        final int allDaySec = secDayEnd - startSec;
+        
+        int toEndDaySec = toEnd.toSecondOfDay();
+        int diffSec = allDaySec - toEndDaySec;
+        float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
+        stringBuilder
+            .append("Работаем ")
+            .append(TimeUnit.SECONDS.toMinutes(diffSec));
+        stringBuilder
+            .append("(мин.). Ещё ")
+            .append(String.format("%.02f", percDay))
+            .append(" % или ");
+        return stringBuilder.toString();
     }
     
     private @NotNull String getClassPath() {

@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -54,10 +57,11 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetLogins() {
-        List<String> loginsPC = resolveUserInDataBase.getLogins("do0136", 1);
+        List<String> loginsPC = resolveUserInDataBase.getLogins("do0133", 1);
         String logStr = new TForms().fromArray(loginsPC);
-        Assert.assertTrue(logStr.contains("do0136 : Acs"), logStr);
-        List<String> kudrLogins = resolveUserInDataBase.getLogins("Acs", 1);
+        Assert.assertTrue(logStr.contains("do0133"), logStr);
+        Assert.assertTrue(logStr.contains("buh_sch2"), logStr);
+        List<String> kudrLogins = resolveUserInDataBase.getLogins("buh_sch2", 1);
         String logStrKudr = new TForms().fromArray(kudrLogins);
         Assert.assertEquals(logStr, logStr);
         

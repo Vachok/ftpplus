@@ -9,7 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 /**
@@ -81,35 +81,40 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     @Test
     public void addAccess() {
         this.userACLManager = UserACLManager.getInstance(UserACLManager.ADD, startPath);
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->userACLManager.addAccess(oldUser));
         try {
-            String addAccess = submit.get(40, TimeUnit.SECONDS);
-        Assert.assertFalse(addAccess.isEmpty());
-            System.out.println("addAccess = " + addAccess);
+            String addAccess = userACLManager.addAccess(newUser);
         }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        String addAccessStr = UserACLManagerImpl.addAccess(newUser, startPath);
+        Assert.assertTrue(addAccessStr.contains("added"));
     }
     
     @Test
     public void removeAccess() {
         this.userACLManager = UserACLManager.getInstance(UserACLManager.DEL, startPath);
-        String removeAccess = userACLManager.removeAccess(newUser);
-        Assert.assertFalse(removeAccess.isEmpty());
-        System.out.println("removeAccess = " + removeAccess);
+        try {
+            String removeAccess = userACLManager.removeAccess(newUser);
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        String removeResult = UserACLManagerImpl.removeAccess(newUser, startPath);
+        Assert.assertTrue(removeResult.contains("testClean removed"));
     }
     
     @Test
     public void testReplaceUsers() {
         this.userACLManager = UserACLManager.getInstance("", startPath);
-        String replaceUsers = userACLManager.replaceUsers(newUser, oldUser);
-        Assert.assertFalse(replaceUsers.isEmpty());
-        System.out.println("replaceUsers = " + replaceUsers);
+        try {
+            String replaceUsers = userACLManager.replaceUsers(newUser, oldUser);
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        String replaceResults = UserACLManagerImpl.replaceUsers(oldUser, startPath, newUser);
+        Assert.assertTrue(replaceResults.contains("testClean users changed"));
     }
     
     @Test
@@ -201,8 +206,8 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
             String addAccess = userACLManager.addAccess(principal);
             System.out.println("addAccess = " + addAccess);
         }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        catch (UnsupportedOperationException | IOException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
 }

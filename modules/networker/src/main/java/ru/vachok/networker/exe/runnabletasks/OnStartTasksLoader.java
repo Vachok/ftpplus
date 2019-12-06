@@ -1,17 +1,26 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
-import com.eclipsesource.json.*;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ad.common.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.services.*;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.componentsrepo.services.LocalDBLibsUploader;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
@@ -21,13 +30,21 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.Date;
-import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.DayOfWeek.SUNDAY;
@@ -37,10 +54,10 @@ import static java.time.DayOfWeek.SUNDAY;
  @see OnStartTasksLoaderTest
  @since 14.11.2019 (10:58) */
 public class OnStartTasksLoader implements AppConfigurationLocal {
-    
-    
+
+
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OnStartTasksLoader.class.getSimpleName());
-    
+
     @Override
     public void run() {
         delFilePatterns();
@@ -52,7 +69,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         schedule(this::dbSendAppJson, 30);
         execute(this::getWeekPCStats);
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OnStartTasksLoader{");
@@ -60,7 +77,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         sb.append('}');
         return sb.toString();
     }
-    
+
     private void uploadLibs() {
         File[] libFiles = new File(Paths.get(".").normalize().toAbsolutePath().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "lib").listFiles();
         for (File libFile : Objects.requireNonNull(libFiles, "NO LIBS")) {
@@ -70,13 +87,13 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             execute(jarUp);
         }
     }
-    
+
     private void delFilePatterns() {
         DeleterTemp deleterTemp = new DeleterTemp(UsefulUtilities.getPatternsToDeleteFilesOnStart());
         execute(deleterTemp);
         ftpUploadTask();
     }
-    
+
     private void ftpUploadTask() {
         messageToUser.warn(PropertiesNames.SYS_OSNAME_LOWERCASE);
         AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
@@ -93,7 +110,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             }
         }
     }
-    
+
     private @NotNull String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
         try {
@@ -108,17 +125,17 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             dbSendAppJson();
         }
     }
-    
+
     private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
             Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            ((Runnable) stats).run();
+            AppConfigurationLocal.getInstance().execute((Runnable) stats);
             stats = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT);
             try {
-                String pcStats = (String) ((Callable) stats).call();
+                String pcStats = stats.call();
                 System.out.println("pcStats = " + pcStats);
             }
-            catch (Exception e) {
+            catch (RuntimeException e) {
                 messageToUser.error(MessageFormat.format("AppInfoOnLoad.getWeekPCStats {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
             }
             finally {
@@ -126,7 +143,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             }
         }
     }
-    
+
     private void runCommonScan() {
         Runnable checker = buildChecker();
         try {
@@ -141,9 +158,9 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             long delayOneDay = TimeUnit.DAYS.toMillis(1);
             AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(checker, day2030, delayOneDay);
         }
-        
+
     }
-    
+
     private void dbSendAppJson() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         dataConnectTo.createTable(ConstantsFor.DBNAME_LOG_DBMESSENGER, Collections.emptyList());
@@ -170,7 +187,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             }
         }
     }
-    
+
     private void executeStatement(@NotNull PreparedStatement preparedStatement, @NotNull Queue<String> logJson) throws SQLException {
         String jsonStr = logJson.remove();
         try {
@@ -187,7 +204,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 282 ***");
         }
     }
-    
+
     @Contract(" -> new")
     private @NotNull Runnable buildChecker() {
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");

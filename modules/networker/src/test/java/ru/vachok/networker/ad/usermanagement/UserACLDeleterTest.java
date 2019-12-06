@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -42,7 +44,9 @@ public class UserACLDeleterTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
-        String removeAccess = userACLManager.removeAccess(oldUser);
+
+//        UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Маркетинг-Упаковка\\"));
+        String removeAccess = UserACLManagerImpl.removeAccess(oldUser, Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
+        Assert.assertTrue(removeAccess.contains("removed"));
     }
 }

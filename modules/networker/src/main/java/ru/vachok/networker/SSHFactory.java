@@ -9,13 +9,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -50,7 +49,7 @@ public class SSHFactory implements Callable<String> {
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, SSHFactory.class.getSimpleName());
     
-    private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
+    private InitProperties initProperties = InitProperties.getInstance(ConstantsFor.DBTABLE_GENERALJSCH);
     
     private String connectToSrv;
     
@@ -241,7 +240,8 @@ public class SSHFactory implements Callable<String> {
         this.connectToSrv = connectToSrv;
     }
     
-    private @NotNull String getPem() {
+    @NotNull
+    private String getPem() {
         File pemFile = new File("a161.pem");
         if (pemFile.exists()) {
             return pemFile.getAbsolutePath();
@@ -420,7 +420,6 @@ public class SSHFactory implements Callable<String> {
             this.sshFactory = new SSHFactory(this);
         }
     
-        @Contract(pure = true)
         protected Builder() {
         }
         

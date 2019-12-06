@@ -4,11 +4,11 @@ package ru.vachok.networker.restapi.database;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.DatabaseCleanerFromDuplicatesTest;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.*;
 import java.util.*;
@@ -38,7 +38,7 @@ public class H2DBTest {
     
     @BeforeMethod
     public void initH2() {
-        this.h2DB = new H2DB();
+        this.h2DB = (H2DB) DataConnectTo.getInstance(DataConnectTo.H2DB);
     }
     
     @Test
@@ -77,8 +77,8 @@ public class H2DBTest {
     @Test
     public void createTablesFromExport() {
         final String sql = FileSystemWorker.readRawFile(this.getClass().getResource("/log.createtable.sql").getFile());
-        
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("log.networker");
+    
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(ConstantsFor.DB_LOGNETWORKER);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             int execUpd = preparedStatement.executeUpdate();
             Assert.assertTrue(execUpd == 0, String.valueOf(execUpd));
@@ -105,7 +105,7 @@ public class H2DBTest {
         try {
             h2DB.uploadCollection(Collections.singleton("test"), "test");
         }
-        catch (TODOException e) {
+        catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
@@ -115,7 +115,7 @@ public class H2DBTest {
         try {
             h2DB.dropTable("test");
         }
-        catch (TODOException e) {
+        catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
@@ -145,7 +145,7 @@ public class H2DBTest {
     }
     
     private void nextStep() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("log.networker")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(ConstantsFor.DB_LOGNETWORKER)) {
             try (PreparedStatement preparedStatementIns = connection
                     .prepareStatement("insert into networker (idrec, upstring,pc, stamp, classname) values (1,'UP!','mypc', 4400, ?)")) {
                 preparedStatementIns.setString(1, this.getClass().getSimpleName());

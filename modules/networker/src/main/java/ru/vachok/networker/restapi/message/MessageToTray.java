@@ -23,7 +23,7 @@ public class MessageToTray implements MessageToUser {
      */
     private TrayIcon trayIcon;
     
-    private static MessageToTray messageToTray = new MessageToTray("Single");
+    private static final MessageToUser messageToTray = new MessageToTray("Single");
     
     private String titleMsg = this.hashCode() + " hash of " + this.getClass().getTypeName();
     
@@ -31,19 +31,17 @@ public class MessageToTray implements MessageToUser {
     
     private String bodyMsg = UsefulUtilities.getRunningInformation();
     
-    public static MessageToTray getInstance(String headerMsg) {
-        messageToTray.setHeaderMsg(headerMsg);
-        return messageToTray;
+    @Override
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
     }
-    
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MessageToTray.class.getSimpleName());
     
     public MessageToTray(String simpleName) {
         this.headerMsg = simpleName;
     }
     
-    public void setHeaderMsg(String headerMsg) {
-        this.headerMsg = headerMsg;
+    public static MessageToTray getInstance(String headerMsg) {
+        return (MessageToTray) messageToTray;
     }
     
     public void errorAlert(String bodyMsg) {
@@ -64,7 +62,6 @@ public class MessageToTray implements MessageToUser {
         sb.append(", headerMsg='").append(headerMsg).append('\'');
         sb.append(", titleMsg='").append(titleMsg).append('\'');
         sb.append(", bodyMsg='").append(bodyMsg).append('\'');
-        sb.append(", messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
     }
@@ -79,9 +76,6 @@ public class MessageToTray implements MessageToUser {
             this.trayIcon = systemTrayHelper.getTrayIcon();
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
-        }
-        else {
-            messageToUser.info(headerMsg, titleMsg, bodyMsg);
         }
     }
     
@@ -104,9 +98,6 @@ public class MessageToTray implements MessageToUser {
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.ERROR);
         }
-        else {
-            messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
-        }
     }
     
     private void delActions() {
@@ -114,11 +105,7 @@ public class MessageToTray implements MessageToUser {
             ActionListener[] actionListeners = trayIcon.getActionListeners();
             for (ActionListener a : actionListeners) {
                 trayIcon.removeActionListener(a);
-                messageToUser.infoNoTitles(a.getClass().getSimpleName() + " removed");
             }
-        }
-        else {
-            messageToUser.info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
         }
     }
     
@@ -129,9 +116,6 @@ public class MessageToTray implements MessageToUser {
             trayIcon.displayMessage(headerMsg, bodyMsg, TrayIcon.MessageType.INFO);
             trayIcon.addActionListener(aListener);
         }
-        else {
-            messageToUser.info(headerMsg, titleMsg, bodyMsg);
-        }
     }
     
     @Override
@@ -140,16 +124,13 @@ public class MessageToTray implements MessageToUser {
     }
     
     @Override
-    public void warn(String s, String s1, String s2) {
-        this.headerMsg = s;
-        this.titleMsg = s1;
-        this.bodyMsg = s2;
+    public void warn(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
         if (SystemTray.isSupported() && trayIcon != null) {
             trayIcon.addActionListener(aListener);
-            trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.WARNING);
-        }
-        else {
-            messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
+            trayIcon.displayMessage(this.headerMsg, this.titleMsg + " " + this.bodyMsg, TrayIcon.MessageType.WARNING);
         }
     }
     

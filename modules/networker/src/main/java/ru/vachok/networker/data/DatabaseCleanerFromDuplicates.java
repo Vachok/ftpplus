@@ -3,8 +3,10 @@ package ru.vachok.networker.data;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 
@@ -32,6 +34,11 @@ public class DatabaseCleanerFromDuplicates implements DataConnectTo {
     
     @Override
     public MysqlDataSource getDataSource() {
-        throw new TODOException("ru.vachok.networker.data.DatabaseCleanerFromDuplicates.getDataSource( MysqlDataSource ) at 25.10.2019 - (21:44)");
+        return DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource();
+    }
+    
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        return DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LOGNETWORKER);
     }
 }

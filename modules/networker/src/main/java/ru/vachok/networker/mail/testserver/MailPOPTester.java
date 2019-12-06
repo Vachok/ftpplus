@@ -32,6 +32,10 @@ import java.util.prefs.Preferences;
 public class MailPOPTester implements MailTester, Runnable {
     
     
+    protected static Session getMailSession() {
+        return MAIL_SESSION;
+    }
+    
     private static final Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
 
     private static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";
@@ -55,10 +59,10 @@ public class MailPOPTester implements MailTester, Runnable {
         }
         catch (MessagingException e) {
             messageToUser.error(e.getMessage());
-            MatrixCtr.setMailIsOk(mailIsNotOk);
             mailIsNotOk = UsefulUtilities.getHTMLCenterColor("red", mailIsNotOk);
             mailIsNotOk = MessageFormat.format("{3}: {0}{1}\n{2}", mailIsNotOk, e.getMessage(), AbstractForms.fromArray(e), new Date());
             FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
+            MatrixCtr.setMailIsOk(mailIsNotOk);
         }
     }
     
@@ -68,7 +72,7 @@ public class MailPOPTester implements MailTester, Runnable {
             MatrixCtr.setMailIsOk(UsefulUtilities.getHTMLCenterColor(ConstantsFor.GREEN, "MailServer is ok! ") + new Date());
         }
         else {
-            MatrixCtr.setMailIsOk(mailIsNotOk);
+            MatrixCtr.setMailIsOk(UsefulUtilities.getHTMLCenterColor(ConstantsFor.RED, "Mail is not ok..."));
             FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
         }
     }

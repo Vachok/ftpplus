@@ -22,24 +22,27 @@ import java.util.concurrent.*;
  @see ArchivesAutoCleaner
  @since 17.06.2019 (10:51) */
 @SuppressWarnings("ALL")
+@Ignore
 public class ArchivesAutoCleanerTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
+    @Ignore
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
+    @Ignore
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     @Ignore
     public void testRun() {

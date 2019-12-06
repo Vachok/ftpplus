@@ -28,21 +28,25 @@ import java.util.stream.Stream;
  @see UserInfo
  @since 28.08.2019 (20:57) */
 public class UserInfoTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UserInfoTest.class.getSimpleName(), System.nanoTime());
-    
+
+    private @NotNull String getCreate() {
+        return FileSystemWorker.readRawFile(getClass().getResource("/create.pcuser.txt").getFile());
+    }
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @Test
     public void testGetInstance() {
         UserInfo userInfo = UserInfo.getInstance("");
@@ -55,14 +59,14 @@ public class UserInfoTest {
         toStr = userInfo.toString();
         Assert.assertTrue(toStr.contains("UnknownUser["), toStr);
     }
-    
+
     @Test
     public void testAutoResolvedUsersRecord() {
         String sql = "DELETE FROM `pcuserauto` WHERE `userName` LIKE 'estrelyaevatest'";
         UserInfo.autoResolvedUsersRecord("test", "1561612688516 \\\\do0001.eatmeat.ru\\c$\\Users\\estrelyaevatest " + new Date() + " " + System.currentTimeMillis());
         checkDB(sql);
     }
-    
+
     @Test
     public void testGetInfo() {
         UserInfo pcUserName = UserInfo.getInstance("mdc");
@@ -70,34 +74,23 @@ public class UserInfoTest {
         String toStrInfo = pcUserName.toString() + "\ninfo = " + info;
         Assert.assertTrue(toStrInfo.contains("10.200.212.72"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
-    
+
         UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         String adInfo = adUser.getInfo();
         String adUserNotSet = adUser.toString() + "\nadInfo = " + adInfo;
         Assert.assertTrue(adUserNotSet.contains(ConstantsFor.UNKNOWN_USER), adUserNotSet);
-    
+
         adUser.setClassOption("pavlova");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
         Assert.assertTrue(adInfo.contains("pavlova : Unknown user "), adInfo);
-        
+
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
         Assert.assertTrue(ifToStr.contains("LocalUserResolver["), ifToStr);
-    
+
     }
-    
-    @Test
-    public void testUniqueUsersTableRecord() {
-        InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
-        String manDBStr = UserInfo.uniqueUsersTableRecord("pc1", "user1");
-        Assert.assertEquals(manDBStr, "user1 already exists in database velkom.pcuser on pc1");
-    }
-    
-    private @NotNull String getCreate() {
-        return FileSystemWorker.readRawFile(getClass().getResource("/create.pcuser.txt").getFile());
-    }
-    
+
     @Test
     public void testRenewCounter() {
         boolean isOffline = new Random().nextBoolean();
@@ -112,13 +105,13 @@ public class UserInfoTest {
         }
         else {
             sql = sqlOn;
-        
+
             if (wasOff) {
                 sql = String
                     .format("UPDATE `pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                         .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now()));
             }
-        
+
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB)
             .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
@@ -132,7 +125,99 @@ public class UserInfoTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
+    @Test
+    public void testUniqueUsersTableRecord() {
+        InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
+        String manDBStr = UserInfo.uniqueUsersTableRecord("pc1", "user1");
+        Assert.assertEquals(manDBStr, "user1 already exists in database velkom.pcuser on pc1");
+    }
+
+    private boolean wasOffline(String pcName) {
+        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
+        boolean retBool = false;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
+            .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            createTable();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
+                        System.out.println("timestamp = " + timestamp.toString());
+                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                            .toMillis(ConstantsFor.DELAY * 3);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        return retBool;
+    }
+
+    private void createTable() {
+        String dbName = "pcuser";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName)) {
+            boolean contains = connection.getMetaData().getURL().contains("jdbc:h2:mem:velkompc") || connection.getMetaData().getURL()
+                    .contains("jdbc:mysql://srv-mysql.home:3306/pcuser");
+            Assert.assertTrue(contains, connection.getMetaData().getURL());
+            try (PreparedStatement create = connection.prepareStatement(getCreate())) {
+                System.out.println("create = " + create.toString());
+                create.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+
+    @Test
+    public void testRenewOffCounter() {
+        UserInfo.renewOffCounter("test.eat", false);
+        UserInfo.renewOffCounter("test.off", true);
+    }
+
+    @Test
+    public void testGetLogins() {
+        List<String> loginsDO213 = UserInfo.getInstance("do0213").getLogins("do0213", 20);
+        String loginsStr = AbstractForms.fromArray(loginsDO213);
+        Assert.assertTrue(loginsStr.contains("ikudryashov"));
+    }
+
+    @Test
+    public void testGetInfoAbout() {
+        UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
+        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
+        String[] arr = infoInfoAbout.split(" : ");
+        Assert.assertTrue(arr[0].contains("do0214"));
+        Assert.assertEquals(arr[1], "s.m.pavlova");
+    }
+
+    @Test
+    public void testWriteUsersToDBFromSET() {
+        String infoPc = PCInfo.getInstance("do0006.eatmeat.ru").getInfo();
+        NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online test<br>");
+        Assert.assertTrue(UserInfo.writeUsersToDBFromSET(), AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase()));
+        checkDB("DELETE FROM `velkompc` WHERE `AddressPP` LIKE '10.200.213.85 online test'");
+    }
+
+    @Test
+    public void testResolvePCUserOverDB() {
+        String vashaplovaUserName = UserInfo.resolvePCUserOverDB("vashaplova");
+        String expected = "do0125";
+        Assert.assertTrue(vashaplovaUserName.contains(expected), vashaplovaUserName);
+        String vashaplovaDo0125 = UserInfo.resolvePCUserOverDB("do0125");
+        Assert.assertTrue(vashaplovaDo0125.contains(expected), vashaplovaDo0125);
+    }
+
+    @Test
+    public void testToString() {
+        UserInfo userInfo = UserInfo.getInstance("kudr");
+        String toStr = userInfo.toString();
+        Assert.assertTrue(toStr.contains("ResolveUserInDataBase["), toStr);
+    }
+
     @Test
     public void testGetPCLogins() {
         UserInfo instanceNull = UserInfo.getInstance(null);
@@ -147,38 +232,18 @@ public class UserInfoTest {
         Assert.assertEquals(logins.size(), 1);
         Assert.assertTrue(logins.get(0).contains("do0125"), AbstractForms.fromArray(logins));
         Assert.assertTrue(logins.get(0).contains("vashaplova"), AbstractForms.fromArray(logins));
-    
+
         UserInfo kudrInst = UserInfo.getInstance("ashapl");
         for (String kudrInstPCLogin : kudrInst.getLogins("ashapl", 1)) {
             boolean do0213Expect = kudrInstPCLogin.contains("do0125") || kudrInstPCLogin.contains("no0029");
             Assert.assertTrue(do0213Expect, kudrInstPCLogin);
         }
     }
-    
-    @Test
-    public void testRenewOffCounter() {
-        UserInfo.renewOffCounter("test", new Random().nextBoolean());
-    }
-    
-    @Test
-    public void testGetLogins() {
-        List<String> loginsDO213 = UserInfo.getInstance("do0213").getLogins("do0213", 20);
-        String loginsStr = AbstractForms.fromArray(loginsDO213);
-        Assert.assertTrue(loginsStr.contains("ikudryashov"));
-    }
-    
-    @Test
-    public void testGetInfoAbout() {
-        UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
-        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
-        String[] arr = infoInfoAbout.split(" : ");
-        Assert.assertTrue(arr[0].contains("do0214"));
-        Assert.assertEquals(arr[1], "s.m.pavlova");
-    }
-    
+
     private static void checkDB(final String sql) {
-        
+
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             Thread.sleep(1000);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 int updRows = preparedStatement.executeUpdate();
@@ -191,67 +256,5 @@ public class UserInfoTest {
         catch (InterruptedException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    }
-    
-    @Test
-    public void testWriteUsersToDBFromSET() {
-        String infoPc = PCInfo.getInstance("do0006.eatmeat.ru").getInfo();
-        NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online test<br>");
-        Assert.assertTrue(UserInfo.writeUsersToDBFromSET(), AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase()));
-        
-        checkDB("DELETE FROM `velkompc` WHERE `AddressPP` LIKE '10.200.213.85 online test'");
-    }
-    
-    @Test
-    public void testResolvePCUserOverDB() {
-        String vashaplovaUserName = UserInfo.resolvePCUserOverDB("vashaplova");
-        String expected = "do0125";
-        Assert.assertTrue(vashaplovaUserName.contains(expected), vashaplovaUserName);
-        String vashaplovaDo0125 = UserInfo.resolvePCUserOverDB("do0125");
-        Assert.assertTrue(vashaplovaDo0125.contains(expected), vashaplovaDo0125);
-    }
-    
-    private void createTable() {
-        String dbName = "pcuser";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName)) {
-            Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:h2:mem:pcuser");
-            try (PreparedStatement create = connection.prepareStatement(getCreate())) {
-                System.out.println("create = " + create.toString());
-                create.executeUpdate();
-            }
-        }
-        catch (SQLException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-    }
-    
-    private boolean wasOffline(String pcName) {
-        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
-        boolean retBool = false;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
-                .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
-            createTable();
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
-                        System.out.println("timestamp = " + timestamp.toString());
-                        retBool = timestamp.getTime() < InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
-                                .toMillis(ConstantsFor.DELAY * 3);
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        return retBool;
-    }
-    
-    @Test
-    public void testToString() {
-        UserInfo userInfo = UserInfo.getInstance("kudr");
-        String toStr = userInfo.toString();
-        Assert.assertTrue(toStr.contains("ResolveUserInDataBase["), toStr);
     }
 }

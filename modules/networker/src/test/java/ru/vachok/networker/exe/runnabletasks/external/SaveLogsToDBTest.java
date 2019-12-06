@@ -45,7 +45,7 @@ public class SaveLogsToDBTest {
     @Test
     public void testCall() {
         try {
-            Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) db);
+            Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit((Callable<String>) db);
             String dbCallable = submit.get(100, TimeUnit.SECONDS);
             Assert.assertTrue(dbCallable.contains("access.log"), dbCallable);
         }

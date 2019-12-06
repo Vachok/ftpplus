@@ -5,10 +5,7 @@ package ru.vachok.networker.ad.common;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -17,37 +14,32 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
  @since 17.06.2019 (14:41) */
+@Ignore
 public class OldBigFilesInfoCollectorTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private final OldBigFilesInfoCollector infoCollector = new OldBigFilesInfoCollector();
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testCall() {
         String startPath = infoCollector.getStartPath();
@@ -62,19 +54,17 @@ public class OldBigFilesInfoCollectorTest {
             Thread.currentThread().interrupt();
         }
     }
-    
+
     @Test
     public void testTestToString() {
         Assert.assertTrue(infoCollector.toString().contains("OldBigFilesInfoCollector{"), infoCollector.toString());
     }
-    
+
     @Test
-    @Ignore
     public void realCall(){
         OldBigFilesInfoCollector oldBigFilesInfoCollector = new OldBigFilesInfoCollector();
         oldBigFilesInfoCollector.call();
     }
-    
     @Test
     public void testInDB(){
         MysqlDataSource dataSource = DataConnectTo.getDefaultI().getDataSource();
@@ -93,9 +83,8 @@ public class OldBigFilesInfoCollectorTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
-    @Ignore
     public void testConfirm() {
         try {
             String confirm = MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
@@ -105,6 +94,6 @@ public class OldBigFilesInfoCollectorTest {
         catch (UnsupportedOperationException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        
+
     }
 }

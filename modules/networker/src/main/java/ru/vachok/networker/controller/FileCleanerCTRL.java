@@ -3,14 +3,10 @@
 package ru.vachok.networker.controller;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
@@ -22,22 +18,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.*;
 
 /**
- @see ru.vachok.networker.controller.FileCleanerCTRLTest
+ @see FileCleanerCTRLTest
  @since 23.11.2018 (11:55)
  */
 @Controller
 public class FileCleanerCTRL {
 
     private static final String MAPPING_CLEANER = "/cleaner";
-    
+
     private OldBigFilesInfoCollector oldBigFilesInfoCollector;
-    
+
     private final HTMLGeneration informationFactory = new PageGenerationHelper();
-    
-    @Contract(pure = true)
-    @Autowired
-    public FileCleanerCTRL(OldBigFilesInfoCollector oldBigFilesInfoCollector) {
-        this.oldBigFilesInfoCollector = oldBigFilesInfoCollector;
+
+    public FileCleanerCTRL() {
     }
 
     @GetMapping (MAPPING_CLEANER)
@@ -72,7 +65,7 @@ public class FileCleanerCTRL {
             return new TForms().fromArray(e, true);
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("FileCleanerCTRL{");
