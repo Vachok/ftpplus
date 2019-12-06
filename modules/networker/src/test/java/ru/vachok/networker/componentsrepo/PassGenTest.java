@@ -12,6 +12,7 @@ public class PassGenTest {
     public void testGenPass() {
         PassGen passGen = new PassGen();
         String passwords = passGen.generatePasswords();
+        System.out.println("passwords = " + passwords);
         Assert.assertTrue(passwords.contains("storeman4"));
     }
     

@@ -6,8 +6,7 @@ package ru.vachok.networker.ad.common;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -93,7 +92,7 @@ public class CleanerTest {
                 filesToDeleteWithAttrs.putIfAbsent(Paths.get(pathAndAttrs[0]), pathAndAttrs[1]);
             }
             catch (IndexOutOfBoundsException | NullPointerException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
         }
         return filesToDeleteWithAttrs;
