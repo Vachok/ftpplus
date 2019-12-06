@@ -107,8 +107,9 @@ public interface NetScanService extends Runnable {
     
     String getStatistics();
     
+    @NotNull
     @Contract("_ -> new")
-    static @NotNull NetScanService getInstance(@NotNull String type) {
+    static NetScanService getInstance(@NotNull String type) {
         switch (type) {
             case PTV:
                 return new NetMonitorPTV();

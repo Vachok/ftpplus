@@ -20,12 +20,10 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -242,7 +240,8 @@ public class SSHFactory implements Callable<String> {
         this.connectToSrv = connectToSrv;
     }
     
-    private @NotNull String getPem() {
+    @NotNull
+    private String getPem() {
         File pemFile = new File("a161.pem");
         if (pemFile.exists()) {
             return pemFile.getAbsolutePath();
@@ -421,7 +420,6 @@ public class SSHFactory implements Callable<String> {
             this.sshFactory = new SSHFactory(this);
         }
     
-        @Contract(pure = true)
         protected Builder() {
         }
         

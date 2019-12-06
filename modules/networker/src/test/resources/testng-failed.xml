@@ -3,23 +3,24 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.info.stats.WeeklyInternetStatsTest">
-            <methods>
-                <include name="testReadIPsWithInet"/>
-                <include name="testTestHashCode"/>
-                <include name="testTestEquals"/>
-                <include name="tearDown"/>
-                <include name="setUp"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.info.stats.WeeklyInternetStatsTest -->
-        <class name="ru.vachok.networker.ad.inet.TemporaryFullInternetTest">
-            <methods>
-                <include name="testRunCheck"/>
-                <include name="setUp"/>
-                <include name="tearDown"/>
-                <include name="testRunAdd"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.ad.inet.TemporaryFullInternetTest -->
+      <class name="ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest">
+        <methods>
+          <include name="testGetInfo"/>
+          <include name="tearDown"/>
+          <include name="testTestToString"/>
+          <include name="setUp"/>
+          <include name="testGetInfoAbout"/>
+          <include name="initStats"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest -->
+      <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
+        <methods>
+          <include name="tearDown"/>
+          <include name="setUp"/>
+          <include name="initSync"/>
+          <include name="testGetLastLocalID"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.data.synchronizer.SyncDataTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
