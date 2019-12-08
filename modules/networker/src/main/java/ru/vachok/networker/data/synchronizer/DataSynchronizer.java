@@ -3,7 +3,6 @@ package ru.vachok.networker.data.synchronizer;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -68,25 +67,6 @@ public class DataSynchronizer extends SyncData {
             .add("colNames = " + colNames)
             .add("columnsNum = " + columnsNum)
             .toString();
-    }
-
-    @Contract(pure = true)
-    private @NotNull List<String> getColumnsCreate(String sql) {
-        List<String> retList = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            @NotNull String[] columns = getColumns(preparedStatement);
-            for (String column : columns) {
-                retList.add(column.split(",")[0] + " " + column.split(",")[1] + ", ");
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), "getColumnsCreate", e.getMessage() + Thread.currentThread().getState().name());
-        }
-        finally {
-            createTable(dbToSync, retList);
-        }
-        return retList;
     }
 
     private @NotNull String[] getColumns(@NotNull PreparedStatement preparedStatement) throws SQLException {

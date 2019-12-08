@@ -67,6 +67,9 @@ public class AppInfoOnLoad implements Runnable {
                 SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
                 AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 600);
             }
+            else {
+                MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName()).infoTimer(10, UsefulUtilities.getRunningInformation());
+            }
         }
     }
 
