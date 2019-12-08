@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -32,23 +34,23 @@ import static ru.vachok.networker.data.enums.ModelAttributeNames.PCS;
  @since 20.07.2019 (10:13) */
 @Controller
 public class ShowAllDevCTRL {
-    
-    
+
+
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
-    
+
     private MessageToUser messageToUser;
-    
+
     private NetScanService scanOnline;
-    
+
     @Autowired
     public ShowAllDevCTRL(ScanOnline scanOnline) {
         this.scanOnline = scanOnline;
         this.messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     }
-    
+
     @GetMapping(ConstantsFor.SHOWALLDEV)
     public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute(ModelAttributeNames.TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
+        model.addAttribute(ModelAttributeNames.TITLE, NetKeeper.getAllDevices().remainingCapacity() + ConstantsFor.STR_IPREMAIN);
         try {
             model.addAttribute(PCS, scanOnline.toString());
         }
@@ -66,7 +68,7 @@ public class ShowAllDevCTRL {
             "IPs.");
         return "ok";
     }
-    
+
     private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
         BlockingDeque<String> allDevices = NetKeeper.getAllDevices();
@@ -78,18 +80,18 @@ public class ShowAllDevCTRL {
             allDevNotNull(model, response);
         }
     }
-    
+
     private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
         final float scansInMin = Float.parseFloat(InitProperties.getTheProps().getProperty(PropertiesNames.SCANSINMIN, "200"));
         float minLeft = NetKeeper.getAllDevices().remainingCapacity() / scansInMin;
-        
+
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
         model.addAttribute(ModelAttributeNames.TITLE, attTit.toString());
         model.addAttribute("pcs", new ScanOnline().getPingResultStr());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", ShowAllDevCTRL.class.getSimpleName() + "[\n", "\n]")
