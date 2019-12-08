@@ -40,7 +40,7 @@ public interface AppConfigurationLocal extends Runnable {
     default void execute(Runnable runnable) {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         AppComponents.threadConfig().cleanQueue(executor, runnable);
-        executor.execute(runnable);
+        executor.submit(runnable);
     }
 
     default void execute(Callable<?> callable, int timeOutSeconds) {
@@ -63,7 +63,7 @@ public interface AppConfigurationLocal extends Runnable {
         ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         Future<?> submit = poolExecutor.submit(runnable);
         AppComponents.threadConfig().cleanQueue(poolExecutor, runnable);
-        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(new ThreadTimeout(submit, timeOutSeconds));
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new ThreadTimeout(submit, timeOutSeconds));
     }
 
     default void schedule(Runnable runnable, int timeInMinPerion) {
@@ -73,11 +73,7 @@ public interface AppConfigurationLocal extends Runnable {
     default void schedule(Runnable runnable, long timeFirstRun, long period) {
         ScheduledThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
-        for (Runnable runnable1 : executorQueue) {
-            if (runnable1.equals(runnable)) {
-                executorQueue.remove(runnable1);
-            }
-        }
+        executorQueue.removeIf(runnable1->runnable1.equals(runnable));
         long initialDelay = timeFirstRun - System.currentTimeMillis();
         if (initialDelay < 0) {
             initialDelay = 0;

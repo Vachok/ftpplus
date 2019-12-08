@@ -11,87 +11,59 @@ import ru.vachok.networker.info.stats.InternetSync;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 
 /**
  @see SyncDataTest */
 public abstract class SyncData implements DataConnectTo {
-    
-    
+
+
     public static final String INETSYNC = "InternetSync";
-    
+
     public static final String BACKUPER = "BackupDB";
-    
+
     static final DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getRemoteReg();
-    
+
     static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
+
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
-    
+
     private static final String UPUNIVERSAL = "DBUploadUniversal";
-    
+
     private static final String DOWNLOADER = "DBRemoteDownloader";
-    
+
     private String idColName = ConstantsFor.DBCOL_IDREC;
-    
+
     public abstract String getDbToSync();
-    
+
     public abstract void setDbToSync(String dbToSync);
-    
+
     @Override
     public MysqlDataSource getDataSource() {
         MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
         source.setDatabaseName(FileNames.DIR_INETSTATS);
         return source;
     }
-    
+
     @Override
     public abstract int uploadCollection(Collection stringsCollection, String tableName);
-    
+
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
     }
-    
-    /**
-     @param dbPointTable dbname.table
-     @param additionalColumns unstandart column names <b>with type</b>
-     @return {@link PreparedStatement} executeUpdate();
-     
-     @see SyncDataTest
-     */
-    @Override
-    public abstract int createTable(String dbPointTable, List<String> additionalColumns);
-    
-    public abstract void setOption(Object option);
-    
-    public abstract String syncData();
-    
-    public abstract void superRun();
-    
-    public static int getLastRecId(DataConnectTo dataConnectTo, String dbID) {
-        return getInstance(UPUNIVERSAL).getDBID(dataConnectTo.getDefaultConnection(dbID), dbID);
-    }
-    
-    @Override
-    public Connection getDefaultConnection(String dbName) {
-        try {
-            MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
-            source.setDatabaseName(dbName);
-            return source.getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 76 ***");
-            return DataConnectTo.getDefaultI().getDefaultConnection(dbName);
-        }
-    }
-    
-    @NotNull
-    @Contract("_ -> new")
+
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    public static SyncData getInstance(@NotNull String type) {
+    @Contract("_ -> new")
+    public static @NotNull SyncData getInstance(@NotNull String type) {
         switch (type) {
             case BACKUPER:
                 return new DataSynchronizer();
@@ -104,22 +76,55 @@ public abstract class SyncData implements DataConnectTo {
             default:
                 return new InternetSync(type);
         }
-        
+
     }
-    
+
+    public abstract void setOption(Object option);
+
+    public abstract String syncData();
+
+    public abstract void superRun();
+
+    public static int getLastRecId(DataConnectTo dataConnectTo, String dbID) {
+        return getInstance(UPUNIVERSAL).getDBID(dataConnectTo.getDefaultConnection(dbID), dbID);
+    }
+
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        try {
+            MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
+            source.setDatabaseName(dbName);
+            return source.getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 76 ***");
+            return DataConnectTo.getDefaultI().getDefaultConnection(dbName);
+        }
+    }
+
+    /**
+     @param dbPointTable dbname.table
+     @param additionalColumns unstandart column names <b>with type</b>
+     @return {@link PreparedStatement} executeUpdate();
+
+     @see SyncDataTest
+     */
+    @Override
+    public abstract int createTable(String dbPointTable, List<String> additionalColumns);
+
     public abstract Map<String, String> makeColumns();
-    
+
     int getLastLocalID(String syncDB) {
         DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.H2DB);
         return getDBID(dctInst.getDefaultConnection(syncDB), syncDB);
     }
-    
+
     private int getDBID(@NotNull Connection connection, String syncDB) {
         int retInt = 0;
         final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                
+
                 while (resultSet.next()) {
                     if (resultSet.last()) {
                         retInt = resultSet.getInt(getIdColName());
@@ -138,18 +143,18 @@ public abstract class SyncData implements DataConnectTo {
         }
         return retInt;
     }
-    
+
     @Contract(pure = true)
     private String getIdColName() {
         return idColName;
     }
-    
+
     public void setIdColName(String idColName) {
         this.idColName = idColName;
     }
-    
+
     int getLastRemoteID(String syncDB) {
         return getDBID(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(syncDB), syncDB);
     }
-    
+
 }

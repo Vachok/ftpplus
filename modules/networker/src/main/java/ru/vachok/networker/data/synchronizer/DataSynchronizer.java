@@ -42,9 +42,9 @@ public class DataSynchronizer extends SyncData {
 
     private int columnsNum = 0;
 
-    private int totalRows = 0;
+    private File dbObj = new File(dbToSync);
 
-    private File dbObj = new File(getClass().getSimpleName() + ".log");
+    private int totalRows = 0;
 
     DataSynchronizer() {
     }
@@ -100,26 +100,6 @@ public class DataSynchronizer extends SyncData {
     }
 
     @Override
-    public int uploadCollection(Collection stringsCollection, String tableName) {
-        int retInt = 0;
-        Queue<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
-            connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            connection.setSavepoint();
-            for (Object jsonObject : jsonObjects) {
-                retInt += workWithObject(jsonObject, connection);
-            }
-            connection.commit();
-        }
-        catch (NumberFormatException | SQLException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
-            retInt = -666;
-        }
-        return retInt;
-    }
-
-    @Override
     public int createTable(String dbPointTable, @NotNull List<String> additionalColumns) {
         int retInt;
         StringBuilder sqlBuilder = new StringBuilder();
@@ -150,15 +130,51 @@ public class DataSynchronizer extends SyncData {
         return retInt;
     }
 
-    private void addComment() {
-        String sql = String.format("ALTER TABLE %s COMMENT='Automatically created by %s, at %s';", dbToSync, this.getClass().getTypeName(), new Date());
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.executeUpdate();
+    @Override
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        int retInt = 0;
+        Queue<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setSavepoint();
+            for (Object jsonObject : jsonObjects) {
+                retInt += workWithObject(jsonObject, connection);
+            }
+            connection.commit();
         }
-        catch (SQLException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), "addComment", e.getMessage() + Thread.currentThread().getState().name());
+        catch (NumberFormatException | SQLException e) {
+            messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
+            retInt = -666;
         }
+        return retInt;
+    }
+
+    @Override
+    public void superRun() {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(2);
+        List<String> dbNames = getDbNames();
+        for (String dbName : dbNames) {
+            List<String> tblNames = getTblNames(dbName);
+            for (String tblName : tblNames) {
+                this.dbToSync = dbName + "." + tblName;
+                this.dbObj = new File(dbToSync);
+                try {
+                    syncData();
+                }
+                catch (RuntimeException ignore) {
+                    //27.11.2019 (0:06)
+                }
+                finally {
+                    dbObj.deleteOnExit();
+                }
+            }
+        }
+        messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
+        MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
+            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
+                .format("Total {0} rows affected\nTime spend: {1} sec.", totalRows, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp)));
     }
 
     @Override
@@ -215,27 +231,15 @@ public class DataSynchronizer extends SyncData {
         return stringBuilder.toString();
     }
 
-    @Override
-    public void superRun() {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(2);
-        List<String> dbNames = getDbNames();
-        for (String dbName : dbNames) {
-            List<String> tblNames = getTblNames(dbName);
-            for (String tblName : tblNames) {
-                this.dbToSync = dbName + "." + tblName;
-                try {
-                    syncData();
-                }
-                catch (RuntimeException ignore) {
-                    //27.11.2019 (0:06)
-                }
-            }
+    private void addComment() {
+        String sql = String.format("ALTER TABLE %s COMMENT='Automatically created by %s, at %s';", dbToSync, this.getClass().getTypeName(), new Date());
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.executeUpdate();
         }
-        messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
-        MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
-            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
-                .format("Total {0} rows affected\nTime spend: {1} sec.", totalRows, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp)));
+        catch (SQLException e) {
+            messageToUser.warn(DataSynchronizer.class.getSimpleName(), "addComment", e.getMessage() + Thread.currentThread().getState().name());
+        }
     }
 
     @Override

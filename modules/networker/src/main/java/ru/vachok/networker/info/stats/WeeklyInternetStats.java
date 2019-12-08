@@ -108,7 +108,7 @@ class WeeklyInternetStats implements Runnable, Stats {
             iPsWithInet = readIPsWithInet(false);
         }
         catch (RuntimeException e) {
-            messageToUser.error("WeeklyInternetStats.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            messageToUser.error("WeeklyInternetStats.run", e.getMessage(), AbstractForms.networkerTrace(e));
         }
         String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
         String titleMsg = new File(FileNames.INETSTATSIP_CSV).getAbsolutePath();
