@@ -3,7 +3,6 @@ package ru.vachok.networker.restapi.message;
 
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
@@ -16,14 +15,15 @@ import java.util.StringJoiner;
 
 /**
  @since 31.08.2019 (10:59) */
+@SuppressWarnings("ClassUnconnectedToPackage")
 public class MessageSwing extends ru.vachok.messenger.MessageSwing implements MessageToUser {
 
 
-    private static final ru.vachok.messenger.MessageSwing LIB_M_SWING = new ru.vachok.messenger.MessageSwing();
+    private static final ru.vachok.messenger.MessageToUser LIB_M_SWING = new ru.vachok.networker.restapi.message.MessageSwing("");
 
     private String headerMsg;
 
-    public MessageSwing(String messengerHeader) {
+    private MessageSwing(String messengerHeader) {
         this.headerMsg = messengerHeader;
     }
 
@@ -33,8 +33,8 @@ public class MessageSwing extends ru.vachok.messenger.MessageSwing implements Me
     }
 
     @Contract("_ -> new")
-    public static @NotNull MessageSwing getI(String messengerHeader) {
-        ((MessageSwing) LIB_M_SWING).setHeaderMsg(messengerHeader);
+    public static MessageSwing getI(String messengerHeader) {
+        ((MessageToUser) LIB_M_SWING).setHeaderMsg(messengerHeader);
         File file = new File(FileNames.APP_JSON);
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());

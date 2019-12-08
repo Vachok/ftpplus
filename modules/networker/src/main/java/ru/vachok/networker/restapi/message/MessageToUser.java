@@ -14,22 +14,22 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 /**
  @see MessageToUserTest */
 public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
-    
-    
+
+
     String DB = DBMessenger.class.getTypeName();
-    
+
     String TRAY = MessageToTray.class.getTypeName();
-    
+
     String LOCAL_CONSOLE = MessageLocal.class.getTypeName();
-    
+
     String NULL = "null";
-    
+
     String SWING = ru.vachok.networker.restapi.message.MessageSwing.class.getTypeName();
-    
+
     String FILE = MessageFile.class.getTypeName();
-    
+
     String EMAIL = "MessageEmail";
-    
+
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("null, !null -> new")
     static @NotNull MessageToUser getInstance(String messengerType, @NotNull String messengerHeader) {
@@ -48,7 +48,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             return messageToUser;
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
-            messageToUser = new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
+            messageToUser = ru.vachok.networker.restapi.message.MessageSwing.getI(messengerHeader);
             return messageToUser;
         }
         else if (messengerType.equalsIgnoreCase(FILE)) {
@@ -63,15 +63,15 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             return new MessageLocal(messengerHeader);
         }
     }
-    
+
     void setHeaderMsg(String headerMsg);
-    
+
     @Override
     default void infoTimer(int timeOut, String headerMsg) {
         MessageSwing messageSwing = AppComponents.getMessageSwing(headerMsg);
         messageSwing.infoTimer(timeOut, headerMsg);
     }
-    
+
     @Override
     default String confirm(String s, String s1, String s2) {
         throw new InvokeIllegalException("06.08.2019 (11:39)");
