@@ -34,12 +34,14 @@ public class ArchivesAutoCleanerTest {
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
 
     @BeforeClass
+    @Ignore
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
 
     @AfterClass
+    @Ignore
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }

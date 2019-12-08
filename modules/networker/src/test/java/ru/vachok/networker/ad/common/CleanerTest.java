@@ -6,20 +6,16 @@ package ru.vachok.networker.ad.common;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -29,6 +25,7 @@ import java.util.concurrent.*;
 /**
  @see Cleaner
  @since 25.06.2019 (10:28) */
+@Ignore
 public class CleanerTest {
     
     
@@ -72,15 +69,11 @@ public class CleanerTest {
     }
     
     @Test
-    @Ignore
-    public void testGetPathAttrMap() {
-        Map<Path, String> map = cleaner.getPathAttrMap();
-        String strMap = new TForms().fromArray(map);
-        Assert.assertTrue(strMap.isEmpty(), strMap);
+    public void testBlockCall() {
+        cleaner.call();
     }
     
     @Test
-    @Ignore
     public void testTestToString() {
         Assert.assertTrue(cleaner.toString().contains("Cleaner{"), cleaner.toString());
     }
@@ -99,7 +92,7 @@ public class CleanerTest {
                 filesToDeleteWithAttrs.putIfAbsent(Paths.get(pathAndAttrs[0]), pathAndAttrs[1]);
             }
             catch (IndexOutOfBoundsException | NullPointerException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
         }
         return filesToDeleteWithAttrs;
@@ -124,25 +117,4 @@ public class CleanerTest {
         
         return stringsInLogFile;
     }
-    
-    @Test
-    @Ignore
-    public void testDeletedRS(){
-        Set<String> retSet = new ConcurrentSkipListSet<>();
-    
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-             ResultSet resultSet= preparedStatement.executeQuery();){
-            
-            ResultSet preparedStatementResultSet = preparedStatement.getResultSet();
-            while (preparedStatementResultSet.next()){
-                int concurrency = preparedStatement.getResultSetConcurrency();
-                System.out.println("resultSet = " + preparedStatementResultSet.getString(2));
-                preparedStatementResultSet.deleteRow();
-            }
-        }catch (SQLException e){
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
 }

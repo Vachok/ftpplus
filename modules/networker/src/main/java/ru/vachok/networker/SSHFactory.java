@@ -242,7 +242,8 @@ public class SSHFactory implements Callable<String> {
         this.connectToSrv = connectToSrv;
     }
     
-    private @NotNull String getPem() {
+    @NotNull
+    private String getPem() {
         File pemFile = new File("a161.pem");
         if (pemFile.exists()) {
             return pemFile.getAbsolutePath();
@@ -421,7 +422,6 @@ public class SSHFactory implements Callable<String> {
             this.sshFactory = new SSHFactory(this);
         }
     
-        @Contract(pure = true)
         protected Builder() {
         }
         

@@ -6,12 +6,13 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -30,8 +31,9 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String REGRUCONNECTION = "RegRuMysqlLoc";
     
+    @NotNull
     @Contract(value = " -> new", pure = true)
-    static @NotNull DataConnectTo getRemoteReg() {
+    static DataConnectTo getRemoteReg() {
         return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
@@ -59,8 +61,9 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
      */
     int createTable(String dbPointTable, List<String> additionalColumns);
     
+    @NotNull
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
+    static ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
             case REGRUCONNECTION:
                 return new RegRuMysqlLoc();
@@ -69,15 +72,27 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
             case TESTING:
                 return new TesterDB65SQL();
             case H2DB:
-                return new H2DB();
+                return (DataConnectTo) Objects.requireNonNull(getH2DB(), "H2DB not initialized!");
             case DEFAULT_I:
             default:
                 return getDefaultI();
         }
     }
     
+    static Object getH2DB() {
+        DataConnectTo h2DB = getDefaultI();
+        try {
+            h2DB = new H2DB();
+        }
+        catch (NetworkerStopException e) {
+            System.err.println(AbstractForms.networkerTrace(e));
+        }
+        return h2DB;
+    }
+    
+    @NotNull
     @Contract(value = " -> new", pure = true)
-    static @NotNull DataConnectTo getDefaultI() {
+    static DataConnectTo getDefaultI() {
         return new MySqlLocalSRVInetStat();
     }
 }

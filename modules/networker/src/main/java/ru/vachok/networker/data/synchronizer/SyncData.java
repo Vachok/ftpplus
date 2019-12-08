@@ -71,6 +71,10 @@ public abstract class SyncData implements DataConnectTo {
     
     public abstract void superRun();
     
+    public static int getLastRecId(DataConnectTo dataConnectTo, String dbID) {
+        return getInstance(UPUNIVERSAL).getDBID(dataConnectTo.getDefaultConnection(dbID), dbID);
+    }
+    
     @Override
     public Connection getDefaultConnection(String dbName) {
         try {
@@ -84,9 +88,10 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
     
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @NotNull
     @Contract("_ -> new")
-    public static @NotNull SyncData getInstance(@NotNull String type) {
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    public static SyncData getInstance(@NotNull String type) {
         switch (type) {
             case BACKUPER:
                 return new DataSynchronizer();

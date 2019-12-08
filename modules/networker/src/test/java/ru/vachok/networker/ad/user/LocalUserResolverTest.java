@@ -45,7 +45,7 @@ public class LocalUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        List<String> variantsOfPC = localUserResolver.getLogins("do0134", 10);
+        List<String> variantsOfPC = localUserResolver.getLogins("do0136", 10);
         Assert.assertTrue(variantsOfPC.size() > 0, AbstractForms.fromArray(variantsOfPC));
     }
     

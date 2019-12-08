@@ -3,7 +3,6 @@
 package ru.vachok.networker.net.monitor;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
@@ -84,7 +83,6 @@ public class KudrWorkTime implements NetScanService {
         
     }
     
-    @Contract(pure = true)
     protected KudrWorkTime(Map<String, Object> mapOfConditionsTypeNameTypeCondition) {
         this.mapOfConditionsTypeNameTypeCondition = mapOfConditionsTypeNameTypeCondition;
     }
