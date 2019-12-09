@@ -5,9 +5,7 @@ package ru.vachok.networker.info.stats;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -19,18 +17,13 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -72,7 +65,7 @@ public class WeeklyInternetStatsTest {
     @Test
     public void testReadIPsWithInet() {
         long bytesSize = stats.readIPsWithInet(false);
-        Assert.assertTrue(bytesSize > 100);
+        Assert.assertTrue(bytesSize > 100, String.valueOf(bytesSize));
     }
 
     @Test
