@@ -227,7 +227,8 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             createInt += executeUpdate;
         }
         catch (SQLException e) {
-            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), "createTable", e.getMessage() + " see line: 178");
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), "createTable " + e.getErrorCode(), e.getMessage() + " see line: 178");
+
             createInt = -666;
         }
         return createInt;

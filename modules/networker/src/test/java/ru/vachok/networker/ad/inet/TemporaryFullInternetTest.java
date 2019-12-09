@@ -20,6 +20,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -32,8 +33,8 @@ import java.util.regex.Pattern;
 /**
  @see TemporaryFullInternet */
 public class TemporaryFullInternetTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
     @BeforeClass
@@ -46,7 +47,7 @@ public class TemporaryFullInternetTest {
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testRunCheck() {
         try {
@@ -58,22 +59,14 @@ public class TemporaryFullInternetTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void testRunAdd() {
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(tmpInet);
-        try {
-            String getStr = submit.get(15, TimeUnit.SECONDS);
-            Assert.assertTrue(getStr.contains("8.8.8.8"));
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
+        String getStr = AppConfigurationLocal.getInstance().submitAsString(tmpInet, 15);
+        Assert.assertTrue(getStr.contains("8.8.8.8"), getStr);
     }
-    
+
     /**
      @see TemporaryFullInternet#sshChecker()
      */
@@ -86,11 +79,11 @@ public class TemporaryFullInternetTest {
         final Pattern PAT_LIST = Pattern.compile(".list", Pattern.LITERAL);
         final Pattern PAT_BR_N = Pattern.compile("<br>\n");
         final Pattern PAT_SHARP = Pattern.compile(" #");
-    
+
         SSH_FACTORY.setCommandSSH(ConstantsFor.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
         MINI_LOGGER.add(tempFile);
-    
+
         if (tempFile.isEmpty()) {
             throw new InvokeIllegalException("File is empty");
         }
@@ -121,7 +114,7 @@ public class TemporaryFullInternetTest {
         String mapStr = ConstantsNet.getSshMapStr();
         Assert.assertTrue(mapStr.contains("8.8.8.8"), mapStr);
     }
-    
+
     private void chkWithList(String[] x, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
         long delStamp = Long.parseLong(x[1]);
         if (delStamp < UsefulUtilities.getAtomicTime()) {
@@ -129,7 +122,7 @@ public class TemporaryFullInternetTest {
             System.out.println(addBackToList(x[0], x[2]));
         }
     }
-    
+
     private void mapEntryParse(String x, Long y, long atomicTimeLong, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
         String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(y / 1000, 0, ZoneOffset.ofHours(3));
         MINI_LOGGER.add(willBeDel);
@@ -143,7 +136,7 @@ public class TemporaryFullInternetTest {
             MINI_LOGGER.add("IP" + " = " + x + " time: " + y + " (" + new Date(y) + ")");
         }
     }
-    
+
     @Test
     public void testRunFromMonitors() {
         new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1)).run();
@@ -153,7 +146,7 @@ public class TemporaryFullInternetTest {
 
     private static boolean doDelete(String x, Map<String, Long> SSH_CHECKER_MAP, Queue<String> MINI_LOGGER) {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
-    
+
         String sshC = new StringBuilder()
                 .append(ConstantsFor.SSH_SUDO_GREP_V).append(x)
                 .append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;")
@@ -166,16 +159,16 @@ public class TemporaryFullInternetTest {
         }
         return SSH_CHECKER_MAP.containsKey(x);
     }
-    
+
     private static String addBackToList(String ip, String accList) {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
-        
+
         StringBuilder sshBuilder = new StringBuilder();
         sshBuilder.append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(ip).append(" #").append(new Date()).append("\"")
                 .append(" >> /etc/pf/").append(accList).append(";").append(ConstantsFor.SSH_INITPF);
         SSH_FACTORY.setCommandSSH(sshBuilder.toString());
         return SSH_FACTORY.call();
     }
-    
-    
+
+
 }

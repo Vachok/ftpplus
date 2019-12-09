@@ -3,6 +3,7 @@ package ru.vachok.networker.sysinfo;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
@@ -79,5 +80,18 @@ public interface AppConfigurationLocal extends Runnable {
             initialDelay = 0;
         }
         poolExecutor.scheduleWithFixedDelay(runnable, initialDelay, period, TimeUnit.MILLISECONDS);
+    }
+
+    default String submitAsString(Callable<?> callableQuestion, int timeOutInSec) {
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        try {
+            Future<?> submit = executor.submit(callableQuestion);
+            return (String) submit.get(timeOutInSec, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            return AbstractForms.networkerTrace(e);
+        }
     }
 }

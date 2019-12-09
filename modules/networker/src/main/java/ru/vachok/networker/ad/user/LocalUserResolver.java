@@ -26,11 +26,21 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 @SuppressWarnings("InstanceVariableOfConcreteClass")
 class LocalUserResolver extends UserInfo {
 
+
     private Object pcName;
 
     private String userName;
 
     private LocalUserResolver.ScanUSERSFolder scanUSERSFolder;
+
+    private int timeOut = 8;
+
+    public LocalUserResolver(int timeOut) {
+        this.timeOut = timeOut;
+    }
+
+    public LocalUserResolver() {
+    }
 
     @Override
     public String getInfo() {
@@ -119,7 +129,7 @@ class LocalUserResolver extends UserInfo {
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
         List<String> timePath = null;
         try {
-            AppConfigurationLocal.getInstance().execute(scanUSERSFolder, 8);
+            AppConfigurationLocal.getInstance().execute(scanUSERSFolder, timeOut);
             timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         }
         catch (RuntimeException e) {
