@@ -3,24 +3,6 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest">
-        <methods>
-          <include name="testGetInfo"/>
-          <include name="tearDown"/>
-          <include name="testTestToString"/>
-          <include name="setUp"/>
-          <include name="testGetInfoAbout"/>
-          <include name="initStats"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest -->
-      <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="initSync"/>
-          <include name="testGetLastLocalID"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.data.synchronizer.SyncDataTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
