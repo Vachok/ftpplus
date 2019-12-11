@@ -45,6 +45,8 @@ public class DataSynchronizer extends SyncData {
 
     private int totalRows = 0;
 
+    private int dbsTotal = 0;
+
     DataSynchronizer() {
     }
 
@@ -138,6 +140,7 @@ public class DataSynchronizer extends SyncData {
         for (String dbName : dbNames) {
             List<String> tblNames = getTblNames(dbName);
             for (String tblName : tblNames) {
+                this.dbsTotal += 1;
                 this.dbToSync = dbName + "." + tblName;
                 this.dbObj = new File(dbToSync);
                 try {
@@ -152,9 +155,12 @@ public class DataSynchronizer extends SyncData {
             }
         }
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
-        MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
+        MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
+            .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal));
+        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
             .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
-                .format("Total {0} rows affected\nTime spend: {1} sec.", totalRows, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp)));
+                .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
+                    .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal));
     }
 
     @Override
