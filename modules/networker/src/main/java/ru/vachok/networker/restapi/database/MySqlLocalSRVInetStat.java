@@ -6,29 +6,25 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
 /**
  @see MySqlLocalSRVInetStatTest
  @since 04.09.2019 (16:42) */
+@SuppressWarnings("JDBCResourceOpenedButNotSafelyClosed")
 class MySqlLocalSRVInetStat implements DataConnectTo {
 
 
@@ -82,17 +78,15 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         source.setDatabaseName(dbName);
         source.setContinueBatchOnError(true);
         List<String> colList = new ArrayList<>(strings);
-
         try (Connection connection = source.getConnection()) {
             try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
                 for (String s : colList) {
-                    String s1 = s;
-                    if (s1.length() > 190) {
-                        preparedStatementInsert.setString(1, String.valueOf(s1.length()));
-                        preparedStatementInsert.setString(2, s1);
+                    if (s.length() > 190) {
+                        preparedStatementInsert.setString(1, String.valueOf(s.length()));
+                        preparedStatementInsert.setString(2, s);
                     }
                     else {
-                        preparedStatementInsert.setString(1, s1);
+                        preparedStatementInsert.setString(1, s);
                         preparedStatementInsert.setString(2, this.toString());
                     }
                     resultsUpload += preparedStatementInsert.executeUpdate();
@@ -157,10 +151,21 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             return connection;
         }
         else {
-            throw new InvokeIllegalException(MessageFormat.format("{0} DEFAULT CONNECTION ERROR! NULL!", this.getClass().getSimpleName()));
+            return tryToStartMySQL();
         }
     }
-
+    
+    private Connection tryToStartMySQL() {
+        SSHFactory sshFactory = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "sudo /usr/local/etc/rc.d/mysql-server start;exit", this.getClass().getSimpleName()).build();
+        String asString = AppConfigurationLocal.getInstance().submitAsString(sshFactory, 60);
+        try {
+            return getDataSource().getConnection();
+        }
+        catch (SQLException e) {
+            throw new InvokeIllegalException(this.getClass().getSimpleName() + ".tryToStartMySQL");
+        }
+    }
+    
     private void abortConnection(@NotNull Connection connection) {
         try {
             connection.abort(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor());
@@ -169,7 +174,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             messageToUser.error("MySqlLocalSRVInetStat.abortConnection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");

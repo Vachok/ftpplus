@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo.exceptions;
 
 
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.text.MessageFormat;
 
@@ -20,6 +21,12 @@ public class InvokeIllegalException extends IllegalStateException {
     
     public InvokeIllegalException(String message) {
         this.message = message;
+        sendEmail();
+    }
+    
+    private void sendEmail() {
+        MessageToUser toUser = MessageToUser.getInstance(MessageToUser.EMAIL, "InvokeIllegalException");
+        toUser.error(message);
     }
     
     public InvokeIllegalException() {
