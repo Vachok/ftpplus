@@ -11699,3 +11699,95 @@ rm "/usr/home/kudr/networker/WeeklyInternetStats.82193"
 rm "/usr/home/kudr/networker/WeeklyInternetStats.82497"
 ls "/usr/home/kudr/networker/"
 connection to 10.10.111.65 closed - bye bye!
+----------
+Connect to: (11.12.2019 19:10:02)
+hostname=10.10.111.52:50021
+username=kudr
+startdir=/IPCamera/IV2405P_00626E6A45EA/record/
+10.10.111.52=10.10.111.52
+220---------- Welcome to Pure-FTPd [privsep] ----------
+220-You are user number 1 of 50 allowed.
+220-Local time is now 16:09. Server port: 50021.
+220-This is a private system - No anonymous login
+220 You will be disconnected after 15 minutes of inactivity.
+USER kudr
+331 User kudr OK. Password required
+PASS ***********
+230 OK. Current directory is /
+SYST
+215 UNIX Type: L8
+FEAT
+211-Extensions supported:
+ EPRT
+ IDLE
+ MDTM
+ SIZE
+ REST STREAM
+ MLST type*;size*;sizd*;modify*;UNIX.mode*;UNIX.uid*;UNIX.gid*;unique*;
+ MLSD
+ TVFS
+ ESTA
+ PASV
+ EPSV
+ SPSV
+ ESTP
+211 End.
+HELP SITE
+214-The following SITE commands are recognized
+ CHMOD
+ IDLE
+ UTIME
+214 Pure-FTPd - http://pureftpd.org/
+CWD /IPCamera/IV2405P_00626E6A45EA/record/
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record
+Connect ok!
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record" is your current location
+Чтение каталога...
+TYPE A
+200 TYPE is now ASCII
+PORT 10,10,111,57,249,39
+200 PORT command successful
+MLSD
+150 Connecting to port 63783
+Загрузка
+Ожидание ответа сервера...
+226-Options: -a -l 
+226 9 matches total
+CWD 20191211
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record/20191211
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record/20191211" is your current location
+Чтение каталога...
+PORT 10,10,111,57,249,45
+200 PORT command successful
+MLSD
+150 Connecting to port 63789
+Загрузка
+Ожидание ответа сервера...
+226-Options: -a -l 
+226 3 matches total
+CWD 20191211_000313
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record/20191211/20191211_000313
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record/20191211/20191211_000313" is your current location
+Чтение каталога...
+PORT 10,10,111,57,249,46
+200 PORT command successful
+MLSD
+150 Connecting to port 63790
+Загрузка
+Ожидание ответа сервера...
+226-Options: -a -l 
+226 251 matches total
+CDUP
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record/20191211
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record/20191211" is your current location
+CDUP
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record" is your current location
+QUIT
+221-Goodbye. You uploaded 0 and downloaded 0 kbytes.
+221 Logout.
