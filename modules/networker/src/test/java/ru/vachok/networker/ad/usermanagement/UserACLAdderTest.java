@@ -10,27 +10,33 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 
 /**
  @see UserACLAdder
  @since 02.08.2019 (14:03) */
 public class UserACLAdderTest {
-    
-    
+
+
     private UserACLManagerImpl commonAdder;
-    
+
     private AclFileAttributeView attributeView;
-    
+
     @Test
     private void booleanAddTest() {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-//            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
-            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Проекты\\Проекты _УИ\\");
+            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
+//            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Проекты\\Проекты _УИ\\");
             UserACLManagerImpl.removeAccess(owner, startPath);
             this.commonAdder = new UserACLAdder(startPath, owner, "r");
             Files.walkFileTree(startPath, commonAdder);
@@ -51,7 +57,7 @@ public class UserACLAdderTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     @Ignore
     private void aclToDB() {

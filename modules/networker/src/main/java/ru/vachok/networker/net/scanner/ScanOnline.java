@@ -38,65 +38,65 @@ import java.util.*;
 /**
  Сканирование только тех, что он-лайн
  <p>
- 
+
  @see ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
 @Scope(ConstantsFor.SINGLETON)
 public class ScanOnline implements NetScanService {
-    
-    
+
+
     /**
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ScanOnline.class.getSimpleName());
-    
+
     private List<String> maxOnList = new ArrayList<>();
-    
+
     private @NotNull File fileMAXOnlines = new File(FileNames.ONLINES_MAX);
-    
+
     private File onlinesFile = new File(FileNames.ONSCAN);
-    
+
     private InformationFactory tvInfo = InformationFactory.getInstance(InformationFactory.TV);
-    
+
     private String replaceFileNamePattern;
-    
+
     @SuppressWarnings("InstanceVariableOfConcreteClass") private TForms tForms = AbstractForms.getI();
-    
+
     protected @NotNull File getFileMAXOnlines() {
         return fileMAXOnlines;
     }
-    
+
     protected File getOnlinesFile() {
         return onlinesFile;
     }
-    
+
     /**
      @return {@link #replaceFileNamePattern}
-     
+
      @see ru.vachok.networker.net.scanner.ScanOnlineTest#fileOnToLastCopyTest()
      @since 12.07.2019 (23:08)
      */
     protected String getReplaceFileNamePattern() {
         return replaceFileNamePattern;
     }
-    
+
     public ScanOnline() {
         initialMeth();
     }
-    
+
     @Override
     public void run() {
         AppConfigurationLocal.getInstance().execute(SwitchesAvailability::new);
-    
+
         setMaxOnlineListFromFile();
-        
+
         if (onlinesFile.exists()) {
             onListFileCopyToLastAndMax();
         }
         messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
     }
-    
+
     private void setMaxOnlineListFromFile() {
         try {
             this.maxOnList = setMaxOnlineFromDatabase();
@@ -105,7 +105,7 @@ public class ScanOnline implements NetScanService {
             this.maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
         }
     }
-    
+
     private void onListFileCopyToLastAndMax() {
         File scanOnlineLast = new File(replaceFileNamePattern);
         if (!scanOnlineLast.exists()) {
@@ -113,7 +113,7 @@ public class ScanOnline implements NetScanService {
         }
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-    
+
         if (onLastAsTreeSet.size() < NetKeeper.getDequeOfOnlineDev().size()) {
             FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
@@ -124,7 +124,7 @@ public class ScanOnline implements NetScanService {
         }
         scanOnlineLast.deleteOnExit();
     }
-    
+
     private boolean writeOnLineFile() {
         boolean retBool;
         try {
@@ -148,7 +148,7 @@ public class ScanOnline implements NetScanService {
         }
         return retBool;
     }
-    
+
     @Contract(pure = true)
     private @NotNull List<String> setMaxOnlineFromDatabase() {
         List<String> retList = new ArrayList<>();
@@ -164,19 +164,27 @@ public class ScanOnline implements NetScanService {
         }
         return retList;
     }
-    
+
     /**
      когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
-     
+
      @since 12.07.2019 (22:56)
      */
     protected List<String> scanOnlineLastBigger() {
-        List<String> readFileToList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
-        this.maxOnList.addAll(readFileToList);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT DISTINCT pcName FROM lan.online");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                maxOnList.add(resultSet.getString(ConstantsFor.DBFIELD_PCNAME));
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.warn(ScanOnline.class.getSimpleName(), e.getMessage(), " see line: 178 ***");
+        }
         Collections.sort(maxOnList);
         return maxOnList;
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -194,7 +202,7 @@ public class ScanOnline implements NetScanService {
             .append("<br>");
         return sb.toString();
     }
-    
+
     @Override
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> pingedDevices = new ArrayList<>();
@@ -207,41 +215,41 @@ public class ScanOnline implements NetScanService {
         Collections.sort(pingedDevices);
         return pingedDevices;
     }
-    
+
     @Override
     public String getExecution() {
         return FileSystemWorker.readFile(onlinesFile.getAbsolutePath());
     }
-    
+
     @Override
     public String getPingResultStr() {
         Deque<InetAddress> address = NetKeeper.getDequeOfOnlineDev();
         return tForms.fromArray(address, true);
     }
-    
+
     @Override
     public String writeLog() {
         return String.valueOf(writeOnLineFile());
     }
-    
+
     @Override
     public Runnable getMonitoringRunnable() {
         return this;
     }
-    
+
     @Override
     public String getStatistics() {
         Set<String> filesOnLineRead = new TreeSet<>(NetKeeper.getCurrentScanLists());
         return tForms.fromArray(filesOnLineRead, true);
     }
-    
+
     private void initialMeth() {
         this.onlinesFile = new File(FileNames.ONSCAN);
         this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
         String fileMaxName = FileNames.ONLINES_MAX;
         this.fileMAXOnlines = new File(fileMaxName);
-        
+
         maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
     }
-    
+
 }

@@ -9,7 +9,10 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -19,30 +22,33 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
  Пинг-фейс
- 
+
  @see ru.vachok.networker.info.NetScanServiceTest
  @since 14.02.2019 (23:31) */
 @SuppressWarnings({"unused", "MethodWithMultipleReturnPoints"})
 public interface NetScanService extends Runnable {
-    
-    
+
+
     String PTV = "ptv";
-    
+
     String WORK_SERVICE = "KudrWorkTime";
-    
+
     String DIAPAZON = "DiapazonScan";
-    
+
     String PINGER_FILE = "PingerFromFile";
-    
+
     String PCNAMESSCANNER = "PcNamesScanner";
-    
+
     String SCAN_ONLINE = "ScanOnline";
-    
+
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
         System.out.println("AppComponents.ipFlushDNS() = " + UsefulUtilities.ipFlushDNS());
@@ -81,15 +87,15 @@ public interface NetScanService extends Runnable {
         }
         return resList;
     }
-    
+
     String getExecution();
-    
+
     String getPingResultStr();
-    
+
     static boolean isReach(String inetAddrStr) {
         return isReach(inetAddrStr, 100);
     }
-    
+
     static InetAddress getByName(String inetAddrStr) {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         try {
@@ -100,16 +106,15 @@ public interface NetScanService extends Runnable {
         }
         return inetAddress;
     }
-    
+
     String writeLog();
-    
+
     Runnable getMonitoringRunnable();
-    
+
     String getStatistics();
-    
-    @NotNull
+
     @Contract("_ -> new")
-    static NetScanService getInstance(@NotNull String type) {
+    static @NotNull NetScanService getInstance(@NotNull String type) {
         switch (type) {
             case PTV:
                 return new NetMonitorPTV();
@@ -125,11 +130,11 @@ public interface NetScanService extends Runnable {
                 return new ScanOnline();
         }
     }
-    
+
     static boolean writeUsersToDBFromSET() {
         return UserInfo.writeUsersToDBFromSET();
     }
-    
+
     static boolean isReach(String inetAddrStr, int timeout) {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setPriority(1);
