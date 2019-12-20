@@ -4,7 +4,12 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -16,35 +21,38 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import java.io.File;
 import java.util.Random;
 import java.util.UnknownFormatConversionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
  @see AccessLogUSER
  @since 17.08.2019 (15:34) */
 public class AccessLogUSERTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(AccessLogUSERTest.class.getSimpleName(), System.nanoTime());
-    
+
     private AccessLogUSER informationFactory;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void beforeMethod() {
         this.informationFactory = new AccessLogUSER();
     }
-    
+
     @Test
     public void testGetInfoAbout() {
         String infoAbout;
@@ -60,13 +68,21 @@ public class AccessLogUSERTest {
             }
         }
     }
-    
+
     @Test
     public void testByIP() {
-        String infoAbout = informationFactory.getInfoAbout("10.200.213.85");
-        Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->informationFactory.getInfoAbout("10.200.213.85"));
+        try {
+            String infoAbout = submit.get(90, TimeUnit.SECONDS);
+            Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
-    
+
     @Test
     public void testByPcName() {
         String infoAbout = informationFactory.getInfoAbout("do0214");
@@ -74,7 +90,7 @@ public class AccessLogUSERTest {
         infoAbout = informationFactory.getInfoAbout("do0214.eatmeat.ru");
         Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);
     }
-    
+
     @Test
     public void testBadCredentials() {
         try {
@@ -85,19 +101,19 @@ public class AccessLogUSERTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testToString() {
         String toStr = informationFactory.toString();
         Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
     }
-    
+
     @Test
     public void testGetInfo() {
         String factoryInfo = informationFactory.getInfo();
         Assert.assertTrue(factoryInfo.contains("Identification is not set! "), factoryInfo);
     }
-    
+
     @Test
     public void testWriteLog() {
         String writeLogstr = informationFactory.writeObj("test", "test");
@@ -106,7 +122,7 @@ public class AccessLogUSERTest {
         Assert.assertTrue(fileLog.exists());
         Assert.assertTrue(fileLog.delete());
     }
-    
+
     @Test
     public void testGetStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -118,11 +134,11 @@ public class AccessLogUSERTest {
         float hoursResp;
         minutesResponse = TimeUnit.MILLISECONDS.toMinutes(new Random().nextLong());
         stringBuilder.append(minutesResponse);
-        
+
         hoursResp = (float) minutesResponse / (float) 60;
         stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
         stringBuilder.append(" ч.) время открытых сессий, ");
-        
+
         mbTraffic = new Random().nextLong() / ConstantsFor.MBYTE;
         stringBuilder.append(mbTraffic);
         stringBuilder.append(" мегабайт трафика.");
