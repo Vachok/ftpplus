@@ -4,6 +4,7 @@ package ru.vachok.networker.data.synchronizer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -15,22 +16,22 @@ import java.util.List;
 
 
 public class TimeOnActualizer implements Runnable {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TimeOnActualizer.class.getSimpleName());
-    
+
     private String pcName;
-    
+
     @Contract(pure = true)
     public TimeOnActualizer(@NotNull String pcName) {
         this.pcName = pcName.replace(ConstantsFor.DOMAIN_EATMEATRU, "");
     }
-    
+
     @Override
     public void run() {
         setTimeOnFromBigDB();
     }
-    
+
     private void setTimeOnFromBigDB() {
         List<String> pcNames = new ArrayList<>();
         if (pcName == null) {
@@ -57,6 +58,12 @@ public class TimeOnActualizer implements Runnable {
                             }
                         }
                     }
+                    catch (SQLException e) {
+                        if (e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
+                            messageToUser.error(this.getClass().getSimpleName(), e.getMessage(), new MyISAMRepair()
+                                .repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_VELKOMVELKOMPC));
+                        }
+                    }
                 }
             }
         }
@@ -64,7 +71,7 @@ public class TimeOnActualizer implements Runnable {
             messageToUser.error("TimeOnActualizer.setTimeOnFromBigDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
-    
+
     private @NotNull List<String> getPcNames() {
         final String sql = "SELECT DISTINCT pcName FROM online";
         List<String> pcNames = new ArrayList<>();
@@ -83,7 +90,7 @@ public class TimeOnActualizer implements Runnable {
         }
         return pcNames;
     }
-    
+
     private void actualizeDB(int idRec, String pcName) {
         final String sql = "SELECT TimeNow FROM velkompc WHERE idrec > ? AND NamePP LIKE ? AND OnlineNow=1 ORDER BY idrec asc LIMIT 1";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
@@ -102,13 +109,13 @@ public class TimeOnActualizer implements Runnable {
             messageToUser.error("TimeOnActualizer.actualizeDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
-    
+
     private void setInPcUserDB(String pcName, Timestamp actualTimeOn) {
         final String sql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`= ? WHERE `pcName` like '%s%%'", pcName);
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setTimestamp(1, actualTimeOn);
-    
+
             messageToUser.info(this.getClass().getSimpleName(),
                 MessageFormat.format("setInPcUserDB executeUpdate: {0}\n", preparedStatement.executeUpdate()), preparedStatement.toString());
         }
@@ -116,7 +123,7 @@ public class TimeOnActualizer implements Runnable {
             messageToUser.error("TimeOnActualizer.setInPcUserDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TimeOnActualizer{");
