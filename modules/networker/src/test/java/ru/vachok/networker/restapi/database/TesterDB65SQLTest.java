@@ -17,41 +17,41 @@ import java.util.Collections;
 
 
 public class TesterDB65SQLTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(TesterDB65SQLTest.class.getSimpleName(), System
             .nanoTime());
-    
+
     private DataConnectTo dataConnectTo;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void initDTC() {
         this.dataConnectTo = new TesterDB65SQL();
     }
-    
+
     @Test
     public void testGetDataSource() {
         MysqlDataSource source = dataConnectTo.getDataSource();
         String urlInSource = source.getURL();
         if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            Assert.assertEquals(urlInSource, "jdbc:mysql://srv-mysql.home:3306/");
+            Assert.assertEquals(urlInSource, "jdbc:mysql://10.10.111.65:3306/");
         }
         else {
             Assert.assertEquals(urlInSource, "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/velkom");
         }
     }
-    
+
     @Test
     @Ignore
     public void testToLocalVM() {
@@ -87,7 +87,7 @@ public class TesterDB65SQLTest {
         }
         System.out.println("stringBuilder = " + stringBuilder.toString());
     }
-    
+
     @Test
     public void testGetDefaultConnection() {
         try (Connection connection = dataConnectTo.getDefaultConnection("test.test")) {
@@ -99,7 +99,7 @@ public class TesterDB65SQLTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void testCreateTable() {
         String tableName = "test.test" + System.currentTimeMillis();

@@ -4,7 +4,9 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -17,7 +19,10 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -29,30 +34,30 @@ import java.util.stream.Collectors;
  @since 10.06.2019 (16:05) */
 @SuppressWarnings("ALL")
 public class TvPCInformationTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testGetInfoAbout() {
         String aboutTV = new TvPcInformation().getInfoAbout("tv");
-        Assert.assertTrue(aboutTV.contains("ptv1.eatmeat.ru"), aboutTV);
-    
+        Assert.assertTrue(aboutTV.contains(OtherKnownDevices.PTV1_EATMEAT_RU), aboutTV);
+
         aboutTV = new TvPcInformation().getInfoAbout(OtherKnownDevices.DO0045_KIRILL);
         Assert.assertEquals(aboutTV, ConstantsFor.STR_ERROR);
     }
-    
+
     @Test
     public void testSetInfo() {
         try {
@@ -64,22 +69,22 @@ public class TvPCInformationTest {
             Assert.assertNotNull(e, e.getMessage());
         }
     }
-    
+
     private static String getUserFromDB(String userInputRaw) {
         final Pattern COMPILE = Pattern.compile(": ");
-        
+
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
         String mostFreqName = "No Name";
-        
+
         try {
             userInputRaw = COMPILE.split(userInputRaw)[1].trim();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             userInputRaw = userInputRaw.split(":")[1].trim();
         }
-        
+
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
@@ -88,21 +93,21 @@ public class TvPCInformationTest {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                
+
                 while (r.next()) {
                     rNext(r, userPCName, stringBuilder);
                 }
-                
+
                 List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
                 Map<Integer, String> freqName = new HashMap<>();
-                
+
                 for (String x : collectedNames) {
                     collectFreq(userPCName, x, stringBuilder, freqName);
                 }
                 if (r.last()) {
                     rLast(r);
                 }
-                
+
                 countCollection(collectedNames, mostFreqName, stringBuilder, freqName);
                 return stringBuilder.toString();
             }
@@ -112,7 +117,7 @@ public class TvPCInformationTest {
         }
         return retBuilder.toString();
     }
-    
+
     private static void countCollection(List<String> collectedNames, String mostFreqName, StringBuilder stringBuilder, Map<Integer, String> freqName) {
         Collections.sort(collectedNames);
         Set<Integer> integers = freqName.keySet();
@@ -120,13 +125,13 @@ public class TvPCInformationTest {
         stringBuilder.append("<br>");
         stringBuilder.append(InternetUse.getInstance(mostFreqName).getInfo());
     }
-    
+
     private static void collectFreq(List<String> userPCName, String x, StringBuilder stringBuilder, Map<Integer, String> freqName) {
         int frequency = Collections.frequency(userPCName, x);
         stringBuilder.append(frequency).append(") ").append(x).append("<br>");
         freqName.putIfAbsent(frequency, x);
     }
-    
+
     private static void rLast(ResultSet r) throws SQLException {
         try {
             MessageToUser messageToUser = new MessageToTray(TvPCInformationTest.class.getSimpleName());
@@ -137,7 +142,7 @@ public class TvPCInformationTest {
                     .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsFor.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
         }
     }
-    
+
     private static void rNext(ResultSet r, List<String> userPCName, StringBuilder stringBuilder) throws SQLException {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
