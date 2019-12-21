@@ -525,6 +525,10 @@ public enum ConstantsFor {
 
     public static final String STR_IPREMAIN = " ip remain";
 
+    public static final String SQL_PCNAME = "pcname";
+
+    public static final String REPAIR_TABLE = "REPAIR TABLE ";
+
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
 
     public static @NotNull String[] getExcludedFoldersForCleaner() {

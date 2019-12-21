@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
 
 
 public class RestCTRLTest {
@@ -30,5 +31,15 @@ public class RestCTRLTest {
         RestCTRL restCTRL = new RestCTRL();
         String s = restCTRL.appStatus();
         Assert.assertTrue(s.contains("amd64 Arch"));
+    }
+
+    @Test
+    public void uniqPC() {
+        InformationFactory instance = InformationFactory.getInstance(InformationFactory.REST_PC_UNIQ);
+        String info = instance.getInfo();
+        Assert.assertTrue(info.contains("10.10.10.1"));
+        instance.setClassOption(true);
+        info = instance.getInfo();
+        Assert.assertTrue(info.contains("{\"ip\":\"10.10.10.1\",\"pcname\":\"10.10.10.1\"}"));
     }
 }

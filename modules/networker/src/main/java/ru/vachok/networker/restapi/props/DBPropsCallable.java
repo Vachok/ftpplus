@@ -33,33 +33,33 @@ import java.util.concurrent.atomic.AtomicBoolean;
  @see ru.vachok.networker.restapi.props.DBPropsCallableTest */
 @SuppressWarnings("DuplicateStringLiteralInspection")
 public class DBPropsCallable implements Callable<Properties>, ru.vachok.networker.restapi.props.InitProperties {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPropsCallable.class.getSimpleName());
-    
+
     /**
      Запишем .mini
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
-    
+
     private Properties retProps = new Properties();
-    
+
     private String propsDBID = ConstantsFor.class.getSimpleName();
-    
+
     private String callerStack = "not set";
-    
+
     /**
      {@link Properties} для сохданения.
      */
     private Properties propsToSave = new Properties();
-    
+
     private AtomicBoolean retBool = new AtomicBoolean(false);
-    
+
     public DBPropsCallable() {
         this.propsDBID = ConstantsFor.class.getSimpleName();
         setPassSQL();
     }
-    
+
     private void setPassSQL() {
         String dbUser = InitProperties.getUserPref().get(PropertiesNames.DBUSER, "");
         String dbPass = InitProperties.getUserPref().get(PropertiesNames.DBPASS, "");
@@ -70,12 +70,12 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             setUserPassFromPropsFile();
         }
     }
-    
+
     private void setUserPrefUserPass(String dbUser, String dbPass) {
         InitProperties.setPreference(PropertiesNames.DBUSER, dbUser);
         InitProperties.setPreference(PropertiesNames.DBPASS, dbPass);
     }
-    
+
     @Override
     public boolean setProps(Properties properties) {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.props")) {
@@ -98,22 +98,22 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             return false;
         }
     }
-    
+
     public DBPropsCallable(@NotNull String propsIDClass) {
         this.propsDBID = propsIDClass;
     }
-    
+
     protected DBPropsCallable(@NotNull Properties toUpdate) {
         this.propsToSave = toUpdate;
         Thread.currentThread().setName("DBPr(Pr)");
     }
-    
+
     @Override
     public Properties getProps() {
         retProps = call();
         return retProps;
     }
-    
+
     @Override
     public boolean delProps() {
         final String sql = "DELETE FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
@@ -129,23 +129,23 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             return false;
         }
     }
-    
+
     @Override
     public Properties call() {
         DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
         this.callerStack = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
         return localPropertiesFinder.findRightProps();
     }
-    
+
     private void setUserPassFromPropsFile() {
         InitProperties fileInit = InitProperties.getInstance(InitProperties.FILE);
         Properties props = fileInit.getProps();
         String user = props.getProperty(PropertiesNames.DBUSER, "");
         String pass = props.getProperty(PropertiesNames.DBPASS, "");
-        
+
         setUserPrefUserPass(user, pass);
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBPropsCallable{");
@@ -157,15 +157,70 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         sb.append('}');
         return sb.toString();
     }
-    
+
     protected class LocalPropertiesFinder extends DBPropsCallable {
-        
-        
+
+
+        private @NotNull Properties getPropsByID() {
+            Properties properties = new Properties();
+            String[] propsId = propsDBID.split("-");
+            final String sql = String.format("SELECT * FROM u0466446_properties.%s", propsId[0]);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("u0466446_properties." + propsId[0]);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    if (resultSet.getString("javaid").equalsIgnoreCase(propsId[1])) {
+                        properties.put(resultSet.getString("property"), resultSet.getString("valueofproperty"));
+                    }
+                }
+            }
+            catch (SQLException | RuntimeException e) {
+                messageToUser.warn(DBPropsCallable.LocalPropertiesFinder.class.getSimpleName(), e.getMessage(), " see line: 250 ***");
+                properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+            }
+            retProps.putAll(properties);
+            return properties;
+        }
+
+        private void tryWithLibsInit() {
+            ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+            retBool.set(initProperties.setProps(propsToSave));
+        }
+
+        private Properties findRightProps() {
+            File constForProps = new File(FileNames.CONSTANTSFOR_PROPERTIES);
+            addApplicationProperties();
+            long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
+            boolean fileIsFiveHoursAgo = constForProps.lastModified() < fiveHRSAgo;
+            boolean canNotWrite = !constForProps.canWrite();
+            boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite | fileIsFiveHoursAgo);
+            if (propsDBID.contains("-")) {
+                return getPropsByID();
+            }
+            else if (isFileOldOrReadOnly) {
+                propsFileIsReadOnly();
+                boolean isWritableSet = constForProps.setWritable(true);
+                messageToUser.info(this.getClass().getSimpleName(), "mem.properties updated", String.valueOf(isWritableSet));
+            }
+            else {
+                try {
+                    fileIsWritableOrNotExists();
+                }
+                catch (IOException e) {
+                    messageToUser.error("LocalPropertiesFinder.findRightProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                }
+                finally {
+                    retBool.set(retProps.size() > 10);
+                }
+            }
+            return retProps;
+        }
+
         private boolean upProps() {
             final String sql = "insert props (property, valueofproperty, javaid, stack) values (?,?,?,?)";
             retBool.set(false);
             callerStack = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
-    
+
             try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.props")) {
                 c.setAutoCommit(false);
                 c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -198,63 +253,9 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             miniLogger.add(callerStack);
             return retBool.get();
         }
-        
-        private void tryWithLibsInit() {
-            ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-            retBool.set(initProperties.setProps(propsToSave));
-        }
-    
-        private Properties findRightProps() {
-            File constForProps = new File(FileNames.CONSTANTSFOR_PROPERTIES);
-            addApplicationProperties();
-            long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
-            boolean fileIsFiveHoursAgo = constForProps.lastModified() < fiveHRSAgo;
-            boolean canNotWrite = !constForProps.canWrite();
-            boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite | fileIsFiveHoursAgo);
-            if (propsDBID.contains("-")) {
-                return getPropsByID();
-            }
-            else if (isFileOldOrReadOnly) {
-                propsFileIsReadOnly();
-                boolean isWritableSet = constForProps.setWritable(true);
-                messageToUser.info(this.getClass().getSimpleName(), "mem.properties updated", String.valueOf(isWritableSet));
-            }
-            else {
-                try {
-                    fileIsWritableOrNotExists();
-                }
-                catch (IOException e) {
-                    messageToUser.error("LocalPropertiesFinder.findRightProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-                }
-                finally {
-                    retBool.set(retProps.size() > 10);
-                }
-            }
-            return retProps;
-        }
-        
-        private @NotNull Properties getPropsByID() {
-            Properties properties = new Properties();
-            String[] propsId = propsDBID.split("-");
-            final String sql = String.format("SELECT * FROM u0466446_properties.%s", propsId[0]);
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("u0466446_properties." + propsId[0]);
-                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    if (resultSet.getString("javaid").equalsIgnoreCase(propsId[1])) {
-                        properties.put(resultSet.getString("property"), resultSet.getString("valueofproperty"));
-                    }
-                }
-            }
-            catch (SQLException e) {
-                messageToUser.warn(DBPropsCallable.LocalPropertiesFinder.class.getSimpleName(), e.getMessage(), " see line: 250 ***");
-            }
-            retProps.putAll(properties);
-            return properties;
-        }
-    
+
         private void addApplicationProperties() {
-    
+
             try (InputStream inputStream = getClass().getResourceAsStream("/application.properties")) {
                 retProps.load(inputStream);
                 messageToUser.info(MessageFormat.format("Added {0} properties from application.", retProps.size()));
@@ -263,7 +264,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                 messageToUser.error(MessageFormat.format("DBPropsCallable.addApplicationProperties threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
-        
+
         private void propsFileIsReadOnly() {
             InitProperties initProperties = InitProperties.getInstance(InitProperties.FILE);
             Properties props = initProperties.getProps();
@@ -278,7 +279,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             }
             retBool.set(retProps.size() > 9);
         }
-    
+
         private void fileIsWritableOrNotExists() throws IOException {
             if (retProps.size() < 10) {
                 retProps.clear();
@@ -290,6 +291,6 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                 retProps.store(new FileOutputStream(FileNames.CONSTANTSFOR_PROPERTIES), this.getClass().getSimpleName());
             }
         }
-    
+
     }
 }
