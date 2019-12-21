@@ -43,11 +43,11 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
 
     @Override
     public MysqlDataSource getDataSource() {
-        if (!NetScanService.isReach(OtherKnownDevices.SRVMYSQL_HOME)) {
+        if (!NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             return super.getDataSource();
         }
         MysqlDataSource source = new MysqlDataSource();
-        source.setServerName(OtherKnownDevices.SRVMYSQL_HOME);
+        source.setServerName(OtherKnownDevices.IP_SRVMYSQL_HOME);
         source.setCreateDatabaseIfNotExist(true);
         source.setUser("kudr");
         source.setPassword("36e42yoak8");
