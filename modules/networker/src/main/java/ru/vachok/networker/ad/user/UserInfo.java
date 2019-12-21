@@ -148,7 +148,6 @@ public abstract class UserInfo implements InformationFactory {
             catch (SQLException | RuntimeException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
                         pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
-                messageToUser.error("DatabaseWriter.writeAutoResolveUserToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
         }
 
