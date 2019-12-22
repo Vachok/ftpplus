@@ -53,14 +53,6 @@ class WeeklyInternetStats implements Runnable, Stats {
 
     private static final WeeklyInternetStats INST = new WeeklyInternetStats();
 
-    @Contract(value = " -> new", pure = true)
-    public static @NotNull WeeklyInternetStats getInstance() {
-        return INST;
-    }
-
-    private WeeklyInternetStats() {
-    }
-
     private long totalBytes = 0;
 
     private String fileName;
@@ -69,8 +61,16 @@ class WeeklyInternetStats implements Runnable, Stats {
 
     private InformationFactory informationFactory = InformationFactory.getInstance(INET_USAGE);
 
+    @Contract(value = " -> new", pure = true)
+    public static @NotNull WeeklyInternetStats getInstance() {
+        return INST;
+    }
+
     protected String getFileName() {
         return fileName;
+    }
+
+    private WeeklyInternetStats() {
     }
 
     @Override
@@ -125,6 +125,17 @@ class WeeklyInternetStats implements Runnable, Stats {
 
     }
 
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
+        stringJoiner.add("totalBytes = " + totalBytes);
+        if (!Stats.isSunday()) {
+            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+            stringJoiner.add(daySunCounter());
+        }
+        return stringJoiner.toString();
+    }
+
     /**
      @return inetstatsIP.csv length in bytes.
 
@@ -147,6 +158,20 @@ class WeeklyInternetStats implements Runnable, Stats {
         return new File(FileNames.INETSTATSIP_CSV).length();
     }
 
+    private @NotNull String daySunCounter() {
+        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
+        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
+        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
+    }
+
+    private void readStatsToCSVAndDeleteFromDB() {
+        List<String> chkIps = FileSystemWorker.readFileToList(new File(FileNames.INETSTATSIP_CSV).getPath());
+        for (String ip : chkIps) {
+            messageToUser.info(writeObj(ip, "300000"));
+        }
+        new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
+    }
+
     private void makeIPFile(@NotNull ResultSet resultSet, boolean isNoSquidNeedRead) throws SQLException {
         try (OutputStream outputStream = new FileOutputStream(ipsWithInet)) {
             try (PrintStream printStream = new PrintStream(outputStream, true)) {
@@ -166,43 +191,6 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
     }
 
-    private void readStatsToCSVAndDeleteFromDB() {
-        List<String> chkIps = FileSystemWorker.readFileToList(new File(FileNames.INETSTATSIP_CSV).getPath());
-        for (String ip : chkIps) {
-            messageToUser.info(writeObj(ip, "300000"));
-        }
-        new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
-    }
-
-    private @NotNull String daySunCounter() {
-        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
-        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
-        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
-    }
-
-    private void readNoSquidIPs() {
-        Set<String> ipsList = new LinkedHashSet<>();
-        SSHFactory build = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(),
-            "sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit", this.getClass().getSimpleName()).build();
-        String[] vipNetIPs = build.call().split("\n");
-        for (String netIP : vipNetIPs) {
-            String ip = netIP;
-            try {
-                ip = ip.split("#")[0];
-            }
-            catch (IndexOutOfBoundsException e) {
-                ip = ip.replace("<br>", "");
-            }
-            finally {
-                ip = ip.replace("<br>", "");
-            }
-            if (!ip.isEmpty()) {
-                ipsList.add(ip);
-            }
-        }
-        ipsList.forEach(ip->FileSystemWorker.appendObjectToFile(ipsWithInet, ip));
-    }
-
     @Override
     public String writeObj(String ip, Object rowsLimit) {
         this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
@@ -219,15 +207,24 @@ class WeeklyInternetStats implements Runnable, Stats {
         return retStr;
     }
 
-    @Override
-    public String toString() {
-        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
-        stringJoiner.add("totalBytes = " + totalBytes);
-        if (!Stats.isSunday()) {
-            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
-            stringJoiner.add(daySunCounter());
+    private void readNoSquidIPs() {
+        Set<String> ipsList = new LinkedHashSet<>();
+        SSHFactory build = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(),
+            "sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit", this.getClass().getSimpleName()).build();
+        String[] vipNetIPs;
+        try {
+            vipNetIPs = build.call().split("\n");
         }
-        return stringJoiner.toString();
+        catch (RuntimeException e) {
+            vipNetIPs = new String[]{""};
+        }
+        for (String netIP : vipNetIPs) {
+            String ip = getIP(netIP);
+            if (!ip.isEmpty()) {
+                ipsList.add(ip);
+            }
+        }
+        ipsList.forEach(ip->FileSystemWorker.appendObjectToFile(ipsWithInet, ip));
     }
 
     private String downloadConcreteIPStatistics() {
@@ -267,6 +264,19 @@ class WeeklyInternetStats implements Runnable, Stats {
             Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
         }
         return -1;
+    }
+
+    private String getIP(String ip) {
+        try {
+            ip = ip.split("#")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            ip = ip.replace("<br>", "");
+        }
+        finally {
+            ip = ip.replace("<br>", "");
+        }
+        return ip;
     }
 
     private void printConcreteIPToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
