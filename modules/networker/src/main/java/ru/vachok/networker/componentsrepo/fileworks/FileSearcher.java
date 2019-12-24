@@ -19,14 +19,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -58,8 +52,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     private int totalFiles;
     
     private long startStamp;
-    
-    private Semaphore dropSemaphore;
     
     public @NotNull String getSearchResultsFromDB() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -157,7 +149,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     public FileSearcher(String patternToSearch) {
         this.patternToSearch = patternToSearch;
         lastTableName = ConstantsFor.DB_SEARCHS + String.valueOf(System.currentTimeMillis());
-        dropSemaphore = new Semaphore(3);
     }
     
     /**
@@ -169,7 +160,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         startFolder = folder;
         totalFiles = 0;
         lastTableName = ConstantsFor.DB_SEARCHS + String.valueOf(System.currentTimeMillis());
-        dropSemaphore = new Semaphore(3);
     }
     
     /**
@@ -241,28 +231,23 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         try {
             this.startStamp = System.currentTimeMillis();
             Files.walkFileTree(startFolder, this);
-            saveToDB();
+            startFolder = Paths
+                    .get(startFolder.toAbsolutePath().normalize().toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\"));
+            Files.walkFileTree(startFolder, this);
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
         }
         finally {
-            dropSemaphore.release();
+            saveToDB();
         }
-        return resSet;
+        return this.resSet;
     }
     
     private void saveToDB() {
         DataConnectTo instanceDCT = dataConnectInst;
-        if (dropSemaphore.availablePermits() > 0) {
-            dropSemaphore.drainPermits();
-            int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);
-            int fileTo = instanceDCT.uploadCollection(resSet, lastTableName);
-            messageToUser.info(this.getClass().getSimpleName(), "Releasing permit!", MessageFormat.format("{0} tableCreate, {1} fileTo.", tableCreate, fileTo));
-        }
-        messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
-                .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
-        dropSemaphore.release();
+        int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);
+        int fileTo = instanceDCT.uploadCollection(resSet, lastTableName);
         MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(AbstractForms.fromArray(resSet));
     }
     
@@ -278,7 +263,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         this.totalFiles += 1;
         patternToSearch = patternToSearch.toLowerCase();
         if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch.toLowerCase())) {
-            resSet.add(file.toFile().getAbsolutePath());
+            this.resSet.add(file.toFile().getAbsolutePath());
         }
         return FileVisitResult.CONTINUE;
     }
@@ -293,8 +278,11 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         if (dir.toFile().isDirectory()) {
-            messageToUser
-                    .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
+            messageToUser.info(
+                    "total files: " + totalFiles, "found: " + (resSet.size() - 1),
+                    "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\",
+                            ""));
+    
             long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
             if (secondsScan == 0) {
                 secondsScan = 1;
