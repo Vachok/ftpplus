@@ -20,31 +20,31 @@ import java.util.List;
  @see H2DBTest
  @since 01.11.2019 (9:40) */
 public class H2DB implements DataConnectTo {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, H2DB.class.getSimpleName());
-    
+
     private static final String TESTS_ONLY = "4 tests only";
-    
+
     private final Connection connection;
-    
+
     private String dbName;
-    
+
     @Override
     public MysqlDataSource getDataSource() {
         throw new UnsupportedOperationException(TESTS_ONLY);
     }
-    
+
     @Override
     public int uploadCollection(Collection stringsCollection, String tableName) {
         throw new UnsupportedOperationException(TESTS_ONLY);
     }
-    
+
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new UnsupportedOperationException(TESTS_ONLY);
     }
-    
+
     @Override
     public int createTable(@NotNull String dbPointTable, @NotNull List<String> additionalColumns) {
         if (this.connection == null) {
@@ -64,18 +64,18 @@ public class H2DB implements DataConnectTo {
             return -666;
         }
     }
-    
+
     @Override
     public Connection getDefaultConnection(String dbName) {
         this.dbName = dbName;
-        if (NetScanService.isReach(OtherKnownDevices.SRVMYSQL_HOME)) {
+        if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             return DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbName);
         }
         else {
             return this.connection;
         }
     }
-    
+
     H2DB() throws NetworkerStopException {
         try {
             this.dbName = ConstantsFor.DB_VELKOMVELKOMPC;
@@ -89,7 +89,7 @@ public class H2DB implements DataConnectTo {
             throw new NetworkerStopException(this.getClass().getSimpleName(), "public H2DB()", 91);
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("H2DB{");

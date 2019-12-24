@@ -152,7 +152,7 @@ public class ScanOnline implements NetScanService {
     @Contract(pure = true)
     private @NotNull List<String> setMaxOnlineFromDatabase() {
         List<String> retList = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("lan.");
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT DISTINCT ip FROM online");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {

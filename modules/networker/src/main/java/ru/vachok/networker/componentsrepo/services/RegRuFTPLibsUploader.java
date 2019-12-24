@@ -48,7 +48,7 @@ public class RegRuFTPLibsUploader implements Runnable {
 
     private static File[] retMassive = new File[3];
 
-    private String ftpPass = chkPass();
+    private String ftpPass;
 
     private @NotNull FTPClient getFtpClient() {
         FTPClient client = new FTPClient();
@@ -75,6 +75,15 @@ public class RegRuFTPLibsUploader implements Runnable {
             messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "getHost", e.getMessage());
         }
         return ftpAddress;
+    }
+
+    public RegRuFTPLibsUploader() {
+        try {
+            ftpPass = chkPass();
+        }
+        catch (RuntimeException e) {
+            messageToUser.error("RegRuFTPLibsUploader.RegRuFTPLibsUploader", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
     }
 
     @Override

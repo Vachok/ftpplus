@@ -5,6 +5,7 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
@@ -30,45 +31,45 @@ import static java.net.InetAddress.getByAddress;
 /**
  Проверка свичей в локальной сети.
  <p>
- 
+
  @since 04.12.2018 (9:23) */
 class SwitchesAvailability implements NetScanService {
-    
-    
+
+
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final InvokeEmptyMethodException EMPTY_METHOD_EXCEPTION = new InvokeEmptyMethodException(SwitchesAvailability.class.getTypeName());
-    
+
     @SuppressWarnings("InstanceVariableOfConcreteClass")
     private final ThreadConfig thrCfg = AppComponents.threadConfig();
-    
+
     private final Set<String> okIP = new HashSet<>();
-    
+
     /**
      {@link InetAddress} свчичей.
      */
     private List<String> swAddr = new ArrayList<>();
-    
+
     private String okStr = "null";
-    
+
     private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
-    
+
     private String badStr = "It's OK!";
-    
+
     public Set<String> getOkIP() {
         return okIP;
     }
-    
+
     @Override
     public Runnable getMonitoringRunnable() {
         return this;
     }
-    
+
     @Override
     public String getStatistics() {
         return toString();
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SwitchesAvailability{");
@@ -79,49 +80,22 @@ class SwitchesAvailability implements NetScanService {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Override
     public String getExecution() {
         throw EMPTY_METHOD_EXCEPTION;
     }
-    
+
     @Override
     public String writeLog() {
         return writeToLogFile(okStr, badStr);
     }
-    
-    /**
-     Запись в файл информации
-     <p>
-     1. {@link TimeChecker#call()}
-     <p>
-     
-     @param okIP лист он-лайн адресов
-     @param badIP лист офлайн адресов
-     */
-    private String writeToLogFile(String okIP, String badIP) {
-        File file = new File("sw.list.log");
-        
-        String toWrite = new StringBuilder()
-            .append(new TimeChecker().call().getMessage())
-            .append("\n\n")
-            .append("Online SwitchesWiFi: \n")
-            .append(okIP)
-            .append("\nOffline SwitchesWiFi: \n")
-            .append(badIP).toString();
-        return FileSystemWorker.writeFile(file.getAbsolutePath(), toWrite);
-    }
-    
-    @Override
-    public void run() {
-        System.out.println(getPingResultStr());
-    }
-    
+
     @Override
     public String getPingResultStr() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(diapazonPingSwitches()).append(" size of DiapazonScan.pingSwitch()\n");
-    
+
         try {
             stringBuilder.append(makeAddrQ());
         }
@@ -130,7 +104,12 @@ class SwitchesAvailability implements NetScanService {
         }
         return stringBuilder.toString();
     }
-    
+
+    @Override
+    public void run() {
+        System.out.println(getPingResultStr());
+    }
+
     private int diapazonPingSwitches() {
         List<String> stringList = new ArrayList<>();
         try {
@@ -138,21 +117,21 @@ class SwitchesAvailability implements NetScanService {
         }
         catch (IllegalAccessException e) {
             messageToUser.error(MessageFormat
-                .format("SwitchesAvailability.diapazonPingSwitches says: {0}. Parameters: \n[no]:-\nSTACK:\n {1}", e.getMessage(), new TForms().fromArray(e)));
+                .format("SwitchesAvailability.diapazonPingSwitches says: {0}. Parameters: \n[no]:-\nSTACK:\n {1}", e.getMessage(), AbstractForms.fromArray(e)));
         }
         Collections.sort(swAddr);
-        
+
         return swAddr.size();
     }
-    
+
     /**
      Преобразователь строк в адреса.
      <p>
      1. {@link SwitchesAvailability#pingAddrAndReturnLogFileName(java.util.Queue)} - тестируем онлайность.
      <p>
-     
+
      @return File, with results
-     
+
      @throws IOException если хост unknown.
      */
     private String makeAddrQ() throws IOException {
@@ -164,7 +143,26 @@ class SwitchesAvailability implements NetScanService {
         }
         return pingAddrAndReturnLogFileName(inetAddressesQ);
     }
-    
+
+    /**
+     Контролер пинг-экзекуторов
+     <p>
+     Свичи начала сегментов. Вкл. в оптическое ядро.
+
+     @return лист важного оборудования
+
+     @throws IllegalAccessException swF.get(swF).toString()
+     */
+    private static List<String> pingSwitch() throws IllegalAccessException {
+        Field[] swFields = SwitchesWiFi.class.getFields();
+        List<String> swList = new ArrayList<>();
+        for (Field swF : swFields) {
+            String ipAddrStr = swF.get(swF).toString();
+            swList.add(ipAddrStr);
+        }
+        return swList;
+    }
+
     /**
      Проверяет пинги
      <p>
@@ -172,16 +170,16 @@ class SwitchesAvailability implements NetScanService {
      2. {@link TForms#fromArray(java.util.List, boolean)} - - лист онлайн ИП в строку. <br>
      3. {@link SwitchesAvailability#writeToLogFile(java.lang.String, java.lang.String)}
      <p>
-     
+
      @param inetAddressQueue преобразованный лист строк в ИП. {@link #makeAddrQ()}
      @return File, with results
-     
+
      @throws IOException если адрес недоступен.
      */
     private String pingAddrAndReturnLogFileName(@NotNull Queue<InetAddress> inetAddressQueue) throws IOException {
         List<String> badIP = new ArrayList<>();
         Logger javaLogger = Logger.getLogger(this.getClass().getSimpleName());
-        
+
         while (inetAddressQueue.iterator().hasNext()) {
             int delay = (int) (ConstantsFor.DELAY) * 2;
             InetAddress poll = inetAddressQueue.poll();
@@ -201,28 +199,31 @@ class SwitchesAvailability implements NetScanService {
                 javaLogger.fine(String.valueOf(false));
             }
         }
-    
-        okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
-        badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
+
+        okStr = AbstractForms.fromArray(okIP).replaceAll("/", "");
+        badStr = AbstractForms.fromArray(badIP).replaceAll("/", "");
         return writeToLogFile(okStr, badStr);
     }
-    
+
     /**
-     Контролер пинг-экзекуторов
+     Запись в файл информации
      <p>
-     Свичи начала сегментов. Вкл. в оптическое ядро.
-     
-     @return лист важного оборудования
-     
-     @throws IllegalAccessException swF.get(swF).toString()
+     1. {@link TimeChecker#call()}
+     <p>
+
+     @param okIP лист он-лайн адресов
+     @param badIP лист офлайн адресов
      */
-    private static List<String> pingSwitch() throws IllegalAccessException {
-        Field[] swFields = SwitchesWiFi.class.getFields();
-        List<String> swList = new ArrayList<>();
-        for (Field swF : swFields) {
-            String ipAddrStr = swF.get(swF).toString();
-            swList.add(ipAddrStr);
-        }
-        return swList;
+    private String writeToLogFile(String okIP, String badIP) {
+        File file = new File("sw.list.log");
+
+        String toWrite = new StringBuilder()
+            .append(new TimeChecker().call().getMessage())
+            .append("\n\n")
+            .append("Online SwitchesWiFi: \n")
+            .append(okIP)
+            .append("\nOffline SwitchesWiFi: \n")
+            .append(badIP).toString();
+        return FileSystemWorker.writeFile(file.getAbsolutePath(), toWrite);
     }
 }

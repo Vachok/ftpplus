@@ -22,9 +22,9 @@ import java.util.Properties;
  @see MemoryPropertiesTest
  @since 08.10.2019 (16:26) */
 public class MemoryProperties extends DBPropsCallable {
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MemoryProperties.class.getSimpleName());
-    
+
     @Override
     public Properties getProps() {
         Properties retProps = new Properties();
@@ -34,7 +34,7 @@ public class MemoryProperties extends DBPropsCallable {
         }
         return retProps;
     }
-    
+
     @Override
     public boolean delProps() {
         if (InitProperties.getInstance(InitProperties.FILE).getProps().size() < 17) {
@@ -50,7 +50,7 @@ public class MemoryProperties extends DBPropsCallable {
             return false;
         }
     }
-    
+
     @Override
     public boolean setProps(@NotNull Properties properties) {
         final String sql = "INSERT INTO mem.properties (property, valueofproperty) VALUES (?, ?);";
@@ -59,7 +59,7 @@ public class MemoryProperties extends DBPropsCallable {
             connection.setAutoCommit(false);
             connection.setSavepoint();
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-    
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                     preparedStatement.setString(1, entry.getKey().toString());
@@ -81,31 +81,13 @@ public class MemoryProperties extends DBPropsCallable {
         }
         return update > 0;
     }
-    
-    private @NotNull Properties fromMemoryTable() {
-        Properties properties = new Properties();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from mem.properties")) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        properties.put(resultSet.getString(2), resultSet.getString(3));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
-            properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
-        }
-        return properties;
-    }
-    
+
     @Contract(pure = true)
     private boolean updateTable(@NotNull Properties properties) {
         boolean result = false;
         boolean finished = false;
         final String sql = "UPDATE properties SET property=?, valueofproperty=? WHERE property=?";
-    
+
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -131,5 +113,23 @@ public class MemoryProperties extends DBPropsCallable {
             messageToUser.error(MessageFormat.format("MemoryProperties.updateTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         return result;
+    }
+
+    private @NotNull Properties fromMemoryTable() {
+        Properties properties = new Properties();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from mem.properties")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        properties.put(resultSet.getString(2), resultSet.getString(3));
+                    }
+                }
+            }
+        }
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+            properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+        }
+        return properties;
     }
 }

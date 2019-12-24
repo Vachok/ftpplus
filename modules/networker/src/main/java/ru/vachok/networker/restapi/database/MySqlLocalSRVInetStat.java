@@ -6,18 +6,21 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
@@ -147,34 +150,9 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         catch (SQLException e) {
             messageToUser.warn("MySqlLocalSRVInetStat", "getDefaultConnection", e.getMessage() + " see line: 189");
         }
-        if (connection != null) {
-            return connection;
-        }
-        else {
-            return tryToStartMySQL();
-        }
+        return connection;
     }
-    
-    private Connection tryToStartMySQL() {
-        SSHFactory sshFactory = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "sudo /usr/local/etc/rc.d/mysql-server start;exit", this.getClass().getSimpleName()).build();
-        String asString = AppConfigurationLocal.getInstance().submitAsString(sshFactory, 60);
-        try {
-            return getDataSource().getConnection();
-        }
-        catch (SQLException e) {
-            throw new InvokeIllegalException(this.getClass().getSimpleName() + ".tryToStartMySQL");
-        }
-    }
-    
-    private void abortConnection(@NotNull Connection connection) {
-        try {
-            connection.abort(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor());
-        }
-        catch (SQLException e) {
-            messageToUser.error("MySqlLocalSRVInetStat.abortConnection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-    }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");

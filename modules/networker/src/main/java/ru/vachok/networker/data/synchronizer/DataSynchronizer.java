@@ -8,6 +8,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -112,24 +113,27 @@ public class DataSynchronizer extends SyncData {
         return retInt;
     }
 
-    @Override
-    public int uploadCollection(Collection stringsCollection, String tableName) {
-        int retInt = 0;
-        Queue<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
-            connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            connection.setSavepoint();
-            for (Object jsonObject : jsonObjects) {
-                retInt += workWithObject(jsonObject, connection);
+    private @NotNull List<String> getDbNames() {
+        List<String> dbNames = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String dbName = resultSet.getString(1);
+                if (Stream.of("_schema", "mysql", "log", "lan", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
+                    System.out.println("dbName = " + dbName);
+                }
+                else {
+                    dbNames.add(dbName);
+                }
+                Thread.currentThread().setName(dbName);
             }
-            connection.commit();
         }
-        catch (NumberFormatException | SQLException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
-            retInt = -666;
+        catch (SQLException e) {
+            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            dbNames.add(AbstractForms.networkerTrace(e));
         }
-        return retInt;
+        return dbNames;
     }
 
     @Override
@@ -233,27 +237,31 @@ public class DataSynchronizer extends SyncData {
         throw new UnsupportedOperationException("27.11.2019 (21:03)");
     }
 
-    private @NotNull List<String> getDbNames() {
-        List<String> dbNames = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                String dbName = resultSet.getString(1);
-                if (Stream.of("_schema", "mysql", "log", "lan").anyMatch(dbName::contains)) {
-                    System.out.println("dbName = " + dbName);
-                }
-                else {
-                    dbNames.add(dbName);
-                }
-                Thread.currentThread().setName(dbName);
+    @Override
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        int retInt = 0;
+        LinkedList<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setSavepoint();
+            for (Object jsonObject : jsonObjects) {
+                retInt += workWithObject(jsonObject, connection);
             }
+            connection.commit();
         }
-        catch (SQLException e) {
-            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-            dbNames.add(AbstractForms.networkerTrace(e));
+        catch (NumberFormatException | SQLException e) {
+            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
+                DataConnectTo.getInstance(DataConnectTo.H2DB).createTable(tableName, Collections.EMPTY_LIST);
+                retInt = 0;
+            }
+            else {
+                messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
+                retInt = -666;
+            }
+
         }
-        return dbNames;
+        return retInt;
     }
 
     private @NotNull List<String> getTblNames(String dbName) {
