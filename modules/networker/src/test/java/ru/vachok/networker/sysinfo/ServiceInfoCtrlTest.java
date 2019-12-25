@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -34,32 +35,33 @@ import static org.testng.Assert.*;
  @see ServiceInfoCtrl
  @since 14.06.2019 (9:36) */
 public class ServiceInfoCtrlTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
+
     private HttpServletRequest request = new MockHttpServletRequest();
-    
+
     private HttpServletResponse response = new MockHttpServletResponse();
-    
+
     private Model model = new ExtendedModelMap();
-    
+
     private ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
+    @Ignore
     public void testOffPC() {
         ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
         try {
@@ -71,7 +73,7 @@ public class ServiceInfoCtrlTest {
             System.err.println(e.getMessage());
         }
     }
-    
+
     @Test
     public void testCloseApp() {
         HttpServletRequest request = new MockHttpServletRequest();
@@ -84,7 +86,7 @@ public class ServiceInfoCtrlTest {
             assertTrue(e.getMessage().contains("DENY for"));
         }
     }
-    
+
     @Test
     public void testInfoMapping() {
         try {
@@ -114,7 +116,7 @@ public class ServiceInfoCtrlTest {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testTestToString() {
         String s = infoCtrl.toString();
