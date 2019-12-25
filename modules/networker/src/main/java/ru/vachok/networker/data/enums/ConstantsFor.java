@@ -531,6 +531,8 @@ public enum ConstantsFor {
 
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
 
+    public static String DB_ARCHIVEVELKOMPC = "archive.velkompc";
+
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));
