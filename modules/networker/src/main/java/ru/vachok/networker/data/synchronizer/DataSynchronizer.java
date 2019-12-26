@@ -158,14 +158,14 @@ public class DataSynchronizer extends SyncData {
                 }
             }
         }
+        String syncArch = new OneServerSync().syncData();
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
         MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
-            .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal));
+            .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal) + " and " + syncArch);
         MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
             .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
                 .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal));
-        new OneServerSync().syncData();
+                    .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal) + " and " + syncArch);
     }
 
     @Override
