@@ -23,53 +23,55 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
  @see DBPCHTMLInfo
  @since 18.08.2019 (23:41) */
 public class DBPCHTMLInfoTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(AccessLogUSERTest.class.getSimpleName(), System.nanoTime());
-    
+
     private DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo();
-    
+
     private String pcName = "do0213";
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
         dbpchtmlInfo.setClassOption(pcName);
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void initFields() {
         this.dbpchtmlInfo = new DBPCHTMLInfo();
         this.pcName = "do0213";
         this.dbpchtmlInfo.setClassOption(this.pcName);
     }
-    
+
     @Test
     public void testTestToString() {
         String do0213 = dbpchtmlInfo.toString();
         Assert.assertTrue(do0213.contains("DBPCInfo{"), do0213);
     }
-    
+
     @Test
     public void testFillWebModel() {
         String fillWebModel = dbpchtmlInfo.fillWebModel();
         Assert.assertTrue(fillWebModel.contains("<a href="), fillWebModel);
         Assert.assertTrue(fillWebModel.contains("Last online"), fillWebModel);
     }
-    
+
     @Test
     public void testFillAttribute() {
         String fillAttributeStr = dbpchtmlInfo.fillAttribute("no0027");
@@ -77,20 +79,20 @@ public class DBPCHTMLInfoTest {
         Assert.assertTrue(fillAttributeStr.contains("Offline = "), fillAttributeStr);
         Assert.assertFalse(fillAttributeStr.contains("<br>"), fillAttributeStr);
     }
-    
+
     @Test
     public void testSetClassOption() {
         dbpchtmlInfo.setClassOption("do0213");
         Assert.assertTrue(dbpchtmlInfo.toString().contains("DBPCInfo{pcName='do0213'"), dbpchtmlInfo.toString());
     }
-    
+
     @Test
     public void testLastOnline() {
         dbpchtmlInfo.setClassOption("do0213");
         String lastOnline = dbpchtmlInfo.fillWebModel();
         Assert.assertTrue(lastOnline.contains("<a href=\"/ad?do0213\"><font color=\"red\">ikudryashov - do0213.eatmeat.ru. Last online: "), lastOnline);
     }
-    
+
     @Test
     public void testCountOnOff() {
         String countOnOff = dbpchtmlInfo.fillAttribute("a242");
@@ -98,13 +100,13 @@ public class DBPCHTMLInfoTest {
         Assert.assertTrue(countOnOff.contains("Offline"), countOnOff);
         Assert.assertTrue(countOnOff.contains("TOTAL"), countOnOff);
     }
-    
+
     @Test
     public void testFirstOnline() {
         String firstOnline = dbpchtmlInfo.getUserNameFromNonAutoDB();
         Assert.assertTrue(firstOnline.contains("Resolved:"), firstOnline);
     }
-    
+
     @Test
     @Ignore
     public void startOfTimeOnResolve() {
@@ -129,9 +131,9 @@ public class DBPCHTMLInfoTest {
             FileSystemWorker.appendObjectToFile(new File("objects.set"), name);
 //            setTimeOn();
         }
-        
+
     }
-    
+
     @Test
     @Ignore
     public void oldBobby() {
@@ -139,7 +141,7 @@ public class DBPCHTMLInfoTest {
         String onOff = countOnOff();
         System.out.println("onOff = " + onOff);
     }
-    
+
     @Deprecated
     private @NotNull String countOnOff() {
         Thread.currentThread().checkAccess();
@@ -170,14 +172,14 @@ public class DBPCHTMLInfoTest {
         }
         return new DBPCHTMLInfo().htmlOnOffCreate(onLine.size(), offLine.size());
     }
-    
+
     @Deprecated
     private void upPcUser(int on, int off) {
         String wherePcName = " WHERE `pcName` like '";
         final String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `On`= %d%s%s%%'", on, wherePcName, pcName);
         final String sqlOff = String.format("UPDATE `velkom`.`pcuser` SET `Off`= %d%s%s%%'", off, wherePcName, pcName);
         final String sqlTotal = String.format("UPDATE `velkom`.`pcuser` SET `Total`= %d%s%s%%'", on + off, wherePcName, pcName);
-        
+
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
              PreparedStatement psOn = connection.prepareStatement(sqlOn);
              PreparedStatement psOff = connection.prepareStatement(sqlOff);
@@ -191,7 +193,7 @@ public class DBPCHTMLInfoTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     private void setTimeOn() {
         this.pcName = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
         JsonObject jsonObject = new JsonObject();
@@ -203,7 +205,7 @@ public class DBPCHTMLInfoTest {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     jsonObject.set("setTimeOn", preparedStatement.toString().split(": ")[1]);
                     while (resultSet.next()) {
-                        this.pcName = resultSet.getString("NamePP");
+                        this.pcName = resultSet.getString(ConstantsFor.DBCOL_NAMEPP);
                         jsonObject.set("setTimeOn", pcName);
                         jsonObject.set("idrec", resultSet.getInt("idrec"));
                         jsonObject.set("laston", resultSet.getTimestamp("TimeNow").getTime());
@@ -216,13 +218,13 @@ public class DBPCHTMLInfoTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     private void setOnTime(@NotNull JsonObject jsonObject) {
         long longStamp = jsonObject.getLong("laston", MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
         LocalDateTime localDateTime = LocalDateTime.ofEpochSecond(longStamp / 1000, 0, ZoneOffset.ofHours(3));
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         Assert.assertTrue(timestamp.getTime() == longStamp);
-    
+
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             String sql = "SELECT * from velkompc WHERE TimeNow > ? and NamePP like ? AND onlinenow=1 order by idrec ASC limit 1";
             try (PreparedStatement preparedStatementFirst = connection.prepareStatement(sql)) {
@@ -242,10 +244,10 @@ public class DBPCHTMLInfoTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     private void finaliz(@NotNull JsonObject jsonObject) {
         long aLong = jsonObject.getLong("on", MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
-    
+
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `velkom`.`pcuser` SET `timeon`=? WHERE  pcname like ?")) {
                 preparedStatement.setTimestamp(1, Timestamp.valueOf(LocalDateTime.ofEpochSecond(aLong / 1000, 0, ZoneOffset.ofHours(3))));
@@ -263,5 +265,5 @@ public class DBPCHTMLInfoTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
 }

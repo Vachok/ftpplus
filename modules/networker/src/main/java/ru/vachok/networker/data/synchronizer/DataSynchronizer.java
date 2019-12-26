@@ -165,6 +165,7 @@ public class DataSynchronizer extends SyncData {
             .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
                 .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal));
+        new OneServerSync().syncData();
     }
 
     @Override
