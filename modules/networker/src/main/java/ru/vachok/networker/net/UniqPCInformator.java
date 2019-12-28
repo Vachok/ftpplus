@@ -18,16 +18,14 @@ import java.util.*;
 
 
 /**
- Class ru.vachok.networker.net.UniqPCInformator
- <p>
-
+ @see UniqPCInformatorTest
  @since 19.12.2019 (21:16) */
 public class UniqPCInformator implements InformationFactory {
 
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UniqPCInformator.class.getSimpleName());
 
-    private static final String SQL_ONLINE = "select distinct pcname as ip, pcname from lan.online";
+    private static final String SQL_ONLINE = "select distinct pcname AS pcname, ip from lan.online order by pcname asc";
 
     private boolean isJson = false;
 
@@ -35,7 +33,7 @@ public class UniqPCInformator implements InformationFactory {
     private List<JsonObject> getAsJson() {
         List<JsonObject> jsonObjects = new ArrayList<>();
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);
-             PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE + " order by pcname asc");
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 JsonObject jsonObject = new JsonObject();
@@ -65,7 +63,7 @@ public class UniqPCInformator implements InformationFactory {
         if (!isJson) {
             Map<String, String> pcs = getPcs();
             String retStr = AbstractForms.fromArray(pcs);
-            retStr = pcs.size() + " utique PC in net.\n" + retStr;
+            retStr = pcs.size() + " utique PC in net.\n\n" + retStr;
             return retStr;
         }
         else {
@@ -85,7 +83,7 @@ public class UniqPCInformator implements InformationFactory {
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                uniqPCs.put(resultSet.getString("ip"), resultSet.getString(ConstantsFor.SQL_PCNAME));
+                uniqPCs.put(resultSet.getString(ConstantsFor.SQL_PCNAME), resultSet.getString("ip"));
             }
         }
         catch (SQLException e) {
