@@ -120,7 +120,7 @@ public class DataSynchronizer extends SyncData {
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 String dbName = resultSet.getString(1);
-                if (Stream.of("_schema", "mysql", "log", "lan", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
+                if (Stream.of("_schema", "mysql", "log", "lan", "archive", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
                     System.out.println("dbName = " + dbName);
                 }
                 else {
