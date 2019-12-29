@@ -10,6 +10,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 
 
+/**
+ @see RestCTRL */
 public class RestCTRLTest {
 
 

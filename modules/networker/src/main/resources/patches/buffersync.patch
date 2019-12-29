@@ -1,0 +1,511 @@
+Index: modules/networker/src/test/java/ru/vachok/networker/data/synchronizer/DataSynchronizerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/test/java/ru/vachok/networker/data/synchronizer/DataSynchronizerTest.java	(revision ae34a7d57a35ae630e424eb87630a88657df44b0)
++++ modules/networker/src/test/java/ru/vachok/networker/data/synchronizer/DataSynchronizerTest.java	(date 1577010800147)
+@@ -2,7 +2,10 @@
+ 
+ 
+ import org.testng.Assert;
+-import org.testng.annotations.*;
++import org.testng.annotations.AfterClass;
++import org.testng.annotations.BeforeClass;
++import org.testng.annotations.BeforeMethod;
++import org.testng.annotations.Test;
+ import ru.vachok.networker.AbstractForms;
+ import ru.vachok.networker.AppComponents;
+ import ru.vachok.networker.configuretests.TestConfigure;
+@@ -11,34 +14,41 @@
+ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
+ 
+ import java.io.File;
+-import java.util.*;
+-import java.util.concurrent.*;
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.List;
++import java.util.concurrent.ExecutionException;
++import java.util.concurrent.Future;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.TimeoutException;
+ 
+ 
++/**
++ @see DataSynchronizer */
+ public class DataSynchronizerTest {
+-    
+-    
++
++
+     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DataSynchronizerTest.class.getSimpleName(), System
+-            .nanoTime());
+-    
++        .nanoTime());
++
+     private DataSynchronizer dataSynchronizer;
+-    
++
+     @BeforeClass
+     public void setUp() {
+         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
+         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
+     }
+-    
++
+     @AfterClass
+     public void tearDown() {
+         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+     }
+-    
++
+     @BeforeMethod
+     public void initSync() {
+         this.dataSynchronizer = new DataSynchronizer();
+     }
+-    
++
+     @Test
+     public void testSyncData() {
+         dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.H2DB));
+@@ -58,19 +68,18 @@
+             Assert.assertTrue(new File("velkom.velkompc").exists());
+         }
+     }
+-    
++
+     @Test
+-    @Ignore
+     public void testSuperRun() {
+         AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 30);
+     }
+-    
++
+     @Test
+     public void testUploadCollection() {
+         int isUpl = dataSynchronizer.uploadCollection(Collections.EMPTY_LIST, "test.test");
+         Assert.assertTrue(isUpl == 0);
+     }
+-    
++
+     @Test
+     public void testMakeColumns() {
+         try {
+@@ -80,19 +89,19 @@
+             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+         }
+     }
+-    
++
+     @Test
+     public void testToString() {
+         String toStr = dataSynchronizer.toString();
+         Assert.assertEquals(toStr, "DataSynchronizer[\n" +
+-                "dbToSync = 'velkom.velkompc',\n" +
+-                "columnName = 'idrec',\n" +
+-                "dataConnectTo = MySqlLocalSRVInetStat{\"tableName\":\"velkom\",\"dbName\":\"velkom\"},\n" +
+-                "colNames = {},\n" +
+-                "columnsNum = 0\n" +
+-                "]");
++            "dbToSync = 'velkom.velkompc',\n" +
++            "columnName = 'idrec',\n" +
++            "dataConnectTo = MySqlLocalSRVInetStat{\"tableName\":\"velkom\",\"dbName\":\"velkom\"},\n" +
++            "colNames = {},\n" +
++            "columnsNum = 0\n" +
++            "]");
+     }
+-    
++
+     /**
+      @see DataSynchronizer#createTable(String, List)
+      */
+Index: modules/networker/src/main/java/ru/vachok/networker/data/enums/PropertiesNames.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/data/enums/PropertiesNames.java	(revision ae34a7d57a35ae630e424eb87630a88657df44b0)
++++ modules/networker/src/main/java/ru/vachok/networker/data/enums/PropertiesNames.java	(date 1577010800132)
+@@ -3,6 +3,7 @@
+ package ru.vachok.networker.data.enums;
+ 
+ 
++import ru.vachok.networker.data.synchronizer.DataSynchronizer;
+ import ru.vachok.networker.restapi.props.InitProperties;
+ 
+ 
+@@ -29,6 +30,8 @@
+ 
+     public static final String DBPASS = "dbpass";
+ 
++    public static final String DATASYNC_UPLOADED = String.format("%stblupl", DataSynchronizer.class.getSimpleName());
++
+     /**
+      Property name: lastworkstart
+      */
+@@ -100,4 +103,6 @@
+     public static final String PASSWORD = "password";
+ 
+     public static final String CLASS = "class";
++
++    public static final String UPLOADBUFFER = "uploadbuffer";
+ }
+Index: modules/networker/src/main/java/ru/vachok/networker/data/synchronizer/DataSynchronizer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/data/synchronizer/DataSynchronizer.java	(revision ae34a7d57a35ae630e424eb87630a88657df44b0)
++++ modules/networker/src/main/java/ru/vachok/networker/data/synchronizer/DataSynchronizer.java	(date 1577010800142)
+@@ -9,8 +9,10 @@
+ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+ import ru.vachok.networker.data.enums.ConstantsFor;
+ import ru.vachok.networker.data.enums.ModelAttributeNames;
++import ru.vachok.networker.data.enums.PropertiesNames;
+ import ru.vachok.networker.restapi.database.DataConnectTo;
+ import ru.vachok.networker.restapi.message.MessageToUser;
++import ru.vachok.networker.restapi.props.InitProperties;
+ 
+ import java.io.File;
+ import java.io.IOException;
+@@ -19,6 +21,7 @@
+ import java.text.MessageFormat;
+ import java.util.Date;
+ import java.util.*;
++import java.util.concurrent.ArrayBlockingQueue;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.TimeUnit;
+ import java.util.stream.Stream;
+@@ -44,74 +47,21 @@
+ 
+     private File dbObj = new File(dbToSync);
+ 
++    private String[] columns;
++
+     private int totalRows = 0;
+ 
+     private int dbsTotal = 0;
+ 
+-    DataSynchronizer() {
+-    }
+-
+-    @Override
+-    public String getDbToSync() {
+-        return dbToSync;
+-    }
+-
+-    @Override
+-    public void setDbToSync(String dbToSync) {
+-        this.dbToSync = dbToSync;
++    private int getBuffer() {
++        String uploadBufferProp = InitProperties.getInstance(InitProperties.FILE).getProps().getProperty(PropertiesNames.UPLOADBUFFER);
++        try {
++            return Integer.parseInt(uploadBufferProp);
++        }
++        catch (NumberFormatException e) {
++            return 100_000;
++        }
+     }
+-
+-    @Override
+-    public String toString() {
+-        return new StringJoiner(",\n", DataSynchronizer.class.getSimpleName() + "[\n", "\n]")
+-            .add("dbToSync = '" + dbToSync + "'")
+-            .add("columnName = '" + columnName + "'")
+-            .add("dataConnectTo = " + dataConnectTo)
+-            .add("colNames = " + colNames)
+-            .add("columnsNum = " + columnsNum)
+-            .toString();
+-    }
+-
+-    private @NotNull String[] getColumns(@NotNull PreparedStatement preparedStatement) throws SQLException {
+-        ResultSetMetaData metaData = preparedStatement.getMetaData();
+-        int countCol = metaData.getColumnCount();
+-        String[] retArr = new String[countCol];
+-        for (int i = 0; i < countCol; i++) {
+-            retArr[i] = metaData.getColumnName(i + 1) + "," + metaData.getColumnTypeName(i + 1);
+-        }
+-        return retArr;
+-    }
+-
+-    @Override
+-    public int createTable(String dbPointTable, @NotNull List<String> additionalColumns) {
+-        int retInt;
+-        StringBuilder sqlBuilder = new StringBuilder();
+-        sqlBuilder.append("CREATE TABLE ")
+-            .append(dbPointTable)
+-            .append(" (`idrec` INT NOT NULL AUTO_INCREMENT, ")
+-            .append("`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(), ");
+-        if (additionalColumns.size() > 0) {
+-            additionalColumns.forEach(sqlBuilder::append);
+-        }
+-        sqlBuilder.append("PRIMARY KEY (`idrec`))");
+-        final String sql = sqlBuilder.toString();
+-        try (Connection connection = dataConnectTo.getDefaultConnection(dbPointTable);
+-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+-            retInt = preparedStatement.executeUpdate();
+-            addComment();
+-        }
+-        catch (SQLException e) {
+-            if (e.getMessage().contains("already exists")) {
+-                retInt = -1;
+-            }
+-            else {
+-                messageToUser.error("DataSynchronizer.createTable", e.getMessage(), AbstractForms.networkerTrace(e));
+-                retInt = -666;
+-            }
+-        }
+-        this.dbToSync = dbPointTable;
+-        return retInt;
+-    }
+ 
+     private @NotNull List<String> getDbNames() {
+         List<String> dbNames = new ArrayList<>();
+@@ -136,35 +86,54 @@
+         return dbNames;
+     }
+ 
++    private int getRetInt() {
++        try {
++
++            return Integer
++                .parseInt(InitProperties.getInstance(InitProperties.FILE).getProps().getProperty(PropertiesNames.DATASYNC_UPLOADED, "0"));
++        }
++        catch (NumberFormatException e) {
++            return 0;
++        }
++    }
++
++    DataSynchronizer() {
++    }
++
++    @Override
++    public String getDbToSync() {
++        return dbToSync;
++    }
++
++    @Override
++    public void setDbToSync(String dbToSync) {
++        this.dbToSync = dbToSync;
++    }
++
+     @Override
+-    public void superRun() {
+-        Thread.currentThread().checkAccess();
+-        Thread.currentThread().setPriority(4);
+-        List<String> dbNames = getDbNames();
+-        for (String dbName : dbNames) {
+-            List<String> tblNames = getTblNames(dbName);
+-            for (String tblName : tblNames) {
+-                this.dbsTotal += 1;
+-                this.dbToSync = dbName + "." + tblName;
+-                this.dbObj = new File(dbToSync);
+-                try {
+-                    syncData();
+-                }
+-                catch (RuntimeException ignore) {
+-                    //27.11.2019 (0:06)
+-                }
+-                finally {
+-                    dbObj.deleteOnExit();
+-                }
++    public int uploadCollection(Collection stringsCollection, String tableName) {
++        int retInt = getRetInt();
++        LinkedList<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
++        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
++            connection.setAutoCommit(false);
++            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
++            connection.setSavepoint();
++            for (Object jsonObject : jsonObjects) {
++                retInt += workWithObject(jsonObject, connection);
++            }
++            connection.commit();
++        }
++        catch (NumberFormatException | SQLException e) {
++            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
++                DataConnectTo.getInstance(DataConnectTo.H2DB).createTable(tableName, Collections.EMPTY_LIST);
++                retInt = 0;
++            }
++            else {
++                messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
++                retInt = -666;
+             }
+         }
+-        messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
+-        MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
+-            .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal));
+-        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
+-            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
+-                .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
+-                    .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal));
++        return retInt;
+     }
+ 
+     @Override
+@@ -188,28 +157,28 @@
+         StringBuilder stringBuilder = new StringBuilder();
+         stringBuilder.append(sql).append("\n");
+         int uploadedCount;
+-        Queue<JsonObject> jsonObjects = new LinkedList<>();
++        Queue<JsonObject> jsonObjects = new ArrayBlockingQueue<>(getBuffer());
+         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
+             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+-                String[] columns = getColumns(preparedStatement);
++                this.columns = getColumns(preparedStatement);
+                 this.columnsNum = columns.length;
+                 stringBuilder.append(Arrays.toString(columns)).append("\n");
+                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+-                    Files.deleteIfExists(dbObj.toPath());
+-                    while (resultSet.next()) {
+-                        JsonObject jsonObject = new JsonObject();
+-                        for (int i = 0; i < columns.length; i++) {
+-                            jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
+-                        }
+-                        jsonObjects.add(jsonObject);
+-                    }
++                    jsonObjects.add(makeJSONObj(resultSet));
+                 }
+             }
+         }
+         catch (SQLException | IOException e) {
+             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+         }
+-        uploadedCount = uploadCollection(jsonObjects, dbToSync);
++        if (jsonObjects.size() >= getBuffer()) {
++            uploadedCount = uploadCollection(jsonObjects, dbToSync);
++            dbObj.delete();
++            syncData();
++        }
++        else {
++            uploadedCount = uploadCollection(jsonObjects, dbToSync);
++        }
+         if (uploadedCount != -666) {
+             stringBuilder.append(uploadedCount).append(" items uploaded").append("\n");
+         }
+@@ -221,6 +190,68 @@
+         return stringBuilder.toString();
+     }
+ 
++    @Override
++    public void superRun() {
++        Thread.currentThread().checkAccess();
++        Thread.currentThread().setPriority(4);
++        List<String> dbNames = getDbNames();
++        for (String dbName : dbNames) {
++            List<String> tblNames = getTblNames(dbName);
++            for (String tblName : tblNames) {
++                this.dbsTotal += 1;
++                this.dbToSync = dbName + "." + tblName;
++                this.dbObj = new File(dbToSync);
++                try {
++                    syncData();
++                }
++                catch (RuntimeException ignore) {
++                    //27.11.2019 (0:06)
++                }
++                finally {
++                    dbObj.deleteOnExit();
++                }
++            }
++        }
++        messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
++        MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
++            .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal));
++        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
++            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
++                .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
++                    .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal));
++    }
++
++    @Override
++    public int createTable(String dbPointTable, @NotNull List<String> additionalColumns) {
++        int retInt;
++        StringBuilder sqlBuilder = new StringBuilder();
++        sqlBuilder.append("CREATE TABLE ")
++            .append(dbPointTable)
++            .append(" (`idrec` INT NOT NULL AUTO_INCREMENT, ")
++            .append("`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(), ");
++        if (additionalColumns.size() > 0) {
++            additionalColumns.forEach(sqlBuilder::append);
++        }
++        sqlBuilder.append("PRIMARY KEY (`idrec`))");
++        final String sql = sqlBuilder.toString();
++        try (Connection connection = dataConnectTo.getDefaultConnection(dbPointTable);
++             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
++            retInt = preparedStatement.executeUpdate();
++            addComment();
++        }
++        catch (SQLException e) {
++            if (e.getMessage().contains("already exists")) {
++                retInt = -1;
++            }
++            else {
++                messageToUser.error("DataSynchronizer.createTable", e.getMessage(), AbstractForms.networkerTrace(e));
++                retInt = -666;
++            }
++        }
++        this.dbToSync = dbPointTable;
++        return retInt;
++    }
++
+     private void addComment() {
+         String sql = String.format("ALTER TABLE %s COMMENT='Automatically created by %s, at %s';", dbToSync, this.getClass().getTypeName(), new Date());
+         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbToSync);
+@@ -238,30 +269,35 @@
+     }
+ 
+     @Override
+-    public int uploadCollection(Collection stringsCollection, String tableName) {
+-        int retInt = 0;
+-        LinkedList<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
+-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
+-            connection.setAutoCommit(false);
+-            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+-            connection.setSavepoint();
+-            for (Object jsonObject : jsonObjects) {
+-                retInt += workWithObject(jsonObject, connection);
+-            }
+-            connection.commit();
++    public String toString() {
++        return new StringJoiner(",\n", DataSynchronizer.class.getSimpleName() + "[\n", "\n]")
++            .add("dbToSync = '" + dbToSync + "'")
++            .add("columnName = '" + columnName + "'")
++            .add("dataConnectTo = " + dataConnectTo)
++            .add("colNames = " + colNames)
++            .add("columnsNum = " + columnsNum)
++            .toString();
++    }
++
++    private @NotNull String[] getColumns(@NotNull PreparedStatement preparedStatement) throws SQLException {
++        ResultSetMetaData metaData = preparedStatement.getMetaData();
++        int countCol = metaData.getColumnCount();
++        String[] retArr = new String[countCol];
++        for (int i = 0; i < countCol; i++) {
++            retArr[i] = metaData.getColumnName(i + 1) + "," + metaData.getColumnTypeName(i + 1);
+         }
+-        catch (NumberFormatException | SQLException e) {
+-            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
+-                DataConnectTo.getInstance(DataConnectTo.H2DB).createTable(tableName, Collections.EMPTY_LIST);
+-                retInt = 0;
+-            }
+-            else {
+-                messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
+-                retInt = -666;
++        return retArr;
++    }
++
++    private JsonObject makeJSONObj(ResultSet resultSet) throws IOException, SQLException {
++        Files.deleteIfExists(dbObj.toPath());
++        JsonObject jsonObject = new JsonObject();
++        while (resultSet.next()) {
++            for (int i = 0; i < columns.length; i++) {
++                jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
+             }
+-
+         }
+-        return retInt;
++        return jsonObject;
+     }
+ 
+     private @NotNull List<String> getTblNames(String dbName) {

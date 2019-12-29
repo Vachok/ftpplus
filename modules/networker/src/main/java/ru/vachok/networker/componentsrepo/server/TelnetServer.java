@@ -12,9 +12,13 @@ import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.net.*;
-import java.util.Enumeration;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -67,8 +71,9 @@ public class TelnetServer implements ConnectToMe {
             } while (!socket.isClosed());
         }
         catch (IOException e) {
-            messageToUser.error(getClass().getSimpleName(), "runSocket", e.getMessage() + " see line: 66");
-            runSocket();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            new TelnetServer(listenPort).runSocket();
         }
     }
 
@@ -87,6 +92,56 @@ public class TelnetServer implements ConnectToMe {
         return sb.toString();
     }
 
+    private void scanMore(@NotNull String line) throws IOException {
+        if (line.equalsIgnoreCase("thr")) {
+            printStreamF.println(AppComponents.threadConfig());
+            accepSoc();
+        }
+        else if (line.equalsIgnoreCase("exitapp")) {
+            new ExitApp(getClass().getSimpleName()).run();
+        }
+        else if (line.isEmpty()) {
+            accepSoc();
+        }
+        else {
+            printStreamF.close();
+            System.setOut(System.err);
+        }
+    }
+
+    private void scanInput(@NotNull String scannerLine) throws IOException {
+        if (scannerLine.contains("test")) {
+            printStreamF.println("test OK");
+            accepSoc();
+        }
+        else if (scannerLine.equals("q")) {
+            System.setOut(System.err);
+            accepSoc();
+        }
+        else if (scannerLine.equals(ConstantsFor.FILESUF_SSHACTIONS)) {
+            try {
+                System.setOut(System.err);
+                printStreamF.println(new Tracerouting().call());
+                accepSoc();
+            }
+            catch (Exception e) {
+                System.setOut(System.err);
+                messageToUser.error("TelnetServer", "scanInput", e.getMessage() + " see line: 146");
+                socket.close();
+            }
+        }
+        else if (scannerLine.contains("sshactions:")) {
+            System.setOut(System.err);
+            String sshCom = scannerLine.split(":")[1];
+            SSHFactory buildSSH = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, sshCom, getClass().getSimpleName()).build();
+            printStreamF.println(getClass().getSimpleName() + ".scanInput buildSSH  = " + buildSSH.call());
+            accepSoc();
+        }
+        else {
+            scanMore(scannerLine);
+        }
+    }
+
     private void accepSoc() {
         int timeout = 0;
         try {
@@ -95,7 +150,7 @@ public class TelnetServer implements ConnectToMe {
             socket.setSoTimeout(timeout);
         }
         catch (SocketException e) {
-            messageToUser.error(getClass().getSimpleName(), "accepSoc", e.getMessage() + " see line: 94");
+            reconSock();
         }
 
         try {
@@ -117,110 +172,18 @@ public class TelnetServer implements ConnectToMe {
                 }
                 else {
                     System.setOut(System.err);
-                    trayMsg.info(getClass().getSimpleName(), socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
                     scanner.close();
                 }
             }
         }
         catch (IOException e) {
-            messageToUser.error(getClass().getSimpleName(), "accepSoc", e.getMessage() + " see line: 120");
             System.setOut(System.err);
-            trayMsg.info(getClass().getSimpleName(), socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
             reconSock();
         }
         finally {
-            System.out.println(socket.isClosed() + " socket");
             System.setOut(System.err);
-            trayMsg.info(getClass().getSimpleName(), socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
             reconSock();
         }
-    }
-
-    private void scanInput(@NotNull String scannerLine) throws IOException {
-        if (scannerLine.contains("test")) {
-            printStreamF.println("test OK");
-            accepSoc();
-        }
-        else if (scannerLine.equals("q")) {
-            System.setOut(System.err);
-            trayMsg.info(getClass().getSimpleName(), socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
-            accepSoc();
-        }
-        else if (scannerLine.equals(ConstantsFor.FILESUF_SSHACTIONS)) {
-            try {
-                System.setOut(System.err);
-                trayMsg.info(getClass().getSimpleName(), socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
-                printStreamF.println(new Tracerouting().call());
-                accepSoc();
-            }
-            catch (Exception e) {
-                System.setOut(System.err);
-                trayMsg.info(getClass().getSimpleName(), socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
-                messageToUser.error("TelnetServer", "scanInput", e.getMessage() + " see line: 146");
-                socket.close();
-            }
-        }
-        else if (scannerLine.contains("sshactions:")) {
-            System.setOut(System.err);
-            trayMsg.info(getClass().getSimpleName(), socket.getLocalSocketAddress().toString(), socket.getRemoteSocketAddress().toString());
-            String sshCom = scannerLine.split(":")[1];
-            SSHFactory buildSSH = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, sshCom, getClass().getSimpleName()).build();
-            printStreamF.println(getClass().getSimpleName() + ".scanInput buildSSH  = " + buildSSH.call());
-            accepSoc();
-        }
-        else {
-            scanMore(scannerLine);
-        }
-    }
-
-    private void scanMore(@NotNull String line) throws IOException {
-        if (line.equals("ost")) {
-            String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
-            printStreamF.println("OSTTOPST: ");
-            printStreamF.println(loadLib());
-            accepSoc();
-        }
-        else if (line.equalsIgnoreCase("thr")) {
-            printStreamF.println(AppComponents.threadConfig());
-            accepSoc();
-        }
-        else if (line.equalsIgnoreCase("exitapp")) {
-            new ExitApp(getClass().getSimpleName()).run();
-        }
-        else if (line.isEmpty()) {
-            accepSoc();
-        }
-        else {
-            printStreamF.close();
-            System.setOut(System.err);
-        }
-    }
-
-    private @NotNull String loadLib() throws IOException {
-        File ostJar = new File("ost.jar");
-        StringBuilder stringBuilder = new StringBuilder();
-        try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(new URL[]{new URL(JAR)});
-             OutputStream outputStream = new FileOutputStream(ostJar)
-        ) {
-            String libName = "ostpst-8.0.1919.jar";
-            Enumeration<URL> resources = urlClassLoader.getResources(libName);
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                stringBuilder.append(new File(JAR + libName).length() / 1024).append("/");
-                try (InputStream inputStream = url.openStream();
-                     InputStreamReader reader = new InputStreamReader(inputStream);
-                     BufferedReader bufferedReader = new BufferedReader(reader)
-                ) {
-                    while (reader.ready()) {
-                        int read = inputStream.read();
-                        outputStream.write(bufferedReader.read());
-                    }
-                }
-            }
-        }
-        stringBuilder.append(ostJar.length() / 1024);
-        ostJar.deleteOnExit();
-        return stringBuilder.toString();
     }
 
     private void reconSock() {
@@ -230,6 +193,7 @@ public class TelnetServer implements ConnectToMe {
             accepSoc();
         }
         catch (IOException e) {
+            runSocket();
             messageToUser.error(getClass().getSimpleName(), "reconSock", e.getMessage() + " see line: 219");
         }
     }

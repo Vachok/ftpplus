@@ -467,6 +467,10 @@ public enum ConstantsFor {
 
     public static final String RED = "red";
 
+    public static final String DBCOL_ADDRPP = "AddressPP";
+
+    public static final String DBCOL_SEGPP = "SegmentPP";
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     public static final String DB_SEARCHPERMANENT = "search.permanent";
@@ -529,7 +533,11 @@ public enum ConstantsFor {
 
     public static final String REPAIR_TABLE = "REPAIR TABLE ";
 
+    public static final String DBCOL_NAMEPP = "NamePP";
+
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
+
+    public static String DB_ARCHIVEVELKOMPC = "archive.velkompc";
 
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

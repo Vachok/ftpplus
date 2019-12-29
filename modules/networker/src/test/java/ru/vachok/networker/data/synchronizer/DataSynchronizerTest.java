@@ -7,38 +7,44 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 public class DataSynchronizerTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DataSynchronizerTest.class.getSimpleName(), System
             .nanoTime());
-    
+
     private DataSynchronizer dataSynchronizer;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void initSync() {
         this.dataSynchronizer = new DataSynchronizer();
     }
-    
+
     @Test
     public void testSyncData() {
         dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.H2DB));
@@ -55,22 +61,22 @@ public class DataSynchronizerTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         finally {
-            Assert.assertTrue(new File("velkom.velkompc").exists());
+            Assert.assertTrue(new File(ConstantsFor.DB_VELKOMVELKOMPC).exists());
         }
     }
-    
+
     @Test
     @Ignore
     public void testSuperRun() {
         AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 30);
     }
-    
+
     @Test
     public void testUploadCollection() {
         int isUpl = dataSynchronizer.uploadCollection(Collections.EMPTY_LIST, "test.test");
         Assert.assertTrue(isUpl == 0);
     }
-    
+
     @Test
     public void testMakeColumns() {
         try {
@@ -80,7 +86,7 @@ public class DataSynchronizerTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void testToString() {
         String toStr = dataSynchronizer.toString();
@@ -92,7 +98,7 @@ public class DataSynchronizerTest {
                 "columnsNum = 0\n" +
                 "]");
     }
-    
+
     /**
      @see DataSynchronizer#createTable(String, List)
      */

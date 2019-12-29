@@ -148,7 +148,6 @@ public abstract class UserInfo implements InformationFactory {
             catch (SQLException | RuntimeException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
                         pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
-                messageToUser.error("DatabaseWriter.writeAutoResolveUserToDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
         }
 
@@ -425,7 +424,7 @@ public abstract class UserInfo implements InformationFactory {
             if (e instanceof SQLException) {
                 messageToUser.error(getClass().getSimpleName(), methName, FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
                 if (e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
-                    String repairTable = new MyISAMRepair().repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_VELKOMVELKOMPC);
+                    String repairTable = new MyISAMRepair().repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_VELKOMVELKOMPC + " QUICK EXTENDED;");
                     FileSystemWorker.appendObjectToFile(appendTo, repairTable);
                 }
             }

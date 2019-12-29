@@ -65,10 +65,11 @@ public class AppInfoOnLoad implements Runnable {
             checkFileExitLastAndWriteMiniLog();
             if (Runtime.getRuntime().freeMemory() > (350 * ConstantsFor.MBYTE) && NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
                 SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-                AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 600);
+                AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 3600);
             }
             else {
-                MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName()).infoTimer(10, UsefulUtilities.getRunningInformation());
+                MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
+                    .error(this.getClass().getSimpleName(), "Sync not running", UsefulUtilities.getRunningInformation());
             }
         }
     }
@@ -91,7 +92,7 @@ public class AppInfoOnLoad implements Runnable {
         getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
             Runnable runInfoForU = ()->FileSystemWorker
-                    .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
+                .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
             messageToUser.info(UsefulUtilities.getIISLogSize());
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runInfoForU);
         }
@@ -113,6 +114,11 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
 
+    @Contract(pure = true)
+    public static List<String> getMiniLogger() {
+        return MINI_LOGGER;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
@@ -121,11 +127,6 @@ public class AppInfoOnLoad implements Runnable {
         sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
         sb.append('}');
         return sb.toString();
-    }
-
-    @Contract(pure = true)
-    public static List<String> getMiniLogger() {
-        return MINI_LOGGER;
     }
 
 }
