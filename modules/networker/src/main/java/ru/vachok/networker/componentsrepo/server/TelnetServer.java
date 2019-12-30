@@ -172,7 +172,6 @@ public class TelnetServer implements ConnectToMe {
             reconSock();
         }
         finally {
-            System.setOut(System.err);
             reconSock();
         }
     }

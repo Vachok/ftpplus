@@ -38,7 +38,6 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(netScanService, 10, 10, TimeUnit.SECONDS);
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         schedule(scanOnlineRun, 3);
-        
         schedule(popSmtpTest, (int) (ConstantsFor.DELAY * 2));
         schedule(new TemporaryFullInternet(), (int) ConstantsFor.DELAY);
         schedule((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4);
@@ -47,7 +46,7 @@ public class ScheduleDefiner implements AppConfigurationLocal {
     }
     
     public void startIntervalTasks() {
-        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 50, SUNDAY);
         scheduleStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);

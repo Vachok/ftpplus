@@ -31,11 +31,10 @@ public class MyCalenTest {
     @Test
     public void testGetNextDayofWeek() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E");
-        Date nextMon = MyCalen.getNextDayofWeek(9, 10, DayOfWeek.MONDAY);
-        Assert.assertTrue(nextMon.getTime() > System.currentTimeMillis(), nextMon.toString());
-        Assert.assertTrue(simpleDateFormat.format(nextMon).equalsIgnoreCase("пн"));
+        Date nextSun = MyCalen.getNextDayofWeek(23, 50, DayOfWeek.SUNDAY);
+        Assert.assertTrue(nextSun.getTime() > System.currentTimeMillis(), nextSun.toString());
+        Assert.assertEquals(simpleDateFormat.format(nextSun), "вс");
         Date afterOneWeek = MyCalen.getNextDayofWeek(9, 10, LocalDate.now().getDayOfWeek());
-        
     }
     
     @Test
