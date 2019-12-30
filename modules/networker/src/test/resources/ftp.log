@@ -11791,3 +11791,219 @@ PWD
 QUIT
 221-Goodbye. You uploaded 0 and downloaded 0 kbytes.
 221 Logout.
+----------
+Connect to: (28.12.2019 18:51:28)
+hostname=10.10.111.52:50021
+username=kudr
+startdir=/IPCamera/IV2405P_00626E6A45EA/record/
+10.10.111.52=10.10.111.52
+220---------- Welcome to Pure-FTPd [privsep] ----------
+220-You are user number 1 of 50 allowed.
+220-Local time is now 15:51. Server port: 50021.
+220-This is a private system - No anonymous login
+220 You will be disconnected after 15 minutes of inactivity.
+USER kudr
+331 User kudr OK. Password required
+PASS ***********
+230 OK. Current directory is /
+SYST
+215 UNIX Type: L8
+FEAT
+211-Extensions supported:
+ EPRT
+ IDLE
+ MDTM
+ SIZE
+ REST STREAM
+ MLST type*;size*;sizd*;modify*;UNIX.mode*;UNIX.uid*;UNIX.gid*;unique*;
+ MLSD
+ TVFS
+ ESTA
+ PASV
+ EPSV
+ SPSV
+ ESTP
+211 End.
+HELP SITE
+214-The following SITE commands are recognized
+ CHMOD
+ IDLE
+ UTIME
+214 Pure-FTPd - http://pureftpd.org/
+CWD /IPCamera/IV2405P_00626E6A45EA/record/
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record
+Connect ok!
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record" is your current location
+Чтение каталога...
+TYPE A
+200 TYPE is now ASCII
+PORT 10,10,111,57,203,39
+200 PORT command successful
+MLSD
+150 Connecting to port 52007
+Загрузка
+Ожидание ответа сервера...
+226-Options: -a -l 
+226 8 matches total
+QUIT
+221-Goodbye. You uploaded 0 and downloaded 0 kbytes.
+221 Logout.
+----------
+Connect to: (28.12.2019 18:51:35)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,140,52).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,136,231).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/IntoApplication.106374177"
+rm "/usr/home/kudr/networker/IntoApplication.232307208"
+rm "/usr/home/kudr/networker/IntoApplication.447212746"
+rm "/usr/home/kudr/networker/IntoApplication.572868060"
+rm "/usr/home/kudr/networker/IntoApplication.609962972"
+rm "/usr/home/kudr/networker/IntoApplication.712609105"
+rm "/usr/home/kudr/networker/IntoApplication.918312414"
+rm "/usr/home/kudr/networker/IntoApplication.934275857"
+rm "/usr/home/kudr/networker/IntoApplication.1364913072"
+rm "/usr/home/kudr/networker/IntoApplication.1388278453"
+rm "/usr/home/kudr/networker/IntoApplication.1427651360"
+rm "/usr/home/kudr/networker/IntoApplication.1484171695"
+rm "/usr/home/kudr/networker/IntoApplication.1529060733"
+rm "/usr/home/kudr/networker/IntoApplication.1803669141"
+rm "/usr/home/kudr/networker/IntoApplication.1836463382"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/10.200.202.54_37288.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.202.54_37288.csv"
+get "/usr/home/kudr/networker/10.200.202.56_37294.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.202.56_37294.csv"
+get "/usr/home/kudr/networker/10.200.204.52_37298.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.204.52_37298.csv"
+get "/usr/home/kudr/networker/10.200.205.52_37297.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.205.52_37297.csv"
+get "/usr/home/kudr/networker/10.200.208.52_37296.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.208.52_37296.csv"
+get "/usr/home/kudr/networker/10.200.208.53_37292.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.208.53_37292.csv"
+get "/usr/home/kudr/networker/10.200.208.60_37291.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.208.60_37291.csv"
+get "/usr/home/kudr/networker/10.200.210.51_37297.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.210.51_37297.csv"
+get "/usr/home/kudr/networker/10.200.212.56_37288.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.212.56_37288.csv"
+get "/usr/home/kudr/networker/10.200.212.62_37298.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.212.62_37298.csv"
+get "/usr/home/kudr/networker/10.200.213.59_37290.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.59_37290.csv"
+get "/usr/home/kudr/networker/10.200.213.72_37287.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.72_37287.csv"
+get "/usr/home/kudr/networker/10.200.213.114_37293.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.114_37293.csv"
+get "/usr/home/kudr/networker/10.200.213.132_37291.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.132_37291.csv"
+get "/usr/home/kudr/networker/10.200.213.144_37291.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.144_37291.csv"
+get "/usr/home/kudr/networker/10.200.213.147_37290.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.147_37290.csv"
+get "/usr/home/kudr/networker/10.200.213.166_37286.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.166_37286.csv"
+get "/usr/home/kudr/networker/10.200.217.51_37287.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.51_37287.csv"
+get "/usr/home/kudr/networker/10.200.217.56_37295.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.56_37295.csv"
+get "/usr/home/kudr/networker/10.200.217.61_37292.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.61_37292.csv"
+get "/usr/home/kudr/networker/10.200.217.62_37294.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.62_37294.csv"
+get "/usr/home/kudr/networker/10.200.217.66_37290.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.66_37290.csv"
+get "/usr/home/kudr/networker/10.200.217.67_37294.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.67_37294.csv"
+get "/usr/home/kudr/networker/10.200.217.79_37296.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.79_37296.csv"
+get "/usr/home/kudr/networker/10.200.217.83_37289.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.83_37289.csv"
+get "/usr/home/kudr/networker/10.200.217.86_37298.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.86_37298.csv"
+get "/usr/home/kudr/networker/10.200.217.93_37289.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.93_37289.csv"
+get "/usr/home/kudr/networker/192.168.13.69_37293.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.13.69_37293.csv"
+get "/usr/home/kudr/networker/192.168.13.220_37287.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.13.220_37287.csv"
+get "/usr/home/kudr/networker/192.168.14.64_37295.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.14.64_37295.csv"
+get "/usr/home/kudr/networker/192.168.14.157_37294.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.14.157_37294.csv"
+rm "/usr/home/kudr/networker/10.200.202.54_37288.csv"
+rm "/usr/home/kudr/networker/10.200.202.56_37294.csv"
+rm "/usr/home/kudr/networker/10.200.204.52_37298.csv"
+rm "/usr/home/kudr/networker/10.200.205.52_37297.csv"
+rm "/usr/home/kudr/networker/10.200.208.52_37296.csv"
+rm "/usr/home/kudr/networker/10.200.208.53_37292.csv"
+rm "/usr/home/kudr/networker/10.200.208.60_37291.csv"
+rm "/usr/home/kudr/networker/10.200.210.51_37297.csv"
+rm "/usr/home/kudr/networker/10.200.212.56_37288.csv"
+rm "/usr/home/kudr/networker/10.200.212.62_37298.csv"
+rm "/usr/home/kudr/networker/10.200.213.59_37290.csv"
+rm "/usr/home/kudr/networker/10.200.213.72_37287.csv"
+rm "/usr/home/kudr/networker/10.200.213.114_37293.csv"
+rm "/usr/home/kudr/networker/10.200.213.132_37291.csv"
+rm "/usr/home/kudr/networker/10.200.213.144_37291.csv"
+rm "/usr/home/kudr/networker/10.200.213.147_37290.csv"
+rm "/usr/home/kudr/networker/10.200.213.166_37286.csv"
+rm "/usr/home/kudr/networker/10.200.217.51_37287.csv"
+rm "/usr/home/kudr/networker/10.200.217.56_37295.csv"
+rm "/usr/home/kudr/networker/10.200.217.61_37292.csv"
+rm "/usr/home/kudr/networker/10.200.217.62_37294.csv"
+rm "/usr/home/kudr/networker/10.200.217.66_37290.csv"
+rm "/usr/home/kudr/networker/10.200.217.67_37294.csv"
+rm "/usr/home/kudr/networker/10.200.217.79_37296.csv"
+rm "/usr/home/kudr/networker/10.200.217.83_37289.csv"
+rm "/usr/home/kudr/networker/10.200.217.86_37298.csv"
+rm "/usr/home/kudr/networker/10.200.217.93_37289.csv"
+rm "/usr/home/kudr/networker/192.168.13.69_37293.csv"
+rm "/usr/home/kudr/networker/192.168.13.220_37287.csv"
+rm "/usr/home/kudr/networker/192.168.14.64_37295.csv"
+rm "/usr/home/kudr/networker/192.168.14.157_37294.csv"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/inetstats/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/lan/"
+rm "/usr/home/kudr/networker/lan/onlines.max"
+rm "/usr/home/kudr/networker/lan/onlines.max"
+rm "/usr/home/kudr/networker/lan/lan_21vsrv_1577117980.scan"
+rm "/usr/home/kudr/networker/lan/lan_21vsrv_1577119387.scan"
+ls "/usr/home/kudr/networker/lan/"
+rm "/usr/home/kudr/networker/lan/lan_21vsrv_1577123775.scan"
+ls "/usr/home/kudr/networker/lan/"
+ls "/usr/home/kudr/networker/"
+connection to 10.10.111.65 closed - bye bye!

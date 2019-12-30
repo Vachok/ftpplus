@@ -40,11 +40,11 @@ public class TimeOnActualizer implements Runnable {
         else {
             pcNames.add(pcName);
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_ARCHIVEVELKOMPC)) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             for (String pcName : pcNames) {
                 final String sql = "SELECT idrec FROM velkompc WHERE NamePP LIKE '" + pcName
-                        .replace(ConstantsFor.DOMAIN_EATMEATRU, "") + "%' AND OnlineNow = 0 ORDER BY idrec DESC LIMIT 1";
+                    .replace(ConstantsFor.DOMAIN_EATMEATRU, "") + "%' AND OnlineNow = 0 ORDER BY idrec DESC LIMIT 1";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.setQueryTimeout(150);
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -61,7 +61,7 @@ public class TimeOnActualizer implements Runnable {
                     catch (SQLException e) {
                         if (e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
                             messageToUser.error(this.getClass().getSimpleName(), e.getMessage(), new MyISAMRepair()
-                                .repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_VELKOMVELKOMPC));
+                                .repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_ARCHIVEVELKOMPC));
                         }
                     }
                 }
@@ -93,7 +93,7 @@ public class TimeOnActualizer implements Runnable {
 
     private void actualizeDB(int idRec, String pcName) {
         final String sql = "SELECT TimeNow FROM velkompc WHERE idrec > ? AND NamePP LIKE ? AND OnlineNow=1 ORDER BY idrec asc LIMIT 1";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_ARCHIVEVELKOMPC)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setInt(1, idRec);
                 preparedStatement.setString(2, pcName);
