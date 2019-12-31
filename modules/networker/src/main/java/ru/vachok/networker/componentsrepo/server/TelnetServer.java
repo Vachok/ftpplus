@@ -12,10 +12,7 @@ import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -29,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
 public class TelnetServer implements ConnectToMe {
 
+
+    private File traceFile = new File(this.getClass().getSimpleName() + ".trace");
 
     private ServerSocket serverSocket;
 
@@ -175,10 +174,10 @@ public class TelnetServer implements ConnectToMe {
             }
         }
         catch (IOException e) {
-            System.setOut(System.err);
             reconSock();
         }
         finally {
+            System.setOut(System.err);
             reconSock();
         }
     }
