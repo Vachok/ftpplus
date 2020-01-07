@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'ru.vachok.ostpst'
-version '8.0.2001'
+version '8.0.2002'
 
 sourceCompatibility = 1.8
 

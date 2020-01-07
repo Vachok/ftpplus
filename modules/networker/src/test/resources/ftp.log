@@ -12419,3 +12419,4 @@ ls "/usr/"
 ls "/usr/home/"
 ls "/usr/home/kudr/"
 get "/usr/home/kudr/vachok.ru_le.crt" "G:\My_Proj\FtpClientPlus\modules\networker\src\main\resources\ssl\vachok.ru_le.crt"
+connection to 10.10.111.65 closed - bye bye!
