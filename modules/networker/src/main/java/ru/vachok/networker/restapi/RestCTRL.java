@@ -88,7 +88,7 @@ public class RestCTRL {
         else {
             stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
             for (File listFile : Objects.requireNonNull(file.listFiles())) {
-                stringBuilder.append(listFile.getName());
+                stringBuilder.append(listFile.getName()).append(" size=").append(listFile.length() / 1024).append(" kb;");
                 String uAgent;
                 try {
                     uAgent = userAgent.toLowerCase();
