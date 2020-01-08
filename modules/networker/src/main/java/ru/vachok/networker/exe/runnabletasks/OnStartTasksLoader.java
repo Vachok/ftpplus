@@ -200,8 +200,8 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             preparedStatement.setString(3, jsonObject.toString());
             preparedStatement.executeUpdate();
         }
-        catch (ParseException e) {
-            messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 282 ***");
+        catch (ParseException ignore) {
+            //08.01.2020 (5:43)
         }
     }
 
