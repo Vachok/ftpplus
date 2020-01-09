@@ -116,7 +116,7 @@ public class DataSynchronizer extends SyncData {
     @Override
     public void superRun() {
         Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(3);
+        Thread.currentThread().setPriority(4);
         List<String> dbNames = getDbNames();
         for (String dbName : dbNames) {
             List<String> tblNames = getTblNames(dbName);
