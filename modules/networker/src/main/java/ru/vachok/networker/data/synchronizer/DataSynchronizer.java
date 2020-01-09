@@ -113,33 +113,10 @@ public class DataSynchronizer extends SyncData {
         return retInt;
     }
 
-    private @NotNull List<String> getDbNames() {
-        List<String> dbNames = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                String dbName = resultSet.getString(1);
-                if (Stream.of("_schema", "mysql", "log", "lan", "archive", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
-                    System.out.println("dbName = " + dbName);
-                }
-                else {
-                    dbNames.add(dbName);
-                }
-                Thread.currentThread().setName(dbName);
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-            dbNames.add(AbstractForms.networkerTrace(e));
-        }
-        return dbNames;
-    }
-
     @Override
     public void superRun() {
         Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(4);
+        Thread.currentThread().setPriority(3);
         List<String> dbNames = getDbNames();
         for (String dbName : dbNames) {
             List<String> tblNames = getTblNames(dbName);
@@ -162,10 +139,33 @@ public class DataSynchronizer extends SyncData {
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
         MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
             .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal) + " and " + syncArch);
-        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
-            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
-                .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal) + " and " + syncArch);
+        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
+            .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
+                .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal) + " and " + syncArch);
+    }
+
+    private @NotNull List<String> getDbNames() {
+        List<String> dbNames = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String dbName = resultSet.getString(1);
+                if (Stream.of("_schema", "mysql", "log", "lan", "archive", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
+                    messageToUser.warn(getClass().getSimpleName(), "NO SYNC:", dbName);
+                }
+                else {
+                    messageToUser.info(getClass().getSimpleName(), "Added to sync:", dbName);
+                    dbNames.add(dbName);
+                }
+                Thread.currentThread().setName(dbName);
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            dbNames.add(AbstractForms.networkerTrace(e));
+        }
+        return dbNames;
     }
 
     @Override
