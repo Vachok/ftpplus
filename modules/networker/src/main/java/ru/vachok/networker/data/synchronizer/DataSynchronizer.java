@@ -139,9 +139,20 @@ public class DataSynchronizer extends SyncData {
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
         MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
             .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal) + " and " + syncArch);
-        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
-            .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
-                .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal) + " and " + syncArch);
+        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(createMailText(syncArch));
+    }
+
+    @NotNull
+    private String createMailText(String syncArch) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(this.getClass().getSimpleName())
+            .append("\nsuperRun")
+            .append(MessageFormat.format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
+                .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal))
+            .append(" and ")
+            .append(syncArch).append("\n\n\n");
+        stringBuilder.append(AbstractForms.fromArray(getDbNames()));
+        return stringBuilder.toString();
     }
 
     private @NotNull List<String> getDbNames() {
