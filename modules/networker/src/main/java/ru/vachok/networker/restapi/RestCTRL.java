@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
@@ -81,14 +80,17 @@ public class RestCTRL {
     @NotNull
     private String getFileShow(String userAgent) {
         StringBuilder stringBuilder = new StringBuilder();
+        long totalSize = 0;
         File file = Paths.get(".").toAbsolutePath().normalize().toFile();
         if (file.listFiles() == null) {
-            throw new InvokeIllegalException(file.getAbsolutePath());
+            throw new IllegalArgumentException(file.getAbsolutePath());
         }
         else {
             stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
             for (File listFile : Objects.requireNonNull(file.listFiles())) {
-                stringBuilder.append(listFile.getName()).append(" size=").append(listFile.length() / 1024).append(" kb;");
+                long fileSizeKB = listFile.length() / 1024;
+                totalSize = totalSize + fileSizeKB;
+                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
                 String uAgent;
                 try {
                     uAgent = userAgent.toLowerCase();
@@ -103,6 +105,7 @@ public class RestCTRL {
                     stringBuilder.append("<br>");
                 }
             }
+            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
         }
         return stringBuilder.toString();
     }
