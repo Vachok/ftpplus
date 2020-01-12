@@ -4,21 +4,14 @@ package ru.vachok.networker.componentsrepo.server;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.*;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.io.*;
+import java.net.*;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -71,9 +64,7 @@ public class TelnetServer implements ConnectToMe {
             } while (!socket.isClosed());
         }
         catch (IOException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            new TelnetServer(listenPort).runSocket();
+            runSocket();
         }
     }
 
@@ -181,7 +172,6 @@ public class TelnetServer implements ConnectToMe {
             reconSock();
         }
         finally {
-            System.setOut(System.err);
             reconSock();
         }
     }
