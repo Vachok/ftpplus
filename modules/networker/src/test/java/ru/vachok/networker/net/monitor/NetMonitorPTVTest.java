@@ -16,7 +16,10 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -131,7 +134,7 @@ public class NetMonitorPTVTest {
         Assert.assertEquals(toString, "H2DB{}");
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_LANMONITOR)) {
             String url = connection.getMetaData().getURL();
-            boolean contains = url.contains("jdbc:h2:mem:velkompc") || url.contains("jdbc:mysql://srv-mysql.home:3306/lan");
+            boolean contains = url.contains("jdbc:h2:mem:velkompc") || url.contains("jdbc:mysql://10.10.111.65:3306/lan");
             Assert.assertTrue(contains, url);
             Assert.assertTrue(connection.isValid(5));
             try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS monitor (\n" +

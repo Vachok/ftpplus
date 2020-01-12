@@ -113,29 +113,6 @@ public class DataSynchronizer extends SyncData {
         return retInt;
     }
 
-    private @NotNull List<String> getDbNames() {
-        List<String> dbNames = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                String dbName = resultSet.getString(1);
-                if (Stream.of("_schema", "mysql", "log", "lan", "archive", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
-                    System.out.println("dbName = " + dbName);
-                }
-                else {
-                    dbNames.add(dbName);
-                }
-                Thread.currentThread().setName(dbName);
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-            dbNames.add(AbstractForms.networkerTrace(e));
-        }
-        return dbNames;
-    }
-
     @Override
     public void superRun() {
         Thread.currentThread().checkAccess();
@@ -162,10 +139,44 @@ public class DataSynchronizer extends SyncData {
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
         MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
             .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal) + " and " + syncArch);
-        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
-            .infoTimer(20, this.getClass().getSimpleName() + "\nsuperRun" + MessageFormat
-                .format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal) + " and " + syncArch);
+        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(createMailText(syncArch));
+    }
+
+    @NotNull
+    private String createMailText(String syncArch) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(this.getClass().getSimpleName())
+            .append("\nsuperRun")
+            .append(MessageFormat.format("Total {0} rows affected\nTime spend: {1} sec. DBs = {2}", totalRows, TimeUnit.MILLISECONDS
+                .toSeconds(System.currentTimeMillis() - startStamp), dbsTotal))
+            .append(" and ")
+            .append(syncArch).append("\n\n\n");
+        stringBuilder.append(AbstractForms.fromArray(getDbNames()));
+        return stringBuilder.toString();
+    }
+
+    private @NotNull List<String> getDbNames() {
+        List<String> dbNames = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String dbName = resultSet.getString(1);
+                if (Stream.of("_schema", "mysql", "log", "lan", "archive", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
+                    messageToUser.warn(getClass().getSimpleName(), "NO SYNC:", dbName);
+                }
+                else {
+                    messageToUser.info(getClass().getSimpleName(), "Added to sync:", dbName);
+                    dbNames.add(dbName);
+                }
+                Thread.currentThread().setName(dbName);
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            dbNames.add(AbstractForms.networkerTrace(e));
+        }
+        return dbNames;
     }
 
     @Override

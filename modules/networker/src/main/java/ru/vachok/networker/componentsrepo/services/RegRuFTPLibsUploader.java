@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest
+ @see RegRuFTPLibsUploaderTest
  @since 01.06.2019 (4:19) */
 @SuppressWarnings("ClassUnconnectedToPackage")
 public class RegRuFTPLibsUploader implements Runnable {
@@ -46,11 +46,12 @@ public class RegRuFTPLibsUploader implements Runnable {
 
     @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
 
-    private static File[] retMassive = new File[3];
+    private static File[] retMassive = new File[2];
 
     private String ftpPass;
 
-    private @NotNull FTPClient getFtpClient() {
+    @NotNull
+    private FTPClient getFtpClient() {
         FTPClient client = new FTPClient();
 
         try {
@@ -104,7 +105,8 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
     }
 
-    private @NotNull String uploadLibs() throws AccessDeniedException {
+    @NotNull
+    private String uploadLibs() throws AccessDeniedException {
         String pc;
         if (ftpPass != null) {
             try {
@@ -120,7 +122,8 @@ public class RegRuFTPLibsUploader implements Runnable {
         return pc;
     }
 
-    private @NotNull String makeConnectionAndStoreLibs() throws IOException {
+    @NotNull
+    private String makeConnectionAndStoreLibs() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             ftpClient.connect(getHost());
@@ -174,7 +177,8 @@ public class RegRuFTPLibsUploader implements Runnable {
         return sb.toString();
     }
 
-    private @NotNull String uploadToServer(@NotNull Queue<Path> pathQueue) {
+    @NotNull
+    private String uploadToServer(@NotNull Queue<Path> pathQueue) {
         StringBuilder stringBuilder = new StringBuilder();
 
         while (!pathQueue.isEmpty()) {
@@ -187,7 +191,8 @@ public class RegRuFTPLibsUploader implements Runnable {
         return stringBuilder.toString();
     }
 
-    private @NotNull String uploadFile(File file) {
+    @NotNull
+    private String uploadFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Objects.requireNonNull(file).getAbsolutePath()).append(" local file. ");
         String nameFTPFile = getName(file);
@@ -242,7 +247,8 @@ public class RegRuFTPLibsUploader implements Runnable {
         return retMassive;
     }
 
-    private static @NotNull String getName(@NotNull File file) {
+    @NotNull
+    private static String getName(@NotNull File file) {
         String nameFTPFile = file.getName();
         if (nameFTPFile.contains(ConstantsFor.PREF_NODE_NAME) & nameFTPFile.toLowerCase().contains(".jar")) {
             nameFTPFile = "n.jar";
@@ -268,7 +274,8 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
     }
 
-    private @NotNull String checkDir(final String dirRelative) throws IOException {
+    @NotNull
+    private String checkDir(final String dirRelative) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         boolean changeWorkingDirectory = ftpClient.changeWorkingDirectory("/cover");
         stringBuilder.append(ftpClient.getReplyString());
@@ -308,7 +315,7 @@ public class RegRuFTPLibsUploader implements Runnable {
 
         @Override
         public FileVisitResult visitFile(@NotNull Path file, BasicFileAttributes attrs) throws IOException {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyww");
             String format = simpleDateFormat.format(new Date());
             String appVersion = "8.0." + format;
             if (file.getFileName().toString().contains("networker-" + appVersion + ".jar")) {
@@ -316,9 +323,6 @@ public class RegRuFTPLibsUploader implements Runnable {
             }
             if (file.getFileName().toString().contains(ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar")) {
                 retMassive[1] = file.toFile();
-            }
-            if (file.getFileName().toString().contains("app-release.apk")) {
-                retMassive[2] = file.toFile();
             }
             return FileVisitResult.CONTINUE;
         }
