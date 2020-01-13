@@ -12007,3 +12007,602 @@ rm "/usr/home/kudr/networker/lan/lan_21vsrv_1577123775.scan"
 ls "/usr/home/kudr/networker/lan/"
 ls "/usr/home/kudr/networker/"
 connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/10.200.202.54_68888.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.202.54_68888.csv"
+get "/usr/home/kudr/networker/10.200.202.71_68886.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.202.71_68886.csv"
+get "/usr/home/kudr/networker/10.200.204.52_68893.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.204.52_68893.csv"
+get "/usr/home/kudr/networker/10.200.208.52_68889.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.208.52_68889.csv"
+get "/usr/home/kudr/networker/10.200.208.53_68890.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.208.53_68890.csv"
+get "/usr/home/kudr/networker/10.200.208.55_68892.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.208.55_68892.csv"
+get "/usr/home/kudr/networker/10.200.208.60_68885.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.208.60_68885.csv"
+get "/usr/home/kudr/networker/10.200.212.52_68887.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.212.52_68887.csv"
+get "/usr/home/kudr/networker/10.200.212.65_68892.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.212.65_68892.csv"
+get "/usr/home/kudr/networker/10.200.213.59_68888.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.59_68888.csv"
+get "/usr/home/kudr/networker/10.200.213.72_68883.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.72_68883.csv"
+get "/usr/home/kudr/networker/10.200.213.114_68886.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.114_68886.csv"
+get "/usr/home/kudr/networker/10.200.213.117_68884.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.117_68884.csv"
+get "/usr/home/kudr/networker/10.200.213.132_68890.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.132_68890.csv"
+get "/usr/home/kudr/networker/10.200.213.147_68886.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.147_68886.csv"
+get "/usr/home/kudr/networker/10.200.213.166_68881.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.213.166_68881.csv"
+get "/usr/home/kudr/networker/10.200.217.51_68884.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.51_68884.csv"
+get "/usr/home/kudr/networker/10.200.217.56_68890.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.56_68890.csv"
+get "/usr/home/kudr/networker/10.200.217.66_68889.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.66_68889.csv"
+get "/usr/home/kudr/networker/10.200.217.68_68886.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.68_68886.csv"
+get "/usr/home/kudr/networker/10.200.217.69_68883.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.69_68883.csv"
+get "/usr/home/kudr/networker/10.200.217.76_68891.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.76_68891.csv"
+get "/usr/home/kudr/networker/10.200.217.79_68887.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.79_68887.csv"
+get "/usr/home/kudr/networker/10.200.217.83_68892.csv" "G:\My_Proj\FtpClientPlus\modules\networker\10.200.217.83_68892.csv"
+get "/usr/home/kudr/networker/192.168.13.69_68882.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.13.69_68882.csv"
+get "/usr/home/kudr/networker/192.168.13.206_68891.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.13.206_68891.csv"
+get "/usr/home/kudr/networker/192.168.13.220_68882.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.13.220_68882.csv"
+get "/usr/home/kudr/networker/192.168.13.235_68892.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.13.235_68892.csv"
+get "/usr/home/kudr/networker/192.168.13.244_68893.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.13.244_68893.csv"
+get "/usr/home/kudr/networker/192.168.14.64_68882.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.14.64_68882.csv"
+get "/usr/home/kudr/networker/192.168.14.157_68887.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.14.157_68887.csv"
+get "/usr/home/kudr/networker/192.168.14.195_68885.csv" "G:\My_Proj\FtpClientPlus\modules\networker\192.168.14.195_68885.csv"
+rm "/usr/home/kudr/networker/10.200.202.54_68888.csv"
+rm "/usr/home/kudr/networker/10.200.202.71_68886.csv"
+rm "/usr/home/kudr/networker/10.200.204.52_68893.csv"
+rm "/usr/home/kudr/networker/10.200.208.52_68889.csv"
+rm "/usr/home/kudr/networker/10.200.208.53_68890.csv"
+rm "/usr/home/kudr/networker/10.200.208.55_68892.csv"
+rm "/usr/home/kudr/networker/10.200.208.60_68885.csv"
+rm "/usr/home/kudr/networker/10.200.212.52_68887.csv"
+rm "/usr/home/kudr/networker/10.200.212.65_68892.csv"
+rm "/usr/home/kudr/networker/10.200.213.59_68888.csv"
+rm "/usr/home/kudr/networker/10.200.213.72_68883.csv"
+rm "/usr/home/kudr/networker/10.200.213.114_68886.csv"
+rm "/usr/home/kudr/networker/10.200.213.117_68884.csv"
+rm "/usr/home/kudr/networker/10.200.213.132_68890.csv"
+rm "/usr/home/kudr/networker/10.200.213.147_68886.csv"
+rm "/usr/home/kudr/networker/10.200.213.166_68881.csv"
+rm "/usr/home/kudr/networker/10.200.217.51_68884.csv"
+rm "/usr/home/kudr/networker/10.200.217.56_68890.csv"
+rm "/usr/home/kudr/networker/10.200.217.66_68889.csv"
+rm "/usr/home/kudr/networker/10.200.217.68_68886.csv"
+rm "/usr/home/kudr/networker/10.200.217.69_68883.csv"
+rm "/usr/home/kudr/networker/10.200.217.76_68891.csv"
+rm "/usr/home/kudr/networker/10.200.217.79_68887.csv"
+rm "/usr/home/kudr/networker/10.200.217.83_68892.csv"
+rm "/usr/home/kudr/networker/192.168.13.69_68882.csv"
+rm "/usr/home/kudr/networker/192.168.13.206_68891.csv"
+rm "/usr/home/kudr/networker/192.168.13.220_68882.csv"
+rm "/usr/home/kudr/networker/192.168.13.235_68892.csv"
+rm "/usr/home/kudr/networker/192.168.13.244_68893.csv"
+rm "/usr/home/kudr/networker/192.168.14.64_68882.csv"
+rm "/usr/home/kudr/networker/192.168.14.157_68887.csv"
+rm "/usr/home/kudr/networker/192.168.14.195_68885.csv"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/inetstats/"
+ls "/usr/home/kudr/networker/"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/vachok.ru_le.der" "G:\My_Proj\atutu\app\vachok.ru_le.der"
+get "/usr/home/kudr/vachok.ru_le.pem" "G:\My_Proj\atutu\app\vachok.ru_le.pem"
+get "/usr/home/kudr/vachok.ru_le_chain.pem" "G:\My_Proj\atutu\app\vachok.ru_le_chain.pem"
+get "/usr/home/kudr/vachok.ru_le_key.pem" "G:\My_Proj\atutu\app\vachok.ru_le_key.pem"
+ls "/usr/home/kudr/"
+mv "/usr/home/kudr/vachok.ru_le_key.pem" "/usr/home/kudr/vachok.ru_le.key"
+ls "/usr/home/kudr/"
+rm "/usr/home/kudr/vachok.ru_le.der"
+ls "/usr/home/kudr/"
+rm "/usr/home/kudr/vachok.key"
+ls "/usr/home/kudr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/vachok.ru_le.pfx" "d:\Temp\_tc\vachok.ru_le.pfx"
+get "/usr/home/kudr/vachok.ru_le.pfx" "G:\My_Proj\atutu\app\vachok.ru_le.pfx"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/vachok.ru_le.crt" "G:\My_Proj\atutu\app\vachok.ru_le.crt"
+connection to 10.10.111.65 closed - bye bye!
+----------
+Connect to: (31.12.2019 23:09:43)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,136,216).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,138,141).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (31.12.2019 23:35:26)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,9).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,137,10).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+DELE n.jar
+250 DELE command successful
+Deleted (31.12.2019 23:35:35): ftp://31.31.196.85:21/lib/n.jar
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,236).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,140,73).
+STOR n.jar
+150 Opening BINARY mode data connection for n.jar
+Закачка
+226 Transfer complete
+MFMT 20191231202746 n.jar
+213 Modify=20191231202746; n.jar
+SIZE n.jar
+213 37918532
+Copied (31.12.2019 23:35:52): G:\My_Proj\FtpClientPlus\modules\networker\build\libs\networker-8.0.2001.jar -> ftp://31.31.196.85:21/lib/n.jar 37 918 532 байт, 11 503 Кбайт/с
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,137,151).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (31.12.2019 23:46:53)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,137,190).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,137,61).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+DELE n.jar
+250 DELE command successful
+Deleted (31.12.2019 23:49:00): ftp://31.31.196.85:21/lib/n.jar
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,195).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,137,37).
+STOR n.jar
+150 Opening BINARY mode data connection for n.jar
+Закачка
+226 Transfer complete
+MFMT 20191231204911 n.jar
+213 Modify=20191231204911; n.jar
+SIZE n.jar
+213 37918293
+Copied (31.12.2019 23:49:38): G:\My_Proj\FtpClientPlus\modules\networker\build\libs\networker-8.0.2001.jar -> ftp://31.31.196.85:21/lib/n.jar 37 918 293 байт, 11 503 Кбайт/с
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,140,100).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (01.01.2020 4:16:56)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,179).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,138,230).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/vachok.ru_le.crt" "G:\My_Proj\FtpClientPlus\modules\networker\src\main\resources\ssl\vachok.ru_le.crt"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/IntoApplication.6519275"
+rm "/usr/home/kudr/networker/IntoApplication.106374177"
+rm "/usr/home/kudr/networker/IntoApplication.166794956"
+rm "/usr/home/kudr/networker/IntoApplication.232307208"
+rm "/usr/home/kudr/networker/IntoApplication.306612792"
+rm "/usr/home/kudr/networker/IntoApplication.447212746"
+rm "/usr/home/kudr/networker/IntoApplication.572868060"
+rm "/usr/home/kudr/networker/IntoApplication.574434418"
+rm "/usr/home/kudr/networker/IntoApplication.609962972"
+rm "/usr/home/kudr/networker/IntoApplication.712609105"
+rm "/usr/home/kudr/networker/IntoApplication.762476028"
+rm "/usr/home/kudr/networker/IntoApplication.902478634"
+rm "/usr/home/kudr/networker/IntoApplication.934275857"
+rm "/usr/home/kudr/networker/IntoApplication.952562199"
+rm "/usr/home/kudr/networker/IntoApplication.1153447573"
+rm "/usr/home/kudr/networker/IntoApplication.1364913072"
+rm "/usr/home/kudr/networker/IntoApplication.1388278453"
+rm "/usr/home/kudr/networker/IntoApplication.1496355635"
+rm "/usr/home/kudr/networker/IntoApplication.1529060733"
+rm "/usr/home/kudr/networker/IntoApplication.1549725679"
+rm "/usr/home/kudr/networker/IntoApplication.1793436274"
+rm "/usr/home/kudr/networker/IntoApplication.1803669141"
+rm "/usr/home/kudr/networker/IntoApplication.1818544933"
+rm "/usr/home/kudr/networker/IntoApplication.1836463382"
+rm "/usr/home/kudr/networker/IntoApplication.2127036371"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents/inetstats/"
+rm "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents/inetstats/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/inetstats/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/lan/"
+rm "/usr/home/kudr/networker/lan/onlines.max"
+rm "/usr/home/kudr/networker/lan/lan_21vsrv_1577117980.scan"
+rm "/usr/home/kudr/networker/lan/lan_21vsrv_1577119387.scan"
+rm "/usr/home/kudr/networker/lan/lan_21vsrv_1577123775.scan"
+ls "/usr/home/kudr/networker/lan/"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/inetstats/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents/inetstats/"
+ls "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents/inetstats/"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \194.67.86.51
+connected to 194.67.86.51
+ls "/"
+ls "/etc/"
+ls "/"
+ls "/sys/"
+ls "/"
+ls "/run/"
+ls "/run/openvpn-client/"
+ls "/run/"
+ls "/run/openvpn-server/"
+ls "/run/"
+ls "/run/openvpn/"
+ls "/run/"
+ls "/"
+ls "/home/"
+ls "/"
+ls "/usr/"
+ls "/usr/lib/"
+ls "/usr/"
+ls "/usr/bin/"
+ls "/usr/"
+ls "/usr/share/"
+ls "/usr/share/openvpn/"
+ls "/usr/share/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/"
+ls "/usr/local/share/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/lib/"
+ls "/usr/"
+ls "/usr/src/"
+ls "/usr/"
+ls "/"
+ls "/sys/"
+ls "/"
+ls "/opt/"
+ls "/"
+ls "/mnt/"
+ls "/"
+ls "/etc/"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/"
+get "/etc/openvpn/update-resolv-conf" "d:\Temp\_tc\update-resolv-conf"
+ls "/etc/"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/server/"
+ls "/etc/openvpn/"
+ls "/etc/"
+ls "/"
+ls "/boot/"
+ls "/"
+ls "/proc/"
+ls "/"
+ls "/root/"
+ls "/"
+ls "/srv/"
+ls "/"
+ls "/sbin/"
+ls "/"
+ls "/run/"
+ls "/run/openvpn-client/"
+ls "/run/"
+ls "/run/openvpn/"
+ls "/run/"
+ls "/"
+connection to 194.67.86.51 closed - bye bye!
+CONNECT \194.67.86.51
+connected to 194.67.86.51
+ls "/"
+ls "/etc/"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+put "F:\OneDrive\Загрузки\vpn_keys_keys_kudrnote.key" "/etc/openvpn/yumarkin20201011.key"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+put "F:\OneDrive\Загрузки\vpn_keys_keys_kudrnote.crt" "/etc/openvpn/yumarkin20201011.crt"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+put "F:\OneDrive\Загрузки\ta.key" "/etc/openvpn/ta.key"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+put "F:\OneDrive\Загрузки\ca.crt" "/etc/openvpn/ca.crt"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/"
+mv "/etc/openvpn/velkom.conf" "/etc/openvpn/client.conf"
+ls "/etc/openvpn/"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/client/"
+put "F:\OneDrive\Загрузки\ca.crt" "/etc/openvpn/client/ca.crt"
+ls "/etc/openvpn/client/"
+put "F:\OneDrive\Загрузки\ta.key" "/etc/openvpn/client/ta.key"
+ls "/etc/openvpn/client/"
+put "F:\OneDrive\Загрузки\yumarkin20201011.ovpn" "/etc/openvpn/client/yumarkin20201011.ovpn"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/client/"
+mv "/etc/openvpn/client/yumarkin20201011.ovpn" "/etc/openvpn/client/client.ovpn"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/client/"
+mv "/etc/openvpn/client/client.ovpn" "/etc/openvpn/client/client.conf"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/"
+get "/etc/openvpn/yumarkin20201011.crt" "F:\OneDrive\Загрузки\yumarkin20201011.crt"
+get "/etc/openvpn/yumarkin20201011.key" "F:\OneDrive\Загрузки\yumarkin20201011.key"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/client/"
+put "F:\OneDrive\Загрузки\vpn_keys_keys_kudrnote.key" "/etc/openvpn/client/vpn_keys_keys_kudrnote.key"
+ls "/etc/openvpn/client/"
+put "F:\OneDrive\Загрузки\yumarkin20201011.crt" "/etc/openvpn/client/yumarkin20201011.crt"
+ls "/etc/openvpn/client/"
+ls "/etc/openvpn/"
+ls "/etc/"
+ls "/"
+ls "/var/"
+ls "/var/log/"
+ls "/var/log/openvpn/"

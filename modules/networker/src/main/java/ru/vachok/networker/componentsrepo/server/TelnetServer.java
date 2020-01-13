@@ -11,7 +11,9 @@ import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
 public class TelnetServer implements ConnectToMe {
 
+
+    private File traceFile = new File(this.getClass().getSimpleName() + ".trace");
 
     private ServerSocket serverSocket;
 
@@ -141,7 +145,7 @@ public class TelnetServer implements ConnectToMe {
             socket.setSoTimeout(timeout);
         }
         catch (SocketException e) {
-            reconSock();
+            messageToUser.warn(TelnetServer.class.getSimpleName(), e.getMessage(), " see line: 144 ***");
         }
 
         try {
@@ -168,7 +172,6 @@ public class TelnetServer implements ConnectToMe {
             }
         }
         catch (IOException e) {
-            System.setOut(System.err);
             reconSock();
         }
         finally {

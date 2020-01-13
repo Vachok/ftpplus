@@ -535,6 +535,10 @@ public enum ConstantsFor {
 
     public static final String DBCOL_NAMEPP = "NamePP";
 
+    public static final String OKHTTP = "okhttp";
+
+    public static final String TOTALSIZE = "Total size = ";
+
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
 
     public static String DB_ARCHIVEVELKOMPC = "archive.velkompc";

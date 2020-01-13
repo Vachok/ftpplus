@@ -20,7 +20,6 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +58,7 @@ public class AppInfoOnLoad implements Runnable {
             infoForU();
         }
         catch (RuntimeException e) {
-            messageToUser.error("AppInfoOnLoad.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 61 ***");
         }
         finally {
             checkFileExitLastAndWriteMiniLog();
@@ -96,8 +95,8 @@ public class AppInfoOnLoad implements Runnable {
             messageToUser.info(UsefulUtilities.getIISLogSize());
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runInfoForU);
         }
-        catch (NullPointerException e) {
-            messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        catch (RuntimeException e) {
+            messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 100 ***");
         }
         finally {
             AppConfigurationLocal.getInstance().execute(onStartTasksLoader);
