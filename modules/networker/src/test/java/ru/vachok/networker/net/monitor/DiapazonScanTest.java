@@ -5,7 +5,9 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AbstractForms;
@@ -21,9 +23,14 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.prefs.BackingStoreException;
@@ -33,26 +40,56 @@ import java.util.prefs.Preferences;
 /**
  @see DiapazonScan */
 public class DiapazonScanTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private String testFilePathStr = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR;
-    
+
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
-    
+
+    private static long getRunMin() {
+        Preferences preferences = Preferences.userRoot();
+        try {
+            preferences.sync();
+            return preferences.getLong(ExecScan.class.getSimpleName(), 1);
+        }
+        catch (BackingStoreException e) {
+            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
+            Properties props = initProperties.getProps();
+            return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
+        }
+    }
+
+    @Test
+    public void makeFilesMapTest() {
+        Map<String, File> map = copyOfMakeMap();
+        String s = new TForms().fromArray(map, false);
+        Assert.assertNotNull(s);
+        Assert.assertTrue(s.contains("lan_11vsrv.txt"));
+    }
+
+    @Test
+    public void testTheInfoToString() {
+        System.out.println(new DiapazonScan().getExecution());
+    }
+
+    @Test
+    public void testToString1() {
+        System.out.println("DiapazonScan.getInstance().toString() = " + DiapazonScan.getInstance().toString());
+    }
+
     /**
      @see DiapazonScan#run()
      */
@@ -66,53 +103,12 @@ public class DiapazonScanTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         String instToString = diapazonScanRun.toString();
-    
+
         Assert.assertTrue(instToString.contains("last ExecScan:"), instToString);
         Assert.assertTrue(instToString.contains("size in bytes:"), instToString);
         Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"), instToString);
     }
-    
-    @Test
-    public void makeFilesMapTest() {
-        Map<String, File> map = copyOfMakeMap();
-        String s = new TForms().fromArray(map, false);
-        Assert.assertNotNull(s);
-        Assert.assertTrue(s.contains("lan_11vsrv.txt"));
-    }
-    
-    @Test
-    public void testTheInfoToString() {
-        System.out.println(new DiapazonScan().getExecution());
-    }
-    
-    @Test
-    public void testToString1() {
-        System.out.println("DiapazonScan.getInstance().toString() = " + DiapazonScan.getInstance().toString());
-    }
-    
-    @Test
-    public void isOldFilesExistsTest() {
-        DiapazonScan dsIst = DiapazonScan.getInstance();
-        File fileOrig = Paths.get(testFilePathStr).toFile();
-        List<String> currentScanLists = NetKeeper.getCurrentScanLists();
-        for (String scanList : currentScanLists) {
-            System.out.println("scanList = " + scanList);
-        }
-    }
-    
-    private long getRunMin() {
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-            return preferences.getLong(ExecScan.class.getSimpleName(), 1);
-        }
-        catch (BackingStoreException e) {
-            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
-            Properties props = initProperties.getProps();
-            return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
-        }
-    }
-    
+
     @Test
     public void scanFilesTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
@@ -127,7 +123,7 @@ public class DiapazonScanTest {
         Assert.assertTrue(fromArray.contains("lan_31vsrv.txt"), fromArray);
         Assert.assertTrue(fromArray.contains(FileNames.NEWLAN220), fromArray);
     }
-    
+
     @BeforeClass
     public void filesMake() {
         Path testFilePath = Paths.get(testFilePathStr);
@@ -142,7 +138,7 @@ public class DiapazonScanTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
-    
+
     private @NotNull Map<String, File> copyOfMakeMap() {
         Path absolutePath = Paths.get("").toAbsolutePath();
         Map<String, File> scanMap = new ConcurrentHashMap<>();
@@ -156,7 +152,7 @@ public class DiapazonScanTest {
         catch (NullPointerException e) {
             Assert.assertNull(e, e.getMessage());
         }
-    
+
         scanMap.putIfAbsent(FileNames.NEWLAN220, new File(FileNames.NEWLAN220));
         scanMap.putIfAbsent(FileNames.NEWLAN205, new File(FileNames.NEWLAN205));
         scanMap.putIfAbsent(FileNames.NEWLAN215, new File(FileNames.NEWLAN215));
@@ -167,20 +163,20 @@ public class DiapazonScanTest {
         scanMap.putIfAbsent(FileNames.SERVTXT_31SRVTXT, new File(FileNames.SERVTXT_31SRVTXT));
         return scanMap;
     }
-    
+
     private void checkIfCopied(@NotNull DiapazonScan dsIst) {
         try {
             String[] executionProcessArray = dsIst.getExecution().split("\n");
-            
+
             File fileCopy = new File(executionProcessArray[0].replaceFirst("\n", ""));
             File fileOrig = new File(executionProcessArray[1]);
             String nameOrig = fileCopy.getName();
             String nameCopy = fileOrig.getName();
-            
+
             System.out.println(MessageFormat.format("Copy {0} | Old {1}", nameOrig, nameCopy));
             Assert.assertFalse(nameOrig.split("\\Q.\\E")[0].equalsIgnoreCase(nameCopy.split("\\Q.\\E")[0]));
             Assert.assertTrue(fileCopy.exists());
-    
+
         }
         catch (IndexOutOfBoundsException ignore) {
             //
