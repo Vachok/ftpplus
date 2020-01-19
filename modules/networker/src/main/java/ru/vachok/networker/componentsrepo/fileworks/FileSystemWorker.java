@@ -77,6 +77,48 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
+    private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
+        try {
+            Path parentPath = absolutePathToCopy.getParent();
+            if (!parentPath.toFile().exists() || !parentPath.toFile().isDirectory()) {
+                Files.createDirectories(parentPath);
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 124 " + AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+    }
+    
+    private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
+        Path originalPath = Paths.get(origFile.getAbsolutePath());
+        checkDirectoriesExists(absolutePathToCopy.toAbsolutePath().normalize());
+        Path copyOkPath = Paths.get("null");
+        try {
+            copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 96");
+        }
+        File copiedFile = copyOkPath.toFile();
+        copiedFile.setLastModified(System.currentTimeMillis());
+        return copiedFile.exists();
+    }
+    
+    private static void delOrig(final @NotNull File origFile) {
+        try {
+            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
+                origFile.deleteOnExit();
+            }
+        }
+        catch (IOException e) {
+            boolean isDelete = origFile.delete();
+            messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
+            origFile.deleteOnExit();
+        }
+        origFile.exists();
+    }
+    
     public static @NotNull String readFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
         try (InputStream inputStream = new FileInputStream(file.getAbsolutePath())) {
@@ -143,7 +185,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 readBytes = inputStream.read(bytes, 0, inputStream.available());
             }
             messageToUser.info(FileSystemWorker.class.getSimpleName(), "readRawFile", MessageFormat
-                .format("{0} readied {1} kilobytes.", file, readBytes / ConstantsFor.KBYTE));
+                    .format("{0} readied {1} kilobytes.", file, readBytes / ConstantsFor.KBYTE));
         }
         catch (IOException e) {
             bytes = AbstractForms.networkerTrace(e.getStackTrace()).getBytes();
@@ -151,19 +193,34 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return new String(bytes);
     }
     
-    private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
-        Path originalPath = Paths.get(origFile.getAbsolutePath());
-        checkDirectoriesExists(absolutePathToCopy.toAbsolutePath().normalize());
-        Path copyOkPath = Paths.get("null");
-        try {
-            copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+    @NotNull
+    public static String[] readFileArray(File file) {
+        List<String> fileList = readFileToList(file.getAbsolutePath());
+        String[] retStrings = new String[fileList.size()];
+        for (int i = 0; i < fileList.size(); i++) {
+            retStrings[i] = fileList.get(i);
         }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 96");
+        return retStrings;
+    }
+    
+    public static @NotNull List<String> readFileToList(String absolutePath) {
+        List<String> retList = new ArrayList<>();
+        if (!new File(absolutePath).exists()) {
+            throw new InvokeIllegalException(absolutePath);
         }
-        File copiedFile = copyOkPath.toFile();
-        copiedFile.setLastModified(System.currentTimeMillis());
-        return copiedFile.exists();
+        else {
+            try (InputStream inputStream = new FileInputStream(absolutePath);
+                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                 BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                reader.lines().forEach(retList::add);
+            }
+            catch (IOException e) {
+                messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
+                retList.add(e.getMessage());
+                retList.add(new TForms().fromArray(e, true));
+            }
+        }
+        return retList;
     }
     
     public static @NotNull String appendObjectToFile(@NotNull File fileForAppend, Object objectToAppend) {
@@ -178,21 +235,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
-    }
-    
-    private static void delOrig(final @NotNull File origFile) {
-        try {
-            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
-                origFile.deleteOnExit();
-            }
-        }
-        catch (IOException e) {
-            boolean isDelete = origFile.delete();
-            messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
-            origFile.deleteOnExit();
-        }
-        origFile.exists();
     }
     
     public static @NotNull String readFile(String fileName) {
@@ -302,26 +344,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retSet;
     }
     
-    public static @NotNull List<String> readFileToList(String absolutePath) {
-        List<String> retList = new ArrayList<>();
-        if (!new File(absolutePath).exists()) {
-            System.err.println(absolutePath + " does not exists...");
-        }
-        else {
-            try (InputStream inputStream = new FileInputStream(absolutePath);
-                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                 BufferedReader reader = new BufferedReader(inputStreamReader)) {
-                reader.lines().forEach(retList::add);
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
-                retList.add(e.getMessage());
-                retList.add(new TForms().fromArray(e, true));
-            }
-        }
-        return retList;
-    }
-    
     public static boolean writeFile(String path, @NotNull Map<?, ?> map) {
         List toWriteList = new ArrayList();
         map.forEach((k, v)->{
@@ -345,18 +367,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             messageToUser.warn(FileSystemWorker.class.getSimpleName(), "writeFile", e.getMessage() + " see line: 347");
             return false;
-        }
-    }
-    
-    private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
-        try {
-            Path parentPath = absolutePathToCopy.getParent();
-            if (!parentPath.toFile().exists() || !parentPath.toFile().isDirectory()) {
-                Files.createDirectories(parentPath);
-            }
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 124 " + AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
     
