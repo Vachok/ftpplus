@@ -10,15 +10,9 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.UserPrincipal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
+import java.sql.*;
 
 
 /**
@@ -36,9 +30,9 @@ public class UserACLAdderTest {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
             Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
-//            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Проекты\\Проекты _УИ\\");
+//            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_РОТАЦИЯ");
             UserACLManagerImpl.removeAccess(owner, startPath);
-            this.commonAdder = new UserACLAdder(startPath, owner, "r");
+            this.commonAdder = new UserACLAdder(startPath, owner, "rw");
             Files.walkFileTree(startPath, commonAdder);
             this.attributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
             AclEntry acl;
@@ -62,7 +56,7 @@ public class UserACLAdderTest {
     @Ignore
     private void aclToDB() {
         final String sql = "INSERT INTO common.concreteacl (userName, fileName, acl) VALUES (?, ?, ?)";
-        Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_ЗП\\");
+        Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_РОТАЦИЯ");
         this.attributeView = Files.getFileAttributeView(startPath, AclFileAttributeView.class);
         String fileName = this.getClass().getSimpleName() + ".attributeView";
         try (ObjectOutput objectOutput = new ObjectOutputStream(new FileOutputStream(fileName))) {
