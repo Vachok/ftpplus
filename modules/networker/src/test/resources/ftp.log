@@ -12787,29 +12787,3 @@ CONNECT \192.168.13.155
 connected to 192.168.13.155
 ls "/"
 connection to 192.168.13.155 closed - bye bye!
-CONNECT \10.10.111.65
-connected to 10.10.111.65
-ls "/"
-ls "/usr/"
-ls "/usr/home/"
-ls "/usr/home/kudr/"
-ls "/usr/home/kudr/networker/"
-ls "/usr/home/kudr/networker/lan/"
-rm "/usr/home/kudr/networker/lan/lan_21vsrv_1578957076.scan"
-rm "/usr/home/kudr/networker/lan/lan_31vsrv_1578957076.scan"
-rm "/usr/home/kudr/networker/lan/lan_200205_1578957076.scan"
-ls "/usr/home/kudr/networker/lan/"
-ls "/usr/home/kudr/networker/"
-rm "/usr/home/kudr/networker/IntoApplication.6519275"
-rm "/usr/home/kudr/networker/IntoApplication.106374177"
-rm "/usr/home/kudr/networker/IntoApplication.150268540"
-rm "/usr/home/kudr/networker/IntoApplication.712609105"
-rm "/usr/home/kudr/networker/IntoApplication.1484171695"
-rm "/usr/home/kudr/networker/IntoApplication.1496355635"
-rm "/usr/home/kudr/networker/IntoApplication.1529060733"
-rm "/usr/home/kudr/networker/IntoApplication.1836463382"
-ls "/usr/home/kudr/networker/"
-rm "/usr/home/kudr/networker/TelnetServer.trace"
-ls "/usr/home/kudr/networker/"
-get "/usr/home/kudr/networker/serviceinfo.allow" "d:\Temp\_tcx\0\Secure FTP Connections\10.10.111.65\usr\home\kudr\networker\serviceinfo.allow"
-connection to 10.10.111.65 closed - bye bye!
