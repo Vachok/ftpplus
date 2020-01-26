@@ -56,6 +56,8 @@ import static java.time.DayOfWeek.SUNDAY;
 public class OnStartTasksLoader implements AppConfigurationLocal {
 
 
+    public static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
+
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OnStartTasksLoader.class.getSimpleName());
 
     @Override
@@ -163,10 +165,10 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
 
     private void dbSendAppJson() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        dataConnectTo.createTable(ConstantsFor.DBNAME_LOG_DBMESSENGER, Collections.emptyList());
+        dataConnectTo.createTable(DBNAME_LOG_DBMESSENGER, Collections.emptyList());
         Path path = Paths.get(FileNames.APP_JSON);
         final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `upstring`, `json`) VALUES (?, ?, ?)";
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_LOG_DBMESSENGER)) {
+        try (Connection connection = dataConnectTo.getDefaultConnection(DBNAME_LOG_DBMESSENGER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 Queue<String> logJson;
                 if (path.toFile().exists()) {

@@ -15,7 +15,9 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import javax.mail.*;
 import java.net.MalformedURLException;
 import java.sql.*;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Properties;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
@@ -28,20 +30,22 @@ import static java.time.DayOfWeek.SUNDAY;
 /**
  @see ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest */
 public class SpeedChecker implements Callable<Long> {
-    
-    
+
+
+    public static final String DB_LIFERPGSPEED = "liferpg.speed";
+
     private static final Properties APP_PR = InitProperties.getTheProps();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SpeedChecker.class.getTypeName());
-    
+
     private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
-    
+
     private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.LASTWORKSTART, "2"));
-    
+
     Long getRtLong() {
         return rtLong;
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", SpeedChecker.class.getSimpleName() + "[\n", "\n]")
@@ -49,13 +53,13 @@ public class SpeedChecker implements Callable<Long> {
                 .add("rtLong = " + rtLong)
                 .toString();
     }
-    
+
     @Override
     public Long call() {
         runMe();
         return rtLong;
     }
-    
+
     private void runMe() {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
@@ -68,7 +72,7 @@ public class SpeedChecker implements Callable<Long> {
             this.rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.LASTWORKSTART));
         }
     }
-    
+
     private void setRtLong() {
         this.rtLong = (long) -666;
         try {
@@ -81,7 +85,7 @@ public class SpeedChecker implements Callable<Long> {
             messageToUser.error("SpeedChecker.getFromMail", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
-    
+
     private void getFromMail() throws MalformedURLException, MessagingException {
         Properties mailPr = InitProperties.getMAilPr();
         Session session = Session.getInstance(mailPr);
@@ -111,10 +115,10 @@ public class SpeedChecker implements Callable<Long> {
             throw new InvokeIllegalException(imapsStore.toString());
         }
     }
-    
+
     private void getFromDB() {
         final String sql = "select * from liferpg.speed order by idspeed desc limit 1";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LIFERPGSPEED);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DB_LIFERPGSPEED);
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
@@ -126,7 +130,7 @@ public class SpeedChecker implements Callable<Long> {
             this.rtLong = (long) -666;
         }
     }
-    
+
     private @NotNull Folder getInboxFolder(@NotNull Store imapsStore) throws MessagingException, MalformedURLException {
         Folder defaultFolder = imapsStore.getDefaultFolder();
         for (Folder folder : defaultFolder.list()) {
@@ -137,7 +141,7 @@ public class SpeedChecker implements Callable<Long> {
         defaultFolder.open(Folder.READ_WRITE);
         return defaultFolder;
     }
-    
+
     private boolean writeToDB(String subject) {
         subject = subject.split(":")[1];
         double speed = Double.parseDouble(subject.split(" ")[0]);
@@ -149,7 +153,7 @@ public class SpeedChecker implements Callable<Long> {
         else {
             timeSpend = (float) (ConstantsFor.KM_M9 / speed) * 60;
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LIFERPGSPEED)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DB_LIFERPGSPEED)) {
             final String sql = "INSERT INTO `liferpg`.`speed` (`Speed`, `Road`, `WeekDay`, `TimeSpend`, `TimeStamp`) VALUES (?, ?, ?, ?, ?);";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setDouble(1, speed);

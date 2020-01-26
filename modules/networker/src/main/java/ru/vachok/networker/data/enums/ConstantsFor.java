@@ -507,10 +507,6 @@ public enum ConstantsFor {
 
     public static final String GRADLE = "gradle";
 
-    public static final String PROTOTYPE = "prototype";
-
-    public static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
-
     public static final String DB_SLOWLOG = "mysql.slow_log";
 
     public static final String MARKEDASCRASHED = "is marked as crashed";
@@ -523,25 +519,21 @@ public enum ConstantsFor {
 
     public static final String MAIL_SERVERREGRU = "mail.chess.vachok.ru";
 
-    public static final String DB_LIFERPGSPEED = "liferpg.speed";
-
     public static final String DB_COMMONOLDFILES = "common.oldfiles";
 
     public static final String STR_IPREMAIN = " ip remain";
-
-    public static final String SQL_PCNAME = "pcname";
 
     public static final String REPAIR_TABLE = "REPAIR TABLE ";
 
     public static final String DBCOL_NAMEPP = "NamePP";
 
-    public static final String OKHTTP = "okhttp";
-
     public static final String TOTALSIZE = "Total size = ";
 
-    public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
+    public static final String DB_VELKOMVELKOMPC = "velkom.velkompc";
 
-    public static String DB_ARCHIVEVELKOMPC = "archive.velkompc";
+    public static final String DB_ARCHIVEVELKOMPC = "archive.velkompc";
+
+    public static final String PROTOTYPE = "prototype";
 
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

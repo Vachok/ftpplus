@@ -23,6 +23,8 @@ import java.util.*;
 public class UniqPCInformator implements InformationFactory {
 
 
+    public static final String SQL_PCNAME = "pcname";
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UniqPCInformator.class.getSimpleName());
 
     private static final String SQL_ONLINE = "select distinct pcname AS pcname, ip from lan.online order by pcname asc";
@@ -38,7 +40,7 @@ public class UniqPCInformator implements InformationFactory {
             while (resultSet.next()) {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.add("ip", resultSet.getString("ip"));
-                jsonObject.add(ConstantsFor.SQL_PCNAME, resultSet.getString(ConstantsFor.SQL_PCNAME));
+                jsonObject.add(SQL_PCNAME, resultSet.getString(SQL_PCNAME));
                 jsonObjects.add(jsonObject);
             }
         }
@@ -83,7 +85,7 @@ public class UniqPCInformator implements InformationFactory {
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                uniqPCs.put(resultSet.getString(ConstantsFor.SQL_PCNAME), resultSet.getString("ip"));
+                uniqPCs.put(resultSet.getString(SQL_PCNAME), resultSet.getString("ip"));
             }
         }
         catch (SQLException e) {

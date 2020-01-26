@@ -12787,3 +12787,236 @@ CONNECT \192.168.13.155
 connected to 192.168.13.155
 ls "/"
 connection to 192.168.13.155 closed - bye bye!
+----------
+Connect to: (25.01.2020 18:53:47)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,208).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,137,197).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,139,210).
+STOR pchelper-11.0.2004.jar
+150 Opening BINARY mode data connection for pchelper-11.0.2004.jar
+Закачка
+226 Transfer complete
+MFMT 20200125155517 pchelper-11.0.2004.jar
+213 Modify=20200125155517; pchelper-11.0.2004.jar
+SIZE pchelper-11.0.2004.jar
+213 19146
+Copied (25.01.2020 18:55:37): G:\My_Proj\pchelper\build\libs\pchelper-11.0.2004.jar -> ftp://31.31.196.85:21/lib/pchelper-11.0.2004.jar 19 146 байт, 1 246 Кбайт/с
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,225).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+RNFR pchelper-11.0.2004.jar
+350 File or directory exists, ready for destination name
+RNTO pc.jar
+250 Rename successful
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,138,224).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (25.01.2020 19:02:39)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,181).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,140,109).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,137,1).
+STOR pc.jar
+150 Opening BINARY mode data connection for pc.jar
+Закачка
+226 Transfer complete
+MFMT 20200125160215 pc.jar
+213 Modify=20200125160215; pc.jar
+SIZE pc.jar
+213 19541
+Copied (25.01.2020 19:03:00): G:\My_Proj\pchelper\build\libs\pchelper-11.0.2004.jar -> ftp://31.31.196.85:21/lib/pc.jar 19 541 байт, 1 192 Кбайт/с
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,140,54).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (25.01.2020 19:31:27)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,137,117).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,137,74).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete

@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 
 public class OneServerSyncTest {
@@ -29,7 +30,7 @@ public class OneServerSyncTest {
     @Test
     public void testSyncData() {
         OneServerSync sync = new OneServerSync();
-        Assert.assertTrue(sync.syncData().contains("velkom.velkompc"));
+        Assert.assertTrue(sync.syncData().contains(ConstantsFor.DB_VELKOMVELKOMPC));
     }
 
 }

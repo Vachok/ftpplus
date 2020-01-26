@@ -32,6 +32,8 @@ import java.util.TreeMap;
 public class RestCTRL {
 
 
+    public static final String OKHTTP = "okhttp";
+
     @GetMapping("/status")
     public String appStatus() {
         return UsefulUtilities.getRunningInformation();
@@ -71,7 +73,7 @@ public class RestCTRL {
         catch (RuntimeException e) {
             uAgent = MessageFormat.format("{0} \n {1}", e.getMessage(), AbstractForms.fromArray(e));
         }
-        if (uAgent.contains(ConstantsFor.OKHTTP)) {
+        if (uAgent.contains(OKHTTP)) {
             MessageToUser.getInstance(MessageToUser.EMAIL, "Get /file from " + UsefulUtilities.thisPC()).info(filesShow);
         }
         return filesShow;
@@ -98,7 +100,7 @@ public class RestCTRL {
                 catch (RuntimeException e) {
                     uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
                 }
-                if (uAgent.contains(ConstantsFor.OKHTTP)) {
+                if (uAgent.contains(OKHTTP)) {
                     stringBuilder.append("\n");
                 }
                 else {
