@@ -17,6 +17,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -87,7 +88,7 @@ public class DiapazonScanTest {
 
     @Test
     public void testToString1() {
-        System.out.println("DiapazonScan.getInstance().toString() = " + DiapazonScan.getInstance().toString());
+        Assert.assertTrue(NetScanService.getInstance(NetScanService.DIAPAZON).toString().contains("DiapazonScan["));
     }
 
     /**
@@ -104,9 +105,7 @@ public class DiapazonScanTest {
         }
         String instToString = diapazonScanRun.toString();
 
-        Assert.assertTrue(instToString.contains("last ExecScan:"), instToString);
-        Assert.assertTrue(instToString.contains("size in bytes:"), instToString);
-        Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"), instToString);
+        Assert.assertTrue(instToString.contains("stopClassStampLong"), instToString);
     }
 
     @Test

@@ -45,27 +45,26 @@ import java.util.concurrent.LinkedBlockingDeque;
  @see ExecScan
  */
 @SuppressWarnings("ALL") public class ExecScanTest {
-    
-    
+
+
     private File vlanFile;
-    
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
         UsefulUtilities.ipFlushDNS();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
-    
+
     @Test
     public void testRun() {
         File fileTestVlan = new File("test-213.scan");
@@ -81,9 +80,9 @@ import java.util.concurrent.LinkedBlockingDeque;
             Assert.assertTrue(fileTestVlan.exists());
             fileTestVlan.deleteOnExit();
         }
-        
+
     }
-    
+
     @Test
     public void oneIPScanTest() {
         File vlanFile = new File(FileNames.SERVTXT_10SRVTXT);
@@ -98,7 +97,7 @@ import java.util.concurrent.LinkedBlockingDeque;
             Assert.assertNull(e, e.getMessage());
         }
     }
-    
+
     @Test(enabled = false)
     public void realExecScanTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
@@ -115,23 +114,19 @@ import java.util.concurrent.LinkedBlockingDeque;
         Deque<InetAddress> webDeque = NetKeeper.getDequeOfOnlineDev();
         System.out.println("webDeque = " + new TForms().fromArray(webDeque));
     }
-    
+
     @Test
     public void toStringTest() {
         Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
     }
-    
-    @NotNull
-    private Collection<String> getAllDevLocalDeq() {
-        final int MAX_IN_ONE_VLAN = 255;
-        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
-        final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-        
-        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
-        InitProperties.getTheProps().setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
-        return ALL_DEVICES;
+
+    @Test
+    public void testToString() {
+        NetScanService dia = NetScanService.getInstance(NetScanService.DIAPAZON);
+        String toStr = dia.toString();
+        Assert.assertTrue(toStr.contains("DiapazonScan["));
     }
-    
+
     /**
      @see ExecScan#cpOldFile()
      */
@@ -150,14 +145,7 @@ import java.util.concurrent.LinkedBlockingDeque;
             FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
         }
     }
-    
-    @Test
-    public void testToString() {
-        NetScanService dia = NetScanService.getInstance(NetScanService.DIAPAZON);
-        String toStr = dia.toString();
-        Assert.assertTrue(toStr.contains("DiapazonScan{"));
-    }
-    
+
     @NotNull
     private String oneIpScanAndPrintToFile(int iThree, int jFour, PrintStream printStream) throws IOException {
         final String FILENAME_SERVTXT = "srv.txt";
@@ -165,21 +153,21 @@ import java.util.concurrent.LinkedBlockingDeque;
         final String FONT_BR_CLOSE = "</font><br>";
         final File vlanFile = new File(FileNames.SERVTXT_10SRVTXT);
         String whatVlan = "10.200.";
-        
+
         threadConfig.thrNameSet(String.valueOf(iThree));
-        
+
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + iThree + "." + jFour).getAddress();
         StringBuilder stringBuilder = new StringBuilder();
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
-    
+
         if (UsefulUtilities.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
             InitProperties.getUserPref().putLong(this.getClass().getSimpleName(), System.currentTimeMillis());
         }
-        
+
         boolean isReachable = byAddress.isReachable(timeOutMSec);
         if (isReachable) {
             NetKeeper.getOnLinesResolve().put(hostAddress, hostName);
@@ -189,21 +177,33 @@ import java.util.concurrent.LinkedBlockingDeque;
         }
         else {
             NetKeeper.editOffLines().put(byAddress.getHostAddress(), hostName);
-    
+
             getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
         if (stringBuilder.toString().contains(ExecScan.PAT_IS_ONLINE)) {
             {
                 printStream.println(hostAddress + " " + hostName);
-                System.out.println((getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour + vlanFile.getName() + " = " + vlanFile
+                System.out.println((getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour + vlanFile
+                    .getName() + " = " + vlanFile
                     .length() + ConstantsFor.STR_BYTES));
-                
+
             }
         }
         return stringBuilder.toString();
     }
-    
+
+    @NotNull
+    private Collection<String> getAllDevLocalDeq() {
+        final int MAX_IN_ONE_VLAN = 255;
+        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+        final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
+
+        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
+        InitProperties.getTheProps().setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
+        return ALL_DEVICES;
+    }
+
     private void writeToFile() {
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(vlanFile));
              PrintStream printStream = new PrintStream(outputStream, true)) {

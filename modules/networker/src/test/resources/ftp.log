@@ -13020,3 +13020,281 @@ MLSD
 Загрузка
 Ожидание ответа сервера...
 226 Transfer complete
+----------
+Connect to: (28.01.2020 1:05:19)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,160).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,137,231).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (28.01.2020 1:05:44)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,140,153).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,111).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,137,10).
+RETR pc.jar
+150 Opening BINARY mode data connection for pc.jar (327399 bytes)
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+Copied (28.01.2020 1:06:30): ftp://31.31.196.85:21/lib/pc.jar -> C:\Users\14350\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\pc.jar 327 399 байт, 6 802 Кбайт/с
+QUIT
+221 Goodbye.
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/IntoApplication.150268540"
+rm "/usr/home/kudr/networker/IntoApplication.371800738"
+rm "/usr/home/kudr/networker/IntoApplication.447212746"
+rm "/usr/home/kudr/networker/IntoApplication.609962972"
+rm "/usr/home/kudr/networker/IntoApplication.902478634"
+rm "/usr/home/kudr/networker/IntoApplication.934275857"
+rm "/usr/home/kudr/networker/IntoApplication.952562199"
+rm "/usr/home/kudr/networker/IntoApplication.982757413"
+rm "/usr/home/kudr/networker/IntoApplication.1199673596"
+rm "/usr/home/kudr/networker/IntoApplication.1364913072"
+rm "/usr/home/kudr/networker/IntoApplication.1388278453"
+rm "/usr/home/kudr/networker/IntoApplication.1496355635"
+rm "/usr/home/kudr/networker/IntoApplication.1529060733"
+rm "/usr/home/kudr/networker/IntoApplication.1803669141"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/IntoApplication.106374177"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/ThreadConfig.time"
+ls "/usr/home/kudr/networker/"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/stats.zip" "d:\Temp\_tc\stats.zip"
+rm "/usr/home/kudr/networker/stats.zip"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/lan_11vsrv.txt"
+rm "/usr/home/kudr/networker/lan_21vsrv.txt"
+rm "/usr/home/kudr/networker/lan_31vsrv.txt"
+rm "/usr/home/kudr/networker/lan_200205.txt"
+rm "/usr/home/kudr/networker/lan_205210.txt"
+rm "/usr/home/kudr/networker/lan_210215.txt"
+rm "/usr/home/kudr/networker/lan_213220.txt"
+rm "/usr/home/kudr/networker/lan_old0.txt"
+rm "/usr/home/kudr/networker/lan_old1.txt"
+rm "/usr/home/kudr/networker/parsedLog.log"
+rm "/usr/home/kudr/networker/PcNamesScanner.mini"
+rm "/usr/home/kudr/networker/squid.list"
+rm "/usr/home/kudr/networker/squidlimited.list"
+rm "/usr/home/kudr/networker/ssh.txt"
+rm "/usr/home/kudr/networker/tempfull.list"
+rm "/usr/home/kudr/networker/unused.ips"
+rm "/usr/home/kudr/networker/vipnet.list"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/24hrs.list"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/inet.uniq" "d:\Temp\_tc\inet.uniq"
+rm "/usr/home/kudr/networker/inet.uniq"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/ScanOnline.onList" "d:\Temp\_tc\ScanOnline.onList"
+rm "/usr/home/kudr/networker/ScanOnline.onList"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents/inetstats/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/u0466446_velkom.matrix" "d:\Temp\_tc\u0466446_velkom.matrix"
+----------
+Connect to: (28.01.2020 20:13:43)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,161).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,119).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/app.log" "d:\Temp\_tc\app.log"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/app.log" "d:\Temp\_tc\app.log"
+connection to 10.10.111.65 closed - bye bye!
