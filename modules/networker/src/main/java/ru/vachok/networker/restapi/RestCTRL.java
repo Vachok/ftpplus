@@ -1,10 +1,12 @@
 package ru.vachok.networker.restapi;
 
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -12,17 +14,15 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 
 
 /**
@@ -30,9 +30,9 @@ import java.util.TreeMap;
  @since 15.12.2019 (19:42) */
 @RestController
 public class RestCTRL {
-
-
-    public static final String OKHTTP = "okhttp";
+    
+    
+    private static final String OKHTTP = "okhttp";
 
     @GetMapping("/status")
     public String appStatus() {
@@ -128,5 +128,29 @@ public class RestCTRL {
             return e.getMessage() + " \n<br>\n" + AbstractForms.fromArray(e);
         }
     }
-
+    
+    @PostMapping("/tempnet")
+    public String inetTemporary(HttpServletRequest request, HttpServletResponse response) {
+        String ipForInet = request.getHeader("Authorization");
+        response.setHeader("Authorization", request.getRemoteHost());
+        String contentType = request.getContentType();
+        byte[] contentBytes = new byte[request.getContentLength()];
+        try (ServletInputStream inputStream = request.getInputStream();) {
+            int iRead = inputStream.available();
+            while (iRead > 0) {
+                iRead = inputStream.read(contentBytes);
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        JsonObject object = Json.parse(new String(contentBytes)).asObject();
+        String input = object.get("ip").asString();
+        long hoursToOpenInet = Long.parseLong(object.get("hour").asString());
+        String option = object.get("option").asString();
+        String whocalls = object.get("whocalls").asString();
+        return new TemporaryFullInternet(input, hoursToOpenInet, option, whocalls).call();
+    }
+    
+    
 }

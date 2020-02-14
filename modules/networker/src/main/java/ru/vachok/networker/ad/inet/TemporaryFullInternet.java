@@ -6,27 +6,21 @@ package ru.vachok.networker.ad.inet;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -36,15 +30,15 @@ import java.util.regex.Pattern;
 /**
  @see TemporaryFullInternetTest
  @since 28.02.2019 (11:52) */
-public class TemporaryFullInternet implements Runnable, Callable<String> {
-
-
+public class TemporaryFullInternet implements Runnable {
+    
+    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, TemporaryFullInternet.class.getSimpleName());
-
+    
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
-
+    
     private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
-
+    
     @SuppressWarnings("StaticVariableOfConcreteClass") private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class
             .getSimpleName()).build();
 
@@ -83,7 +77,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + optionToDo
             .toUpperCase() + " " + userInputIpOrHostName + " full internet access before: " + new Date(delStamp));
     }
-
+    
     @Override
     public void run() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
@@ -97,12 +91,17 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         this.userInputIpOrHostName = "10.200.213.85";
         this.delStamp = timeStampOff;
     }
-
-    @Override
+    
     public String call() {
-        return doAdd();
+        String doAdd = getClass().getSimpleName();
+        if (optionToDo != null && optionToDo.equals("add")) {
+            doAdd = doAdd();
+            messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd);
+        }
+        execOldMeth();
+        return doAdd;
     }
-
+    
     @SuppressWarnings("FeatureEnvy")
     private @NotNull String doAdd() {
         SSH_FACTORY.setConnectToSrv(NEEDED_SRV);
@@ -111,13 +110,15 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         String sshIP = String.valueOf(nameOrIPChecker.resolveInetAddress()).split("/")[1];
         String tempString24HRSFile = sshCall();
         Map<String, String> inetUniqMap = get24hrsTempInetList();
-        if (tempString24HRSFile.contains(sshIP)) {
+        
+        if (tempString24HRSFile.replace("\\Q.\\E", "").contains(sshIP.replace("\\Q.\\E", ""))) {
             retBuilder.append("<h2>")
-                .append(getClass().getSimpleName())
-                .append(" doAdd: ")
-                .append(sshIP)
-                .append(" is exist!</h2><br>")
+                    .append(getClass().getSimpleName())
+                    .append(" doAdd: ")
+                    .append(sshIP)
+                    .append(" is exist!</h2><br>")
                     .append(AbstractForms.fromArray(SSH_CHECKER_MAP).replace("<br>", "\n"));
+            messageToUser.error("TemporaryFullInternet.doAdd", sshIP, tempString24HRSFile);
         }
         else {
             if (inetUniqMap.containsKey(sshIP) && !inetUniqMap.get(sshIP).equalsIgnoreCase("10.200.213.85")) {
@@ -143,7 +144,8 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         StringBuilder tempString24HRSBuilder = new StringBuilder();
         try {
             SSH_FACTORY.setCommandSSH(ConstantsFor.COM_CAT24HRSLIST);
-            tempString24HRSBuilder.append(SSH_FACTORY.call());
+            String call = SSH_FACTORY.call();
+            tempString24HRSBuilder.append(call);
         }
         catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException e) {
             tempString24HRSBuilder.append(AbstractForms.fromArray(e).replace("<br>", "\n"));

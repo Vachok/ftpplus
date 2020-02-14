@@ -5,21 +5,13 @@ package ru.vachok.networker.ad.inet;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
@@ -62,8 +54,8 @@ public class TemporaryFullInternetTest {
 
     @Test
     public void testRunAdd() {
-        Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
-        String getStr = AppConfigurationLocal.getInstance().submitAsString(tmpInet, 15);
+        TemporaryFullInternet fullInternet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
+        String getStr = AppConfigurationLocal.getInstance().submitAsString(()->fullInternet, 15);
         Assert.assertTrue(getStr.contains("8.8.8.8"), getStr);
     }
 
