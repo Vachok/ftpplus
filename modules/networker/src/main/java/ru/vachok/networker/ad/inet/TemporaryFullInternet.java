@@ -45,8 +45,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
 
     private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
 
-    @SuppressWarnings("StaticVariableOfConcreteClass") private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class
-            .getSimpleName()).build();
+    private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
 
     private static final Pattern PAT_FILEEXT_LIST = Pattern.compile(".list", Pattern.LITERAL);
 
@@ -98,9 +97,14 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         this.delStamp = timeStampOff;
     }
 
-    @Override
     public String call() {
-        return doAdd();
+        String doAdd = getClass().getSimpleName();
+        if (optionToDo != null && optionToDo.equals("add")) {
+            doAdd = doAdd();
+            messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd);
+        }
+        execOldMeth();
+        return doAdd;
     }
 
     @SuppressWarnings("FeatureEnvy")
@@ -111,13 +115,15 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         String sshIP = String.valueOf(nameOrIPChecker.resolveInetAddress()).split("/")[1];
         String tempString24HRSFile = sshCall();
         Map<String, String> inetUniqMap = get24hrsTempInetList();
-        if (tempString24HRSFile.contains(sshIP)) {
+
+        if (tempString24HRSFile.replace("\\Q.\\E", "").contains(sshIP.replace("\\Q.\\E", ""))) {
             retBuilder.append("<h2>")
-                .append(getClass().getSimpleName())
-                .append(" doAdd: ")
-                .append(sshIP)
-                .append(" is exist!</h2><br>")
+                    .append(getClass().getSimpleName())
+                    .append(" doAdd: ")
+                    .append(sshIP)
+                    .append(" is exist!</h2><br>")
                     .append(AbstractForms.fromArray(SSH_CHECKER_MAP).replace("<br>", "\n"));
+            messageToUser.error("TemporaryFullInternet.doAdd", sshIP, tempString24HRSFile);
         }
         else {
             if (inetUniqMap.containsKey(sshIP) && !inetUniqMap.get(sshIP).equalsIgnoreCase("10.200.213.85")) {
@@ -142,8 +148,9 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     private @NotNull String sshCall() {
         StringBuilder tempString24HRSBuilder = new StringBuilder();
         try {
-            SSH_FACTORY.setCommandSSH(ConstantsFor.COM_CAT24HRSLIST);
-            tempString24HRSBuilder.append(SSH_FACTORY.call());
+            SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
+            String call = SSH_FACTORY.call();
+            tempString24HRSBuilder.append(call);
         }
         catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException e) {
             tempString24HRSBuilder.append(AbstractForms.fromArray(e).replace("<br>", "\n"));
@@ -200,7 +207,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     }
 
     private void sshChecker() {
-        SSH_FACTORY.setCommandSSH(ConstantsFor.COM_CAT24HRSLIST);
+        SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
         String fromSSH24HrsList = SSH_FACTORY.call();
         MINI_LOGGER.add(fromSSH24HrsList);
 

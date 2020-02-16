@@ -139,7 +139,8 @@ public class DataSynchronizer extends SyncData {
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
         MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
             .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal) + " and " + syncArch);
-        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName()).info(createMailText(syncArch));
+        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
+            .info(String.valueOf(totalRows), this.getClass().getSimpleName(), createMailText(syncArch));
     }
 
     @NotNull

@@ -1,10 +1,14 @@
 package ru.vachok.networker.restapi;
 
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -12,17 +16,18 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 
 
 /**
@@ -32,7 +37,9 @@ import java.util.TreeMap;
 public class RestCTRL {
 
 
-    public static final String OKHTTP = "okhttp";
+    private static final String OKHTTP = "okhttp";
+
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRL.class.getSimpleName());
 
     @GetMapping("/status")
     public String appStatus() {
@@ -129,4 +136,79 @@ public class RestCTRL {
         }
     }
 
+    @PostMapping("/tempnet")
+    public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
+        boolean ipForInetValid = checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION));
+        String contentType = request.getContentType(); //application/json
+
+        response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
+        byte[] contentBytes = new byte[request.getContentLength()];
+        String retStr = MessageFormat.format("{0} {1}", contentType, request.getHeader(ConstantsFor.AUTHORIZATION));
+        if (ipForInetValid) {
+            try (ServletInputStream inputStream = request.getInputStream();) {
+                int iRead = inputStream.available();
+                while (iRead > 0) {
+                    iRead = inputStream.read(contentBytes);
+                }
+            }
+            catch (IOException e) {
+                retStr = AbstractForms.fromArray(e);
+            }
+            JsonObject object;
+            if (contentType.equals(ConstantsFor.JSON)) {
+                object = Json.parse(new String(contentBytes)).asObject();
+            }
+            else {
+                object = new JsonObject();
+            }
+            String input = object.get("ip").asString();
+            long hoursToOpenInet = Long.parseLong(object.get("hour").asString());
+            String option = object.get(ConstantsFor.OPTION).asString();
+            String whocalls = object.get(ConstantsFor.WHOCALLS).asString();
+            retStr = MessageFormat.format("{0}\n{1}", retStr, new TemporaryFullInternet(input, hoursToOpenInet, option, whocalls).call());
+        }
+        else {
+            retStr = "INVALID USER";
+        }
+        return retStr;
+    }
+
+    private boolean checkValidUID(String headerAuthorization) {
+        boolean isValid = false;
+        List<String> validUIDs = getFromDB();
+        if (validUIDs.size() == 0) {
+            FileSystemWorker.readFileToList("uid.txt");
+        }
+        for (String validUID : validUIDs) {
+            if (headerAuthorization.equals(validUID)) {
+                messageToUser.info(getClass().getSimpleName(), "checkValidUID", validUID);
+                isValid = true;
+            }
+            else {
+                messageToUser.warn(getClass().getSimpleName(), "checkValidUID", validUID + " != " + headerAuthorization);
+            }
+        }
+        return isValid;
+    }
+
+    private List<String> getFromDB() {
+        List<String> validUIDs = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_UIDS_FULL);
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from velkom.restuids");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                validUIDs.add(resultSet.getString("uid"));
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return validUIDs;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", RestCTRL.class.getSimpleName() + "[\n", "\n]")
+            .toString();
+    }
 }

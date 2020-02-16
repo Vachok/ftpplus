@@ -11,7 +11,9 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.SwitchesWiFi;
 
 import java.io.File;
 import java.util.*;
@@ -23,17 +25,17 @@ import java.util.regex.Pattern;
  @see ru.vachok.networker.net.ssh.AccessListsCheckUniqTest
  @since 17.04.2019 (11:30) */
 public class AccessListsCheckUniq implements Callable<String> {
-    
-    
+
+
     private static final Pattern FILENAME_COMPILE = Pattern.compile("/pf/");
-    
+
     private static final Pattern FILENAME_PATTERN = Pattern.compile(" && ");
-    
+
     private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
-    
+
     private Collection<String> fileNames = new ArrayList<>();
-    
+
     private void parseListFiles() {
         Map<String, String> usersIPFromPFLists = getInetUniqMap();
         for (String fileName : fileNames) {
@@ -55,24 +57,24 @@ public class AccessListsCheckUniq implements Callable<String> {
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
         FileSystemWorker.writeFile(FileNames.INET_UNIQ, fromArray.toString());
     }
-    
+
     @Override
     public String call() {
         return connectTo();
     }
-    
+
     private @NotNull String connectTo() {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), ConstantsFor.SSH_UNAMEA, getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
-        String[] commandsToGetList = {ConstantsFor.COM_CAT24HRSLIST, "sudo cat /etc/pf/vipnet && exit", ConstantsFor.SSH_SHOW_PFSQUID, ConstantsFor.SSH_SHOW_SQUIDLIMITED, ConstantsFor.SSH_SHOW_PROXYFULL};
+        String[] commandsToGetList = {ConstantsFor.SSH_CAT24HRSLIST, "sudo cat /etc/pf/vipnet && exit", ConstantsFor.SSH_SHOW_PFSQUID, ConstantsFor.SSH_SHOW_SQUIDLIMITED, ConstantsFor.SSH_SHOW_PROXYFULL};
         for (String getList : commandsToGetList) {
             makePfListFiles(getList, sshFactory, stringBuilder);
         }
         parseListFiles();
         return stringBuilder.toString();
     }
-    
+
     private static String getSRVNeed() {
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
@@ -81,7 +83,7 @@ public class AccessListsCheckUniq implements Callable<String> {
             return SwitchesWiFi.IPADDR_SRVGIT;
         }
     }
-    
+
     private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {
         sshFactory.setCommandSSH(getList);
         Future<String> stringCallable = Executors.newSingleThreadExecutor().submit(sshFactory);
@@ -96,12 +98,12 @@ public class AccessListsCheckUniq implements Callable<String> {
         fileNames.add(fileName);
         FileSystemWorker.writeFile(fileName, stringSet.stream());
     }
-    
+
     @Contract(pure = true)
     private static Map<String, String> getInetUniqMap() {
         return InternetUse.getInetUniqMap();
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", AccessListsCheckUniq.class.getSimpleName() + "[\n", "\n]")

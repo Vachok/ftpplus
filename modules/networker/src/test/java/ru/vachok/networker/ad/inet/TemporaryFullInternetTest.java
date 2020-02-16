@@ -62,8 +62,8 @@ public class TemporaryFullInternetTest {
 
     @Test
     public void testRunAdd() {
-        Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
-        String getStr = AppConfigurationLocal.getInstance().submitAsString(tmpInet, 15);
+        TemporaryFullInternet fullInternet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
+        String getStr = AppConfigurationLocal.getInstance().submitAsString(()->fullInternet, 15);
         Assert.assertTrue(getStr.contains("8.8.8.8"), getStr);
     }
 
@@ -80,7 +80,7 @@ public class TemporaryFullInternetTest {
         final Pattern PAT_BR_N = Pattern.compile("<br>\n");
         final Pattern PAT_SHARP = Pattern.compile(" #");
 
-        SSH_FACTORY.setCommandSSH(ConstantsFor.COM_CAT24HRSLIST);
+        SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
         MINI_LOGGER.add(tempFile);
 
