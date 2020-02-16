@@ -5,13 +5,21 @@ package ru.vachok.networker.ad.inet;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
@@ -72,7 +80,7 @@ public class TemporaryFullInternetTest {
         final Pattern PAT_BR_N = Pattern.compile("<br>\n");
         final Pattern PAT_SHARP = Pattern.compile(" #");
 
-        SSH_FACTORY.setCommandSSH(ConstantsFor.COM_CAT24HRSLIST);
+        SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
         MINI_LOGGER.add(tempFile);
 

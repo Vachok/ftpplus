@@ -459,7 +459,7 @@ public enum ConstantsFor {
 
     public static final String SSH_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
 
-    public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
+    public static final String SSH_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
 
     public static final String DB_FIELD_WHENQUERIED = "whenQueried";
 
@@ -471,7 +471,7 @@ public enum ConstantsFor {
 
     public static final String DBCOL_SEGPP = "SegmentPP";
 
-    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
+    public static final String DB_UIDS_FULL = "velkom.restuids";
 
     public static final String DB_SEARCHPERMANENT = "search.permanent";
 
@@ -534,6 +534,16 @@ public enum ConstantsFor {
     public static final String DB_ARCHIVEVELKOMPC = "archive.velkompc";
 
     public static final String PROTOTYPE = "prototype";
+
+    public static final String AUTHORIZATION = "Authorization";
+
+    public static final String OPTION = "option";
+
+    public static final String WHOCALLS = "whocalls";
+
+    public static final String JSON = "application/json";
+
+    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
