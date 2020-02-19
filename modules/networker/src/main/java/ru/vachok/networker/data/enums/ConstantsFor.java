@@ -11,7 +11,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -302,7 +304,7 @@ public enum ConstantsFor {
     public static final String PS_IMPORTSYSMODULES = "ImportSystemModules";
 
     public static final String SSHCOM_24HRS = " >> /etc/pf/24hrs;";
-    
+
     public static final String NOT_ALLOWED = "NOT Allowed! Try this app: https://appdistribution.firebase.dev/i/s1bgY5MA";
 
     public static final String ANS_DOMNAMEEXISTS = "Domain is exists!";
@@ -532,22 +534,25 @@ public enum ConstantsFor {
     public static final String DB_ARCHIVEVELKOMPC = "archive.velkompc";
 
     public static final String PROTOTYPE = "prototype";
-    
+
     public static final String AUTHORIZATION = "Authorization";
-    
+
     public static final String OPTION = "option";
-    
+
     public static final String WHOCALLS = "whocalls";
-    
+
     public static final String JSON = "application/json";
-    
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
-    
+
     public static final String DOMAIN = "domain";
-    
+
     public static final String DELETE = "delete";
-    
-    public static @NotNull String[] getExcludedFoldersForCleaner() {
+
+    public static final String RULES = "rules";
+
+    @NotNull
+    public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));
         excludeFolders.addAll(FileSystemWorker.readFileToList(new File(FileNames.CLEANSTOP_TXT).getAbsolutePath()));

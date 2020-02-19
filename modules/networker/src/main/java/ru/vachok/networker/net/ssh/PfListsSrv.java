@@ -26,50 +26,45 @@ import java.util.concurrent.TimeoutException;
 
 /**
  Список-выгрузка с сервера доступа в интернет
- 
+
  @since 10.09.2018 (11:49) */
-@Service
+@Service(ConstantsFor.BEANNAME_PFLISTSSRV)
 public class PfListsSrv {
-    
-    
+
+
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
-    
+
     private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PfListsSrv.class.getSimpleName());
-    
+
     /**
      {@link PfLists}
      */
     private PfLists pfListsInstAW;
-    
+
     /**
      SSH-команда.
      <p>
      При инициализации: {@code uname -a && exit}.
-     
+
      @see PfListsCtr#runCommand(org.springframework.ui.Model, PfListsSrv)
      @see #runCom()
      */
-    private @NotNull String commandForNatStr = "sudo cat /etc/pf/allowdomain && exit";
-    
+    @NotNull private String commandForNatStr = "sudo cat /etc/pf/allowdomain && exit";
+
     /**
-     {@code this.builderInst}
-     <p>
-     new {@link SSHFactory.Builder} ({@link SwitchesWiFi#IPADDR_SRVNAT} , {@link #commandForNatStr}).
-     
-     @param pfLists {@link #pfListsInstAW}
+     @return {@link #commandForNatStr}
      */
-    @Contract(pure = true)
-    @Autowired
-    public PfListsSrv(@NotNull PfLists pfLists) {
-        this.pfListsInstAW = pfLists;
+    @NotNull
+    public String getCommandForNatStr() {
+        return commandForNatStr;
     }
-    
+
     @Contract(pure = true)
     public static String getDefaultConnectSrv() {
         return DEFAULT_CONNECT_SRV;
     }
-    
+
     String runCom() {
         if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
             return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
@@ -78,14 +73,19 @@ public class PfListsSrv {
             return "22.06.2019 (8:01)";
         }
     }
-    
+
     /**
-     @return {@link #commandForNatStr}
+     {@code this.builderInst}
+     <p>
+     new {@link SSHFactory.Builder} ({@link SwitchesWiFi#IPADDR_SRVNAT} , {@link #commandForNatStr}).
+
+     @param pfLists {@link #pfListsInstAW}
      */
-    public @NotNull String getCommandForNatStr() {
-        return commandForNatStr;
+    @Autowired
+    public PfListsSrv(@NotNull PfLists pfLists) {
+        this.pfListsInstAW = pfLists;
     }
-    
+
     /**
      @param commandForNatStr {@link #commandForNatStr}
      */
@@ -93,7 +93,7 @@ public class PfListsSrv {
     public void setCommandForNatStr(@NotNull String commandForNatStr) {
         this.commandForNatStr = commandForNatStr;
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfListsSrv{");
@@ -103,13 +103,13 @@ public class PfListsSrv {
         sb.append('}');
         return sb.toString();
     }
-    
+
     /**
      Формирует списки <b>pf</b>
-     
+
      @see PfListsCtr
      */
-    void makeListRunner() {
+    public void makeListRunner() {
         try {
             buildFactory();
         }
@@ -117,7 +117,7 @@ public class PfListsSrv {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeListRunner", e));
         }
     }
-    
+
     /**
      <b>Заполнение форм списка PF</b>
      <p>
@@ -144,34 +144,34 @@ public class PfListsSrv {
             this.pfListsInstAW = new PfLists();
         }
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
-        
+
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs && exit");
         pfListsInstAW.setVipNet(build.call());
-        
+
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PFSQUID);
         pfListsInstAW.setStdSquid(build.call());
-        
+
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PROXYFULL);
         pfListsInstAW.setFullSquid(build.call());
-        
+
         build.setCommandSSH(ConstantsFor.SSH_SHOW_SQUIDLIMITED);
         pfListsInstAW.setLimitSquid(build.call());
-        
+
         build.setCommandSSH("pfctl -s nat && exit");
         pfListsInstAW.setPfNat(build.call());
-        
+
         build.setCommandSSH("pfctl -s rules && exit");
         pfListsInstAW.setPfRules(build.call());
-        
+
         build.setCommandSSH("sudo cat /home/kudr/inet.log && exit");
         String inetLog = build.call();
         pfListsInstAW.setInetLog(inetLog);
-        
+
         Future<String> checkUniqueInListsFuture = AppComponents.threadConfig().getTaskExecutor().submit(new AccessListsCheckUniq());
         String inetUniqStr = checkUniqueInListsFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
     }
-    
+
     private static String whatSrv() {
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;

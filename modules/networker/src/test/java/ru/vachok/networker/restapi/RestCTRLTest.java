@@ -7,7 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -21,59 +24,65 @@ import java.io.IOException;
 /**
  @see RestCTRL */
 public class RestCTRLTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(RestCTRLTest.class.getSimpleName(), System.nanoTime());
-    
+
     private InformationFactory instance;
-    
+
     private RestCTRL restCTRL;
-    
+
+    private static final String SRV_VPS = "http://194.67.86.51:8880/";
+
+    private static final String SRV_RUPS = "http://rups00.eatmeat.ru:8880/";
+
+    private static final String SRV_LOCAL = "http://10.10.111.65:8880/";
+
     @BeforeMethod
     public void initInst() {
         this.instance = InformationFactory.getInstance(InformationFactory.REST_PC_UNIQ);
         this.restCTRL = new RestCTRL();
     }
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @Test
     public void testAppStatus() {
         String s = restCTRL.appStatus();
         Assert.assertTrue(s.contains("amd64 Arch"));
     }
-    
+
     @Test
     public void uniqPC() {
-        
+
         String info = instance.getInfo();
         Assert.assertTrue(info.contains("10.10.10.1"));
         instance.setClassOption(true);
         info = instance.getInfo();
         Assert.assertTrue(info.contains("{\"ip\":\"10.10.10.1\",\"pcname\":\"10.10.10.1\"}"));
     }
-    
+
     @Test
     public void testFileShow() {
         String fS = restCTRL.fileShow(new MockHttpServletRequest());
         Assert.assertTrue(fS.contains("exit.last"));
     }
-    
+
     @Test
     public void testDbInfoRest() {
         String dbInfo = restCTRL.dbInfoRest();
         System.out.println("dbInfo = " + dbInfo);
     }
-    
+
     @Test
     public void testInetTemporary() {
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -85,8 +94,38 @@ public class RestCTRLTest {
         String s = restCTRL.inetTemporary(request, response);
         Assert.assertTrue(s.contains("10.200.213.233"));
     }
-    
-    private JsonObject getJSONObject() {
+
+    @Test
+    public void okTest() {
+        Request.Builder builder = getBuilder("tempnet", SRV_LOCAL);
+        RequestBody requestBody = RequestBody.create(getJSONObject().toString().getBytes());
+        builder.post(requestBody);
+        Call newCall = new OkHttpClient().newCall(builder.build());
+        try (Response execute = newCall.execute();
+             ResponseBody body = execute.body()) {
+            String string = body != null ? body.string() : "null";
+            boolean contains = string.contains("10.200.213.233") || string.contains(ConstantsFor.RULES);
+            Assert.assertTrue(contains, string);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+
+    @NotNull
+    private Request.Builder getBuilder(String urlPart, String srvName) {
+        String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        Request.Builder builder = new Request.Builder();
+        builder.url(srvName + urlPart);
+//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
+        builder.addHeader(ConstantsFor.AUTHORIZATION, "IAn51aza2rUeegZX6WIH8ozCkBP2");
+        builder.addHeader("Content-Type", ConstantsFor.JSON);
+        return builder;
+    }
+
+    @NotNull
+    private static JsonObject getJSONObject() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add("ip", "10.200.213.233");
         jsonObject.add("hour", "1");
@@ -94,39 +133,10 @@ public class RestCTRLTest {
         jsonObject.add(ConstantsFor.WHOCALLS, "ikudryashov@velkomfood.ru");
         return jsonObject;
     }
-    
-    @Test
-    public void okTest() {
-        Request.Builder builder = getBuilder("tempnet");
-        RequestBody requestBody = RequestBody.create(getJSONObject().toString().getBytes());
-        builder.post(requestBody);
-        Call newCall = new OkHttpClient().newCall(builder.build());
-        try (Response execute = newCall.execute();
-             ResponseBody body = execute.body()) {
-            String string = body != null ? body.string() : "null";
-            boolean contains = string.contains("10.200.213.233") || string.contains("rules");
-            Assert.assertTrue(contains, string);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-    }
-    
-    @NotNull
-    private Request.Builder getBuilder(String urlPart) {
-        String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request.Builder builder = new Request.Builder();
-        builder.url("http://194.67.86.51:8880/" + urlPart);
-//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
-        builder.addHeader(ConstantsFor.AUTHORIZATION, "IAn51aza2rUeegZX6WIH8ozCkBP2");
-        builder.addHeader("Content-Type", ConstantsFor.JSON);
-        return builder;
-    }
-    
+
     @Test
     public void addDomainRESTTest() {
-        Request.Builder builder = getBuilder("tempnet");
+        Request.Builder builder = getBuilder("tempnet", SRV_LOCAL);
         JsonObject jsonObject = getJSONObject();
         jsonObject.set("ip", "add");
         jsonObject.set("hour", "-2");
@@ -143,14 +153,14 @@ public class RestCTRLTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void getSSHLists() {
-        Request.Builder builder = getBuilder("getsshlists");
+        Request.Builder builder = getBuilder("getsshlists", SRV_LOCAL);
         Call newCall = new OkHttpClient().newCall(builder.build());
         try (Response execute = newCall.execute();
              ResponseBody body = execute.body()) {
-            String string = body.string();
+            String string = body != null ? body.string() : null;
             System.out.println("string = " + string);
         }
         catch (IOException e) {
