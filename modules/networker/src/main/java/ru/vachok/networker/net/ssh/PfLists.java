@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.ssh;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
@@ -117,18 +118,14 @@ public class PfLists {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("PfLists{");
-        sb.append("fullSquid='").append(fullSquid).append('\'');
-        sb.append(", gitStatsUpdatedStampLong=").append(gitStatsUpdatedStampLong);
-        sb.append(", inetLog='").append(inetLog).append('\'');
-        sb.append(", limitSquid='").append(limitSquid).append('\'');
-        sb.append(", pfNat='").append(pfNat).append('\'');
-        sb.append(", pfRules='").append(pfRules).append('\'');
-        sb.append(", stdSquid='").append(stdSquid).append('\'');
-        sb.append(", timeStampToNextUpdLong=").append(timeStampToNextUpdLong);
-        sb.append(", uName='").append(uName).append('\'');
-        sb.append(", vipNet='").append(vipNet).append('\'');
-        sb.append('}');
-        return sb.toString();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("vipNet", vipNet);
+        jsonObject.add("stdSquid", stdSquid);
+        jsonObject.add("limitSquid", limitSquid);
+        jsonObject.add("fullSquid", fullSquid);
+        jsonObject.add("pfRules", pfRules);
+        jsonObject.add("pfNat", pfNat);
+        jsonObject.add("inetLog", inetLog);
+        return jsonObject.toString();
     }
 }
