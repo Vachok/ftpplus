@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.ssh;
 
 
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -118,14 +119,12 @@ public class PfLists {
 
     @Override
     public String toString() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add("vipNet", vipNet);
-        jsonObject.add("stdSquid", stdSquid);
-        jsonObject.add("limitSquid", limitSquid);
-        jsonObject.add("fullSquid", fullSquid);
-        jsonObject.add("pfRules", pfRules);
-        jsonObject.add("pfNat", pfNat);
-        jsonObject.add("inetLog", inetLog);
-        return jsonObject.toString();
+        JsonArray jsonArray = new JsonArray();
+        JsonObject[] jsonObjects = {new JsonObject().add("vipNet", this.vipNet), new JsonObject().add("stdSquid", stdSquid), new JsonObject().add("limitSquid", limitSquid),
+                new JsonObject().add("fullSquid", fullSquid), new JsonObject().add("pfRules", pfRules), new JsonObject().add("pfNat", pfNat), new JsonObject().add("inetLog", inetLog)};
+        for (JsonObject jsonObject : jsonObjects) {
+            jsonArray.add(jsonObject);
+        }
+        return jsonArray.toString();
     }
 }
