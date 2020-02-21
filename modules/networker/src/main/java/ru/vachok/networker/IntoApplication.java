@@ -15,9 +15,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -103,6 +101,7 @@ public class IntoApplication {
     @Override
     public String toString() {
         return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+                .add(new AppComponents().getFirebaseApp().getName())
             .toString();
     }
 

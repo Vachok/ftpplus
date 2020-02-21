@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import com.google.firebase.FirebaseApp;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.firebase.FBAdmin;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -50,7 +52,8 @@ public class AppComponents {
     
     private static final AppConfigurationLocal THREAD_CONFIG = ThreadConfig.getI();
     
-    public static @NotNull Properties getMailProps() {
+    @NotNull
+    public static Properties getMailProps() {
         Properties properties = new Properties();
         try {
             properties.load(AppComponents.class.getResourceAsStream("/static/mail.properties"));
@@ -65,17 +68,19 @@ public class AppComponents {
         return new PfLists();
     }
     
-    @Contract(value = "_ -> new", pure = true)
-    @Scope(ConstantsFor.SINGLETON)
-    public static @NotNull MessageSwing getMessageSwing(String messengerHeader) {
-//        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
-        return new ru.vachok.messenger.MessageSwing(messengerHeader);
+    @Bean(value = "fbapp")
+    public FirebaseApp getFirebaseApp() {
+        FBAdmin fbAdmin = new FBAdmin();
+        fbAdmin.initSDK();
+        return FirebaseApp.getInstance();
     }
     
-    @Contract(value = " -> new", pure = true)
-    @Bean
-    public static @NotNull ADSrv adSrv() {
-        return new ADSrv();
+    @Contract(value = "_ -> new", pure = true)
+    @Scope(ConstantsFor.SINGLETON)
+    @NotNull
+    public static MessageSwing getMessageSwing(String messengerHeader) {
+//        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
+        return new ru.vachok.messenger.MessageSwing(messengerHeader);
     }
     
     public Connection connection(String dbName) {
@@ -117,8 +122,15 @@ public class AppComponents {
     @Override
     public String toString() {
         return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
-            .add("Nothing to show...")
-            .toString();
+                .add("Nothing to show...")
+                .toString();
+    }
+    
+    @Contract(value = " -> new", pure = true)
+    @Bean
+    @NotNull
+    public static ADSrv adSrv() {
+        return new ADSrv();
     }
     
     @Contract(pure = true)

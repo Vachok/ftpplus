@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -46,7 +44,7 @@ public class PhotoConverterSRV {
     
     private String adPhotosPath;
     
-    private @NotNull Map<String, BufferedImage> filesList = new ConcurrentHashMap<>();
+    @NotNull private Map<String, BufferedImage> filesList = new ConcurrentHashMap<>();
     
     public File getAdFotoFile() {
         return adFotoFile;
@@ -64,7 +62,8 @@ public class PhotoConverterSRV {
      
      @return Комманды Exchange PowerShell
      */
-    public @NotNull String psCommands() {
+    @NotNull
+    public String psCommands() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         try {
             convertFoto();
@@ -99,7 +98,7 @@ public class PhotoConverterSRV {
             }
         }
         else {
-            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, null);
+            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, new BufferedImage(0, 0, BufferedImage.TYPE_CUSTOM));
         }
         try {
             filesList.forEach(imageBiConsumer);
@@ -124,12 +123,13 @@ public class PhotoConverterSRV {
     }
     
     @SuppressWarnings("MagicNumber")
-    private @NotNull BufferedImage scaledImage(@NotNull BufferedImage bufferedImage) {
+    @NotNull
+    private BufferedImage scaledImage(@NotNull BufferedImage bufferedImage) {
         int newW = 113;
         int newH = 154;
     
         newH = (newW * bufferedImage.getHeight()) / bufferedImage.getWidth();
-        
+    
         Image scaledImageTMP = bufferedImage.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         @NotNull BufferedImage scaledImage = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = scaledImage.createGraphics();

@@ -51,19 +51,20 @@ dependencies {
     testCompile group: 'org.testng', name: 'testng', version: '7.0.0-beta3'
     // https://mvnrepository.com/artifact/com.h2database/h2
     compile group: 'com.h2database', name: 'h2', version: '1.4.200'
+    compile 'com.google.firebase:firebase-admin:6.12.2'
 }
 
 sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml", "application.properties", "**/*.js", "msqldata.properties"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml", "application.properties", "**/*.json","**/*.js", "msqldata.properties"]
         }
     }
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.jar", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.jar","**/*.json", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
         }
     }
 }
