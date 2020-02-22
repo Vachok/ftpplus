@@ -11,36 +11,38 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
 
 
 public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable {
-    
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, TestConfigureThreadsLogMaker.class.getSimpleName());
-    
+
+
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TestConfigureThreadsLogMaker.class.getSimpleName());
+
     private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-    
+
     private static final String fileSeparator = System.getProperty(PropertiesNames.SYS_SEPARATOR);
-    
+
     private long startTime;
-    
+
     private transient PrintStream printStream;
-    
+
     private String callingClass;
-    
+
     private transient ThreadInfo threadInfo;
-    
+
     private transient Runtime runtime = Runtime.getRuntime();
-    
+
     @Override
     public PrintStream getPrintStream() {
         return printStream;
     }
-    
+
     public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
         this.startTime = startNANOTime;
         this.callingClass = callingClass;
@@ -51,7 +53,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             messageToUser.error("TestConfigureThreadsLogMaker", "TestConfigureThreadsLogMaker", e.getMessage() + " see line: 140");
         }
     }
-    
+
     @Override
     public void before() {
         if (callingClass == null) {
@@ -68,9 +70,9 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         catch (RuntimeException e) {
             e.printStackTrace();
         }
-    
+
     }
-    
+
     @Override
     public void after() {
         long cpuTime;
@@ -98,7 +100,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.close();
             maxMemory = runtime.totalMemory();
             freeM = runtime.freeMemory();
-            
+
         }
         catch (RuntimeException e) {
             messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
@@ -107,9 +109,9 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
             Runtime.getRuntime().runFinalization();
         }
-    
+
     }
-    
+
     private void findThread() {
         for (long threadId : threadMXBean.getAllThreadIds()) {
             String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
@@ -117,26 +119,26 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
                 this.threadInfo = threadMXBean.getThreadInfo(threadId);
             }
         }
-        
+
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TestConfigureThreadsLogMaker{");
         sb.append("startTime=").append(startTime);
         sb.append(", threadMXBean=").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
-        
+
         sb.append(", callingClass='").append(callingClass).append('\'');
         sb.append(", threadInfo=").append(new TForms().fromArray(threadInfo.getStackTrace()));
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Contract("_ -> fail")
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         throw new NotSerializableException("ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker");
     }
-    
+
     @Contract("_ -> fail")
     private void writeObject(ObjectOutputStream out) throws IOException {
         throw new NotSerializableException("ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker");
