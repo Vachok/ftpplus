@@ -3,7 +3,6 @@
 package ru.vachok.networker.restapi.message;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
@@ -25,28 +24,27 @@ import java.time.LocalTime;
  @see ru.vachok.networker.restapi.message.DBMessengerTest
  @since 26.08.2018 (12:29) */
 public class DBMessenger implements MessageToUser {
-    
-    
+
+
     private final Runnable dbSendRun = this::dbSend;
-    
+
     private String headerMsg;
-    
+
     private String titleMsg;
-    
+
     private String bodyMsg;
-    
+
     private boolean isInfo = true;
-    
+
     public void setHeaderMsg(String headerMsg) {
         this.headerMsg = headerMsg;
     }
-    
-    @Contract(pure = true)
+
     DBMessenger(String headerMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = DataConnectTo.getInstance(DataConnectTo.TESTING).toString();
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBMessenger{");
@@ -59,7 +57,7 @@ public class DBMessenger implements MessageToUser {
         sb.append('}');
         return sb.toString();
     }
-    
+
     private void dbSend() {
         String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
@@ -68,7 +66,7 @@ public class DBMessenger implements MessageToUser {
         }
         dbConnect(sql, pc, getStack());
     }
-    
+
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
@@ -77,7 +75,7 @@ public class DBMessenger implements MessageToUser {
         this.isInfo = false;
         AppComponents.threadConfig().getTaskExecutor().execute(dbSendRun, 1);
     }
-    
+
     private void dbConnect(String sql, String pc, String stack) {
         try (Connection con = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("log")) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
@@ -96,14 +94,15 @@ public class DBMessenger implements MessageToUser {
             }
         }
     }
-    
-    private @NotNull String getStack() {
+
+    @NotNull
+    private String getStack() {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         stringBuilder.append(AbstractForms.fromArray(threadMXBean.dumpAllThreads(true, true)));
         return stringBuilder.toString();
     }
-    
+
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
@@ -112,7 +111,7 @@ public class DBMessenger implements MessageToUser {
         this.isInfo = true;
         AppComponents.threadConfig().getTaskExecutor().execute(dbSendRun, 1);
     }
-    
+
     private void notDuplicate() {
         MessageToUser msgToUsr = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
         String titleBody = MessageFormat.format("Title: {0}\nBody: {1}", this.titleMsg, this.bodyMsg);
@@ -121,19 +120,19 @@ public class DBMessenger implements MessageToUser {
         this.bodyMsg = "";
         this.titleMsg = "";
     }
-    
+
     @Override
     public void infoNoTitles(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         info(this.headerMsg, this.titleMsg, this.bodyMsg);
     }
-    
+
     @Override
     public void info(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         info(this.headerMsg, this.titleMsg, bodyMsg);
     }
-    
+
     @Override
     public void error(String bodyMsg) {
         this.bodyMsg = bodyMsg;
@@ -141,7 +140,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = this.getClass().getSimpleName();
         errorAlert(this.headerMsg, this.titleMsg, bodyMsg);
     }
-    
+
     @Override
     public void error(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
@@ -149,7 +148,7 @@ public class DBMessenger implements MessageToUser {
         this.bodyMsg = bodyMsg;
         errorAlert(this.headerMsg, this.titleMsg, bodyMsg);
     }
-    
+
     @Override
     public void warn(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
@@ -157,13 +156,13 @@ public class DBMessenger implements MessageToUser {
         this.bodyMsg = bodyMsg;
         AppComponents.threadConfig().getTaskExecutor().execute(dbSendRun, 1);
     }
-    
+
     @Override
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         warn(this.headerMsg, this.titleMsg, bodyMsg);
     }
-    
+
     @Override
     public void warning(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
@@ -171,12 +170,12 @@ public class DBMessenger implements MessageToUser {
         this.bodyMsg = bodyMsg;
         warn(this.headerMsg, this.titleMsg, bodyMsg);
     }
-    
+
     @Override
     public void warning(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         warn(this.headerMsg, this.titleMsg, bodyMsg);
     }
-    
-    
+
+
 }

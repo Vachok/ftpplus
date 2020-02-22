@@ -16,7 +16,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
 
 
-    String DB = DBMessenger.class.getTypeName();
+    String DB = FirebaseMessage.class.getTypeName();
 
     String TRAY = MessageToTray.class.getTypeName();
 
@@ -32,7 +32,8 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("null, !null -> new")
-    static @NotNull MessageToUser getInstance(String messengerType, @NotNull String messengerHeader) {
+    @NotNull
+    static MessageToUser getInstance(String messengerType, @NotNull String messengerHeader) {
         final MessageToUser messageToUser;
         if (messengerType == null) {
             messageToUser = new MessageLocal(messengerHeader);
@@ -57,6 +58,10 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         }
         else if (messengerType.equalsIgnoreCase(EMAIL)) {
             messageToUser = new MessageEmail(messengerHeader);
+            return messageToUser;
+        }
+        else if (messengerType.equalsIgnoreCase(DB)) {
+            messageToUser = new FirebaseMessage();
             return messageToUser;
         }
         else {
