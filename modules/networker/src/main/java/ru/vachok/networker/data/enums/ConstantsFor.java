@@ -551,6 +551,10 @@ public enum ConstantsFor {
 
     public static final String RULES = "rules";
 
+    public static final String VACHOK_VACHOK_RU = "vachok@vachok.ru";
+
+    public static final String FIREBASE = "firebase";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
