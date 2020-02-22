@@ -42,9 +42,7 @@ public class ScanMessagesCreatorTest {
     @Test
     public void testTestToString() {
         String s = scanMessagesCreator.toString();
-        Assert.assertEquals(s, "ScanMessagesCreator[\n" +
-            "numOfTrains = 6\n" +
-            "]");
+        Assert.assertEquals(s, "ScanMessagesCreator[");
     }
 
     @Test

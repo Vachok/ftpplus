@@ -100,7 +100,7 @@ public class PhotoConverterSRV {
             }
         }
         else {
-            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, new BufferedImage(0, 0, BufferedImage.TYPE_INT_RGB));
+            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB));
         }
         try {
             filesList.forEach(imageBiConsumer);

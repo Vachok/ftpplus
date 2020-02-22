@@ -557,6 +557,8 @@ public enum ConstantsFor {
 
     public static final String FIREBASE = "firebase";
 
+    public static final String OWNER = "owner";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

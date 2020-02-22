@@ -56,7 +56,7 @@ import static java.time.DayOfWeek.SUNDAY;
 public class OnStartTasksLoader implements AppConfigurationLocal {
 
 
-    public static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
+    private static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
 
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OnStartTasksLoader.class.getSimpleName());
 
@@ -113,7 +113,8 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         }
     }
 
-    private @NotNull String launchRegRuFTPLibsUploader() {
+    @NotNull
+    private String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
         try {
             execute(regRuFTPLibsUploader);
@@ -208,7 +209,8 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     }
 
     @Contract(" -> new")
-    private @NotNull Runnable buildChecker() {
+    @NotNull
+    private Runnable buildChecker() {
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
         Path pathToSaveLogs = Paths.get(".");
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {

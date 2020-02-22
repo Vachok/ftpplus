@@ -92,8 +92,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             Files.setAttribute(dir, ConstantsFor.ATTRIB_HIDDEN, false);
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointOwn, dir.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + owner);
             //Изменение формата ломает: CommonRightsParsing.rightsWriterToFolderACL
-            String objectToFile = FileSystemWorker
-                    .appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
+            FileSystemWorker.appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
 
             new RightsWriter(dir.toAbsolutePath().normalize().toString(), owner.toString(), Arrays.toString(users.getAcl().toArray())).writeDBCommonTable();
         }
@@ -119,7 +118,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             else if (file.toFile().getName().equals(FileNames.FILENAME_OWNER + ".replacer")) {
                 file.toFile().delete();
             }
-            else if (file.toFile().getName().equals("owner")) {
+            else if (file.toFile().getName().equals(ConstantsFor.OWNER)) {
                 file.toFile().delete();
             }
         }
@@ -137,7 +136,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             secondsScan = 1;
         }
         stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
-        System.out.println(stringBuilder);
         if (dir.toFile().isDirectory()) {
             new ConcreteFolderACLWriter(dir).run();
             dir.toFile().setLastModified(lastModDir);
@@ -173,9 +171,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
 
         Path cRGHCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointRgh.getName());
         Path cOWNCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointOwn.getName());
-
-        boolean isOWNCopied = true;
-        boolean isRGHCopied = true;
 
         if (fileLocalCommonPointOwn.exists()) {
             FileSystemWorker.copyOrDelFile(fileLocalCommonPointOwn, cOWNCopyPath, true);
