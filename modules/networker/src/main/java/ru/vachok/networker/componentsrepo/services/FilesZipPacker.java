@@ -19,31 +19,35 @@ import java.util.zip.ZipOutputStream;
 /**
  Class ru.vachok.networker.services.FilesZipPacker
  <p>
+
  @see ru.vachok.networker.services.FilesZipPackerTest
  @since 21.06.2019 (20:14) */
 public class FilesZipPacker implements Callable<String> {
-    
-    
-    @Override public String call() throws IOException {
+
+
+    public static final String STATS_ZIP = "stats.zip";
+
+    @Override
+    public String call() throws IOException {
         String retString;
         try {
             retString = zipFilesMakerCopy();
         }
         catch (IOException e) {
-            File zipFile = new File(FileNames.STATS_ZIP);
+            File zipFile = new File(STATS_ZIP);
             zipFile.delete();
             retString = zipFilesMakerCopy();
         }
         return retString;
     }
-    
+
     private String zipFilesMakerCopy() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-    
+
         File[] inetStatsFiles = new File(FileNames.DIR_INETSTATS).listFiles();
-        
+
         long statFilesSize = 0;
-        
+
         for (File file : Objects.requireNonNull(inetStatsFiles)) {
             statFilesSize += file.length();
         }
@@ -52,10 +56,10 @@ public class FilesZipPacker implements Callable<String> {
         stringBuilder.append(createNEWZip(Arrays.asList(inetStatsFiles)));
         return stringBuilder.toString();
     }
-    
+
     private String createNEWZip(List<File> toPackInZipFilesList) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        File fileZip = new File(FileNames.STATS_ZIP);
+        File fileZip = new File(STATS_ZIP);
         if (!fileZip.exists()) {
             writeToFile(toPackInZipFilesList, stringBuilder);
         }
@@ -64,9 +68,9 @@ public class FilesZipPacker implements Callable<String> {
         }
         return stringBuilder.toString();
     }
-    
+
     private void writeToFile(Collection<?> toPackInZipFilesList, StringBuilder stringBuilder) throws IOException {
-        File zipFileRaw = new File(FileNames.STATS_ZIP);
+        File zipFileRaw = new File(STATS_ZIP);
         if (zipFileRaw.exists()) {
             Files.deleteIfExists(zipFileRaw.toPath());
             Files.createFile(zipFileRaw.toPath());
@@ -92,13 +96,13 @@ public class FilesZipPacker implements Callable<String> {
                         zipOutputStream.write(bufBytes, 0, inRead);
                     }
                 }
-                
+
                 String progressString = new StringBuilder().append(zipFileRaw.length() / ConstantsFor.MBYTE)
                     .append(" mbytes in: ").append(zipFileRaw.getAbsolutePath())
                     .append(" file last packet is: ").append(file.getName())
                     .append(" left: ").append(--numFiles)
                     .append(" files").toString();
-                
+
                 System.out.println(progressString);
                 stringBuilder.append(progressString);
             }
@@ -107,14 +111,14 @@ public class FilesZipPacker implements Callable<String> {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".writeToFile");
         }
     }
-    
+
     private void changeExistZip(List<File> toPackInZipFilesList) throws IOException {
-        try (ZipFile zipFile = new ZipFile(FileNames.STATS_ZIP)) {
+        try (ZipFile zipFile = new ZipFile(STATS_ZIP)) {
             Enumeration<? extends ZipEntry> inZipEntries = zipFile.entries();
             Set<ZipEntry> oldEntries = new HashSet<>();
             Map<String, ZipEntry> fileNameZipEntryMap = new HashMap<>();
             List<ZipEntry> listEnt = new ArrayList<>();
-            
+
             while (inZipEntries.hasMoreElements()) {
                 ZipEntry entry = inZipEntries.nextElement();
                 fileNameZipEntryMap.put(entry.getName(), entry);
@@ -126,7 +130,7 @@ public class FilesZipPacker implements Callable<String> {
                 long lastModEntry = zipEntry.getLastModifiedTime().toMillis();
                 lastModEntry = lastModEntry / 1000;
                 lastModFile = lastModFile / 1000;
-                
+
                 if (lastModEntry != lastModFile) {
                     oldEntries.add(zipEntry);
                 }
@@ -142,7 +146,7 @@ public class FilesZipPacker implements Callable<String> {
             }
         }
     }
-    
+
     private void createNEWZipFileWithEntry(Collection<?> zipEntries) {
         try {
             this.writeToFile(zipEntries, new StringBuilder());
@@ -151,5 +155,5 @@ public class FilesZipPacker implements Callable<String> {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createNEWZipFileWithEntry");
         }
     }
-    
+
 }

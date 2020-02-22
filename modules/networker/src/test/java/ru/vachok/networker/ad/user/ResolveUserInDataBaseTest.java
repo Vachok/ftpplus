@@ -12,6 +12,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 
 /**
@@ -49,7 +50,7 @@ public class ResolveUserInDataBaseTest {
     @Test
     public void testGetInfoAbout() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("no0015.eatmeat.ru");
-        boolean strOk = infoAbout.contains("msc") || infoAbout.contains("d.yu.podbuckii");
+        boolean strOk = Stream.of("msc", "d.yu.podbuckii", "mdc").anyMatch(infoAbout::contains);
         Assert.assertTrue(strOk, infoAbout);
         testAbstract();
     }

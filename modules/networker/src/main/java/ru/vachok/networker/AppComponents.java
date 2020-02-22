@@ -7,7 +7,9 @@ import com.google.firebase.FirebaseApp;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.FakeRequest;
@@ -35,23 +37,24 @@ import java.util.StringJoiner;
 
 /**
  Компоненты. Бины
- 
+
  @see ru.vachok.networker.AppComponentsTest
  @since 02.05.2018 (22:14) */
-@SuppressWarnings({"OverlyCoupledClass"})
 @ComponentScan
 public class AppComponents {
-    
-    
+
+
     /**
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
-    
+
+    private static final FBAdmin fbAdmin = new FBAdmin();
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());
-    
+
     private static final AppConfigurationLocal THREAD_CONFIG = ThreadConfig.getI();
-    
+
     @NotNull
     public static Properties getMailProps() {
         Properties properties = new Properties();
@@ -63,18 +66,16 @@ public class AppComponents {
         }
         return properties;
     }
-    
+
     public PfLists getPFLists() {
         return new PfLists();
     }
-    
+
     @Bean(value = "fbapp")
-    public FirebaseApp getFirebaseApp() {
-        FBAdmin fbAdmin = new FBAdmin();
-        fbAdmin.initSDK();
+    public static FirebaseApp getFirebaseApp() {
         return FirebaseApp.getInstance();
     }
-    
+
     @Contract(value = "_ -> new", pure = true)
     @Scope(ConstantsFor.SINGLETON)
     @NotNull
@@ -82,7 +83,7 @@ public class AppComponents {
 //        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
         return new ru.vachok.messenger.MessageSwing(messengerHeader);
     }
-    
+
     public Connection connection(String dbName) {
         MysqlDataSource mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
@@ -96,7 +97,7 @@ public class AppComponents {
             return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
         }
     }
-    
+
     /**
      @return new {@link SimpleCalculator}
      */
@@ -104,7 +105,7 @@ public class AppComponents {
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }
-    
+
     @Bean(STR_VISITOR)
     public Visitor visitor(@NotNull HttpServletRequest request) {
         if (request.getSession() == null) {
@@ -114,25 +115,25 @@ public class AppComponents {
         ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
         return visitor;
     }
-    
+
     public SshActs sshActs() {
         return new SshActs();
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
                 .add("Nothing to show...")
                 .toString();
     }
-    
+
     @Contract(value = " -> new", pure = true)
     @Bean
     @NotNull
     public static ADSrv adSrv() {
         return new ADSrv();
     }
-    
+
     @Contract(pure = true)
     public static ThreadConfig threadConfig() {
         return (ThreadConfig) THREAD_CONFIG;

@@ -26,15 +26,16 @@ import java.util.UnknownFormatConversionException;
  @see ru.vachok.networker.ad.pc.PCInfoTest
  @since 13.08.2019 (17:15) */
 public abstract class PCInfo implements InformationFactory {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
-    
+
     private static String pcName = "no name";
-    
+
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
-    public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
+    @NotNull
+    public static PCInfo getInstance(@NotNull String aboutWhat) {
         PCInfo.pcName = aboutWhat;
         final PCInfo tvPcInformation = new TvPcInformation();
         if (aboutWhat.equals(InformationFactory.TV)) {
@@ -58,11 +59,12 @@ public abstract class PCInfo implements InformationFactory {
             }
         }
     }
-    
+
     @Override
     public abstract String getInfoAbout(String aboutWhat);
-    
-    public static @NotNull String checkValidNameWithoutEatmeat(@NotNull String pcName) {
+
+    @NotNull
+    public static String checkValidNameWithoutEatmeat(@NotNull String pcName) {
         PCInfo.pcName = pcName;
         @NotNull String result = "null";
         boolean finished = false;
@@ -85,7 +87,7 @@ public abstract class PCInfo implements InformationFactory {
         }
         return result;
     }
-    
+
     private static String notFinished(InetAddress inetAddress, @NotNull String pcName) {
         @NotNull String result = "null";
         boolean finished = false;
@@ -107,23 +109,31 @@ public abstract class PCInfo implements InformationFactory {
         }
         return result;
     }
-    
+
     @Override
     public abstract String getInfo();
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]").add(defaultInformation(pcName, NetScanService.isReach(pcName)))
-                .toString();
+            .toString();
     }
-    
+
     @Override
     public abstract void setClassOption(Object option);
-    
-    protected static @NotNull String addToMap(String pcName, String ipAddr) {
-        return addToMap(pcName, ipAddr, false, ConstantsFor.OFFLINE);
+
+    @NotNull
+    static String defaultInformation(String pcName, boolean isOnline) {
+        String retStr;
+        if (isOnline) {
+            retStr = MessageFormat.format("{0}. {1} online true <br>", pcName, new PCOn(pcName).pcNameWithHTMLLink());
+        }
+        else {
+            retStr = MessageFormat.format("{0}. {1}", pcName, new PCOff(pcName).getInfo()) + "<br>";
+        }
+        return retStr;
     }
-    
+
     static String addToMap(String pcName, String ipAddr, boolean isOnline, String userName) {
         String stringToAdd = pcName + ":" + ipAddr + " online " + isOnline + "<" + userName;
         try {
@@ -134,15 +144,9 @@ public abstract class PCInfo implements InformationFactory {
         }
         return stringToAdd;
     }
-    
-    static @NotNull String defaultInformation(String pcName, boolean isOnline) {
-        String retStr;
-        if (isOnline) {
-            retStr = MessageFormat.format("{0}. {1} online true <br>", pcName, new PCOn(pcName).pcNameWithHTMLLink());
-        }
-        else {
-            retStr = MessageFormat.format("{0}. {1}", pcName, new PCOff(pcName).getInfo()) + "<br>";
-        }
-        return retStr;
+
+    @NotNull
+    protected static String addToMap(String pcName, String ipAddr) {
+        return addToMap(pcName, ipAddr, false, ConstantsFor.OFFLINE);
     }
 }

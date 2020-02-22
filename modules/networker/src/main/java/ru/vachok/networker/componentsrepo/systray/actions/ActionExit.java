@@ -9,7 +9,6 @@ import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -21,26 +20,28 @@ import java.util.concurrent.TimeUnit;
 /**
  Action Exit App
  <p>
- 
+
  @see SystemTrayHelper
  @since 25.01.2019 (9:59) */
 @SuppressWarnings("ClassHasNoToStringMethod")
 public class ActionExit extends AbstractAction {
-    
-    
+
+
+    public static final String ALLDEV_MAP = "alldev.map";
+
     private String reason;
-    
+
     private transient MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ActionExit.class.getSimpleName());
-    
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ActionExit.class.getSimpleName());
+
     public ActionExit(String reason) {
         this.reason = reason;
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
         messageToUser.infoNoTitles(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED);
-        try (FileOutputStream fileOutputStream = new FileOutputStream(FileNames.ALLDEV_MAP)) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(ALLDEV_MAP)) {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, NetKeeper.class));
             submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         }

@@ -42,6 +42,7 @@ public class OwnerFixerTest {
         File fileOwnerFixLog = new File(OwnerFixer.class.getSimpleName() + ".res");
         Assert.assertTrue(fileOwnerFixLog.exists());
         Assert.assertTrue(fileOwnerFixLog.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
+        fileOwnerFixLog.deleteOnExit();
     }
 
     @Test

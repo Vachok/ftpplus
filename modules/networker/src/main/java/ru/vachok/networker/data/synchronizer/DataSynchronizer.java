@@ -72,14 +72,29 @@ public class DataSynchronizer extends SyncData {
             .toString();
     }
 
-    private @NotNull String[] getColumns(@NotNull PreparedStatement preparedStatement) throws SQLException {
-        ResultSetMetaData metaData = preparedStatement.getMetaData();
-        int countCol = metaData.getColumnCount();
-        String[] retArr = new String[countCol];
-        for (int i = 0; i < countCol; i++) {
-            retArr[i] = metaData.getColumnName(i + 1) + "," + metaData.getColumnTypeName(i + 1);
+    @NotNull
+    private List<String> getDbNames() {
+        List<String> dbNames = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
+             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String dbName = resultSet.getString(1);
+                if (Stream.of("_schema", "mysql", "log", "lan", "archive", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
+                    messageToUser.warn(getClass().getSimpleName(), "NO SYNC:", dbName);
+                }
+                else {
+                    messageToUser.info(getClass().getSimpleName(), "Added to sync:", dbName);
+                    dbNames.add(dbName);
+                }
+                Thread.currentThread().setName(dbName);
+            }
         }
-        return retArr;
+        catch (SQLException e) {
+            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            dbNames.add(AbstractForms.networkerTrace(e));
+        }
+        return dbNames;
     }
 
     @Override
@@ -137,7 +152,7 @@ public class DataSynchronizer extends SyncData {
         }
         String syncArch = new OneServerSync().syncData();
         messageToUser.warn(this.getClass().getSimpleName(), "superRun", MessageFormat.format("Total {0} rows affected", totalRows));
-        MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName())
+        MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
             .warn(this.getClass().getSimpleName(), "DBs synced: ", String.valueOf(dbsTotal) + " and " + syncArch);
         MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
             .info(String.valueOf(totalRows), this.getClass().getSimpleName(), createMailText(syncArch));
@@ -156,28 +171,31 @@ public class DataSynchronizer extends SyncData {
         return stringBuilder.toString();
     }
 
-    private @NotNull List<String> getDbNames() {
-        List<String> dbNames = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
-             PreparedStatement preparedStatement = connection.prepareStatement("show databases");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                String dbName = resultSet.getString(1);
-                if (Stream.of("_schema", "mysql", "log", "lan", "archive", ModelAttributeNames.COMMON).anyMatch(dbName::contains)) {
-                    messageToUser.warn(getClass().getSimpleName(), "NO SYNC:", dbName);
-                }
-                else {
-                    messageToUser.info(getClass().getSimpleName(), "Added to sync:", dbName);
-                    dbNames.add(dbName);
-                }
-                Thread.currentThread().setName(dbName);
+    @Override
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        int retInt = 0;
+        LinkedList<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.FIREBASE).getDefaultConnection(tableName)) {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setSavepoint();
+            for (Object jsonObject : jsonObjects) {
+                retInt += workWithObject(jsonObject, connection);
             }
+            connection.commit();
         }
-        catch (SQLException e) {
-            messageToUser.error("DataSynchronizer.getDbNames", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-            dbNames.add(AbstractForms.networkerTrace(e));
+        catch (NumberFormatException | SQLException e) {
+            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
+                DataConnectTo.getInstance(DataConnectTo.FIREBASE).createTable(tableName, Collections.EMPTY_LIST);
+                retInt = 0;
+            }
+            else {
+                messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
+                retInt = -666;
+            }
+
         }
-        return dbNames;
+        return retInt;
     }
 
     @Override
@@ -250,34 +268,19 @@ public class DataSynchronizer extends SyncData {
         throw new UnsupportedOperationException("27.11.2019 (21:03)");
     }
 
-    @Override
-    public int uploadCollection(Collection stringsCollection, String tableName) {
-        int retInt = 0;
-        LinkedList<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(tableName)) {
-            connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            connection.setSavepoint();
-            for (Object jsonObject : jsonObjects) {
-                retInt += workWithObject(jsonObject, connection);
-            }
-            connection.commit();
+    @NotNull
+    private String[] getColumns(@NotNull PreparedStatement preparedStatement) throws SQLException {
+        ResultSetMetaData metaData = preparedStatement.getMetaData();
+        int countCol = metaData.getColumnCount();
+        String[] retArr = new String[countCol];
+        for (int i = 0; i < countCol; i++) {
+            retArr[i] = metaData.getColumnName(i + 1) + "," + metaData.getColumnTypeName(i + 1);
         }
-        catch (NumberFormatException | SQLException e) {
-            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
-                DataConnectTo.getInstance(DataConnectTo.H2DB).createTable(tableName, Collections.EMPTY_LIST);
-                retInt = 0;
-            }
-            else {
-                messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 158 ***");
-                retInt = -666;
-            }
-
-        }
-        return retInt;
+        return retArr;
     }
 
-    private @NotNull List<String> getTblNames(String dbName) {
+    @NotNull
+    private List<String> getTblNames(String dbName) {
         List<String> tblNames = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync);
              PreparedStatement preparedStatement = connection.prepareStatement("SHOW TABLE STATUS FROM `" + dbName + "`");
@@ -321,7 +324,8 @@ public class DataSynchronizer extends SyncData {
         return retInt;
     }
 
-    private @NotNull String genSQL(@NotNull JsonObject jsonObject) {
+    @NotNull
+    private String genSQL(@NotNull JsonObject jsonObject) {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("INSERT INTO ").append(dbToSync).append(" (");
         Iterator<JsonObject.Member> iterator = jsonObject.iterator();

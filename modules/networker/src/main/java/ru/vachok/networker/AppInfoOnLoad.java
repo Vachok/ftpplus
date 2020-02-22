@@ -37,6 +37,8 @@ import java.util.List;
 public class AppInfoOnLoad implements Runnable {
 
 
+    public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
+
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
@@ -51,7 +53,7 @@ public class AppInfoOnLoad implements Runnable {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
-        FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
+        FileSystemWorker.writeFile(AVAILABLECHARSETS_TXT, avCharsetsStr);
         SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);

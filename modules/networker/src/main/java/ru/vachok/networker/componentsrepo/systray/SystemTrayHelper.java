@@ -6,8 +6,13 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.systray.actions.*;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionExit;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFiles;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionOpenProgFolder;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -25,15 +30,11 @@ import java.util.concurrent.TimeUnit;
  @see SystemTrayHelperTest
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
-    
-    
+
+
     private static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
 
-    /**
-     Путь к папке со значками
-     */
-    @SuppressWarnings("InjectedReferences")
-    private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
+    public static final String ICON_DEFAULT = "icons8-сетевой-менеджер-30.png";
 
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
@@ -45,14 +46,19 @@ public class SystemTrayHelper {
 
     private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
 
-    private String imageFileName = FileNames.ICON_DEFAULT;
+    /**
+     Путь к папке со значками
+     */
+    @SuppressWarnings("InjectedReferences") @NotNull private static final String IMG_FOLDER_NAME = "/static/images/";
+
+    private String imageFileName = ICON_DEFAULT;
 
     private boolean isNeedTray = true;
-    
+
     /**
      Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
      <p>
-     
+
      @return srv-git online
      */
     private static boolean isSrvGitOK() {
@@ -64,23 +70,23 @@ public class SystemTrayHelper {
             return false;
         }
     }
-    
+
     private Image getImage() {
         if (!NetScanService.isReach("10.200.200.1")) {
             this.imageFileName = "icons8-disconnected-24.png";
         }
         else {
-            this.imageFileName = FileNames.ICON_DEFAULT;
+            this.imageFileName = ICON_DEFAULT;
         }
         try {
             return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + this.imageFileName));
         }
         catch (RuntimeException e) {
             messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
-            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + FileNames.ICON_DEFAULT));
+            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + ICON_DEFAULT));
         }
     }
-    
+
     /**
      Конструктор по-умолчанию
      */
@@ -94,12 +100,12 @@ public class SystemTrayHelper {
             trayIcon.addActionListener(new ActionDefault());
         }
     }
-    
+
     @Contract(pure = true)
     public static Optional getI() {
         return Optional.ofNullable(trayHelper);
     }
-    
+
     public void trayAdd() {
         if (UsefulUtilities.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR)) {
             this.imageFileName = "icons8-плохие-поросята-32.png";
@@ -120,7 +126,7 @@ public class SystemTrayHelper {
             }
         }
     }
-    
+
     private void addTray() {
         synchronized(this.trayIcon) {
             this.trayIcon.setImage(getImage());
@@ -129,7 +135,7 @@ public class SystemTrayHelper {
         }
         addTrayToSys();
     }
-    
+
     private boolean addTrayToSys() {
         try {
             if (isNeedTray && SystemTray.isSupported()) {
@@ -148,7 +154,7 @@ public class SystemTrayHelper {
         }
         return isNeedTray;
     }
-    
+
     public TrayIcon getTrayIcon() throws ExceptionInInitializerError {
         if (SystemTray.isSupported() && this.trayIcon != null) {
             synchronized(trayIcon) {
@@ -159,7 +165,7 @@ public class SystemTrayHelper {
             throw new UnsupportedOperationException("System tray unavailable");
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
@@ -168,24 +174,25 @@ public class SystemTrayHelper {
         sb.append('}');
         return sb.toString();
     }
-    
+
     void delOldActions() {
         for (ActionListener actionListener : this.trayIcon.getActionListeners()) {
             trayIcon.removeActionListener(actionListener);
         }
     }
-    
+
     private void setImageFileName(String imageFileName) {
         this.imageFileName = imageFileName;
     }
-    
+
     /**
      Добавление компонентов в меню
      <p>
-     
+
      @return {@link PopupMenu}
      */
-    private static @NotNull PopupMenu getMenu() {
+    @NotNull
+    private static PopupMenu getMenu() {
         PopupMenu popupMenu = new PopupMenu();
         String classMeth = CLASS_NAME + ".getMenu";
         MenuItem defItem = new MenuItem();
@@ -194,34 +201,34 @@ public class SystemTrayHelper {
         MenuItem openFolder = new MenuItem();
         MenuItem oldFilesGenerator = new MenuItem();
         MenuItem testActions = new MenuItem();
-        
+
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
-        
+
         openSite.addActionListener(new ActionDefault());
         openSite.setLabel("Open site");
         popupMenu.add(openSite);
-        
+
         toConsole.setLabel("Console Back");
         toConsole.addActionListener(e->System.setOut(System.err));
         popupMenu.add(toConsole);
-        
+
         testActions.setLabel("Renew InetStats");
         testActions.addActionListener(e->new Thread(()->MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "Renew InetStats").info(informationFactory.getInfo()))
             .start());
         popupMenu.add(testActions);
-        
+
         openFolder.addActionListener(new ActionOpenProgFolder());
         openFolder.setLabel("Open root program folder");
         popupMenu.add(openFolder);
-        
+
         ActionMakeInfoAboutOldCommonFiles makeOldFilesInfoAct = new ActionMakeInfoAboutOldCommonFiles();
         makeOldFilesInfoAct.setTimeoutSeconds(TimeUnit.HOURS.toSeconds(9));
         oldFilesGenerator.addActionListener(makeOldFilesInfoAct);
         oldFilesGenerator.setLabel("Generate files.old");
         popupMenu.add(oldFilesGenerator);
-        
+
         return popupMenu;
     }
 }

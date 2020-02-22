@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.message;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 
 
@@ -79,7 +80,7 @@ public class FirebaseMessage implements MessageToUser {
 
         @Override
         public void onComplete(DatabaseError error, DatabaseReference ref) {
-            error.toException().printStackTrace();
+            AbstractForms.networkerTrace(error.toException().getStackTrace());
         }
     }
 }

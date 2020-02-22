@@ -29,6 +29,11 @@ import java.util.concurrent.Callable;
 class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
 
 
+    /**
+     Файл уникальных записей из БД velkom-pcuserauto
+     */
+    public static final String PCUSERAUTO_UNIQ = "pcusersauto.uniq";
+
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
     private String fileName = FileNames.VELKOMPCUSERAUTO_TXT;
@@ -70,7 +75,8 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
         this.aboutWhat = (String) option;
     }
 
-    private @NotNull String countPC() {
+    @NotNull
+    private String countPC() {
         int selectFrom = selectFrom();
         String retStr = "total pc: " + selectFrom;
         messageToUser.info(getClass().getSimpleName(), "pc stats: ", retStr);
@@ -121,17 +127,18 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
     }
 
     /**
-     Writes file: {@link FileNames#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOMPCUSERAUTO_TXT}
+     Writes file: {@link ComputerUserResolvedStats#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOMPCUSERAUTO_TXT}
      <p>
 
      @return {@link #countFreqOfUsers()}
      */
-    private @NotNull String makeStatFiles() {
+    @NotNull
+    private String makeStatFiles() {
         List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.VELKOMPCUSERAUTO_TXT);
-        FileSystemWorker.writeFile(FileNames.PCUSERAUTO_UNIQ, readFileAsList.parallelStream().distinct());
+        FileSystemWorker.writeFile(PCUSERAUTO_UNIQ, readFileAsList.parallelStream().distinct());
         if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FileNames.PCUSERAUTO_UNIQ;
-            FileSystemWorker.copyOrDelFile(new File(FileNames.PCUSERAUTO_UNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + PCUSERAUTO_UNIQ;
+            FileSystemWorker.copyOrDelFile(new File(PCUSERAUTO_UNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
         }
         return countFreqOfUsers();
     }
@@ -147,8 +154,9 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
 
      @return кол-во уникальных записей в файле <b>possible_users.txt</b>
      */
-    private @NotNull String countFreqOfUsers() {
-        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(FileNames.PCUSERAUTO_UNIQ).getAbsolutePath());
+    @NotNull
+    private String countFreqOfUsers() {
+        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(PCUSERAUTO_UNIQ).getAbsolutePath());
 
         Collections.sort(pcAutoThisList);
 

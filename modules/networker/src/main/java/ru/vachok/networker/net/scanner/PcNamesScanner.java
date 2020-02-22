@@ -4,6 +4,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import com.eclipsesource.json.JsonObject;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -46,8 +47,6 @@ public class PcNamesScanner implements NetScanService {
 
     private static final File scanFile = new File(FileNames.SCAN_TMP);
 
-    static final int DURATION_MIN = (int) ConstantsFor.DELAY;
-
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
     private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
@@ -86,8 +85,6 @@ public class PcNamesScanner implements NetScanService {
 
     @Override
     public String getStatistics() {
-        String lastNetScanMAP = AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().descendingMap())
-            .replace(": true", "").replace(OtherConstants.SEMIFALSE, "");
         Date lastScanDate = new Date(lastScanStamp);
         return MessageFormat.format("{0} lastScanDate.", lastScanDate);
     }
@@ -142,7 +139,8 @@ public class PcNamesScanner implements NetScanService {
         return retBool;
     }
 
-    protected @NotNull Set<String> onePrefixSET(String prefixPcName) {
+    @NotNull
+    protected Set<String> onePrefixSET(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
 
@@ -166,7 +164,8 @@ public class PcNamesScanner implements NetScanService {
 
      @see #onePrefixSET(String)
      */
-    private @NotNull List<String> getCycleNames(String namePCPrefix) {
+    @NotNull
+    private List<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }
@@ -194,7 +193,6 @@ public class PcNamesScanner implements NetScanService {
         }
         catch (InvokeIllegalException e) {
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((NetScanService::writeUsersToDBFromSET));
-            String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
             messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 408 ***");
         }
         finally {
@@ -300,7 +298,7 @@ public class PcNamesScanner implements NetScanService {
     }
 
     private void newPCCheck(String pcValue, double remainPC) {
-        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
+        FileSystemWorker.writeFile(ConstantsFor.BEANNAME_LASTNETSCAN, pcValue);
         InitProperties.getTheProps().setProperty(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
         InitProperties.setPreference(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
         InitProperties.getTheProps().setProperty(ModelAttributeNames.NEWPC, String.valueOf(remainPC));
@@ -336,7 +334,7 @@ public class PcNamesScanner implements NetScanService {
     private class ScannerUSR implements NetScanService {
 
 
-        private @NotNull Properties props = InitProperties.getTheProps();
+        @NotNull private Properties props = InitProperties.getTheProps();
 
         @Override
         public void run() {
@@ -415,6 +413,10 @@ public class PcNamesScanner implements NetScanService {
             FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", logMini);
             FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
             showScreenMessage();
+            FirebaseDatabase.getInstance().getReference(ConstantsFor.BEANNAME_LASTNETSCAN)
+                .setValue(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet(),
+                    (error, ref)->messageToUser
+                        .error("ScannerUSR.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
             messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
             String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
             InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TOTPC, totPC);
@@ -440,7 +442,7 @@ public class PcNamesScanner implements NetScanService {
                 .format("Online: {0}.\n{1} min uptime. \n{2} next run\n",
                     props.getProperty(PropertiesNames.ONLINEPC, "0"), upTime, new Date(lastScanStamp));
             try {
-                MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName()).info(bodyMsg);
+                MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName()).info(new AppComponents().getFirebaseApp().getName(), "", bodyMsg);
             }
             finally {
                 defineNewTask();

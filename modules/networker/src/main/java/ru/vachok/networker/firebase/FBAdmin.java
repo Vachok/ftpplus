@@ -5,8 +5,6 @@ import com.eclipsesource.json.JsonObject;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.projectmanagement.AndroidApp;
-import com.google.firebase.projectmanagement.FirebaseProjectManagement;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -32,6 +30,10 @@ public class FBAdmin {
 
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, FBAdmin.class.getSimpleName());
 
+    public FBAdmin() {
+        initSDK();
+    }
+
     public String initSDK() {
         String appID = "";
         try (FileInputStream inputStream = new FileInputStream(getCred())) {
@@ -40,14 +42,7 @@ public class FBAdmin {
                 .setDatabaseUrl("https://converter-2f70e.firebaseio.com/")
                 .build();
             FirebaseApp initializeApp = FirebaseApp.initializeApp(options);
-            String name = initializeApp.getName();
-            messageToUser.info(getClass().getSimpleName(), "initSDK", name);
             appID = initializeApp.toString();
-            FirebaseProjectManagement projectManagement = FirebaseProjectManagement.getInstance(initializeApp);
-            for (AndroidApp androidApp : projectManagement.listAndroidApps()) {
-                messageToUser.info(getClass().getSimpleName(), androidApp.toString(), androidApp.getMetadata().getDisplayName());
-            }
-            ;
         }
 
         catch (Exception e) {

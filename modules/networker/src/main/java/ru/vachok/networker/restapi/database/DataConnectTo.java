@@ -12,55 +12,57 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 
 /**
  @see DataConnectToTest
  @since 14.07.2019 (12:15) */
 public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
-    
-    
+
+
     String DBNAME_VELKOM_POINT = "velkom.";
-    
+
     String DEFAULT_I = "loc";
-    
+
     String TESTING = "testing";
-    
-    String H2DB = "H2DB";
-    
+
+    String FIREBASE = "Firebase";
+
     String REGRUCONNECTION = "RegRuMysqlLoc";
-    
+
     @NotNull
     @Contract(value = " -> new", pure = true)
     static DataConnectTo getRemoteReg() {
         return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
-    
+
     @Override
     default void setSavepoint(Connection connection) {
         throw new UnsupportedOperationException("14.07.2019 (15:44)");
     }
-    
+
     @Override
     MysqlDataSource getDataSource();
-    
+
     @Override
     default Savepoint getSavepoint(Connection connection) {
         throw new UnsupportedOperationException("14.07.2019 (15:45)");
     }
-    
+
     int uploadCollection(Collection stringsCollection, String tableName);
-    
+
     boolean dropTable(String dbPointTable);
-    
+
     /**
      @param dbPointTable dbname.table
      @param additionalColumns unstandart column names <b>with type</b>
      @return executeQuery
      */
     int createTable(String dbPointTable, List<String> additionalColumns);
-    
+
     @NotNull
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
@@ -71,14 +73,14 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case TESTING:
                 return new TesterDB65SQL();
-            case H2DB:
+            case FIREBASE:
                 return (DataConnectTo) Objects.requireNonNull(getH2DB(), "H2DB not initialized!");
             case DEFAULT_I:
             default:
                 return getDefaultI();
         }
     }
-    
+
     static Object getH2DB() {
         DataConnectTo h2DB = getDefaultI();
         try {
@@ -89,7 +91,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         }
         return h2DB;
     }
-    
+
     @NotNull
     @Contract(value = " -> new", pure = true)
     static DataConnectTo getDefaultI() {
