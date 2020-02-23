@@ -4,17 +4,27 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.*;
-import java.text.*;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -22,33 +32,33 @@ import java.util.concurrent.*;
  @since 10.07.2019 (9:26) */
 @SuppressWarnings("FieldCanBeLocal")
 public class DBMessengerTest {
-    
-    
+
+
     private final String sql = "select * FROM velkom.last50logs";
-    
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessengerTest.class.getSimpleName());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testToString() {
         String toStr = MessageToUser.getInstance(MessageToUser.DB, "test").toString();
-        Assert.assertTrue(toStr.contains("MessageLocal{"), toStr);
+        Assert.assertTrue(toStr.contains("FirebaseMessage"), toStr);
     }
-    
+
     @Test
     @Ignore
     public void testWork() {
@@ -66,12 +76,12 @@ public class DBMessengerTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     private String checkMessageExistsInDatabase() {
         String dbName = ConstantsFor.DBBASENAME_U0466446_WEBAPP;
         String retStr = "bad";
         Timestamp executePS;
-    
+
         try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_LOGNETWORKER);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet resultSet = p.executeQuery();
@@ -94,11 +104,11 @@ public class DBMessengerTest {
             retStr = MessageFormat
                 .format("DBMessengerTest.checkMessageExistsInDatabase says: {0}. Parameters: \n[sql]: {1}", e.getMessage(), AbstractForms.fromArray(e));
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-    
+
         }
         return retStr;
     }
-    
+
     private static long parseDate(String timeWhen) {
         try {
             return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(timeWhen).getTime();
@@ -108,5 +118,5 @@ public class DBMessengerTest {
         }
         return 1;
     }
-    
+
 }

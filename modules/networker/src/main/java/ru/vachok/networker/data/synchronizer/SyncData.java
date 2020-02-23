@@ -63,7 +63,8 @@ public abstract class SyncData implements DataConnectTo {
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
-    public static @NotNull SyncData getInstance(@NotNull String type) {
+    @NotNull
+    public static SyncData getInstance(@NotNull String type) {
         switch (type) {
             case BACKUPER:
                 return new DataSynchronizer();
@@ -115,7 +116,7 @@ public abstract class SyncData implements DataConnectTo {
     public abstract Map<String, String> makeColumns();
 
     int getLastLocalID(String syncDB) {
-        DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.H2DB);
+        DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.FIREBASE);
         return getDBID(dctInst.getDefaultConnection(syncDB), syncDB);
     }
 
@@ -134,7 +135,7 @@ public abstract class SyncData implements DataConnectTo {
         }
         catch (SQLException e) {
             if (e.getMessage().contains("не найден")) {
-                retInt = DataConnectTo.getInstance(DataConnectTo.H2DB).createTable(syncDB, Collections.EMPTY_LIST);
+                retInt = DataConnectTo.getInstance(DataConnectTo.FIREBASE).createTable(syncDB, Collections.EMPTY_LIST);
             }
             else {
                 messageToUser.error(e.getMessage() + " see line: 169 ***");

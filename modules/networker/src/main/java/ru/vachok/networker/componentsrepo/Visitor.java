@@ -7,21 +7,22 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
- @since 12.08.2018 1:19
  @see ru.vachok.networker.componentsrepo.VisitorTest
- */
-public class Visitor {
+ @since 12.08.2018 1:19 */
+public class Visitor implements Serializable {
+
 
     /**
      Время в мс инициализации класса
      */
     private static final long ST_ART = System.currentTimeMillis();
-    
-    private static final String STR_VISIT = UsefulUtilities.getPatternsToDeleteFilesOnStart().get(0);
 
     private String userId;
 
@@ -34,10 +35,8 @@ public class Visitor {
         .append(" сек. идёт сессия.")
         .append("\n")
         .toString();
-    
-    private int clickCounter;
 
-    private String visitPlace;
+    private int clickCounter;
 
     /**
      The Rem addr.
@@ -45,9 +44,9 @@ public class Visitor {
     private String remAddr;
 
     private HttpSession session;
-    
+
     private HttpServletRequest request;
-    
+
     public Visitor(@NotNull HttpServletRequest request) throws RuntimeException {
         List<String> visitList = new ArrayList<>();
         this.request = request;
@@ -67,26 +66,6 @@ public class Visitor {
         return request;
     }
 
-
-    public String getUserId() {
-        return userId;
-    }
-
-
-    public int getClickCounter() {
-        return clickCounter;
-    }
-
-
-    public void setClickCounter( int clickCounter ) {
-        this.clickCounter = clickCounter;
-    }
-
-
-    public String getVisitPlace() {
-        return visitPlace;
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Visitor{");

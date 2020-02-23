@@ -4,6 +4,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import com.eclipsesource.json.JsonObject;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -16,6 +17,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.firebase.NewPCListener;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
@@ -45,8 +47,6 @@ public class PcNamesScanner implements NetScanService {
     private final long startClassTime = System.currentTimeMillis();
 
     private static final File scanFile = new File(FileNames.SCAN_TMP);
-
-    static final int DURATION_MIN = (int) ConstantsFor.DELAY;
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
@@ -86,8 +86,6 @@ public class PcNamesScanner implements NetScanService {
 
     @Override
     public String getStatistics() {
-        String lastNetScanMAP = AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().descendingMap())
-            .replace(": true", "").replace(OtherConstants.SEMIFALSE, "");
         Date lastScanDate = new Date(lastScanStamp);
         return MessageFormat.format("{0} lastScanDate.", lastScanDate);
     }
@@ -142,7 +140,8 @@ public class PcNamesScanner implements NetScanService {
         return retBool;
     }
 
-    protected @NotNull Set<String> onePrefixSET(String prefixPcName) {
+    @NotNull
+    protected Set<String> onePrefixSET(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
 
@@ -166,7 +165,8 @@ public class PcNamesScanner implements NetScanService {
 
      @see #onePrefixSET(String)
      */
-    private @NotNull List<String> getCycleNames(String namePCPrefix) {
+    @NotNull
+    private List<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }
@@ -194,7 +194,6 @@ public class PcNamesScanner implements NetScanService {
         }
         catch (InvokeIllegalException e) {
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((NetScanService::writeUsersToDBFromSET));
-            String title = MessageFormat.format("{0}, exception: ", e.getMessage(), e.getClass().getSimpleName());
             messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 408 ***");
         }
         finally {
@@ -300,7 +299,7 @@ public class PcNamesScanner implements NetScanService {
     }
 
     private void newPCCheck(String pcValue, double remainPC) {
-        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
+        FileSystemWorker.writeFile(ConstantsFor.BEANNAME_LASTNETSCAN, pcValue);
         InitProperties.getTheProps().setProperty(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
         InitProperties.setPreference(PropertiesNames.TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
         InitProperties.getTheProps().setProperty(ModelAttributeNames.NEWPC, String.valueOf(remainPC));
@@ -336,7 +335,7 @@ public class PcNamesScanner implements NetScanService {
     private class ScannerUSR implements NetScanService {
 
 
-        private @NotNull Properties props = InitProperties.getTheProps();
+        @NotNull private Properties props = InitProperties.getTheProps();
 
         @Override
         public void run() {
@@ -352,12 +351,28 @@ public class PcNamesScanner implements NetScanService {
             }
         }
 
-        private void scanIt() {
-            ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-            linksMap.clear();
-            InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-            props.setProperty(PropertiesNames.ONLINEPC, "0");
-            getExecution();
+        /**
+         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
+
+         @see PcNamesScannerTest#testWriteLog()
+         */
+        @SuppressWarnings("FeatureEnvy")
+        @Override
+        public String writeLog() {
+            String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
+            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
+            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", logMini);
+            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
+            showScreenMessage();
+            FirebaseDatabase.getInstance().getReference(ConstantsFor.BEANNAME_LASTNETSCAN)
+                .setValue(totPC, (error, ref)->messageToUser
+                    .error("ScannerUSR.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+            messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TOTPC, totPC);
+            InitProperties.setPreference(PropertiesNames.TOTPC, totPC);
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(props);
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }
 
         /**
@@ -403,25 +418,13 @@ public class PcNamesScanner implements NetScanService {
                 .toString();
         }
 
-        /**
-         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
-
-         @see PcNamesScannerTest#testWriteLog()
-         */
-        @SuppressWarnings("FeatureEnvy")
-        @Override
-        public String writeLog() {
-            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
-            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", logMini);
-            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
-            showScreenMessage();
-            messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
-            String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TOTPC, totPC);
-            InitProperties.setPreference(PropertiesNames.TOTPC, totPC);
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(props);
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
+        private void scanIt() {
+            ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+            linksMap.clear();
+            new NewPCListener().listenNewPC();
+            InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
+            props.setProperty(PropertiesNames.ONLINEPC, "0");
+            getExecution();
         }
 
         @Override
@@ -440,7 +443,7 @@ public class PcNamesScanner implements NetScanService {
                 .format("Online: {0}.\n{1} min uptime. \n{2} next run\n",
                     props.getProperty(PropertiesNames.ONLINEPC, "0"), upTime, new Date(lastScanStamp));
             try {
-                MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName()).info(bodyMsg);
+                MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName()).info(new AppComponents().getFirebaseApp().getName(), "", bodyMsg);
             }
             finally {
                 defineNewTask();

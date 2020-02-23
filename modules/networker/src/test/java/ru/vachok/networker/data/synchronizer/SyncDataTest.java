@@ -3,7 +3,10 @@ package ru.vachok.networker.data.synchronizer;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -16,8 +19,13 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
 import java.nio.file.Paths;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -25,40 +33,40 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  @see SyncData
  @since 10.09.2019 (12:05) */
 public class SyncDataTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncData.class
         .getSimpleName(), System.nanoTime());
-    
+
     private final String dbToSync = ConstantsFor.DB_VELKOMVELKOMPC;
-    
+
     private SyncData syncData;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
         this.syncData = SyncData.getInstance("10.200.213.85");
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void initSync() {
         syncData.setIdColName("idrec");
         syncData.setDbToSync(dbToSync);
-        
+
     }
-    
+
     @Test
     public void testGetInstance() {
         String toString = syncData.toString();
         Assert.assertEquals(toString, "InternetSync{ipAddr='velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=}");
     }
-    
+
     @Test
     public void testGetLastLocalID() {
         int lastLocalID = syncData.getLastLocalID(dbToSync);
@@ -66,20 +74,20 @@ public class SyncDataTest {
             Assert.assertTrue(lastLocalID > 0, dbToSync);
         }
     }
-    
+
     @Test
     public void testGetLastRemoteID() {
         int lastRemoteID = syncData.getLastRemoteID(dbToSync);
         Assert.assertTrue(lastRemoteID > 0);
     }
-    
+
     @Test
     public void getCustomIDTest() {
         syncData.setIdColName("counter");
         int lastRemoteID = syncData.getLastRemoteID("test.test");
         Assert.assertTrue(lastRemoteID == 13, null + " lastRemoteID");
     }
-    
+
     @Test
     public void testMakeColumns() {
         try {
@@ -90,13 +98,13 @@ public class SyncDataTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void testGetDataSource() {
         MysqlDataSource source = syncData.getDataSource();
         Assert.assertEquals(source.getURL(), "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/inetstats");
     }
-    
+
     @Test
     public void testGetDefaultConnection() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -115,7 +123,7 @@ public class SyncDataTest {
         Assert.assertTrue(stringBuilder.toString().contains("10_200_217_75"), stringBuilder.toString());
         Assert.assertTrue(stringBuilder.toString().contains("192_168_13_220"), stringBuilder.toString());
     }
-    
+
     @Test
     public void testDropTable() {
         try {
@@ -125,7 +133,7 @@ public class SyncDataTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testSyncData() {
         String sData;
@@ -145,7 +153,7 @@ public class SyncDataTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void testSuperRun() {
         try {
@@ -155,10 +163,10 @@ public class SyncDataTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testUploadCollection() {
-        this.syncData = new DBUploadUniversal("build.gradle");
+        this.syncData = new DBUploadUniversal(FileNames.BUILD_GRADLE);
         try {
             int i = syncData.uploadCollection(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
         }
@@ -166,7 +174,7 @@ public class SyncDataTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testGetFromFileToJSON() {
         Queue<String> stringsQ = FileSystemWorker.readFileToQueue(Paths.get(FileNames.BUILD_GRADLE));

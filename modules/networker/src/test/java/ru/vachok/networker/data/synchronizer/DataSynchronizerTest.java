@@ -47,7 +47,7 @@ public class DataSynchronizerTest {
 
     @Test
     public void testSyncData() {
-        dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.H2DB));
+        dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.FIREBASE));
         Future<String> syncFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->dataSynchronizer.syncData());
         try {
             String syncDataResult = syncFuture.get(15, TimeUnit.SECONDS);

@@ -8,19 +8,14 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.*;
 import java.text.MessageFormat;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -86,8 +81,8 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
     private static @NotNull Set<AclEntryPermission> setReadOnlyPermission() {
         Set<AclEntryPermission> permList = new LinkedHashSet<>();
         for (AclEntryPermission permission : AclEntryPermission.values()) {
-            if (!permission.toString().toLowerCase().contains("write") & !permission.toString().toLowerCase().contains("delete") & !permission.toString()
-                .toLowerCase().contains("append")) {
+            if (!permission.toString().toLowerCase().contains("write") & !permission.toString().toLowerCase().contains(ConstantsFor.DELETE) & !permission.toString()
+                    .toLowerCase().contains("append")) {
                 permList.add(permission);
             }
         }

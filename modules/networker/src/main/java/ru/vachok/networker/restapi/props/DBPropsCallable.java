@@ -161,7 +161,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     protected class LocalPropertiesFinder extends DBPropsCallable {
 
 
-        private @NotNull Properties getPropsByID() {
+        @NotNull
+        private Properties getPropsByID() {
             Properties properties = new Properties();
             String[] propsId = propsDBID.split("-");
             final String sql = String.format("SELECT * FROM u0466446_properties.%s", propsId[0]);

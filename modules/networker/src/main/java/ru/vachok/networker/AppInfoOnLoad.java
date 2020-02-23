@@ -3,6 +3,11 @@
 package ru.vachok.networker;
 
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.UserRecord;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -21,6 +26,7 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -30,6 +36,8 @@ import java.util.List;
 @SuppressWarnings("ClassUnconnectedToPackage")
 public class AppInfoOnLoad implements Runnable {
 
+
+    public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
 
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
@@ -45,7 +53,7 @@ public class AppInfoOnLoad implements Runnable {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
-        FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
+        FileSystemWorker.writeFile(AVAILABLECHARSETS_TXT, avCharsetsStr);
         SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
@@ -70,6 +78,7 @@ public class AppInfoOnLoad implements Runnable {
                 MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
                     .error(this.getClass().getSimpleName(), "Sync not running", UsefulUtilities.getRunningInformation());
             }
+            toFirebase();
         }
     }
 
@@ -116,6 +125,22 @@ public class AppInfoOnLoad implements Runnable {
     @Contract(pure = true)
     public static List<String> getMiniLogger() {
         return MINI_LOGGER;
+    }
+
+    private void toFirebase() {
+        FirebaseApp app = new AppComponents().getFirebaseApp();
+        messageToUser.warn(getClass().getSimpleName(), app.getName(), app.getOptions().getDatabaseUrl());
+        try {
+            UserRecord byMail = FirebaseAuth.getInstance().getUserByEmail(ConstantsFor.VACHOK_VACHOK_RU);
+            System.out.println("byMail = " + byMail);
+        }
+        catch (FirebaseAuthException e) {
+            messageToUser.error("AppInfoOnLoad.toFirebase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC()).setValue(new Date(), (error, ref)->{
+            String s = ref.toString();
+            System.out.println("s = " + s);
+        });
     }
 
     @Override

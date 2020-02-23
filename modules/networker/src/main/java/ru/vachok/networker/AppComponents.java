@@ -3,10 +3,13 @@
 package ru.vachok.networker;
 
 
+import com.google.firebase.FirebaseApp;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.FakeRequest;
@@ -15,6 +18,7 @@ import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.firebase.FBAdmin;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -33,24 +37,26 @@ import java.util.StringJoiner;
 
 /**
  Компоненты. Бины
- 
+
  @see ru.vachok.networker.AppComponentsTest
  @since 02.05.2018 (22:14) */
-@SuppressWarnings({"OverlyCoupledClass"})
 @ComponentScan
 public class AppComponents {
-    
-    
+
+
     /**
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
-    
+
+    private static final FBAdmin fbAdmin = new FBAdmin();
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());
-    
+
     private static final AppConfigurationLocal THREAD_CONFIG = ThreadConfig.getI();
-    
-    public static @NotNull Properties getMailProps() {
+
+    @NotNull
+    public static Properties getMailProps() {
         Properties properties = new Properties();
         try {
             properties.load(AppComponents.class.getResourceAsStream("/static/mail.properties"));
@@ -60,24 +66,24 @@ public class AppComponents {
         }
         return properties;
     }
-    
+
     public PfLists getPFLists() {
         return new PfLists();
     }
-    
+
+    @Bean(value = "fbapp")
+    public static FirebaseApp getFirebaseApp() {
+        return FirebaseApp.getInstance();
+    }
+
     @Contract(value = "_ -> new", pure = true)
     @Scope(ConstantsFor.SINGLETON)
-    public static @NotNull MessageSwing getMessageSwing(String messengerHeader) {
+    @NotNull
+    public static MessageSwing getMessageSwing(String messengerHeader) {
 //        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
         return new ru.vachok.messenger.MessageSwing(messengerHeader);
     }
-    
-    @Contract(value = " -> new", pure = true)
-    @Bean
-    public static @NotNull ADSrv adSrv() {
-        return new ADSrv();
-    }
-    
+
     public Connection connection(String dbName) {
         MysqlDataSource mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
@@ -91,7 +97,7 @@ public class AppComponents {
             return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
         }
     }
-    
+
     /**
      @return new {@link SimpleCalculator}
      */
@@ -99,7 +105,7 @@ public class AppComponents {
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }
-    
+
     @Bean(STR_VISITOR)
     public Visitor visitor(@NotNull HttpServletRequest request) {
         if (request.getSession() == null) {
@@ -109,18 +115,25 @@ public class AppComponents {
         ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
         return visitor;
     }
-    
+
     public SshActs sshActs() {
         return new SshActs();
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
-            .add("Nothing to show...")
-            .toString();
+                .add("Nothing to show...")
+                .toString();
     }
-    
+
+    @Contract(value = " -> new", pure = true)
+    @Bean
+    @NotNull
+    public static ADSrv adSrv() {
+        return new ADSrv();
+    }
+
     @Contract(pure = true)
     public static ThreadConfig threadConfig() {
         return (ThreadConfig) THREAD_CONFIG;

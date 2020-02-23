@@ -3,12 +3,13 @@
 package ru.vachok.networker.controller;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -31,33 +32,37 @@ import java.util.stream.Stream;
 
 /**
  {@link Controller}, для работы с SSH
- 
+
  @since 01.12.2018 (9:58) */
 @SuppressWarnings("SameReturnValue")
 @Controller
 public class SshActsCTRL {
-    
-    
+
+
+    /**
+     Первоначальная задержка шедулера.
+     */
+    public static final long INIT_DELAY = ConstantsFor.MY_AGE;
+
     private static final String URL_SSHACTS = "/sshacts";
-    
+
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SshActsCTRL.class.getSimpleName());
-    
+
     private PfLists pfLists;
-    
+
     /**
      {@link SshActs}
      */
     private SshActs sshActs;
-    
-    @Contract(pure = true)
+
     @Autowired
     public SshActsCTRL(PfLists acts, SshActs sshActs) {
         this.pfLists = acts;
         this.sshActs = sshActs;
     }
-    
+
     @PostMapping(URL_SSHACTS)
     public String sshActsPOST(@ModelAttribute SshActs sshActsL, Model model, @NotNull HttpServletRequest request) throws AccessDeniedException {
         this.sshActs = sshActsL;
@@ -72,7 +77,7 @@ public class SshActsCTRL {
             throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
         }
     }
-    
+
     public void parseReq(@NotNull String queryString) {
         String qStr = " ";
         try {
@@ -96,7 +101,7 @@ public class SshActsCTRL {
         }
         String msg = toString();
     }
-    
+
     @GetMapping(URL_SSHACTS)
     public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
         Visitor visitor = UsefulUtilities.getVis(request);
@@ -105,13 +110,13 @@ public class SshActsCTRL {
         if (0 >= abs) {
             abs = 1;
         }
-        
+
         sshActs.setAllowDomain("");
         sshActs.setDelDomain("");
         sshActs.setUserInput("");
         sshActs.setNumOfHours(String.valueOf(abs));
         sshActs.setInet(pcReq);
-        
+
         if (getAuthentic(pcReq)) {
             model.addAttribute(ModelAttributeNames.TITLE, visitor.getTimeSpend());
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
@@ -128,7 +133,7 @@ public class SshActsCTRL {
             throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SshActsCTRL{");
@@ -136,7 +141,7 @@ public class SshActsCTRL {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @PostMapping("/tmpfullnet")
     public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model, @NotNull HttpServletRequest request) {
         this.sshActs = sshActsL;
@@ -146,7 +151,7 @@ public class SshActsCTRL {
         String tempInetAnswer = "null";
         try {
             String flushDNS = UsefulUtilities.ipFlushDNS();
-            tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
+            tempInetAnswer = callFuture.get(INIT_DELAY, TimeUnit.SECONDS);
             messageToUser.info(this.getClass().getSimpleName(), flushDNS, tempInetAnswer);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -159,7 +164,7 @@ public class SshActsCTRL {
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
-    
+
     @PostMapping("/allowdomain")
     public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) {
         this.sshActs = sshActsL;
@@ -169,7 +174,7 @@ public class SshActsCTRL {
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
-    
+
     @PostMapping("/deldomain")
     public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) {
         this.sshActs = sshActsL;
@@ -179,8 +184,8 @@ public class SshActsCTRL {
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
-    
+
     private boolean getAuthentic(@NotNull String pcReq) {
-        return Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.", "10.200.214.80", "10.200.213.86", "10.200.214.108").anyMatch(pcReq::contains);
+        return Stream.of("10.10.111.", "10.200.213.85", "0:0:0:0", "172.16.200.").anyMatch(pcReq::contains);
     }
 }

@@ -32,39 +32,40 @@ import java.util.function.BiConsumer;
  */
 @Service(ModelAttributeNames.PHOTO_CONVERTER)
 public class PhotoConverterSRV {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PhotoConverterSRV.class.getSimpleName());
-    
+
     private final Collection<String> psCommands = new ArrayList<>();
-    
+
     private File adFotoFile;
-    
+
     private Properties properties = InitProperties.getTheProps();
-    
+
     private File rawPhotoFile;
-    
+
     private String adPhotosPath;
-    
-    private @NotNull Map<String, BufferedImage> filesList = new ConcurrentHashMap<>();
-    
+
+    @NotNull private Map<String, BufferedImage> filesList = new ConcurrentHashMap<>();
+
     public File getAdFotoFile() {
         return adFotoFile;
     }
-    
+
     public void setAdFotoFile(File adFotoFile) {
         this.adFotoFile = adFotoFile;
     }
-    
+
     /**
      Создание списка PoShe комманд для добавления фото
      <p>
      1. {@link #convertFoto()} запуск конверсии. <br>
      2. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} - запишем исключение.
-     
+
      @return Комманды Exchange PowerShell
      */
-    public @NotNull String psCommands() {
+    @NotNull
+    public String psCommands() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         try {
             convertFoto();
@@ -79,7 +80,7 @@ public class PhotoConverterSRV {
         }
         return stringBuilder.toString();
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", PhotoConverterSRV.class.getSimpleName() + "[\n", "\n]")
@@ -87,7 +88,7 @@ public class PhotoConverterSRV {
             .add("adFotoFile = " + adFotoFile)
             .toString();
     }
-    
+
     private void convertFoto() throws IOException {
         this.adPhotosPath = properties.getProperty(PropertiesNames.ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         BiConsumer<String, BufferedImage> imageBiConsumer = this::imgWorker;
@@ -99,7 +100,7 @@ public class PhotoConverterSRV {
             }
         }
         else {
-            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, null);
+            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB));
         }
         try {
             filesList.forEach(imageBiConsumer);
@@ -108,7 +109,7 @@ public class PhotoConverterSRV {
             filesList.put(ConstantsFor.STR_ERROR, null);
         }
     }
-    
+
     private void resizeRawFoto() throws IOException {
         for (@NotNull String format : ImageIO.getWriterFormatNames()) {
             @NotNull String key = rawPhotoFile.getName();
@@ -122,14 +123,15 @@ public class PhotoConverterSRV {
             }
         }
     }
-    
+
     @SuppressWarnings("MagicNumber")
-    private @NotNull BufferedImage scaledImage(@NotNull BufferedImage bufferedImage) {
+    @NotNull
+    private BufferedImage scaledImage(@NotNull BufferedImage bufferedImage) {
         int newW = 113;
         int newH = 154;
-    
+
         newH = (newW * bufferedImage.getHeight()) / bufferedImage.getWidth();
-        
+
         Image scaledImageTMP = bufferedImage.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         @NotNull BufferedImage scaledImage = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = scaledImage.createGraphics();
@@ -137,7 +139,7 @@ public class PhotoConverterSRV {
         g2d.dispose();
         return scaledImage;
     }
-    
+
     private void imgWorker(String rawFileName, @NotNull BufferedImage rawImage) {
         String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
         @NotNull File outFile = new File(pathName + rawFileName + ".jpg");
@@ -161,7 +163,7 @@ public class PhotoConverterSRV {
             delRawFile(outFile);
         }
     }
-    
+
     private void delRawFile(@NotNull File outFile) {
         String rawFilesDirName = properties.getProperty(PropertiesNames.ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         @Nullable File[] rawFilesArray = new File(rawFilesDirName).listFiles();

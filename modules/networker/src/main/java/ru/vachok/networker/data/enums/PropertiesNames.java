@@ -85,17 +85,9 @@ public enum PropertiesNames {
 
     public static final String REALFTPPASS = "realftppass";
 
-    public static final String LIMITSEARCHROWS = "limitsearchrows";
-
-    public static final String SUN_JAVA_COMMAND = "sun.java.command";
-
     public static final String TIMESTAMP = "timestamp";
 
     public static final String MINDELAY = "mindelay";
-
-    public static final String TRAINS = "trains";
-
-    public static final String ID_MAILREGRU = "mail-regru";
 
     public static final String PASSWORD = "password";
 

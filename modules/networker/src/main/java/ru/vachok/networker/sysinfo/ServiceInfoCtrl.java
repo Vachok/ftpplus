@@ -3,7 +3,6 @@
 package ru.vachok.networker.sysinfo;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -65,7 +64,6 @@ public class ServiceInfoCtrl {
     public ServiceInfoCtrl() {
     }
 
-    @Contract(pure = true)
     protected ServiceInfoCtrl(Visitor visitor) {
         this.visitor = visitor;
     }
@@ -108,27 +106,71 @@ public class ServiceInfoCtrl {
 
         model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-
+    
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
-            .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+                .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(getDateWhenCome()));
         model.addAttribute("ping", getClassPath());
         model.addAttribute("urls", makeRunningInfo());
         model.addAttribute("res", makeResValue());
         model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
     }
-
-    private @NotNull String prepareRequest(@NotNull HttpServletRequest request) {
+    
+    @NotNull
+    private String getClassPath() {
+        StringBuilder stringBuilder = new StringBuilder();
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getTheProps()).replace("\n", "<br>"));
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"));
+        stringBuilder.append("ClassPath {<br>");
+        stringBuilder.append(runtimeMXBean.getClassPath().replace(";", "<br>")).append(" }<p>");
+        stringBuilder.append("BootClassPath {<br>");
+        try {
+            stringBuilder.append(runtimeMXBean.getBootClassPath().replace("\n", "<br>")).append("}<p>");
+        }
+        catch (UnsupportedOperationException e) {
+            stringBuilder.append(e.getMessage().replace("\n", "<br>")).append(" }<p>");
+        }
+        stringBuilder.append("LibraryPath {<br>");
+        stringBuilder.append(runtimeMXBean.getLibraryPath().replace(";", "<br>")).append(" }<p>");
+        
+        return stringBuilder.toString();
+    }
+    
+    private String getJREVers() {
+        return System.getProperty("java.version");
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
+                .add("pageFooter = " + pageFooter)
+                .add("visitor = " + visitor)
+                .add("authReq = " + authReq)
+                .add(new AppComponents().getFirebaseApp().getName())
+                .toString();
+    }
+    
+    private Date getDateWhenCome() {
+        if (Stats.isSunday()) {
+            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+            AppConfigurationLocal.getInstance().execute((Runnable) stats, 150);
+        }
+        return new Date(new SpeedChecker().call());
+    }
+    
+    @NotNull
+    private String prepareRequest(@NotNull HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
         String bBr = "</b><br>";
         stringBuilder
-            .append("HOST: ")
-            .append("<b>").append(request.getHeader("host")).append(bBr);
+                .append("HOST: ")
+                .append("<b>").append(request.getHeader("host")).append(bBr);
         stringBuilder
-            .append("upgrade-insecure-requests: ".toUpperCase())
-            .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
+                .append("upgrade-insecure-requests: ".toUpperCase())
+                .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
         stringBuilder
             .append("user-agent: ".toUpperCase())
             .append("<b>").append(request.getHeader("user-agent")).append(bBr);
@@ -152,24 +194,21 @@ public class ServiceInfoCtrl {
         stringBuilder.append(AbstractForms.fromEnum(request.getAttributeNames()).replace("<br>", "\n"));
         return stringBuilder.toString();
     }
-
-    private String getJREVers() {
-        return System.getProperty("java.version");
-    }
-
+    
     /**
      Считает время до конца дня.
      <p>
-
+     
      @param dateWhenCome - время старта
      @return время до 17:30 в процентах от 8:30
      */
-    private static @NotNull String percToEnd(@NotNull Date dateWhenCome) {
+    @NotNull
+    private static String percToEnd(@NotNull Date dateWhenCome) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(dateWhenCome.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
         LocalTime endDay = startDay.plus(9, HOURS);
-
+        
         LocalTime toEnd = endDay.minusHours(LocalTime.now().getHour());
         toEnd = toEnd.minusMinutes(LocalTime.now().getMinute());
         toEnd = toEnd.minusSeconds(LocalTime.now().getSecond());
@@ -183,80 +222,44 @@ public class ServiceInfoCtrl {
         stringBuilder.append(toEnd);
         return stringBuilder.toString();
     }
-
-    private Date getDateWhenCome() {
-        if (Stats.isSunday()) {
-            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            AppConfigurationLocal.getInstance().execute((Runnable) stats, 150);
-        }
-        return new Date(new SpeedChecker().call());
-    }
-
-    private @NotNull String getClassPath() {
-        StringBuilder stringBuilder = new StringBuilder();
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        stringBuilder.append(AbstractForms.fromArray(InitProperties.getTheProps()).replace("\n", "<br>"));
-        stringBuilder.append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"));
-        stringBuilder.append("ClassPath {<br>");
-        stringBuilder.append(runtimeMXBean.getClassPath().replace(";", "<br>")).append(" }<p>");
-        stringBuilder.append("BootClassPath {<br>");
-        try {
-            stringBuilder.append(runtimeMXBean.getBootClassPath().replace("\n", "<br>")).append("}<p>");
-        }
-        catch (UnsupportedOperationException e) {
-            stringBuilder.append(e.getMessage().replace("\n", "<br>")).append(" }<p>");
-        }
-        stringBuilder.append("LibraryPath {<br>");
-        stringBuilder.append(runtimeMXBean.getLibraryPath().replace(";", "<br>")).append(" }<p>");
-
-        return stringBuilder.toString();
-    }
-
-    private static @NotNull String makeRunningInfo() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Запущено - ")
-            .append(new Date(ConstantsFor.START_STAMP))
-            .append(UsefulUtilities.getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY)
-            .append(" : ")
-            .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
-            .append(" delays)</i>")
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(UsefulUtilities.getRunningInformation())
-            .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
-            .append("<p>").append("</details></font><br>");
-        return stringBuilder.toString().replace("***", "<br>");
-    }
-
-    private @NotNull String makeResValue() {
-        return new StringBuilder()
-            .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append("</i></b><p><font color=\"orange\">")
-            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
-            .append("<p>")
-            .toString();
-    }
-
-    private static @NotNull String parseWorkHours(LocalTime startDay, LocalTime toEnd) {
+    
+    @NotNull
+    private static String parseWorkHours(LocalTime startDay, LocalTime toEnd) {
         LocalTime endDay = startDay.plus(9, HOURS);
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
         StringBuilder stringBuilder = new StringBuilder();
         final int allDaySec = secDayEnd - startSec;
-
+        
         int toEndDaySec = toEnd.toSecondOfDay();
         int diffSec = allDaySec - toEndDaySec;
         float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
         stringBuilder
-            .append("Работаем ")
-            .append(TimeUnit.SECONDS.toMinutes(diffSec));
+                .append("Работаем ")
+                .append(TimeUnit.SECONDS.toMinutes(diffSec));
         stringBuilder
-            .append("(мин.). Ещё ")
-            .append(String.format("%.02f", percDay))
-            .append(" % или ");
+                .append("(мин.). Ещё ")
+                .append(String.format("%.02f", percDay))
+                .append(" % или ");
         return stringBuilder.toString();
+    }
+    
+    @NotNull
+    private static String makeRunningInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Запущено - ")
+                .append(new Date(ConstantsFor.START_STAMP))
+                .append(UsefulUtilities.getUpTime())
+                .append(" (<i>rnd delay is ")
+                .append(ConstantsFor.DELAY)
+                .append(" : ")
+                .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
+                .append(" delays)</i>")
+                .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(UsefulUtilities.getRunningInformation())
+            .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
+            .append("<p>").append("</details></font><br>");
+        return stringBuilder.toString().replace("***", "<br>");
     }
 
     @GetMapping("/pcoff")
@@ -293,13 +296,15 @@ public class ServiceInfoCtrl {
         }
         return "ok";
     }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
-            .add("pageFooter = " + pageFooter)
-            .add("visitor = " + visitor)
-            .add("authReq = " + authReq)
-            .toString();
+    
+    @NotNull
+    private String makeResValue() {
+        return new StringBuilder()
+                .append(MyCalen.toStringS()).append("<br><br>")
+                .append("<b><i>").append("</i></b><p><font color=\"orange\">")
+                .append(ConstantsNet.getSshMapStr()).append("</font><p>")
+                .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
+                .append("<p>")
+                .toString();
     }
 }

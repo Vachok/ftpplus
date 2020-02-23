@@ -3,16 +3,26 @@ package ru.vachok.networker.restapi;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.PfListsSrv;
+import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -28,6 +38,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -58,32 +69,20 @@ public class RestCTRL {
         }
     }
 
-    @GetMapping("/file")
-    public String fileShow(@NotNull HttpServletRequest request) {
-        String userAgent = request.getHeader("User-Agent");
-        String filesShow = userAgent;
-        if (request.getQueryString() != null && !request.getQueryString().isEmpty()) {
-            File toShow = new File(request.getQueryString());
-            if (toShow.exists()) {
-                filesShow = FileSystemWorker.readFile(toShow);
+    @NotNull
+    private List<String> getFromDB() {
+        List<String> validUIDs = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_UIDS_FULL);
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from velkom.restuids");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                validUIDs.add(resultSet.getString("uid"));
             }
         }
-        else {
-
-            filesShow = getFileShow(userAgent);
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage());
         }
-
-        String uAgent;
-        try {
-            uAgent = userAgent.toLowerCase();
-        }
-        catch (RuntimeException e) {
-            uAgent = MessageFormat.format("{0} \n {1}", e.getMessage(), AbstractForms.fromArray(e));
-        }
-        if (uAgent.contains(OKHTTP)) {
-            MessageToUser.getInstance(MessageToUser.EMAIL, "Get /file from " + UsefulUtilities.thisPC()).info(filesShow);
-        }
-        return filesShow;
+        return validUIDs;
     }
 
     @NotNull
@@ -136,36 +135,50 @@ public class RestCTRL {
         }
     }
 
+    @GetMapping("/file")
+    public String fileShow(@NotNull HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        String filesShow = userAgent;
+        if (request.getQueryString() != null && !request.getQueryString().isEmpty()) {
+            File toShow = new File(request.getQueryString());
+            if (toShow.exists()) {
+                filesShow = FileSystemWorker.readFile(toShow);
+            }
+        }
+        else {
+
+            filesShow = getFileShow(userAgent);
+        }
+
+        String uAgent;
+        try {
+            uAgent = userAgent.toLowerCase();
+        }
+        catch (RuntimeException e) {
+            uAgent = MessageFormat.format("{0} \n {1}", e.getMessage(), AbstractForms.fromArray(e));
+        }
+        if (uAgent.contains(OKHTTP)) {
+            MessageToUser.getInstance(MessageToUser.EMAIL, "Get /file from " + UsefulUtilities.thisPC()).info(filesShow);
+        }
+        return filesShow;
+    }
+
+    /**
+     @param request {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @return json
+
+     @see RestCTRLTest#okTest()
+     */
     @PostMapping("/tempnet")
     public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
         boolean ipForInetValid = checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION));
         String contentType = request.getContentType(); //application/json
-
         response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
         byte[] contentBytes = new byte[request.getContentLength()];
-        String retStr = MessageFormat.format("{0} {1}", contentType, request.getHeader(ConstantsFor.AUTHORIZATION));
-        if (ipForInetValid) {
-            try (ServletInputStream inputStream = request.getInputStream();) {
-                int iRead = inputStream.available();
-                while (iRead > 0) {
-                    iRead = inputStream.read(contentBytes);
-                }
-            }
-            catch (IOException e) {
-                retStr = AbstractForms.fromArray(e);
-            }
-            JsonObject object;
-            if (contentType.equals(ConstantsFor.JSON)) {
-                object = Json.parse(new String(contentBytes)).asObject();
-            }
-            else {
-                object = new JsonObject();
-            }
-            String input = object.get("ip").asString();
-            long hoursToOpenInet = Long.parseLong(object.get("hour").asString());
-            String option = object.get(ConstantsFor.OPTION).asString();
-            String whocalls = object.get(ConstantsFor.WHOCALLS).asString();
-            retStr = MessageFormat.format("{0}\n{1}", retStr, new TemporaryFullInternet(input, hoursToOpenInet, option, whocalls).call());
+        String retStr;
+        if (contentType.equalsIgnoreCase(ConstantsFor.JSON) & ipForInetValid) {
+            retStr = getInetResult(request, contentBytes);
         }
         else {
             retStr = "INVALID USER";
@@ -191,19 +204,89 @@ public class RestCTRL {
         return isValid;
     }
 
-    private List<String> getFromDB() {
-        List<String> validUIDs = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_UIDS_FULL);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from velkom.restuids");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                validUIDs.add(resultSet.getString("uid"));
+    private JsonObject getJSON(byte[] contentBytes) {
+        try {
+            return Json.parse(new String(contentBytes)).asObject();
+        }
+        catch (ParseException e) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add(ConstantsFor.STR_ERROR, AbstractForms.fromArray(e));
+            return jsonObject;
+        }
+    }
+
+    @NotNull
+    private String getInetResult(@NotNull HttpServletRequest request, byte[] contentBytes) {
+        String retStr = MessageFormat.format("{0} {1}", ConstantsFor.JSON, request.getHeader(ConstantsFor.AUTHORIZATION));
+        try (ServletInputStream inputStream = request.getInputStream()) {
+            int iRead = inputStream.available();
+            while (iRead > 0) {
+                iRead = inputStream.read(contentBytes);
             }
         }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
+        catch (IOException e) {
+            retStr = AbstractForms.fromArray(e);
         }
-        return validUIDs;
+        JsonObject object = getJSON(contentBytes);
+
+        String inputIP = object.get("ip").asString();
+        String hourAsString = object.get("hour").asString();
+        long hoursToOpenInet = 0;
+        if (hourAsString != null) {
+            hoursToOpenInet = Long.parseLong(hourAsString);
+        }
+        else if (hoursToOpenInet > TimeUnit.DAYS.toHours(365)) {
+            hoursToOpenInet = TimeUnit.DAYS.toHours(365);
+        }
+        String option = object.get(ConstantsFor.OPTION).asString();
+        String whocalls = object.get(ConstantsFor.WHOCALLS).asString();
+
+        String[] params = {inputIP, String.valueOf(hoursToOpenInet), whocalls};
+
+        if (hoursToOpenInet == -2) {
+            option = ConstantsFor.DOMAIN;
+            params = new String[]{inputIP, whocalls};
+        }
+        String tempInetResult = getAnswer(option, params);
+
+        return MessageFormat.format("{0}\n{1}", retStr, tempInetResult);
+    }
+
+    @PostMapping("/ssh")
+    public String sshCommand(@NotNull HttpServletRequest request, HttpServletResponse response) {
+        String retStr = "";
+        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
+            if (request.getContentType().equals(ConstantsFor.JSON)) {
+                throw new TODOException("23.02.2020 (12:04)");
+            }
+
+        }
+        return retStr;
+    }
+
+    @GetMapping("/getsshlists")
+    public String sshRest() {
+        ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
+        PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
+        messageToUser.warn(getClass().getSimpleName(), "sshRest", new Date(pfLists.getTimeStampToNextUpdLong()).toString());
+        pfService.makeListRunner();
+        return pfLists.toString();
+    }
+
+    private String getAnswer(@NotNull String option, String... params) {
+        if (ConstantsFor.DOMAIN.equals(option)) {
+            String s = new SshActs(params[0], params[1]).allowDomainAdd();
+            FirebaseDatabase.getInstance().getReference(params[0]).setValue(params[1], new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError error, DatabaseReference ref) {
+                    messageToUser.info(getClass().getSimpleName(), "tempnet", ref.getKey());
+                    messageToUser.error("RestCTRL.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
+                }
+            });
+            return s; //{"ip":"delete","option":"domain","whocalls":"http://www.velkomfood.ru"}
+        }
+        return new TemporaryFullInternet(params[0], Long.parseLong(params[1]), "add", params[2]).call();
     }
 
     @Override

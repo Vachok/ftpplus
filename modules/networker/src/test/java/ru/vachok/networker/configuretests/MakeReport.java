@@ -14,40 +14,39 @@ import java.nio.file.Paths;
 /**
  @since 17.07.2019 (9:35) */
 public class MakeReport implements TestConfigure {
-    
-    
+
+
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
+
     private String testName;
-    
+
     public MakeReport(String testName) {
         this.testName = testName;
         throw new InvokeIllegalException("17.07.2019 (10:00)");
-        
+
     }
-    
+
     @Override
     public PrintStream getPrintStream() throws IOException {
         if (!new File(TEST_FOLDER).exists()) {
             Files.createDirectories(Paths.get(TEST_FOLDER));
         }
         OutputStream outputStream = new FileOutputStream(TEST_FOLDER + testName);
-        PrintStream printStream = new PrintStream(outputStream, true);
-        return printStream;
-        
+        return new PrintStream(outputStream, true);
+
     }
-    
+
     @Override
     public void before() {
         throw new InvokeEmptyMethodException("17.07.2019 (10:00)");
-        
+
     }
-    
+
     @Override
     public void after() {
         throw new InvokeEmptyMethodException("17.07.2019 (10:00)");
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MakeReport{");

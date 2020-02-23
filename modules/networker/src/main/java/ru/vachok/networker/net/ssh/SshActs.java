@@ -5,7 +5,6 @@ package ru.vachok.networker.net.ssh;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -59,12 +58,12 @@ public class SshActs {
     private String inet;
 
     private String numOfHours =
-        String.valueOf(Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
+            String.valueOf(Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
 
     /**
      Разрешить адрес
      */
-    @NonNull private String allowDomain;
+    private String allowDomain;
 
     private String ipAddrOnly;
 
@@ -88,10 +87,6 @@ public class SshActs {
 
     private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
-
-    public void setIpAddrOnly(String ipAddrOnly) {
-        this.ipAddrOnly = ipAddrOnly;
-    }
 
     public String getNumOfHours() {
         try {
@@ -168,7 +163,24 @@ public class SshActs {
         return vipNet;
     }
 
+    public void setIpAddrOnly(String ipAddrOnly) {
+        this.ipAddrOnly = ipAddrOnly;
+    }
+
+    public SshActs(String ipAddrOnly, String allowDomain) {
+        this.ipAddrOnly = ipAddrOnly;
+        this.allowDomain = allowDomain;
+    }
+
+    public SshActs() {
+
+    }
+
     public String allowDomainAdd() {
+        if (ipAddrOnly != null && ipAddrOnly.equalsIgnoreCase(ConstantsFor.DELETE)) {
+            this.delDomain = allowDomain;
+            return allowDomainDel();
+        }
         this.allowDomain = Objects.requireNonNull(checkDName());
         if (allowDomain.equalsIgnoreCase(ConstantsFor.ANS_DOMNAMEEXISTS)) {
             return allowDomain;
@@ -179,16 +191,16 @@ public class SshActs {
         String commandSSH = new StringBuilder()
                 .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
                 .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, ConstantsFor.ANS_DNAMENULL))
-            .append(" #")
-            .append(allowDomain)
-            .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
-            .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
-            .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
+                .append(" #")
+                .append(allowDomain)
+                .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
+                .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
+                .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
 
             .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append("\"")
                 .append(" >> /etc/pf/allowdomain;")
                 .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(resolvedIp).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
-            .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
+                .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
                 .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
                 .append(ConstantsFor.SSH_INITPF).toString();
 
@@ -196,7 +208,7 @@ public class SshActs {
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolvedIp) + "</font>";
         FileSystemWorker.writeFile(allowDomain.replaceFirst("\\Q.\\E", "") + ".log", call);
         return call.replace("\n", "<br>")
-            .replace(allowDomain, "<font color=\"yellow\">" + allowDomain + "</font>").replace(resolvedIp, "<font color=\"yellow\">" + resolvedIp + "</font>");
+                .replace(allowDomain, "<font color=\"yellow\">" + allowDomain + "</font>").replace(resolvedIp, "<font color=\"yellow\">" + resolvedIp + "</font>");
     }
 
     private String checkDName() {
@@ -213,7 +225,6 @@ public class SshActs {
         if (allowDomain.contains("/")) {
             allowDomain = allowDomain.split("/")[0];
         }
-        this.allowDomain = allowDomain;
         SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         String[] domainNamesFromSSH = {"No name"};
         try {
@@ -286,16 +297,16 @@ public class SshActs {
             Optional<String> resolvedIp = Optional.of(resolveIp(x));
             StringBuilder sshComBuilder = new StringBuilder()
                     .append(ConstantsFor.SSH_SUDO_GREP_V)
-                .append(x)
-                .append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
+                    .append(x)
+                    .append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
                     .append(ConstantsFor.SSH_SUDO_GREP_V);
             resolvedIp.ifPresent(stringBuilder::append);
             sshComBuilder.append(" #")
-                .append(x)
-                .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
-                .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
-                .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
-                .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
+                    .append(x)
+                    .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
+                    .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
+                    .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
+                    .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
                     .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
                     .append(ConstantsFor.SSH_INITPF).toString();
 
@@ -332,7 +343,8 @@ public class SshActs {
         return delDomain;
     }
 
-    private @NotNull String[] getServerListDomains() {
+    @NotNull
+    private String[] getServerListDomains() {
         SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         Callable<String> factory = delDomBuilder.build();
         Future<String> future = Executors.newSingleThreadExecutor().submit(factory);
@@ -398,10 +410,11 @@ public class SshActs {
     }
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    private @NotNull String execByWhatListSwitcher(int whatList, boolean iDel) {
+    @NotNull
+    private String execByWhatListSwitcher(int whatList, boolean iDel) {
         if (iDel) {
             return new StringBuilder()
-                    .append(ConstantsFor.SSH_SUDO_GREP_V)
+                .append(ConstantsFor.SSH_SUDO_GREP_V)
                 .append(Objects.requireNonNull(pcName))
                 .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '")
                 .append(Objects.requireNonNull(ipAddrOnly))
@@ -409,10 +422,10 @@ public class SshActs {
                 .append(Objects.requireNonNull(ipAddrOnly))
                 .append("' /etc/pf/squid > /etc/pf/squid_tmp;sudo cp /etc/pf/squid_tmp /etc/pf/squid;sudo grep -v '")
                 .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/squidlimited > /etc/pf/squidlimited_tmp;sudo cp /etc/pf/squidlimited_tmp /etc/pf/squidlimited;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo " +
-                    "/etc/initpf.fw").toString();
+                    .append("' /etc/pf/squidlimited > /etc/pf/squidlimited_tmp;sudo cp /etc/pf/squidlimited_tmp /etc/pf/squidlimited;sudo grep -v '")
+                    .append(Objects.requireNonNull(ipAddrOnly))
+                    .append("' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo " +
+                            "/etc/initpf.fw").toString();
         }
         else {
             this.comment = Objects.requireNonNull(ipAddrOnly) + comment;

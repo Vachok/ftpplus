@@ -30,14 +30,16 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
 
     @Contract(pure = true)
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
-    static @NotNull Properties getTheProps() {
+    @NotNull
+    static Properties getTheProps() {
         @NotNull Properties result = PropsHelper.getAppPr();
         return result;
     }
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
-    static @NotNull InitProperties getInstance(@NotNull String type) {
+    @NotNull
+    static InitProperties getInstance(@NotNull String type) {
         switch (type) {
             case FILE:
                 return new FilePropsLocal(ConstantsFor.class.getSimpleName());

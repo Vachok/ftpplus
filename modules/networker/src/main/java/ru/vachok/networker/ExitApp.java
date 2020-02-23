@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -28,78 +29,75 @@ import java.util.concurrent.TimeUnit;
 
 /**
  Действия, при выходе
- 
+
  @see ru.vachok.networker.ExitAppTest
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
 public class ExitApp extends Thread implements Externalizable {
-    
-    
+
+
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, ExitApp.class.getSimpleName());
-    
+
     /**
      new {@link ArrayList}, записываемый в "exit.last"
-     
+
      @see #exitAppDO()
      */
     private static Collection<String> miniLoggerLast = new ArrayList<>();
-    
+
     /**
      Причина выхода
      */
     private String reasonExit = "Give me a reason to hold on to what we've got ... ";
-    
+
     /**
      Имя файлв для {@link ObjectOutput}
      */
     private String fileName = ExitApp.class.getSimpleName();
-    
+
     public ExitApp(FileInputStream inFileStream) {
-        this.inFileStream = inFileStream;
     }
-    
+
     /**
      Объект для записи, {@link Externalizable}
      */
     private Object toWriteObj;
-    
+
     /**
      Для записи {@link #toWriteObj}
-     
+
      @see #writeObj()
      */
     private OutputStream outFileStream;
-    
+
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-    
-    private FileInputStream inFileStream;
-    
+
     /**
      @param reasonExit {@link #reasonExit}
      */
     public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
     }
-    
+
     public ExitApp(Object toWriteObj) {
         this.toWriteObj = toWriteObj;
     }
-    
+
     public ExitApp(String reason, FileOutputStream stream, Object keeperClass) {
         this.reasonExit = reason;
         this.outFileStream = stream;
         this.toWriteObj = keeperClass;
     }
-    
+
     public Object getToWriteObj() {
         return toWriteObj;
     }
-    
+
     @Deprecated
     public boolean isWriteOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
@@ -112,31 +110,33 @@ public class ExitApp extends Thread implements Externalizable {
             return false;
         }
     }
-    
+
     public ExitApp() {
         messageToUser.warn(this.getClass().getSimpleName(), "Starting", LocalDateTime.now().toString());
     }
-    
+
     @Override
     public void writeExternal(@NotNull ObjectOutput out) throws IOException {
         out.writeObject(toWriteObj);
     }
-    
+
     @Override
     public void readExternal(@NotNull ObjectInput in) throws IOException, ClassNotFoundException {
         this.toWriteObj = in.readObject();
     }
-    
+
     /**
      {@link #copyAvail()}
      */
     @Override
     public void run() {
+        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC()).removeValue((error, ref)->messageToUser
+            .error("ExitApp.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
         VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         miniLoggerLast.add(reasonExit);
         copyAvail();
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ExitApp{");
@@ -146,13 +146,12 @@ public class ExitApp extends Thread implements Externalizable {
         sb.append('}');
         return sb.toString();
     }
-    
+
     /**
      Копирует логи
-     
+
      @see FileSystemWorker
      */
-    @SuppressWarnings({"HardCodedStringLiteral"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(FileNames.PING_TV);
@@ -164,7 +163,7 @@ public class ExitApp extends Thread implements Externalizable {
                 .append("ptv_")
                 .append(System.currentTimeMillis() / 1000).append(".txt")
                 .toString()).toAbsolutePath().normalize(), true);
-        
+
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
         }
@@ -174,7 +173,7 @@ public class ExitApp extends Thread implements Externalizable {
         }
         writeObj();
     }
-    
+
     /**
      Запись {@link Externalizable}
      <p>
@@ -204,7 +203,7 @@ public class ExitApp extends Thread implements Externalizable {
         }
         exitAppDO();
     }
-    
+
     /**
      Метод выхода
      <p>
@@ -239,7 +238,7 @@ public class ExitApp extends Thread implements Externalizable {
             Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
         }
     }
-    
+
     @Contract(pure = true)
     static Map<Long, Visitor> getVisitsMap() {
         return VISITS_MAP;

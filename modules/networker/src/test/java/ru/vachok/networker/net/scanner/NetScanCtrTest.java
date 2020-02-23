@@ -37,35 +37,35 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 /**
  @see NetScanCtr */
 public class NetScanCtrTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private static final File FILE = new File(FileNames.SCAN_TMP);
-    
+
     private NetScanService pcNamesScannerOld = new PcNamesScannerWorks();
-    
+
     private NetScanCtr netScanCtr;
-    
+
     private HttpServletRequest request = new MockHttpServletRequest();
-    
+
     private HttpServletResponse response = new MockHttpServletResponse();
-    
+
     private Model model = new ExtendedModelMap();
-    
+
     private PcNamesScanner pcNamesScanner;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @BeforeMethod
     public void initScan() {
         this.pcNamesScanner = new PcNamesScanner();
@@ -82,7 +82,7 @@ public class NetScanCtrTest {
             Assert.assertFalse(FILE.exists());
         }
     }
-    
+
     @Test
     @Ignore
     public void testNetScan() {
@@ -113,7 +113,7 @@ public class NetScanCtrTest {
             Assert.assertNotNull(e);
         }
     }
-    
+
     @Test
     public void testAbstractGetInetUsageByUser() {
         String thePc = "strel";
@@ -127,10 +127,10 @@ public class NetScanCtrTest {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void testPcNameForInfo() {
         Model model = this.model;
@@ -141,13 +141,13 @@ public class NetScanCtrTest {
             String pcNameInfoStr = netScanCtr.pcNameForInfo(model, pcNamesScanner);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
             Assert.assertTrue(model.asMap().get(ModelAttributeNames.THEPC).equals("do0001"));
-            
+
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
         }
     }
-    
+
     @Test
     public void testAbstractGetInetUsageByPc() {
         String thePC = "do0056";
@@ -155,7 +155,7 @@ public class NetScanCtrTest {
         Assert.assertTrue(info.contains("do0056 : "), info);
         Assert.assertTrue(info.contains("время открытых сессий"), info);
     }
-    
+
     private @NotNull String getInformation(String instanceType) {
         InternetUse informationFactory = InternetUse.getInstance("instanceType");
         informationFactory.setClassOption(instanceType);
@@ -164,7 +164,7 @@ public class NetScanCtrTest {
         String detailedInfo = informationFactory.getInfo();
         return infoAboutInet + "\n" + detailedInfo;
     }
-    
+
     private @NotNull String showModel(@NotNull Map<String, Object> map) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
@@ -172,7 +172,7 @@ public class NetScanCtrTest {
         }
         return stringBuilder.toString();
     }
-    
+
     private @NotNull String testFromArray(@NotNull Map<String, String> mapDefObj) {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
@@ -185,6 +185,6 @@ public class NetScanCtrTest {
             brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
         }
         return brStringBuilder.toString();
-        
+
     }
 }

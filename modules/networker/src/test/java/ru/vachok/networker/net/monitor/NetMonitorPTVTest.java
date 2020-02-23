@@ -129,7 +129,7 @@ public class NetMonitorPTVTest {
 
     @Test
     public void newLogicTest() {
-        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.H2DB);
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.FIREBASE);
         String toString = dataConnectTo.toString();
         Assert.assertEquals(toString, "H2DB{}");
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_LANMONITOR)) {

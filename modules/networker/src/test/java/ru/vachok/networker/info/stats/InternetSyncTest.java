@@ -7,61 +7,71 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
  @see InternetSync
  @since 13.10.2019 (13:24) */
 public class InternetSyncTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(InternetSync.class.getSimpleName(), System.nanoTime());
-    
+
     private SyncData syncData;
-    
+
     private Connection connection;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-    
+
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void initSync() {
         syncData = SyncData.getInstance("10.200.213.85");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
-    
+
     @Test
     public void testSyncData() {
         Path rootPath = Paths.get(".").toAbsolutePath().normalize();
-        File testFile = new File(rootPath.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats" + ConstantsFor.FILESYSTEM_SEPARATOR + "10.200.213.98.csv");
+        File testFile = new File(rootPath
+            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + "10.200.213.98.csv");
         File okDir = new File(testFile.toPath().toAbsolutePath().getParent().toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "ok");
         Assert.assertTrue(okDir.exists());
         Assert.assertTrue(okDir.isDirectory());
@@ -69,13 +79,13 @@ public class InternetSyncTest {
             FileSystemWorker.copyOrDelFile(new File(okDir.getAbsolutePath() + ConstantsFor.FILESYSTEM_SEPARATOR + "10.200.213.98-11.txt"), testFile.toPath().toAbsolutePath()
                     .normalize(), false);
         }
-    
+
         String syncResult = syncData.syncData();
-    
+
         Assert.assertTrue(syncResult.contains("No original FILE! 10.200.213.85.csv"), syncResult);
-        
+
     }
-    
+
     @Test
     public void testSuperRun() {
         Future<?> superRunFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->syncData.superRun());
@@ -98,7 +108,7 @@ public class InternetSyncTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     @Ignore
     public void testCreateTable$$COPY() {
@@ -120,7 +130,7 @@ public class InternetSyncTest {
                 "ROW_FORMAT=COMPRESSED\n" +
                 ";");
     }
-    
+
     @Test
     @Ignore
     public void testComments() {
@@ -134,12 +144,12 @@ public class InternetSyncTest {
         String checkComment = internetSync.checkComment();
         Assert.assertEquals(checkComment, "do0213 : ikudryashov");
     }
-    
+
     @Test
     public void testCreateTable() {
         Path rootP = Paths.get(".");
         File rootF = new File(rootP.toAbsolutePath().normalize()
-                .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats" + ConstantsFor.FILESYSTEM_SEPARATOR + "10.200.213.98.csv");
+            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + "10.200.213.98.csv");
         if (!rootF.exists()) {
             FileSystemWorker.writeFile(rootF.getAbsolutePath(), getSample());
         }
@@ -160,10 +170,10 @@ public class InternetSyncTest {
                 "\tPRIMARY KEY (`idrec`),\n" +
                 "\tUNIQUE INDEX `stampkey` (`stamp`, `site`, `bytes`) USING BTREE\n" +
                 ")"));
-        
+
         }
     }
-    
+
     @Contract(pure = true)
     private static @NotNull String getSample() {
         return "\n" +
@@ -178,7 +188,7 @@ public class InternetSyncTest {
                 "Fri Jun 07 12:55:19 MSK 2019,TCP_TUNNEL/200,3944,CONNECT,connect.mail.ru:443<br><br>\n" +
                 "Thu Jul 18 09:50:10 MSK 2019,TCP_TUNNEL/200,4928,CONNECT,www.google-analytics.com:443\n";
     }
-    
+
     @Test
     public void testUploadCollection() {
         try {
@@ -191,7 +201,7 @@ public class InternetSyncTest {
                 .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
         Assert.assertTrue(upInt == 0);
     }
-    
+
     @Test
     public void testMakeColumns() {
         try {
@@ -202,27 +212,28 @@ public class InternetSyncTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testToString() {
         String toStr = syncData.toString();
         Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.85', dbFullName='inetstats.10_200_213_85', connection=}");
     }
-    
+
     @Test
     @Ignore
     public void logicTest() {
         Path filePath = Paths.get(".");
         filePath = Paths
-                .get(filePath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats" + ConstantsFor.FILESYSTEM_SEPARATOR + syncData
-                        .getDbToSync() + ".csv");
+            .get(filePath.toAbsolutePath().normalize()
+                .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + syncData
+                .getDbToSync() + ".csv");
         Queue<String> fileQueue = FileSystemWorker.readFileToQueue(filePath);
         Assert.assertTrue(fileQueue.size() > 0);
         if (createJSON(fileQueue) > 0) {
             fileWork(filePath);
         }
     }
-    
+
     private int createJSON(@NotNull Queue<String> fileQueue) {
         int updatedRows = 0;
         while (!fileQueue.isEmpty()) {
@@ -251,7 +262,7 @@ public class InternetSyncTest {
         }
         return updatedRows;
     }
-    
+
     private void fileWork(Path filePath) {
         try {
             Path movedFilePath = Files.move(filePath, Paths.get(filePath.toAbsolutePath().normalize().toString().replace(".csv", ".txt")));
@@ -261,7 +272,7 @@ public class InternetSyncTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Contract(pure = true)
     private static long parseDate(String dateAsString) {
         long result;
@@ -276,7 +287,7 @@ public class InternetSyncTest {
         }
         return result;
     }
-    
+
     private JsonObject parseAsObject(String str) {
         JsonObject jsonObject = new JsonObject();
         try {
@@ -291,7 +302,7 @@ public class InternetSyncTest {
             return jsonObject;
         }
     }
-    
+
     private int sendToDatabase(@NotNull JsonObject object) {
         int result;
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);

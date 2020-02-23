@@ -53,7 +53,7 @@ public class ScanOnline implements NetScanService {
 
     private List<String> maxOnList = new ArrayList<>();
 
-    private @NotNull File fileMAXOnlines = new File(FileNames.ONLINES_MAX);
+    @NotNull private File fileMAXOnlines = new File(FileNames.ONLINES_MAX);
 
     private File onlinesFile = new File(FileNames.ONSCAN);
 
@@ -63,7 +63,8 @@ public class ScanOnline implements NetScanService {
 
     @SuppressWarnings("InstanceVariableOfConcreteClass") private TForms tForms = AbstractForms.getI();
 
-    protected @NotNull File getFileMAXOnlines() {
+    @NotNull
+    protected File getFileMAXOnlines() {
         return fileMAXOnlines;
     }
 
@@ -149,20 +150,11 @@ public class ScanOnline implements NetScanService {
         return retBool;
     }
 
-    @Contract(pure = true)
-    private @NotNull List<String> setMaxOnlineFromDatabase() {
-        List<String> retList = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT DISTINCT ip FROM online");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                retList.add(resultSet.getString("ip"));
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.warn(ScanOnline.class.getSimpleName(), e.getMessage(), " see line: 121 ***");
-        }
-        return retList;
+    @Override
+    public String writeLog() {
+        String s = String.valueOf(writeOnLineFile());
+        MessageToUser.getInstance(MessageToUser.DB, getClass().getSimpleName()).info(getClass().getSimpleName(), "scan complete", s);
+        return s;
     }
 
     /**
@@ -227,9 +219,21 @@ public class ScanOnline implements NetScanService {
         return tForms.fromArray(address, true);
     }
 
-    @Override
-    public String writeLog() {
-        return String.valueOf(writeOnLineFile());
+    @Contract(pure = true)
+    @NotNull
+    private List<String> setMaxOnlineFromDatabase() {
+        List<String> retList = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT DISTINCT ip FROM online");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                retList.add(resultSet.getString("ip"));
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.warn(ScanOnline.class.getSimpleName(), e.getMessage(), " see line: 121 ***");
+        }
+        return retList;
     }
 
     @Override

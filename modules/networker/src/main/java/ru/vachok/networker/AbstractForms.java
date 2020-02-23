@@ -15,11 +15,13 @@ public abstract class AbstractForms {
     
     private static final TForms T_FORMS = new TForms();
     
-    public static @NotNull String networkerTrace(StackTraceElement[] trace) {
+    @NotNull
+    public static String networkerTrace(StackTraceElement[] trace) {
         return T_FORMS.networkerTrace(trace);
     }
     
-    public static @NotNull String networkerTrace(@NotNull Exception e) {
+    @NotNull
+    public static String networkerTrace(@NotNull Exception e) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append("\n");
         stringBuilder.append(T_FORMS.networkerTrace(e.getStackTrace())).append("\n");
@@ -33,7 +35,29 @@ public abstract class AbstractForms {
         return stringBuilder.toString();
     }
     
-    private static @NotNull String checkSu(@NotNull Throwable e) {
+    @NotNull
+    public static String fromArrayJson(@NotNull Map<Thread, StackTraceElement[]> threadStackMap) {
+        JsonObject jsonObject = new JsonObject();
+        for (Map.Entry<Thread, StackTraceElement[]> threadEntry : threadStackMap.entrySet()) {
+            jsonObject.add(threadEntry.getKey().toString(), fromArray(threadEntry.getValue()));
+        }
+        return jsonObject.toString();
+    }
+    
+    public static String fromArray(Properties props) {
+        return T_FORMS.fromArray(props);
+    }
+    
+    public static String fromArray(Exception e) {
+        return T_FORMS.fromArray(e);
+    }
+    
+    public static String fromArray(Map<?, ?> fromMap) {
+        return T_FORMS.fromArray(fromMap);
+    }
+    
+    @NotNull
+    private static String checkSu(@NotNull Throwable e) {
         StringBuilder stringBuilder = new StringBuilder();
         Throwable[] suppressedIfExists = e.getSuppressed();
         if (suppressedIfExists.length > 0) {
@@ -50,26 +74,6 @@ public abstract class AbstractForms {
             
         }
         return stringBuilder.toString();
-    }
-    
-    public static String fromArray(Properties props) {
-        return T_FORMS.fromArray(props);
-    }
-    
-    public static String fromArray(Exception e) {
-        return T_FORMS.fromArray(e);
-    }
-    
-    public static String fromArray(Map<?, ?> fromMap) {
-        return T_FORMS.fromArray(fromMap);
-    }
-    
-    public static @NotNull String fromArrayJson(@NotNull Map<Thread, StackTraceElement[]> threadStackMap) {
-        JsonObject jsonObject = new JsonObject();
-        for (Map.Entry<Thread, StackTraceElement[]> threadEntry : threadStackMap.entrySet()) {
-            jsonObject.add(threadEntry.getKey().toString(), fromArray(threadEntry.getValue()));
-        }
-        return jsonObject.toString();
     }
     
     public static String fromArray(StackTraceElement[] trace) {

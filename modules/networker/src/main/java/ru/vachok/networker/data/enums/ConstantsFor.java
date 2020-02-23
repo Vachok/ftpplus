@@ -35,13 +35,9 @@ public enum ConstantsFor {
 
     public static final String DBFIELD_PCNAME = "pcName";
 
-    public static final String DBFIELD_TIMESPEND = "TimeSpend";
-
     public static final String DBFIELD_TIMESTAMP = "TimeStamp";
 
     public static final String DBBASENAME_U0466446_LIFERPG = "u0466446_liferpg";
-
-    public static final String DBQUERY_SELECTFROMSPEED = "SELECT * FROM `speed` ORDER BY `speed`.`TimeStamp` ASC";
 
     public static final String DB_PCUSERAUTO = "pcuserauto";
 
@@ -107,8 +103,6 @@ public enum ConstantsFor {
      */
     public static final String APPNAME_WITHMINUS = "ru_vachok_networker-";
 
-    public static final int HOURS_IN_DAY = 24;
-
     /**
      Кол-во байт в гигабайте
      */
@@ -143,11 +137,6 @@ public enum ConstantsFor {
      */
     public static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
 
-    /**
-     Первоначальная задержка шедулера.
-     */
-    public static final long INIT_DELAY = MY_AGE;
-
     public static final String HTML_CENTER_CLOSE = "</center>";
 
     public static final String STR_INPUT_OUTPUT = "input/output\n";
@@ -176,8 +165,6 @@ public enum ConstantsFor {
 
     public static final String STR_VERSIONINFO = "versioninfo";
 
-    public static final String DBTABLE_GENERALJSCH = "general-jsch";
-
     public static final String SQL_SELECTFROM_PCUSERAUTO = "select * from pcuserauto";
 
     public static final String STR_BYTES = " bytes";
@@ -185,10 +172,6 @@ public enum ConstantsFor {
     public static final String DBCOL_RESPONSE = "response";
 
     public static final String DBFIELD_METHOD = "method";
-
-    public static final String HTML_PCENTER = "<p><center>";
-
-    public static final int EXIT_USEREXIT = 222;
 
     public static final String PROGNAME_OSTPST = "ostpst-";
 
@@ -207,8 +190,6 @@ public enum ConstantsFor {
     public static final String COMMAND_CALCTIME = "calctime:";
 
     public static final String STR_ERROR = "ERROR";
-
-    public static final String METHNAME_RUNSOCKET = ".runSocket";
 
     public static final String STR_WRITTEN = " written";
 
@@ -267,12 +248,6 @@ public enum ConstantsFor {
 
     public static final String STR_OWNEDBY = " owned by: ";
 
-    public static final String DBFIELD_SPEED = "Speed";
-
-    public static final String DBFIELD_TIMEIN = "Timein";
-
-    public static final String DBFIELD_TIMEOUT = "Timeout";
-
     public static final String PATTERN_POINT = ".";
 
     public static final String STR_BR = "<br>";
@@ -293,8 +268,6 @@ public enum ConstantsFor {
 
     public static final String GOOD_NO_LOCKS = "No deadlocks, good!";
 
-    public static final String DBFIELD_TIMESET = "timeset";
-
     public static final String DBBASENAME_U0466446_PROPERTIES = "u0466446_properties";
 
     public static final String ATTRIB_HIDDEN = "dos:hidden";
@@ -305,7 +278,7 @@ public enum ConstantsFor {
 
     public static final String SSHCOM_24HRS = " >> /etc/pf/24hrs;";
 
-    public static final String NOT_ALLOWED = "NOT Allowed!";
+    public static final String NOT_ALLOWED = "NOT Allowed! Try this app: https://appdistribution.firebase.dev/i/s1bgY5MA";
 
     public static final String ANS_DOMNAMEEXISTS = "Domain is exists!";
 
@@ -399,8 +372,6 @@ public enum ConstantsFor {
     public static final String TZ_MOSCOW = "Europe/Moscow";
 
     public static final String CLEANER = "cleaner";
-
-    public static final String DBCOL_VALUEOFPROPERTY = "valueofproperty";
 
     public static final String DBCOL_PROPERTY = "property";
 
@@ -543,9 +514,26 @@ public enum ConstantsFor {
 
     public static final String JSON = "application/json";
 
+    public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
-    public static @NotNull String[] getExcludedFoldersForCleaner() {
+    public static final String DOMAIN = "domain";
+
+    public static final String DELETE = "delete";
+
+    public static final String RULES = "rules";
+
+    public static final String VACHOK_VACHOK_RU = "vachok@vachok.ru";
+
+    public static final String FIREBASE = "firebase";
+
+    public static final String OWNER = "owner";
+
+    public static final String TEMPNET = "tempnet";
+
+    @NotNull
+    public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));
         excludeFolders.addAll(FileSystemWorker.readFileToList(new File(FileNames.CLEANSTOP_TXT).getAbsolutePath()));

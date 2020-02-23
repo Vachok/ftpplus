@@ -24,6 +24,8 @@ import java.util.StringJoiner;
 class PropsHelper {
 
 
+    private static final String ID_MAILREGRU = "mail-regru";
+
     private static final Properties APP_PR = new Properties();
 
     private static final Properties MAIL_PR = new Properties();
@@ -37,7 +39,7 @@ class PropsHelper {
             return MAIL_PR;
         }
         else {
-            MAIL_PR.putAll(new DBPropsCallable(PropertiesNames.ID_MAILREGRU).getProps());
+            MAIL_PR.putAll(new DBPropsCallable(ID_MAILREGRU).getProps());
             InitProperties initProperties = new FilePropsLocal("mail");
             initProperties.setProps(MAIL_PR);
             return MAIL_PR;

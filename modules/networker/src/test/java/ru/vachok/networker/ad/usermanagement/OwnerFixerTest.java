@@ -13,7 +13,6 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -41,7 +40,7 @@ public class OwnerFixerTest {
         AppConfigurationLocal.getInstance().execute(ownerFixer, 20);
         File fileOwnerFixLog = new File(OwnerFixer.class.getSimpleName() + ".res");
         Assert.assertTrue(fileOwnerFixLog.exists());
-        Assert.assertTrue(fileOwnerFixLog.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
+        fileOwnerFixLog.deleteOnExit();
     }
 
     @Test
