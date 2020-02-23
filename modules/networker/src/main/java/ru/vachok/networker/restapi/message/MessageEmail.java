@@ -2,7 +2,6 @@ package ru.vachok.networker.restapi.message;
 
 
 import com.sun.mail.smtp.SMTPMessage;
-import org.jetbrains.annotations.Contract;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -34,7 +33,6 @@ public class MessageEmail extends MailMessages implements MessageToUser {
         this.headerMsg = headerMsg;
     }
 
-    @Contract(pure = true)
     MessageEmail(String headerMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = "Message from Networker ";

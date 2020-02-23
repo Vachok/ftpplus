@@ -26,10 +26,12 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
  @see ScanMessagesCreatorTest
  @since 18.11.2019 (10:11) */
 public class ScanMessagesCreator implements Keeper {
-    
-    
+
+
+    public static final String TRAINS = "trains";
+
     private int numOfTrains = 8;
-    
+
     @NotNull
     String getMsg() {
         long timeElapsed = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
@@ -43,7 +45,7 @@ public class ScanMessagesCreator implements Keeper {
         stringBuilder.append((float) timeElapsed / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) <br>");
         try {
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TRAINS, String.valueOf(numOfTrains));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(TRAINS, String.valueOf(numOfTrains));
             stringBuilder.append(getTrains());
         }
         catch (NoSuchElementException e) {
@@ -52,8 +54,9 @@ public class ScanMessagesCreator implements Keeper {
         }
         return makeColors(stringBuilder.toString());
     }
-    
-    private @NotNull String getTrains() {
+
+    @NotNull
+    private String getTrains() {
         InformationFactory factory = InformationFactory.getInstance();
         if (numOfTrains > 0) {
             factory.setClassOption(numOfTrains);
@@ -63,14 +66,14 @@ public class ScanMessagesCreator implements Keeper {
             return "NO MORE TRAINS";
         }
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", ScanMessagesCreator.class.getSimpleName() + "[\n", "\n]")
             .add("numOfTrains = " + numOfTrains)
             .toString();
     }
-    
+
     @NotNull
     String getTitle(int currentPC) {
         StringBuilder titleBuilder = new StringBuilder();
@@ -82,8 +85,33 @@ public class ScanMessagesCreator implements Keeper {
         titleBuilder.append(")");
         return titleBuilder.toString();
     }
-    
-    private @NotNull String makeColors(@NotNull String trainsFromArray) {
+
+    @NotNull
+    String fillUserPCForWEBModel() {
+        StringBuilder brStringBuilder = new StringBuilder();
+        brStringBuilder.append(STR_P);
+        ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+        if (linksMap.size() < 50) {
+            brStringBuilder.append(FileSystemWorker.readRawFile(new File(FileNames.LASTNETSCAN_TXT).getAbsolutePath()));
+        }
+        else {
+            Set<String> keySet = linksMap.keySet();
+            List<String> list = new ArrayList<>(keySet.size());
+            list.addAll(keySet);
+
+            Collections.sort(list);
+            Collections.reverse(list);
+            for (String keyMap : list) {
+                String valueMap = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().get(keyMap));
+                brStringBuilder.append(keyMap).append(" ").append(valueMap);
+            }
+        }
+        return brStringBuilder.toString().replace("true", "").replace(ConstantsFor.STR_FALSE, "");
+
+    }
+
+    @NotNull
+    private String makeColors(@NotNull String trainsFromArray) {
         HTMLGeneration htmlGeneration = HTMLGeneration.getInstance("");
         StringBuilder stringBuilder = new StringBuilder();
         try {
@@ -107,29 +135,5 @@ public class ScanMessagesCreator implements Keeper {
             stringBuilder.append(e.getMessage()).append("<br>").append(AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
-    }
-    
-    @NotNull
-    String fillUserPCForWEBModel() {
-        StringBuilder brStringBuilder = new StringBuilder();
-        brStringBuilder.append(STR_P);
-        ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-        if (linksMap.size() < 50) {
-            brStringBuilder.append(FileSystemWorker.readRawFile(new File(FileNames.LASTNETSCAN_TXT).getAbsolutePath()));
-        }
-        else {
-            Set<String> keySet = linksMap.keySet();
-            List<String> list = new ArrayList<>(keySet.size());
-            list.addAll(keySet);
-            
-            Collections.sort(list);
-            Collections.reverse(list);
-            for (String keyMap : list) {
-                String valueMap = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().get(keyMap));
-                brStringBuilder.append(keyMap).append(" ").append(valueMap);
-            }
-        }
-        return brStringBuilder.toString().replace("true", "").replace(ConstantsFor.STR_FALSE, "");
-        
     }
 }
