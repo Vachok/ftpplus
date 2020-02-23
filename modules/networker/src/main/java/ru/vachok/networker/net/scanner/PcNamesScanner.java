@@ -17,6 +17,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.firebase.NewPCListener;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
@@ -350,12 +351,28 @@ public class PcNamesScanner implements NetScanService {
             }
         }
 
-        private void scanIt() {
-            ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-            linksMap.clear();
-            InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-            props.setProperty(PropertiesNames.ONLINEPC, "0");
-            getExecution();
+        /**
+         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
+
+         @see PcNamesScannerTest#testWriteLog()
+         */
+        @SuppressWarnings("FeatureEnvy")
+        @Override
+        public String writeLog() {
+            String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
+            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
+            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", logMini);
+            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
+            showScreenMessage();
+            FirebaseDatabase.getInstance().getReference(ConstantsFor.BEANNAME_LASTNETSCAN)
+                .setValue(totPC, (error, ref)->messageToUser
+                    .error("ScannerUSR.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+            messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TOTPC, totPC);
+            InitProperties.setPreference(PropertiesNames.TOTPC, totPC);
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(props);
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }
 
         /**
@@ -401,28 +418,13 @@ public class PcNamesScanner implements NetScanService {
                 .toString();
         }
 
-        /**
-         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
-
-         @see PcNamesScannerTest#testWriteLog()
-         */
-        @SuppressWarnings("FeatureEnvy")
-        @Override
-        public String writeLog() {
-            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
-            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", logMini);
-            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
-            showScreenMessage();
-            FirebaseDatabase.getInstance().getReference(ConstantsFor.BEANNAME_LASTNETSCAN)
-                .setValue(new Date(), (error, ref)->messageToUser
-                    .error("ScannerUSR.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
-            messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
-            String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TOTPC, totPC);
-            InitProperties.setPreference(PropertiesNames.TOTPC, totPC);
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(props);
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
+        private void scanIt() {
+            ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+            linksMap.clear();
+            new NewPCListener().listenNewPC();
+            InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
+            props.setProperty(PropertiesNames.ONLINEPC, "0");
+            getExecution();
         }
 
         @Override
