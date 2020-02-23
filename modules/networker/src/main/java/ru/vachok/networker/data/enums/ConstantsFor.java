@@ -532,6 +532,8 @@ public enum ConstantsFor {
 
     public static final String TEMPNET = "tempnet";
 
+    public static final String NETWORKER = "ru.vachok.networker";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

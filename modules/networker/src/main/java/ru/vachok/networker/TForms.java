@@ -67,7 +67,7 @@ public class TForms {
         appendFile.delete();
         for (StackTraceElement element : trace) {
             String elem = element.toString();
-            if (elem.contains("ru.vachok.networker")) {
+            if (elem.contains(ConstantsFor.NETWORKER)) {
                 stringBuilder.append(elem).append("\n");
             }
             FileSystemWorker.appendObjectToFile(appendFile, elem);
