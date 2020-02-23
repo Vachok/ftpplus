@@ -4,6 +4,9 @@ package ru.vachok.networker.restapi;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +16,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
@@ -248,13 +252,16 @@ public class RestCTRL {
         return MessageFormat.format("{0}\n{1}", retStr, tempInetResult);
     }
 
-    private String getAnswer(@NotNull String option, String... params) {
-        switch (option) {
-            case ConstantsFor.DOMAIN:
-                return new SshActs(params[0], params[1]).allowDomainAdd(); //{"ip":"delete","option":"domain","whocalls":"http://www.velkomfood.ru"}
-            default:
-                return new TemporaryFullInternet(params[0], Long.parseLong(params[1]), "add", params[2]).call();
+    @PostMapping("/ssh")
+    public String sshCommand(@NotNull HttpServletRequest request, HttpServletResponse response) {
+        String retStr = "";
+        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
+            if (request.getContentType().equals(ConstantsFor.JSON)) {
+                throw new TODOException("23.02.2020 (12:04)");
+            }
+
         }
+        return retStr;
     }
 
     @GetMapping("/getsshlists")
@@ -267,9 +274,24 @@ public class RestCTRL {
         return pfLists.toString();
     }
 
+    private String getAnswer(@NotNull String option, String... params) {
+        if (ConstantsFor.DOMAIN.equals(option)) {
+            String s = new SshActs(params[0], params[1]).allowDomainAdd();
+            FirebaseDatabase.getInstance().getReference(params[0]).setValue(params[1], new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError error, DatabaseReference ref) {
+                    messageToUser.info(getClass().getSimpleName(), "tempnet", ref.getKey());
+                    messageToUser.error("RestCTRL.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
+                }
+            });
+            return s; //{"ip":"delete","option":"domain","whocalls":"http://www.velkomfood.ru"}
+        }
+        return new TemporaryFullInternet(params[0], Long.parseLong(params[1]), "add", params[2]).call();
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", RestCTRL.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
     }
 }

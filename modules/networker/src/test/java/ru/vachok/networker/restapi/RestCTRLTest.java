@@ -97,7 +97,7 @@ public class RestCTRLTest {
 
     @Test
     public void okTest() {
-        Request.Builder builder = getBuilder("tempnet", SRV_LOCAL);
+        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_LOCAL);
         RequestBody requestBody = RequestBody.create(getJSONObject().toString().getBytes());
         builder.post(requestBody);
         Call newCall = new OkHttpClient().newCall(builder.build());
@@ -136,7 +136,7 @@ public class RestCTRLTest {
 
     @Test
     public void addDomainRESTTest() {
-        Request.Builder builder = getBuilder("tempnet", SRV_LOCAL);
+        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_LOCAL);
         JsonObject jsonObject = getJSONObject();
         jsonObject.set("ip", "add");
         jsonObject.set("hour", "-2");

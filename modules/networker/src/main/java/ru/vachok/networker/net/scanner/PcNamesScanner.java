@@ -414,9 +414,8 @@ public class PcNamesScanner implements NetScanService {
             FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
             showScreenMessage();
             FirebaseDatabase.getInstance().getReference(ConstantsFor.BEANNAME_LASTNETSCAN)
-                .setValue(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet(),
-                    (error, ref)->messageToUser
-                        .error("ScannerUSR.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+                .setValue(new Date(), (error, ref)->messageToUser
+                    .error("ScannerUSR.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
             messageToUser.info(this.getClass().getSimpleName(), "logMini", AbstractForms.fromArray(logMini));
             String totPC = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size());
             InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().setProperty(PropertiesNames.TOTPC, totPC);

@@ -559,6 +559,8 @@ public enum ConstantsFor {
 
     public static final String OWNER = "owner";
 
+    public static final String TEMPNET = "tempnet";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
