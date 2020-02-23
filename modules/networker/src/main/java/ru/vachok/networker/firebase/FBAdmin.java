@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.perf.plugin.FirebasePerfExtension;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -41,6 +42,7 @@ public class FBAdmin {
                 .setDatabaseUrl("https://converter-2f70e.firebaseio.com/")
                 .build();
             FirebaseApp.initializeApp(options);
+            new FirebasePerfExtension().setInstrumentationEnabled(true);
         }
 
         catch (IOException e) {

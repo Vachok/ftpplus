@@ -116,7 +116,7 @@ public abstract class SyncData implements DataConnectTo {
     public abstract Map<String, String> makeColumns();
 
     int getLastLocalID(String syncDB) {
-        DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.FIREBASE);
+        DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.TESTING);
         return getDBID(dctInst.getDefaultConnection(syncDB), syncDB);
     }
 

@@ -7,6 +7,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 
+import java.text.MessageFormat;
+
 
 /**
  Class ru.vachok.networker.restapi.message.FirebaseMessage
@@ -27,7 +29,12 @@ public class FirebaseMessage implements MessageToUser {
 
     @Override
     public void info(String s, String s1, String s2) {
-        FirebaseDatabase.getInstance().getReference(s).setValue(s1 + "\n" + s2, new Compl());
+        try {
+            FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            FirebaseDatabase.getInstance().getReference("info").setValue(MessageFormat.format("{0}_{1}\n{2}", s, s1, s2), new Compl());
+        }
     }
 
     @Override

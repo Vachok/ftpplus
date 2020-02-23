@@ -58,7 +58,7 @@ public class RestCTRL {
     }
 
     @GetMapping("/pc")
-    public String uniqPC(HttpServletRequest request) {
+    public String uniqPC(@NotNull HttpServletRequest request) {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REST_PC_UNIQ);
         if (request.getQueryString() != null) {
             return informationFactory.getInfo();
@@ -257,7 +257,7 @@ public class RestCTRL {
         String retStr = "";
         if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
             if (request.getContentType().equals(ConstantsFor.JSON)) {
-                throw new TODOException("23.02.2020 (12:04)");
+                throw new TODOException("23.02.2020 (21:11)");
             }
 
         }
