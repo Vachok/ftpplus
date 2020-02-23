@@ -27,14 +27,12 @@ public enum ConstantsNet {
 
     public static final int DOPC = 250;
 
-    public static final int PPPC = 70;
+    public static final int PPPC = 80;
 
     /**
      Кол-во ноутов NO
      */
-    public static final int NOPC = 50;
-
-    public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
+    public static final int NOPC = 60;
 
     public static final String ONLINE_NOW = "OnlineNow";
 

@@ -39,6 +39,11 @@ import java.util.stream.Stream;
 public class SshActsCTRL {
 
 
+    /**
+     Первоначальная задержка шедулера.
+     */
+    public static final long INIT_DELAY = ConstantsFor.MY_AGE;
+
     private static final String URL_SSHACTS = "/sshacts";
 
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
@@ -146,7 +151,7 @@ public class SshActsCTRL {
         String tempInetAnswer = "null";
         try {
             String flushDNS = UsefulUtilities.ipFlushDNS();
-            tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
+            tempInetAnswer = callFuture.get(INIT_DELAY, TimeUnit.SECONDS);
             messageToUser.info(this.getClass().getSimpleName(), flushDNS, tempInetAnswer);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
