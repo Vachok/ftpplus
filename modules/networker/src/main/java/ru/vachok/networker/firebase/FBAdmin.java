@@ -34,21 +34,21 @@ public class FBAdmin {
         initSDK();
     }
 
-    public String initSDK() {
-        String appID = "";
+    public void initSDK() {
         try (FileInputStream inputStream = new FileInputStream(getCred())) {
             FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(inputStream))
                 .setDatabaseUrl("https://converter-2f70e.firebaseio.com/")
                 .build();
-            FirebaseApp initializeApp = FirebaseApp.initializeApp(options);
-            appID = initializeApp.toString();
+            FirebaseApp.initializeApp(options);
         }
 
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
         catch (Exception e) {
             messageToUser.error("FBAdmin.initSDK", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
-        return appID;
     }
 
     @NotNull

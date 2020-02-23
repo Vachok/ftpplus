@@ -47,7 +47,7 @@ public class FirebaseMessage implements MessageToUser {
 
     @Override
     public void error(String s, String s1, String s2) {
-        FirebaseDatabase.getInstance().getReference(s).setValue(s1 + "\n" + s2, new Compl());
+        FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
     }
 
     @Override

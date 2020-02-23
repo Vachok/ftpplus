@@ -8,19 +8,23 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
  @since 18.06.2019 (15:36) */
 public class SshActsTest {
-    
-    
+
+
     private static final String VELKOMFOOD = "www.velkomfood.ru";
-    
+
     @Test
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
+        sshActs.setAllowDomain("http://www.velkomfood.ru");
         Future<String> domainAddStringFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(sshActs::allowDomainAdd);
         try {
             String domainAddString = domainAddStringFuture.get(30, TimeUnit.SECONDS);
@@ -33,7 +37,7 @@ public class SshActsTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testAllowDomainDel() {
         SshActs sshActs = new SshActs();
@@ -50,7 +54,7 @@ public class SshActsTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testWhatSrvNeed() {
         SshActs sshActs = new SshActs();

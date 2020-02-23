@@ -1,6 +1,7 @@
 package ru.vachok.networker.firebase;
 
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -17,7 +18,8 @@ public class FBAdminTest {
     @Test
     public void testInitSDK() {
         try {
-            String s = fbAdmin.initSDK();
+            String appName = FirebaseApp.getInstance().getName();
+            Assert.assertEquals(appName, "[DEFAULT]");
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
@@ -32,7 +34,6 @@ public class FBAdminTest {
 
     @Test
     public void funcTest() {
-        new FBAdmin().initSDK();
         DatabaseReference networker = FirebaseDatabase.getInstance().getReference("networker");
         networker.setValue("test", (error, ref)->ref.addValueEventListener(new ValueEventListener() {
             @Override

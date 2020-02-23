@@ -92,19 +92,19 @@ public class RestCTRLTest {
         request.setContent(jsonObject.toString().getBytes());
         MockHttpServletResponse response = new MockHttpServletResponse();
         String s = restCTRL.inetTemporary(request, response);
-        Assert.assertTrue(s.contains("10.200.213.233"));
+        Assert.assertTrue(s.contains("INVALID"));
     }
 
     @Test
     public void okTest() {
-        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_LOCAL);
+        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_RUPS);
         RequestBody requestBody = RequestBody.create(getJSONObject().toString().getBytes());
         builder.post(requestBody);
         Call newCall = new OkHttpClient().newCall(builder.build());
         try (Response execute = newCall.execute();
              ResponseBody body = execute.body()) {
             String string = body != null ? body.string() : "null";
-            boolean contains = string.contains("10.200.213.233") || string.contains(ConstantsFor.RULES);
+            boolean contains = string.contains("INVALID") || string.contains(ConstantsFor.RULES);
             Assert.assertTrue(contains, string);
         }
         catch (IOException e) {
@@ -136,7 +136,7 @@ public class RestCTRLTest {
 
     @Test
     public void addDomainRESTTest() {
-        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_LOCAL);
+        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_RUPS);
         JsonObject jsonObject = getJSONObject();
         jsonObject.set("ip", "add");
         jsonObject.set("hour", "-2");
@@ -156,7 +156,7 @@ public class RestCTRLTest {
 
     @Test
     public void getSSHLists() {
-        Request.Builder builder = getBuilder("getsshlists", SRV_LOCAL);
+        Request.Builder builder = getBuilder("getsshlists", SRV_RUPS);
         Call newCall = new OkHttpClient().newCall(builder.build());
         try (Response execute = newCall.execute();
              ResponseBody body = execute.body()) {
