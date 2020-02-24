@@ -17,7 +17,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
-import ru.vachok.networker.firebase.NewPCListener;
+import ru.vachok.networker.firebase.RealTimeChildListener;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
@@ -421,7 +421,7 @@ public class PcNamesScanner implements NetScanService {
         private void scanIt() {
             ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
             linksMap.clear();
-            new NewPCListener().listenNewPC();
+            new RealTimeChildListener().listenNewPC();
             InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
             props.setProperty(PropertiesNames.ONLINEPC, "0");
             getExecution();
