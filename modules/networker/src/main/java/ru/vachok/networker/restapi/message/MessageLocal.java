@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.text.MessageFormat;
@@ -113,11 +112,6 @@ public class MessageLocal implements MessageToUser {
         log("warn");
     }
 
-    /**
-     @param typeLog info, warn or err
-     @throws NetworkerStopException if some message is null
-     @see MessageLocalTest#testWrireLogToFile()
-     */
     private void writeToFile(@NotNull String typeLog) {
         String[] messages = {bodyMsg, titleMsg, headerMsg};
         for (String s : messages) {

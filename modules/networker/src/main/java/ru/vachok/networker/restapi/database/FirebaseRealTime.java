@@ -10,6 +10,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
@@ -51,5 +52,11 @@ public class FirebaseRealTime implements DataConnectTo {
         public void onComplete(DatabaseError error, DatabaseReference ref) {
             messageToUser.error("Compl.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
         }
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", FirebaseRealTime.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
 }

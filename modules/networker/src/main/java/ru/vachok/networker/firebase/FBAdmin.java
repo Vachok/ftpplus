@@ -45,11 +45,8 @@ public class FBAdmin {
             new FirebasePerfExtension().setInstrumentationEnabled(true);
         }
 
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
         catch (Exception e) {
-            messageToUser.error("FBAdmin.initSDK", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            System.err.println(AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
 
