@@ -6,8 +6,7 @@ package ru.vachok.networker.ad.common;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -16,57 +15,58 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
  @since 17.06.2019 (14:41) */
-@Ignore
 public class OldBigFilesInfoCollectorTest {
-
-
+    
+    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-
+    
     private final OldBigFilesInfoCollector infoCollector = new OldBigFilesInfoCollector();
-
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
     }
-
+    
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-
+    
     @Test
     public void testCall() {
         String startPath = infoCollector.getStartPath();
         Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new");
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(infoCollector);
         try {
-            submit.get(20, TimeUnit.SECONDS);
+            submit.get();
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        catch (InterruptedException | ExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
     }
-
+    
     @Test
     public void testTestToString() {
         Assert.assertTrue(infoCollector.toString().contains("OldBigFilesInfoCollector{"), infoCollector.toString());
     }
-
+    
     @Test
-    public void realCall(){
+    public void realCall() {
         OldBigFilesInfoCollector oldBigFilesInfoCollector = new OldBigFilesInfoCollector();
         oldBigFilesInfoCollector.call();
     }
+    
     @Test
-    public void testInDB(){
+    public void testInDB() {
         MysqlDataSource dataSource = DataConnectTo.getDefaultI().getDataSource();
         dataSource.setDatabaseName(ModelAttributeNames.COMMON);
         try (Connection connection = dataSource.getConnection()) {
@@ -83,17 +83,17 @@ public class OldBigFilesInfoCollectorTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-
+    
     @Test
     public void testConfirm() {
         try {
             String confirm = MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
-                .confirm(this.getClass().getSimpleName(), "Do you want to clean?", "msg");
+                    .confirm(this.getClass().getSimpleName(), "Do you want to clean?", "msg");
             System.out.println("confirm = " + confirm);
         }
         catch (UnsupportedOperationException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-
+        
     }
 }

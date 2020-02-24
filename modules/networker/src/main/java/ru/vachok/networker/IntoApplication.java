@@ -83,7 +83,6 @@ public class IntoApplication {
     }
 
     static void checkTray() {
-
         Optional optionalTray = SystemTrayHelper.getI();
         try {
             if (IS_TRAY_SUPPORTED && optionalTray.isPresent()) {
