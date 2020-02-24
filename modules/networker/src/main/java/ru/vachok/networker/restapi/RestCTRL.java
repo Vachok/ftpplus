@@ -4,9 +4,6 @@ package ru.vachok.networker.restapi;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.ad.inet.TemporaryFullInternet;
+import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -22,7 +19,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
-import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -38,7 +34,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -172,13 +167,14 @@ public class RestCTRL {
      */
     @PostMapping("/tempnet")
     public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
+        TempInetRestControllerHelper tempInetRestControllerHelper = new TempInetRestControllerHelper();
         boolean ipForInetValid = checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION));
         String contentType = request.getContentType(); //application/json
         response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
-        byte[] contentBytes = new byte[request.getContentLength()];
         String retStr;
         if (contentType.equalsIgnoreCase(ConstantsFor.JSON) & ipForInetValid) {
-            retStr = getInetResult(request, contentBytes);
+            JsonObject jsonObject = getJSON(readRequestBytes(request));
+            retStr = tempInetRestControllerHelper.getInetResult(jsonObject);
         }
         else {
             retStr = "INVALID USER";
@@ -216,8 +212,8 @@ public class RestCTRL {
     }
 
     @NotNull
-    private String getInetResult(@NotNull HttpServletRequest request, byte[] contentBytes) {
-        String retStr = MessageFormat.format("{0} {1}", ConstantsFor.JSON, request.getHeader(ConstantsFor.AUTHORIZATION));
+    private byte[] readRequestBytes(@NotNull HttpServletRequest request) {
+        byte[] contentBytes = new byte[request.getContentLength()];
         try (ServletInputStream inputStream = request.getInputStream()) {
             int iRead = inputStream.available();
             while (iRead > 0) {
@@ -225,31 +221,9 @@ public class RestCTRL {
             }
         }
         catch (IOException e) {
-            retStr = AbstractForms.fromArray(e);
+            messageToUser.error("RestCTRL.readRequestBytes", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
-        JsonObject object = getJSON(contentBytes);
-
-        String inputIP = object.get("ip").asString();
-        String hourAsString = object.get("hour").asString();
-        long hoursToOpenInet = 0;
-        if (hourAsString != null) {
-            hoursToOpenInet = Long.parseLong(hourAsString);
-        }
-        else if (hoursToOpenInet > TimeUnit.DAYS.toHours(365)) {
-            hoursToOpenInet = TimeUnit.DAYS.toHours(365);
-        }
-        String option = object.get(ConstantsFor.OPTION).asString();
-        String whocalls = object.get(ConstantsFor.WHOCALLS).asString();
-
-        String[] params = {inputIP, String.valueOf(hoursToOpenInet), whocalls};
-
-        if (hoursToOpenInet == -2) {
-            option = ConstantsFor.DOMAIN;
-            params = new String[]{inputIP, whocalls};
-        }
-        String tempInetResult = getAnswer(option, params);
-
-        return MessageFormat.format("{0}\n{1}", retStr, tempInetResult);
+        return contentBytes;
     }
 
     @PostMapping("/ssh")
@@ -257,7 +231,7 @@ public class RestCTRL {
         String retStr = "";
         if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
             if (request.getContentType().equals(ConstantsFor.JSON)) {
-                throw new TODOException("23.02.2020 (21:11)");
+                throw new TODOException("24.02.2020 (11:21)");
             }
 
         }
@@ -274,20 +248,6 @@ public class RestCTRL {
         return pfLists.toString();
     }
 
-    private String getAnswer(@NotNull String option, String... params) {
-        if (ConstantsFor.DOMAIN.equals(option)) {
-            String s = new SshActs(params[0], params[1]).allowDomainAdd();
-            FirebaseDatabase.getInstance().getReference(params[0]).setValue(params[1], new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError error, DatabaseReference ref) {
-                    messageToUser.info(getClass().getSimpleName(), "tempnet", ref.getKey());
-                    messageToUser.error("RestCTRL.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
-                }
-            });
-            return s; //{"ip":"delete","option":"domain","whocalls":"http://www.velkomfood.ru"}
-        }
-        return new TemporaryFullInternet(params[0], Long.parseLong(params[1]), "add", params[2]).call();
-    }
 
     @Override
     public String toString() {

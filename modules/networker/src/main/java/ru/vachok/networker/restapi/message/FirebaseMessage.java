@@ -6,6 +6,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.text.MessageFormat;
 
@@ -54,7 +55,12 @@ public class FirebaseMessage implements MessageToUser {
 
     @Override
     public void error(String s, String s1, String s2) {
-        FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
+        try {
+            FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            FirebaseDatabase.getInstance().getReference(PropertiesNames.ERROR).setValue(s1 + "\n" + s2, new Compl());
+        }
     }
 
     @Override
