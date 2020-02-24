@@ -97,7 +97,6 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     }
 
     private void ftpUploadTask() {
-        messageToUser.warn(PropertiesNames.SYS_OSNAME_LOWERCASE);
         AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
         try {
             String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + launchRegRuFTPLibsUploader();

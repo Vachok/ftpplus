@@ -4,9 +4,6 @@ package ru.vachok.networker;
 
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -17,6 +14,7 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
+import ru.vachok.networker.firebase.RealTimeChildListener;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.ssh.Tracerouting;
@@ -25,6 +23,7 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -128,19 +127,13 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     private void toFirebase() {
-        FirebaseApp app = new AppComponents().getFirebaseApp();
-        messageToUser.warn(getClass().getSimpleName(), app.getName(), app.getOptions().getDatabaseUrl());
-        try {
-            UserRecord byMail = FirebaseAuth.getInstance().getUserByEmail(ConstantsFor.VACHOK_VACHOK_RU);
-            System.out.println("byMail = " + byMail);
-        }
-        catch (FirebaseAuthException e) {
-            messageToUser.error("AppInfoOnLoad.toFirebase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC()).setValue(new Date(), (error, ref)->{
+        FirebaseApp app = AppComponents.getFirebaseApp();
+        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC()).setValue(MessageFormat
+            .format("{0} : {1}", new Date().toString(), app.getOptions().getProjectId()), (error, ref)->{
             String s = ref.toString();
             System.out.println("s = " + s);
         });
+        FirebaseDatabase.getInstance().getReference().addChildEventListener(new RealTimeChildListener());
     }
 
     @Override
