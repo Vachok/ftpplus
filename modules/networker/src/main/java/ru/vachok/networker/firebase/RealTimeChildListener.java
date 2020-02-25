@@ -21,27 +21,30 @@ import java.sql.SQLException;
 public class RealTimeChildListener implements ChildEventListener {
 
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.EMAIL, RealTimeChildListener.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RealTimeChildListener.class.getSimpleName());
 
     @Override
     public void onChildAdded(@NotNull DataSnapshot snapshot, String previousChildName) {
         if (snapshot.getKey().toLowerCase().contains(ModelAttributeNames.NEWPC)) {
             String value = snapshot.getValue(String.class);
-            messageToUser.info(getClass().getSimpleName(), previousChildName, value);
+            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
+                .info(getClass().getSimpleName() + " db send: " + sendValueToSQLDatabase(snapshot.getKey(), snapshot.getValue()
+                    .toString()), previousChildName, value);
+
         }
     }
 
     @Override
     public void onChildChanged(@NotNull DataSnapshot snapshot, String previousChildName) {
-        if (snapshot.getKey().equals("RemoteConfigInformer")) {
-            sendValueToSQLDatabase(String.valueOf(snapshot.getValue()));
-        }
+        messageToUser.info(String.valueOf(snapshot.getValue()));
+        messageToUser.info(previousChildName);
     }
 
-    protected boolean sendValueToSQLDatabase(String value) {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("firebase.visits");
-             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `firebase`.`visits` (`deviceid`) VALUES (?)")) {
-            preparedStatement.setString(1, String.valueOf(value));
+    protected boolean sendValueToSQLDatabase(String key, String value) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.newpc");
+             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `velkom`.`newpc` (`ip`,`name`) VALUES (?,?)")) {
+            preparedStatement.setString(1, key);
+            preparedStatement.setString(2, value);
             int i = preparedStatement.executeUpdate();
             return i > 0;
         }
