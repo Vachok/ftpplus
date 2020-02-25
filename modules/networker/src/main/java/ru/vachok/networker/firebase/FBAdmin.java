@@ -35,7 +35,7 @@ public class FBAdmin {
         initSDK();
     }
 
-    public void initSDK() {
+    private void initSDK() {
         try (FileInputStream inputStream = new FileInputStream(getCred())) {
             FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(inputStream))
