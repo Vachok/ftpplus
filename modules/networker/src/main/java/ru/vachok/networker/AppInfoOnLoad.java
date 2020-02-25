@@ -134,6 +134,8 @@ public class AppInfoOnLoad implements Runnable {
             System.out.println("s = " + s);
         });
         FirebaseDatabase.getInstance().getReference().addChildEventListener(new RealTimeChildListener());
+        FirebaseDatabase.getInstance().getReference("test").removeValue((error, ref)->messageToUser
+            .error("AppInfoOnLoad.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
     }
 
     @Override
