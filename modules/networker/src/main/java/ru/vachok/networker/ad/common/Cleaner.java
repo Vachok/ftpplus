@@ -85,27 +85,40 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
             Path sourceDel = indexPath.get(index);
             Path copyPath = Paths.get("null");
             try {
-                
-                copyPath = Files.copy(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
+                copyPath = Files.move(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
                         .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
                 if (copyPath.toFile().exists()) {
-                    Files.deleteIfExists(sourceDel);
+                    messageToUser.info(getClass().getSimpleName(), sourceDel.toAbsolutePath().toString(), "Moved " + copyPath.toAbsolutePath()
+                            .toString() + ", db removed: " + removeFromDB(index));
                 }
             }
             catch (IOException e) {
                 messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", e.getMessage() + Thread.currentThread().getState().name());
             }
             finally {
-                messageToUser.warning(this.getClass().getSimpleName(), "makeDeletions", MessageFormat
-                        .format("{0} {1}:{2} remain {3}", sourceDel.normalize().toAbsolutePath().toString(), String.valueOf(sourceDel.toFile().exists()), String
-                                .valueOf(copyPath.toFile().exists()), limitOfDeleteFiles(indexPath.size()) - i));
+                String report = MessageFormat.format("{0} {1}:{2} remain {3}",
+                        sourceDel.normalize().toAbsolutePath().toString(),
+                        String.valueOf(sourceDel.toFile().exists()), String.valueOf(copyPath.toFile().exists()),
+                        limitOfDeleteFiles(indexPath.size()) - i);
+                messageToUser.info(getClass().getSimpleName(), "makeDeletions", report);
             }
         }
         return "";
     }
     
+    private int removeFromDB(int idRec) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
+             PreparedStatement preparedStatement = connection.prepareStatement(String.format("UPDATE `common`.`oldfiles` SET `moved`='1' WHERE  `idrec`=%d", idRec))) {
+            return preparedStatement.executeUpdate();
+    
+        }
+        catch (SQLException e) {
+            messageToUser.warn(Cleaner.class.getSimpleName(), "removeFromDB", e.getMessage() + Thread.currentThread().getState().name());
+            return -666;
+        }
+    }
+    
     private int limitOfDeleteFiles(int stringsInLogFile) {
-        
         if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.SECONDS.toMillis(1)) {
             stringsInLogFile = (stringsInLogFile / 100) * 10;
         }
