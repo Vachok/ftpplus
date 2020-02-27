@@ -124,12 +124,14 @@ public class AppInfoOnLoad implements Runnable {
 
     private void toFirebase() {
         FirebaseApp app = AppComponents.getFirebaseApp();
-        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC().replace(".", ":")).setValue(MessageFormat
-                .format("{0} : {1}", new Date().toString(), app.toString()), (error, ref)->{
-            String s = ref.toString();
-            System.out.println("s = " + s);
-        });
+        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC().replace(".", ":"))
+                .setValue(MessageFormat.format("{0} : {1}", new Date().toString(), app.toString()), (error, ref)->{
+                    String s = ref.toString();
+                    System.out.println("s = " + s);
+                });
+    
         FirebaseDatabase.getInstance().getReference().addChildEventListener(new RealTimeChildListener());
+    
         if (!UsefulUtilities.thisPC().contains("rups")) {
             FirebaseDatabase.getInstance().getReference("test")
                     .removeValue((error, ref)->messageToUser

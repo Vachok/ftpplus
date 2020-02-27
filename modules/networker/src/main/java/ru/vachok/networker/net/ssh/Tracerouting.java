@@ -3,27 +3,37 @@
 package ru.vachok.networker.net.ssh;
 
 
+import com.eclipsesource.json.JsonObject;
+import com.google.firebase.database.*;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 
 /**
+ @see TraceroutingTest
  @since 24.05.2019 (9:30) */
 public class Tracerouting implements Callable<String> {
     
     
     private static final Pattern COMPILE = Pattern.compile(";");
     
+    private static final String DB_REFERENCE = "chswitch";
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, Tracerouting.class.getSimpleName());
+    
     @Override
     public String call() throws Exception {
-        return getProviderTraceStr();
+        String providerTraceStr = getProviderTraceStr();
+        FirebaseDatabase.getInstance().getReference(DB_REFERENCE).addValueEventListener(new Tracerouting.ProviderChangeListener(providerTraceStr));
+        return providerTraceStr;
     }
     
     /**
@@ -80,7 +90,7 @@ public class Tracerouting implements Callable<String> {
         
         SSHFactory sshFactory = new SSHFactory.Builder(new SshActs().whatSrvNeed(), "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
-        
+    
         try {
             return submit.get(10, TimeUnit.SECONDS);
         }
@@ -89,4 +99,34 @@ public class Tracerouting implements Callable<String> {
         }
     }
     
+    private static class ProviderChangeListener implements ValueEventListener {
+        
+        
+        private final String providerTraceStr;
+        
+        public ProviderChangeListener(String providerTraceStr) {
+            this.providerTraceStr = providerTraceStr;
+        }
+        
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
+            if (!snapshot.getValue(String.class).equalsIgnoreCase(providerTraceStr)) {
+                FirebaseDatabase.getInstance().getReference(DB_REFERENCE)
+                        .setValue(providerTraceStr, (error, ref)->messageToUser.warn(Tracerouting.class.getSimpleName(), "onComplete", error.getMessage()));
+            }
+        }
+        
+        @Override
+        public void onCancelled(DatabaseError error) {
+            messageToUser.warn(Tracerouting.class.getSimpleName(), "onCancelled", error.getMessage());
+        }
+        
+        @Override
+        public String toString() {
+            final JsonObject jsonObject = new JsonObject();
+            jsonObject.add("className", "ProviderChangeListener");
+            jsonObject.add("providerTraceStr", providerTraceStr);
+            return jsonObject.toString();
+        }
+    }
 }
