@@ -6,7 +6,7 @@ package ru.vachok.networker.net.ssh;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
  SSH-actions class
 
  @since 29.11.2018 (13:01) */
-@SuppressWarnings({"ClassWithTooManyFields"})
 @Service(ModelAttributeNames.ATT_SSH_ACTS)
 @Scope(ConstantsFor.PROTOTYPE)
 public class SshActs {
@@ -58,7 +57,7 @@ public class SshActs {
     private String inet;
 
     private String numOfHours =
-            String.valueOf(Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
+        String.valueOf(Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
 
     /**
      Разрешить адрес
@@ -79,14 +78,7 @@ public class SshActs {
 
     private boolean squid;
 
-    private boolean squidLimited;
-
-    private boolean tempFull;
-
     private boolean vipNet;
-
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
 
     public String getNumOfHours() {
         try {
@@ -151,20 +143,8 @@ public class SshActs {
         return squid;
     }
 
-    public boolean isSquidLimited() {
-        return squidLimited;
-    }
-
-    public boolean isTempFull() {
-        return tempFull;
-    }
-
     public boolean isVipNet() {
         return vipNet;
-    }
-
-    public void setIpAddrOnly(String ipAddrOnly) {
-        this.ipAddrOnly = ipAddrOnly;
     }
 
     public SshActs(String ipAddrOnly, String allowDomain) {
@@ -176,39 +156,86 @@ public class SshActs {
 
     }
 
+    /**
+     @see SshActsTest#testAllowDomainAdd()
+     */
     public String allowDomainAdd() {
+        String result;
         if (ipAddrOnly != null && ipAddrOnly.equalsIgnoreCase(ConstantsFor.DELETE)) {
             this.delDomain = allowDomain;
-            return allowDomainDel();
+            result = allowDomainDel();
         }
-        this.allowDomain = Objects.requireNonNull(checkDName());
-        if (allowDomain.equalsIgnoreCase(ConstantsFor.ANS_DOMNAMEEXISTS)) {
-            return allowDomain;
+        else {
+            this.allowDomain = Objects.requireNonNull(checkDName());
+            if (allowDomain.equalsIgnoreCase(ConstantsFor.ANS_DOMNAMEEXISTS)) {
+                result = allowDomain;
+            }
+            else {
+                String resolvedIp = resolveIp(allowDomain);
+                String commandSSH = new StringBuilder()
+                    .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL))
+                    .append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
+                    .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, ConstantsFor.ANS_DNAMENULL))
+                    .append(" #")
+                    .append(allowDomain)
+                    .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
+                    .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
+                    .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
+
+                    .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append("\"")
+                    .append(" >> /etc/pf/allowdomain;")
+                    .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(resolvedIp).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
+                    .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
+                    .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
+                    .append(ConstantsFor.SSH_INITPF).toString();
+                String call = "<b>" + new SSHFactory.Builder(whatSrvNeed(), commandSSH, getClass().getSimpleName()).build().call() + "</b>";
+                try {
+                    call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolvedIp) + "</font>";
+                }
+                catch (RuntimeException e) {
+                    call = AbstractForms.fromArray(e);
+                }
+                FileSystemWorker.writeFile(allowDomain.replaceFirst("\\Q.\\E", "") + ".log", call);
+                result = call.replace("\n", "<br>")
+                    .replace(allowDomain, "<font color=\"yellow\">" + allowDomain + "</font>")
+                    .replace(resolvedIp, "<font color=\"yellow\">" + resolvedIp + "</font>");
+            }
         }
+        return result;
+    }
 
-        String resolvedIp = resolveIp(allowDomain);
-
-        String commandSSH = new StringBuilder()
-                .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
-                .append(ConstantsFor.SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, ConstantsFor.ANS_DNAMENULL))
-                .append(" #")
-                .append(allowDomain)
+    @SuppressWarnings("DuplicateStringLiteralInspection")
+    public String allowDomainDel() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(delDomain).append("<p>");
+        this.delDomain = checkDNameDel();
+        if (delDomain.equalsIgnoreCase("No domain to delete.")) {
+            return delDomain;
+        }
+        Optional<String> delDomainOpt = Optional.of(delDomain);
+        delDomainOpt.ifPresent(x->{
+            Optional<String> resolvedIp = Optional.of(resolveIp(x));
+            StringBuilder sshComBuilder = new StringBuilder()
+                .append(ConstantsFor.SSH_SUDO_GREP_V)
+                .append(x)
+                .append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
+                .append(ConstantsFor.SSH_SUDO_GREP_V);
+            resolvedIp.ifPresent(stringBuilder::append);
+            sshComBuilder.append(" #")
+                .append(x)
                 .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
                 .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
                 .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
-
-            .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append("\"")
-                .append(" >> /etc/pf/allowdomain;")
-                .append(ConstantsFor.SSH_SUDO_ECHO).append("\"").append(resolvedIp).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
                 .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
                 .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
                 .append(ConstantsFor.SSH_INITPF).toString();
 
-        String call = "<b>" + new SSHFactory.Builder(whatSrvNeed(), commandSSH, getClass().getSimpleName()).build().call() + "</b>";
-        call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolvedIp) + "</font>";
-        FileSystemWorker.writeFile(allowDomain.replaceFirst("\\Q.\\E", "") + ".log", call);
-        return call.replace("\n", "<br>")
-                .replace(allowDomain, "<font color=\"yellow\">" + allowDomain + "</font>").replace(resolvedIp, "<font color=\"yellow\">" + resolvedIp + "</font>");
+            String resStr = new SSHFactory.Builder(whatSrvNeed(), sshComBuilder.toString(), getClass().getSimpleName()).build().call();
+
+            stringBuilder.append(resStr.replace("\n", "<br>\n"));
+        });
+        FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", stringBuilder.toString());
+        return stringBuilder.toString();
     }
 
     private String checkDName() {
@@ -284,40 +311,6 @@ public class SshActs {
         }
     }
 
-    @SuppressWarnings("DuplicateStringLiteralInspection")
-    public String allowDomainDel() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(delDomain).append("<p>");
-        this.delDomain = checkDNameDel();
-        if (delDomain.equalsIgnoreCase("No domain to delete.")) {
-            return delDomain;
-        }
-        Optional<String> delDomainOpt = Optional.of(delDomain);
-        delDomainOpt.ifPresent(x->{
-            Optional<String> resolvedIp = Optional.of(resolveIp(x));
-            StringBuilder sshComBuilder = new StringBuilder()
-                    .append(ConstantsFor.SSH_SUDO_GREP_V)
-                    .append(x)
-                    .append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
-                    .append(ConstantsFor.SSH_SUDO_GREP_V);
-            resolvedIp.ifPresent(stringBuilder::append);
-            sshComBuilder.append(" #")
-                    .append(x)
-                    .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
-                    .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
-                    .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
-                    .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
-                    .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
-                    .append(ConstantsFor.SSH_INITPF).toString();
-
-            String resStr = new SSHFactory.Builder(whatSrvNeed(), sshComBuilder.toString(), getClass().getSimpleName()).build().call();
-
-            stringBuilder.append(resStr.replace("\n", "<br>\n"));
-        });
-        FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", stringBuilder.toString());
-        return stringBuilder.toString();
-    }
-
     private String checkDNameDel() {
         try {
             this.delDomain = delDomain.replace("http://", ".");
@@ -361,38 +354,29 @@ public class SshActs {
     }
 
     public void setAllFalse() {
-        this.squidLimited = false;
         this.squid = false;
-        this.tempFull = false;
         this.vipNet = false;
     }
 
     public void setSquid() {
         this.squid = true;
         this.vipNet = false;
-        this.tempFull = false;
-        this.squidLimited = false;
     }
 
     public void setSquidLimited() {
         this.squid = false;
         this.vipNet = false;
-        this.tempFull = false;
-        this.squidLimited = true;
     }
 
     public void setTempFull() {
-        this.tempFull = true;
         this.squid = false;
         this.vipNet = false;
-        this.squidLimited = false;
+
     }
 
     public void setVipNet() {
         this.vipNet = true;
         this.squid = false;
-        this.tempFull = false;
-        this.squidLimited = false;
     }
 
     @Override
@@ -408,41 +392,4 @@ public class SshActs {
         sb.append('}');
         return sb.toString();
     }
-
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    @NotNull
-    private String execByWhatListSwitcher(int whatList, boolean iDel) {
-        if (iDel) {
-            return new StringBuilder()
-                .append(ConstantsFor.SSH_SUDO_GREP_V)
-                .append(Objects.requireNonNull(pcName))
-                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo cp /etc/pf/vipnet_tmp /etc/pf/vipnet;sudo pfctl -f /etc/srv-nat.conf;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/squid > /etc/pf/squid_tmp;sudo cp /etc/pf/squid_tmp /etc/pf/squid;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                    .append("' /etc/pf/squidlimited > /etc/pf/squidlimited_tmp;sudo cp /etc/pf/squidlimited_tmp /etc/pf/squidlimited;sudo grep -v '")
-                    .append(Objects.requireNonNull(ipAddrOnly))
-                    .append("' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo " +
-                            "/etc/initpf.fw").toString();
-        }
-        else {
-            this.comment = Objects.requireNonNull(ipAddrOnly) + comment;
-            String echoSudo = ConstantsFor.SSH_SUDO_ECHO;
-            switch (whatList) {
-                case 1:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/vipnet;sudo /etc/initpf.fw;";
-                case 2:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/squid;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
-                case 3:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/squidlimited;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
-                case 4:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/tempfull;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
-                default:
-                    return "ls";
-            }
-        }
-    }
-
 }

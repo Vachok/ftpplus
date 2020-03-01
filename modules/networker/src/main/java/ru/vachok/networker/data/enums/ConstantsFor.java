@@ -534,6 +534,10 @@ public enum ConstantsFor {
 
     public static final String NETWORKER = "ru.vachok.networker";
 
+    public static final String SSHADD = "/sshadd";
+
+    public static final String SSHCOM_GETALLOWDOMAINS = "sudo cat /etc/pf/allowdomain && exit";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

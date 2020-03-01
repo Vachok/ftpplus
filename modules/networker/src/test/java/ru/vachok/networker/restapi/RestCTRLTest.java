@@ -28,15 +28,15 @@ public class RestCTRLTest {
 
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(RestCTRLTest.class.getSimpleName(), System.nanoTime());
 
-    private InformationFactory instance;
-
-    private RestCTRL restCTRL;
-
     private static final String SRV_VPS = "http://194.67.86.51:8880/";
 
     private static final String SRV_RUPS = "http://rups00.eatmeat.ru:8880/";
 
     private static final String SRV_LOCAL = "http://10.10.111.65:8880/";
+
+    private InformationFactory instance;
+
+    private RestCTRL restCTRL;
 
     @BeforeMethod
     public void initInst() {
@@ -97,7 +97,7 @@ public class RestCTRLTest {
 
     @Test
     public void okTest() {
-        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_RUPS);
+        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET);
         RequestBody requestBody = RequestBody.create(getJSONObject().toString().getBytes());
         builder.post(requestBody);
         Call newCall = new OkHttpClient().newCall(builder.build());
@@ -113,13 +113,13 @@ public class RestCTRLTest {
     }
 
     @NotNull
-    private Request.Builder getBuilder(String urlPart, String srvName) {
+    private Request.@NotNull Builder getBuilder(String urlPart) {
         String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
         OkHttpClient okHttpClient = new OkHttpClient();
         Request.Builder builder = new Request.Builder();
-        builder.url(srvName + urlPart);
+        builder.url(RestCTRLTest.SRV_LOCAL + urlPart);
 //        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
-        builder.addHeader(ConstantsFor.AUTHORIZATION, "IAn51aza2rUeegZX6WIH8ozCkBP2");
+        builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
         builder.addHeader("Content-Type", ConstantsFor.JSON);
         return builder;
     }
@@ -135,8 +135,47 @@ public class RestCTRLTest {
     }
 
     @Test
+    public void testSshCommandAddDomain() {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        Request.Builder builder = getBuilder(ConstantsFor.SSHADD);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("domain", "https://www.eatmeat.ru/");
+        jsonObject.add("option", "add");
+        RequestBody body = RequestBody.create(jsonObject.toString().getBytes());
+        builder.post(body);
+        try (Response execute = okHttpClient.newCall(builder.build()).execute();
+             ResponseBody resBody = execute.body()) {
+            Assert.assertNotNull(resBody);
+            String string = resBody.string();
+            Assert.assertTrue(string.contains("eatmeat"), string);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+
+    @Test
+    public void sshCommandAddDomain() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("domain", "https://www.eatmeat.ru/");
+        jsonObject.add("option", "add");
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setContentType(ConstantsFor.JSON);
+        request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        request.setContent(jsonObject.toString().getBytes());
+        String s = restCTRL.sshCommandAddDomain(request, new MockHttpServletResponse());
+        System.out.println("s = " + s);
+    }
+
+    @Test
+    public void testTestToString() {
+        String s = restCTRL.toString();
+        Assert.assertTrue(s.contains("RestCTRL["));
+    }
+
+    @Test
     public void addDomainRESTTest() {
-        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET, SRV_RUPS);
+        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET);
         JsonObject jsonObject = getJSONObject();
         jsonObject.set("ip", "add");
         jsonObject.set("hour", "-2");
@@ -147,7 +186,7 @@ public class RestCTRLTest {
         Call call = new OkHttpClient().newCall(builder.build());
         try (Response execute = call.execute();
              ResponseBody responseBody = execute.body()) {
-            Assert.assertFalse(responseBody.string().isEmpty());
+            Assert.assertFalse(responseBody != null && responseBody.string().isEmpty(), requestBody.toString());
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
@@ -156,12 +195,12 @@ public class RestCTRLTest {
 
     @Test
     public void getSSHLists() {
-        Request.Builder builder = getBuilder("getsshlists", SRV_RUPS);
+        Request.Builder builder = getBuilder("getsshlists");
         Call newCall = new OkHttpClient().newCall(builder.build());
         try (Response execute = newCall.execute();
              ResponseBody body = execute.body()) {
-            String string = body != null ? body.string() : null;
-            System.out.println("string = " + string);
+            String string = body != null ? body.string() : "null";
+            Assert.assertTrue(string.contains("### TEST ###"), string);
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));

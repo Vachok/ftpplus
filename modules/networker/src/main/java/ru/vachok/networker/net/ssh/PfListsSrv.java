@@ -13,7 +13,6 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 
 import java.io.File;
@@ -35,7 +34,7 @@ public class PfListsSrv {
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
 
     private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PfListsSrv.class.getSimpleName());
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PfListsSrv.class.getSimpleName());
 
     /**
      {@link PfLists}
@@ -50,7 +49,7 @@ public class PfListsSrv {
      @see PfListsCtr#runCommand(org.springframework.ui.Model, PfListsSrv)
      @see #runCom()
      */
-    @NotNull private String commandForNatStr = "sudo cat /etc/pf/allowdomain && exit";
+    @NotNull private String commandForNatStr = ConstantsFor.SSHCOM_GETALLOWDOMAINS;
 
     /**
      @return {@link #commandForNatStr}
@@ -60,18 +59,17 @@ public class PfListsSrv {
         return commandForNatStr;
     }
 
+    /**
+     @param commandForNatStr {@link #commandForNatStr}
+     */
+    @SuppressWarnings("unused")
+    public void setCommandForNatStr(@NotNull String commandForNatStr) {
+        this.commandForNatStr = commandForNatStr;
+    }
+
     @Contract(pure = true)
     public static String getDefaultConnectSrv() {
         return DEFAULT_CONNECT_SRV;
-    }
-
-    String runCom() {
-        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
-            return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
-        }
-        else {
-            return "22.06.2019 (8:01)";
-        }
     }
 
     /**
@@ -86,22 +84,9 @@ public class PfListsSrv {
         this.pfListsInstAW = pfLists;
     }
 
-    /**
-     @param commandForNatStr {@link #commandForNatStr}
-     */
-    @SuppressWarnings("unused")
-    public void setCommandForNatStr(@NotNull String commandForNatStr) {
-        this.commandForNatStr = commandForNatStr;
-    }
+    public String runCom() {
+        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("PfListsSrv{");
-        sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
-        //noinspection DuplicateStringLiteralInspection
-        sb.append(", pfListsInstAW=").append(pfListsInstAW);
-        sb.append('}');
-        return sb.toString();
     }
 
     /**
@@ -170,6 +155,16 @@ public class PfListsSrv {
         Future<String> checkUniqueInListsFuture = AppComponents.threadConfig().getTaskExecutor().submit(new AccessListsCheckUniq());
         String inetUniqStr = checkUniqueInListsFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PfListsSrv{");
+        sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
+        //noinspection DuplicateStringLiteralInspection
+        sb.append(", pfListsInstAW=").append(pfListsInstAW);
+        sb.append('}');
+        return sb.toString();
     }
 
     private static String whatSrv() {

@@ -36,7 +36,7 @@ public class TempInetRestControllerHelperTest {
         object.add("hour", "1");
         object.add(ConstantsFor.OPTION, "add");
         object.add(ConstantsFor.WHOCALLS, "test");
-        String resultAdd = tempInetRestControllerHelper.getInetResult(object);
+        String resultAdd = tempInetRestControllerHelper.getResult(object);
         boolean assertion = resultAdd.contains("exist!") || resultAdd.contains("ok");
         Assert.assertTrue(assertion, resultAdd);
     }

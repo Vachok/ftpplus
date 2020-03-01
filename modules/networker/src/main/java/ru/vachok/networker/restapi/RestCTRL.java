@@ -13,7 +13,6 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
@@ -167,14 +166,14 @@ public class RestCTRL {
      */
     @PostMapping("/tempnet")
     public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
-        TempInetRestControllerHelper tempInetRestControllerHelper = new TempInetRestControllerHelper();
+        RestApiHelper tempInetRestControllerHelper = RestApiHelper.getInstance(TempInetRestControllerHelper.class.getSimpleName());
         boolean ipForInetValid = checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION));
         String contentType = request.getContentType(); //application/json
         response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
         String retStr;
         if (contentType.equalsIgnoreCase(ConstantsFor.JSON) & ipForInetValid) {
             JsonObject jsonObject = getJSON(readRequestBytes(request));
-            retStr = tempInetRestControllerHelper.getInetResult(jsonObject);
+            retStr = tempInetRestControllerHelper.getResult(jsonObject);
         }
         else {
             retStr = "INVALID USER";
@@ -226,16 +225,20 @@ public class RestCTRL {
         return contentBytes;
     }
 
-    @PostMapping("/ssh")
-    public String sshCommand(@NotNull HttpServletRequest request, HttpServletResponse response) {
+    /**
+     @see RestCTRLTest#addDomainRESTTest()
+     */
+    @PostMapping(ConstantsFor.SSHADD)
+    public String sshCommandAddDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
         String retStr = "";
         if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
             if (request.getContentType().equals(ConstantsFor.JSON)) {
-                throw new TODOException("24.02.2020 (11:21)");
+                retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(getJSON(readRequestBytes(request)));
+                messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
             }
 
         }
-        return retStr;
+        return retStr + "\n" + getAllowDomains();
     }
 
     @GetMapping("/getsshlists")
@@ -248,6 +251,12 @@ public class RestCTRL {
         return pfLists.toString();
     }
 
+    @GetMapping("/sshgetdomains")
+    public String getAllowDomains() {
+        PfListsSrv bean = (PfListsSrv) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
+        return bean.runCom();
+    }
 
     @Override
     public String toString() {
