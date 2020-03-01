@@ -6,15 +6,12 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.NetworkerStopException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 
 /**
@@ -74,22 +71,11 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
             case TESTING:
                 return new TesterDB65SQL();
             case FIREBASE:
-                return (DataConnectTo) Objects.requireNonNull(getH2DB(), "H2DB not initialized!");
+                return new FirebaseRealTime();
             case DEFAULT_I:
             default:
                 return getDefaultI();
         }
-    }
-
-    static Object getH2DB() {
-        DataConnectTo h2DB = getDefaultI();
-        try {
-            h2DB = new H2DB();
-        }
-        catch (NetworkerStopException e) {
-            System.err.println(AbstractForms.networkerTrace(e));
-        }
-        return h2DB;
     }
 
     @NotNull

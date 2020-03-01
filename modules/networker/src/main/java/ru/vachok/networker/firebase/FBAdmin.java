@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.perf.plugin.FirebasePerfExtension;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -34,20 +35,18 @@ public class FBAdmin {
         initSDK();
     }
 
-    public void initSDK() {
+    private void initSDK() {
         try (FileInputStream inputStream = new FileInputStream(getCred())) {
             FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(inputStream))
                 .setDatabaseUrl("https://converter-2f70e.firebaseio.com/")
                 .build();
             FirebaseApp.initializeApp(options);
+            new FirebasePerfExtension().setInstrumentationEnabled(true);
         }
 
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
         catch (Exception e) {
-            messageToUser.error("FBAdmin.initSDK", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            System.err.println(AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
 

@@ -3,7 +3,6 @@ package ru.vachok.networker.configuretests;
 
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
@@ -16,7 +15,7 @@ import java.nio.file.Paths;
 public class MakeReport implements TestConfigure {
 
 
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser;
 
     private String testName;
 

@@ -15,7 +15,9 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -69,7 +71,6 @@ public class IntoApplication {
         appStart.add("scheduleTrunkPcUserAuto", UsefulUtilities.scheduleTrunkPcUserAuto());
         FileSystemWorker.appendObjectToFile(new File(FileNames.APP_JSON), appStart);
         setUTF8Enc();
-
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
         }
@@ -82,7 +83,6 @@ public class IntoApplication {
     }
 
     static void checkTray() {
-
         Optional optionalTray = SystemTrayHelper.getI();
         try {
             if (IS_TRAY_SUPPORTED && optionalTray.isPresent()) {

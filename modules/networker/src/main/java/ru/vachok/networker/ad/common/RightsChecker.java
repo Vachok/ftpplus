@@ -3,7 +3,12 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -79,6 +84,16 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonRightsChecker.run: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        finally {
+            FirebaseDatabase.getInstance().getReference(MessageFormat.format("{0}:{1}", UsefulUtilities.thisPC(), getClass().getSimpleName()))
+                .setValue(new Date(), new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError error, DatabaseReference ref) {
+                        messageToUser
+                            .error("RightsChecker.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
+                    }
+                });
         }
     }
 

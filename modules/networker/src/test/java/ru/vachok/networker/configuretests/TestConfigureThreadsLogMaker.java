@@ -3,7 +3,11 @@
 package ru.vachok.networker.configuretests;
 
 
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -107,6 +111,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         }
         finally {
             messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
+            FirebaseDatabase.getInstance().getReference("test").setValue(rtInfo, new Compl());
             Runtime.getRuntime().runFinalization();
         }
 
@@ -142,5 +147,14 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     @Contract("_ -> fail")
     private void writeObject(ObjectOutputStream out) throws IOException {
         throw new NotSerializableException("ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker");
+    }
+
+    private class Compl implements DatabaseReference.CompletionListener {
+
+
+        @Override
+        public void onComplete(@NotNull DatabaseError error, DatabaseReference ref) {
+            error.toException().printStackTrace();
+        }
     }
 }

@@ -33,7 +33,7 @@ public class CleanerTest {
     
     private final File infoAboutOldCommon = new File(FileNames.FILES_OLD);
     
-    private final long epochSecondOfStart = LocalDateTime.of(2019, 6, 25, 11, 45, 0).toEpochSecond(ZoneOffset.ofHours(3));
+    private final long epochSecondOfStart = LocalDateTime.of(2020, 2, 25, 17, 43, 34).toEpochSecond(ZoneOffset.ofHours(3));
     
     private Cleaner cleaner = new Cleaner();
     
@@ -52,7 +52,6 @@ public class CleanerTest {
      @see Cleaner#call()
      */
     @Test
-    @Ignore
     public void testCall() {
         Future<String> stringFuture = AppComponents.threadConfig().getTaskExecutor().submit(()->cleaner.call());
         try {

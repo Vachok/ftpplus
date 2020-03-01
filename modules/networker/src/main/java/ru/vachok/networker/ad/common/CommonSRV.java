@@ -3,6 +3,9 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,14 +16,22 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -28,27 +39,27 @@ import java.util.concurrent.*;
  @since 05.12.2018 (9:07) */
 @Service(ModelAttributeNames.COMMON)
 public class CommonSRV {
-    
-    
+
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, CommonSRV.class.getSimpleName());
-    
+
     private FileSearcher fileSearcher = new FileSearcher();
-    
+
     /**
      Пользовательский ввод через форму на сайте
-     
+
      @see CommonCTRL
      */
     @NonNull private String pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая\\";
-    
+
     private String perionDays = "365";
-    
-    private @NotNull String searchPat = ":";
-    
+
+    @NotNull private String searchPat = ":";
+
     private int dirLevel;
-    
+
     /**
      @return {@link #pathToRestoreAsStr}
      */
@@ -56,41 +67,41 @@ public class CommonSRV {
     public String getPathToRestoreAsStr() {
         return pathToRestoreAsStr;
     }
-    
+
     /**
      <b>MUST BE PUBLIC</b>
      <p>
- 
+
      @return кол-во дней, за которое выполнять поиск.
      */
     @SuppressWarnings("WeakerAccess")
     public String getPerionDays() {
         return perionDays;
     }
-    
+
     @SuppressWarnings("WeakerAccess")
     public String getSearchPat() {
         return searchPat;
     }
-    
+
     public void setSearchPat(@NotNull String searchPat) {
         this.searchPat = searchPat;
     }
-    
+
     /**
      common.html форма
      <p>
-     
+
      @param pathToRestoreAsStr {@link #pathToRestoreAsStr}
      */
     public void setPathToRestoreAsStr(String pathToRestoreAsStr) {
         this.pathToRestoreAsStr = pathToRestoreAsStr;
     }
-    
+
     public void setPerionDays(String perionDays) {
         this.perionDays = perionDays;
     }
-    
+
     String searchByPat(@NotNull String searchPatParam) {
         this.searchPat = searchPatParam.toLowerCase();
         StringBuilder stringBuilder = new StringBuilder();
@@ -109,14 +120,16 @@ public class CommonSRV {
                 String[] toSearch = searchPat.split("\\Q:\\E");
                 String searchInCommon = searchInCommon(toSearch);
                 stringBuilder.append(searchInCommon);
+                FirebaseDatabase.getInstance().getReference(getClass().getSimpleName()).setValue(stringBuilder.toString(), new CommonSRV.Compl());
             }
             catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
                 stringBuilder.append(e.getMessage());
             }
         }
+
         return stringBuilder.toString();
     }
-    
+
     private String getACLs() {
         UserACLManager aclParser = UserACLManager.getInstance(UserACLManager.ACL_PARSING, Paths.get("."));
         List<String> searchPatterns = new ArrayList<>();
@@ -129,17 +142,19 @@ public class CommonSRV {
         aclParser.setClassOption(searchPatterns);
         return aclParser.getResult();
     }
-    
+
     /**
      Поиск в \\srv-fs\common_new
      <p>
-     
+
      @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
      @return список файлов или {@link Exception}
-     
+
      @see FileSearcher
      */
-    private @NotNull String searchInCommon(@NotNull String[] patternAndFolder) {
+    @NotNull
+    private String searchInCommon(@NotNull String[] patternAndFolder) {
+        StringBuilder stringBuilder = new StringBuilder();
         String folderToSearch;
         try {
             folderToSearch = patternAndFolder[1];
@@ -151,8 +166,8 @@ public class CommonSRV {
             folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
         }
         this.fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
-        StringBuilder stringBuilder = new StringBuilder();
         Set<String> fileSearcherRes = fileSearcher.call();
+        stringBuilder.append(fileSearcherRes.size()).append(" objects found").append("\n");
         boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
         if (isWrite) {
             stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(true);
@@ -160,8 +175,9 @@ public class CommonSRV {
         stringBuilder.append(getLastSearchResultFromFile());
         return stringBuilder.toString();
     }
-    
-    private static @NotNull String getLastSearchResultFromFile() {
+
+    @NotNull
+    private static String getLastSearchResultFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
         File lastSearchFile = new File(FileNames.SEARCH_LAST);
         if (lastSearchFile.exists()) {
@@ -173,12 +189,12 @@ public class CommonSRV {
         }
         return stringBuilder.toString();
     }
-    
+
     void setNullToAllFields() {
         this.pathToRestoreAsStr = "";
         this.perionDays = "";
     }
-    
+
     String reStoreDir() {
         if (pathToRestoreAsStr == null) {
             pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
@@ -203,7 +219,7 @@ public class CommonSRV {
         restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
         return writeResult(stringBuilder.toString());
     }
-    
+
     private List<?> callToRestore(FileRestorer restoreFromArchives) {
         Future<List<?>> submit = AppComponents.threadConfig().getTaskExecutor().submit(restoreFromArchives);
         List<?> retList = new ArrayList<>();
@@ -219,7 +235,7 @@ public class CommonSRV {
         }
         return retList;
     }
-    
+
     private void parseElement(Object listElement, Set<String> filesSet) {
         if (listElement instanceof String) {
             filesSet.add(listElement + "\n");
@@ -232,7 +248,7 @@ public class CommonSRV {
             }
         }
     }
-    
+
     private void showDir(@NotNull File[] listElement, Set<String> filesSet) {
         for (File file : listElement) {
             if (file.isDirectory()) {
@@ -245,8 +261,9 @@ public class CommonSRV {
         }
         dirLevel--;
     }
-    
-    private @NotNull String dirLevelGetVisual() {
+
+    @NotNull
+    private String dirLevelGetVisual() {
         StringBuilder stringBuilder = new StringBuilder();
         String format = String.format("%02d", dirLevel);
         stringBuilder.append(format);
@@ -255,8 +272,9 @@ public class CommonSRV {
         }
         return stringBuilder.toString();
     }
-    
-    private @NotNull String writeResult(@NotNull String resultToFile) {
+
+    @NotNull
+    private String writeResult(@NotNull String resultToFile) {
         File file = new File(getClass().getSimpleName() + ".reStoreDir.results.txt");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(resultToFile.toLowerCase().getBytes());
@@ -268,7 +286,7 @@ public class CommonSRV {
         LOGGER.info(msg);
         return msg;
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", CommonSRV.class.getSimpleName() + "[\n", "\n]")
@@ -277,5 +295,14 @@ public class CommonSRV {
             .add("searchPat = '" + searchPat + "'")
             .add("dirLevel = " + dirLevel)
             .toString();
+    }
+
+    private class Compl implements DatabaseReference.CompletionListener {
+
+
+        @Override
+        public void onComplete(@NotNull DatabaseError error, DatabaseReference ref) {
+            messageToUser.warn(CommonSRV.Compl.class.getSimpleName(), error.toException().getMessage(), " see line: 291 ***");
+        }
     }
 }

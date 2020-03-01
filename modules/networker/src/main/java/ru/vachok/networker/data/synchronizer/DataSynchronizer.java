@@ -175,7 +175,7 @@ public class DataSynchronizer extends SyncData {
     public int uploadCollection(Collection stringsCollection, String tableName) {
         int retInt = 0;
         LinkedList<Object> jsonObjects = new LinkedList<Object>(stringsCollection);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.FIREBASE).getDefaultConnection(tableName)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(tableName)) {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             connection.setSavepoint();

@@ -42,7 +42,7 @@ public class ScanMessagesCreatorTest {
     @Test
     public void testTestToString() {
         String s = scanMessagesCreator.toString();
-        Assert.assertEquals(s, "ScanMessagesCreator[");
+        Assert.assertTrue(s.contains("ScanMessagesCreator["));
     }
 
     @Test
