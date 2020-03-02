@@ -19,6 +19,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.SshActs;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 
 /**
@@ -157,14 +158,14 @@ public class RestCTRLTest {
     @Test
     public void sshCommandAddDomain() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add("domain", "https://www.eatmeat.ru/");
+        jsonObject.add("domain", "https://www.vachok.ru/");
         jsonObject.add("option", "add");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setContentType(ConstantsFor.JSON);
         request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
         request.setContent(jsonObject.toString().getBytes());
         String s = restCTRL.sshCommandAddDomain(request, new MockHttpServletResponse());
-        System.out.println("s = " + s);
+        Assert.assertTrue(s.contains("vachok.ru"), s);
     }
 
     @Test
@@ -175,12 +176,10 @@ public class RestCTRLTest {
 
     @Test
     public void addDomainRESTTest() {
-        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET);
+        Request.Builder builder = getBuilder(ConstantsFor.SSHADD);
         JsonObject jsonObject = getJSONObject();
-        jsonObject.set("ip", "add");
-        jsonObject.set("hour", "-2");
-        jsonObject.set(ConstantsFor.OPTION, "domain");
-        jsonObject.set(ConstantsFor.WHOCALLS, "http://www.eatmeat.ru");
+        jsonObject.add(ConstantsFor.OPTION, "add");
+        jsonObject.add("domain", "http://www.eatmeat.ru");
         RequestBody requestBody = RequestBody.create(jsonObject.toString().getBytes());
         builder.post(requestBody);
         Call call = new OkHttpClient().newCall(builder.build());
@@ -191,6 +190,43 @@ public class RestCTRLTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
+    }
+
+    @Test
+    public void getNetworkerPOSTResponse() {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(ConstantsFor.OPTION, "add");
+        jsonObject.add("domain", "http://www.2ip.ru");
+        Request.Builder newBuilder = initBuilder(ConstantsFor.SSHADD);
+        newBuilder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        newBuilder.addHeader("Content-Type", ConstantsFor.JSON);
+        RequestBody requestBody = RequestBody.create(jsonObject.toString().getBytes());
+        Request request = newBuilder.post(requestBody).build();
+        try (Response response = okHttpClient.newCall(request).execute()) {
+            ResponseBody responseBody = response.body();
+            String reqResp = MessageFormat.format("Requested url: {0}\n{1}", request.url().toString(), response.toString());
+            if (responseBody != null) {
+                String bodyString = responseBody.string();
+                if (bodyString.isEmpty()) {
+                    bodyString = reqResp;
+                    System.out.println("bodyString = " + bodyString);
+                }
+
+            }
+            else {
+                String bodyNull = reqResp;
+                System.out.println("bodyNull = " + bodyNull);
+            }
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+
+    private Request.Builder initBuilder(String restRequest) {
+        Request.Builder builder = new Request.Builder().url("http://10.10.111.65:8880/" + restRequest);
+        return builder;
     }
 
     @Test
