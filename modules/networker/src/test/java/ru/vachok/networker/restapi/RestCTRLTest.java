@@ -113,16 +113,27 @@ public class RestCTRLTest {
         }
     }
 
-    @NotNull
-    private Request.@NotNull Builder getBuilder(String urlPart) {
-        String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
+    @Test
+    public void testSshCommandAddDomain() {
         OkHttpClient okHttpClient = new OkHttpClient();
         Request.Builder builder = new Request.Builder();
-        builder.url(RestCTRLTest.SRV_LOCAL + urlPart);
-//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
+        builder.url("http://rups00.eatmeat.ru:8880" + ConstantsFor.SSHADD);
         builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
         builder.addHeader("Content-Type", ConstantsFor.JSON);
-        return builder;
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("domain", "https://www.eatmeat.ru/");
+        jsonObject.add("option", "add");
+        RequestBody body = RequestBody.create(jsonObject.toString().getBytes());
+        builder.post(body);
+        try (Response execute = okHttpClient.newCall(builder.build()).execute();
+             ResponseBody resBody = execute.body()) {
+            Assert.assertNotNull(resBody);
+            String string = resBody.string();
+            Assert.assertTrue(string.contains("eatmeat"), string);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
 
     @NotNull
@@ -136,19 +147,30 @@ public class RestCTRLTest {
     }
 
     @Test
-    public void testSshCommandAddDomain() {
+    public void getNetworkerPOSTResponse() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        Request.Builder builder = getBuilder(ConstantsFor.SSHADD);
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add("domain", "https://www.eatmeat.ru/");
-        jsonObject.add("option", "add");
-        RequestBody body = RequestBody.create(jsonObject.toString().getBytes());
-        builder.post(body);
-        try (Response execute = okHttpClient.newCall(builder.build()).execute();
-             ResponseBody resBody = execute.body()) {
-            Assert.assertNotNull(resBody);
-            String string = resBody.string();
-            Assert.assertTrue(string.contains("eatmeat"), string);
+        jsonObject.add(ConstantsFor.OPTION, "add");
+        jsonObject.add("domain", "http://www.2ip.ru");
+        Request.Builder newBuilder = getBuilder(ConstantsFor.SSHADD);
+        newBuilder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        newBuilder.addHeader("Content-Type", ConstantsFor.JSON);
+        RequestBody requestBody = RequestBody.create(jsonObject.toString().getBytes());
+        Request request = newBuilder.post(requestBody).build();
+        try (Response response = okHttpClient.newCall(request).execute();
+             ResponseBody responseBody = response.body()) {
+            String reqResp = MessageFormat.format("Requested url: {0}\n{1}", request.url().toString(), response.toString());
+            if (responseBody != null) {
+                String bodyString = responseBody.string();
+                if (bodyString.isEmpty()) {
+                    bodyString = reqResp;
+                    System.out.println("bodyString = " + bodyString);
+                }
+
+            }
+            else {
+                System.out.println("bodyNull = " + reqResp);
+            }
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
@@ -192,40 +214,15 @@ public class RestCTRLTest {
         }
     }
 
-    @Test
-    public void getNetworkerPOSTResponse() {
+    @NotNull
+    private static Request.@NotNull Builder getBuilder(String urlPart) {
+        String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
         OkHttpClient okHttpClient = new OkHttpClient();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add(ConstantsFor.OPTION, "add");
-        jsonObject.add("domain", "http://www.2ip.ru");
-        Request.Builder newBuilder = initBuilder(ConstantsFor.SSHADD);
-        newBuilder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
-        newBuilder.addHeader("Content-Type", ConstantsFor.JSON);
-        RequestBody requestBody = RequestBody.create(jsonObject.toString().getBytes());
-        Request request = newBuilder.post(requestBody).build();
-        try (Response response = okHttpClient.newCall(request).execute()) {
-            ResponseBody responseBody = response.body();
-            String reqResp = MessageFormat.format("Requested url: {0}\n{1}", request.url().toString(), response.toString());
-            if (responseBody != null) {
-                String bodyString = responseBody.string();
-                if (bodyString.isEmpty()) {
-                    bodyString = reqResp;
-                    System.out.println("bodyString = " + bodyString);
-                }
-
-            }
-            else {
-                String bodyNull = reqResp;
-                System.out.println("bodyNull = " + bodyNull);
-            }
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-    }
-
-    private Request.Builder initBuilder(String restRequest) {
-        Request.Builder builder = new Request.Builder().url("http://10.10.111.65:8880/" + restRequest);
+        Request.Builder builder = new Request.Builder();
+        builder.url(RestCTRLTest.SRV_RUPS + urlPart);
+//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
+        builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        builder.addHeader("Content-Type", ConstantsFor.JSON);
         return builder;
     }
 
