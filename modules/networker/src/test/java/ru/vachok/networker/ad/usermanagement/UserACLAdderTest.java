@@ -32,7 +32,7 @@ public class UserACLAdderTest {
             Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
 //            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\");
             UserACLManagerImpl.removeAccess(owner, startPath);
-            this.commonAdder = new UserACLAdder(startPath, owner, "rwi");
+            this.commonAdder = new UserACLAdder(startPath, owner, "ri");
             Files.walkFileTree(startPath, commonAdder);
             this.attributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
             AclEntry acl;
