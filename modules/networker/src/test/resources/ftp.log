@@ -19417,3 +19417,50 @@ MLSD
 226 Transfer complete
 QUIT
 221 Goodbye.
+----------
+Connect to: (04.03.2020 21:51:10)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,136,226).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
