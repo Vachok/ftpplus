@@ -3,25 +3,31 @@
 package ru.vachok.networker.ad.common;
 
 
-import org.jetbrains.annotations.NotNull;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.*;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
  @see CleanerTest
  @since 25.06.2019 (11:37) */
-public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String> {
+@Service("Cleaner")
+@Scope(ConstantsFor.SINGLETON)
+public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
     
     
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
@@ -29,7 +35,7 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
     
     private Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
     
-    private long lastModifiedLog = MyCalen.getLongFromDate(3, 12, 2019, 15, 15);
+    private long lastModifiedLog = 1;
     
     private List<String> remainFiles = new ArrayList<>();
     
@@ -43,19 +49,47 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
      @return имя файла-лога, с информацией об удалениях.
      */
     @Override
-    public String call() {
-        return makeDeletions();
+    public void run() {
+        FirebaseApp firebaseApp = AppComponents.getFirebaseApp();
+        messageToUser.info(getClass().getSimpleName(), firebaseApp.getName(), "INITIALIZED");
+        FirebaseDatabase.getInstance().getReference(Cleaner.class.getSimpleName()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Cleaner.this.lastModifiedLog = (long) snapshot.getValue();
+                AppConfigurationLocal.getInstance().execute(Cleaner.this::makeDeletions);
+            }
+    
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Cleaner.this.lastModifiedLog = System.currentTimeMillis();
+                AppConfigurationLocal.getInstance().execute(Cleaner.this::makeDeletions);
+            }
+        });
+    
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Cleaner{");
-        sb.append("remainFiles=").append(remainFiles);
-        sb.append(", lastModifiedLog=").append(lastModifiedLog);
-        sb.append(", indexPath=").append(indexPath);
-        sb.append(", deleteTodayLimit=").append(deleteTodayLimit);
-        sb.append('}');
-        return sb.toString();
+    private void makeDeletions() {
+        fillPaths();
+        for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
+            Random random = new Random();
+            int index = random.nextInt(indexPath.size());
+            Path sourceDel = indexPath.get(index);
+            Path copyPath;
+            try {
+                copyPath = Files.move(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
+                        .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
+                if (copyPath.toFile().exists()) {
+                    messageToUser.info(getClass().getSimpleName(), sourceDel.toAbsolutePath().toString(), "Moved " + copyPath.toAbsolutePath()
+                            .toString() + ", db removed: " + removeFromDB(index));
+                }
+                else {
+                    messageToUser.warning(getClass().getSimpleName(), "NOT MOVED!", copyPath.toAbsolutePath().toString() + " old exists: " + sourceDel.toFile().exists());
+                }
+            }
+            catch (IOException | RuntimeException e) {
+                messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", e.getMessage() + Thread.currentThread().getState().name());
+            }
+        }
     }
     
     private void fillPaths() {
@@ -63,7 +97,12 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
              PreparedStatement preparedStatement = connection.prepareStatement("select * from common.oldfiles");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                indexPath.put(resultSet.getInt(1), Paths.get(resultSet.getString(2)));
+                if (resultSet.getInt("moved") == 0) {
+                    indexPath.put(resultSet.getInt(1), Paths.get(resultSet.getString(2)));
+                }
+                else {
+                    messageToUser.info(getClass().getSimpleName(), "already moved: ", resultSet.getString(2));
+                }
             }
         }
         catch (SQLException e) {
@@ -74,48 +113,6 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
             messageToUser.warn(this.getClass().getSimpleName(), "Today LIMIT is ", String.valueOf(deleteTodayLimit));
         }
         
-    }
-    
-    @NotNull
-    private String makeDeletions() {
-        fillPaths();
-        for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
-            Random random = new Random();
-            int index = random.nextInt(indexPath.size());
-            Path sourceDel = indexPath.get(index);
-            Path copyPath = Paths.get("null");
-            try {
-                copyPath = Files.move(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
-                        .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
-                if (copyPath.toFile().exists()) {
-                    messageToUser.info(getClass().getSimpleName(), sourceDel.toAbsolutePath().toString(), "Moved " + copyPath.toAbsolutePath()
-                            .toString() + ", db removed: " + removeFromDB(index));
-                }
-            }
-            catch (IOException e) {
-                messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", e.getMessage() + Thread.currentThread().getState().name());
-            }
-            finally {
-                String report = MessageFormat.format("{0} {1}:{2} remain {3}",
-                        sourceDel.normalize().toAbsolutePath().toString(),
-                        String.valueOf(sourceDel.toFile().exists()), String.valueOf(copyPath.toFile().exists()),
-                        limitOfDeleteFiles(indexPath.size()) - i);
-                messageToUser.info(getClass().getSimpleName(), "makeDeletions", report);
-            }
-        }
-        return "";
-    }
-    
-    private int removeFromDB(int idRec) {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
-             PreparedStatement preparedStatement = connection.prepareStatement(String.format("UPDATE `common`.`oldfiles` SET `moved`='1' WHERE  `idrec`=%d", idRec))) {
-            return preparedStatement.executeUpdate();
-    
-        }
-        catch (SQLException e) {
-            messageToUser.warn(Cleaner.class.getSimpleName(), "removeFromDB", e.getMessage() + Thread.currentThread().getState().name());
-            return -666;
-        }
     }
     
     private int limitOfDeleteFiles(int stringsInLogFile) {
@@ -130,5 +127,28 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
         }
         this.deleteTodayLimit = stringsInLogFile;
         return stringsInLogFile;
+    }
+    
+    private int removeFromDB(int idRec) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
+             PreparedStatement preparedStatement = connection.prepareStatement(String.format("UPDATE `common`.`oldfiles` SET `moved`='1' WHERE  `idrec`=%d", idRec))) {
+            return preparedStatement.executeUpdate();
+            
+        }
+        catch (SQLException e) {
+            messageToUser.warn(Cleaner.class.getSimpleName(), "removeFromDB", e.getMessage() + Thread.currentThread().getState().name());
+            return -666;
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Cleaner{");
+        sb.append("remainFiles=").append(remainFiles);
+        sb.append(", lastModifiedLog=").append(lastModifiedLog);
+        sb.append(", indexPath=").append(indexPath);
+        sb.append(", deleteTodayLimit=").append(deleteTodayLimit);
+        sb.append('}');
+        return sb.toString();
     }
 }

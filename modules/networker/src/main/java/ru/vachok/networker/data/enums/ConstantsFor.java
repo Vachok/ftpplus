@@ -561,7 +561,7 @@ public enum ConstantsFor {
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM common.oldfiles");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                retSet.add(Paths.get(resultSet.getString("AbsolutePath")).subpath(0, 2));
+                retSet.add(Paths.get(resultSet.getString("AbsolutePath")).subpath(0, 3));
             }
         }
         catch (SQLException e) {

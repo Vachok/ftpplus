@@ -6,13 +6,8 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.systray.actions.ActionExit;
-import ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFiles;
-import ru.vachok.networker.componentsrepo.systray.actions.ActionOpenProgFolder;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.componentsrepo.systray.actions.*;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -23,7 +18,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -136,61 +130,13 @@ public class SystemTrayHelper {
         addTrayToSys();
     }
 
-    private boolean addTrayToSys() {
-        try {
-            if (isNeedTray && SystemTray.isSupported()) {
-                SystemTray systemTray = SystemTray.getSystemTray();
-                systemTray.add(trayIcon);
-                isNeedTray = systemTray.getTrayIcons().length > 0;
-            }
-            else {
-                messageToUser.warn("Tray not supported!");
-                isNeedTray = false;
-            }
-        }
-        catch (AWTException e) {
-            messageToUser.errorAlert(CLASS_NAME, "addTrayToSys", e.getMessage());
-            isNeedTray = false;
-        }
-        return isNeedTray;
-    }
-
-    public TrayIcon getTrayIcon() throws ExceptionInInitializerError {
-        if (SystemTray.isSupported() && this.trayIcon != null) {
-            synchronized(trayIcon) {
-                return trayIcon;
-            }
-        }
-        else {
-            throw new UnsupportedOperationException("System tray unavailable");
-        }
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
-        sb.append("trayIcon=").append(trayIcon.hashCode());
-        sb.append(", isNeedTray=").append(isNeedTray);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    void delOldActions() {
-        for (ActionListener actionListener : this.trayIcon.getActionListeners()) {
-            trayIcon.removeActionListener(actionListener);
-        }
-    }
-
-    private void setImageFileName(String imageFileName) {
-        this.imageFileName = imageFileName;
-    }
-
     /**
      Добавление компонентов в меню
      <p>
 
      @return {@link PopupMenu}
      */
+    @SuppressWarnings("OverlyLongMethod")
     @NotNull
     private static PopupMenu getMenu() {
         PopupMenu popupMenu = new PopupMenu();
@@ -200,6 +146,7 @@ public class SystemTrayHelper {
         MenuItem toConsole = new MenuItem();
         MenuItem openFolder = new MenuItem();
         MenuItem oldFilesGenerator = new MenuItem();
+        MenuItem oldFilesCleaner = new MenuItem();
         MenuItem testActions = new MenuItem();
 
         defItem.setLabel("Exit");
@@ -216,19 +163,71 @@ public class SystemTrayHelper {
 
         testActions.setLabel("Renew InetStats");
         testActions.addActionListener(e->new Thread(()->MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "Renew InetStats").info(informationFactory.getInfo()))
-            .start());
+                .start());
         popupMenu.add(testActions);
-
+    
         openFolder.addActionListener(new ActionOpenProgFolder());
         openFolder.setLabel("Open root program folder");
         popupMenu.add(openFolder);
-
+    
         ActionMakeInfoAboutOldCommonFiles makeOldFilesInfoAct = new ActionMakeInfoAboutOldCommonFiles();
-        makeOldFilesInfoAct.setTimeoutSeconds(TimeUnit.HOURS.toSeconds(9));
         oldFilesGenerator.addActionListener(makeOldFilesInfoAct);
-        oldFilesGenerator.setLabel("Generate files.old");
+        oldFilesGenerator.setLabel("Collect old files");
         popupMenu.add(oldFilesGenerator);
-
+    
+        ActionCleanerOld makeOldFilesCleanAct = new ActionCleanerOld();
+        oldFilesCleaner.addActionListener(makeOldFilesCleanAct);
+        oldFilesCleaner.setLabel("Clean old");
+        popupMenu.add(oldFilesCleaner);
+    
         return popupMenu;
+    }
+    
+    public TrayIcon getTrayIcon() throws ExceptionInInitializerError {
+        if (SystemTray.isSupported() && this.trayIcon != null) {
+            synchronized(trayIcon) {
+                return trayIcon;
+            }
+        }
+        else {
+            throw new UnsupportedOperationException("System tray unavailable");
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
+        sb.append("trayIcon=").append(trayIcon.hashCode());
+        sb.append(", isNeedTray=").append(isNeedTray);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    void delOldActions() {
+        for (ActionListener actionListener : this.trayIcon.getActionListeners()) {
+            trayIcon.removeActionListener(actionListener);
+        }
+    }
+    
+    private void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
+    }
+    
+    private void addTrayToSys() {
+        try {
+            if (isNeedTray && SystemTray.isSupported()) {
+                SystemTray systemTray = SystemTray.getSystemTray();
+                systemTray.add(trayIcon);
+                isNeedTray = systemTray.getTrayIcons().length > 0;
+            }
+            else {
+                messageToUser.warn("Tray not supported!");
+                isNeedTray = false;
+            }
+        }
+        catch (AWTException e) {
+            messageToUser.errorAlert(CLASS_NAME, "addTrayToSys", e.getMessage());
+            isNeedTray = false;
+        }
     }
 }

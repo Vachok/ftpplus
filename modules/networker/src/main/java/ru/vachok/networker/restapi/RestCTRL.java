@@ -7,6 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.ad.common.Cleaner;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -29,25 +30,29 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 /**
  @see RestCTRLTest
  @since 15.12.2019 (19:42) */
+@SuppressWarnings("unused")
 @RestController
 public class RestCTRL {
-
-
+    
+    
     private static final String OKHTTP = "okhttp";
-
+    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRL.class.getSimpleName());
-
+    
+    private static final String INVALID_USER = "INVALID USER";
+    
+    private static final String GETOLDFILES = "/getoldfiles";
+    
     @GetMapping("/status")
     public String appStatus() {
         return UsefulUtilities.getRunningInformation();
     }
-
+    
     @GetMapping("/pc")
     public String uniqPC(@NotNull HttpServletRequest request) {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REST_PC_UNIQ);
@@ -173,7 +178,7 @@ public class RestCTRL {
             retStr = tempInetRestControllerHelper.getResult(jsonObject);
         }
         else {
-            retStr = "INVALID USER";
+            retStr = INVALID_USER;
         }
         return retStr;
     }
@@ -255,12 +260,24 @@ public class RestCTRL {
         return bean.runCom();
     }
     
-    @GetMapping("/getoldfiles")
+    @GetMapping(GETOLDFILES)
     public String collectOldFiles() {
         OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
                 .getBean(OldBigFilesInfoCollector.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector, (int) TimeUnit.HOURS.toSeconds(9));
+        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
         return oldBigFilesInfoCollector.getFromDatabase();
+    }
+    
+    @PostMapping(GETOLDFILES)
+    public String delOldFiles(HttpServletRequest request) {
+        Cleaner cleaner = (Cleaner) IntoApplication.getConfigurableApplicationContext().getBean(Cleaner.class.getSimpleName());
+        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
+            AppConfigurationLocal.getInstance().execute(cleaner);
+            return ((OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext().getBean(OldBigFilesInfoCollector.class.getSimpleName())).getFromDatabase();
+        }
+        else {
+            return INVALID_USER;
+        }
     }
     
     @Override

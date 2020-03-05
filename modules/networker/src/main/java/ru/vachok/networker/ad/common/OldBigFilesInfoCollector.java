@@ -179,7 +179,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                 return FileVisitResult.SKIP_SUBTREE;
             }
             else {
-                String toString = MessageFormat.format("Dirs: {0}, files: {3}/{2}. Current dir: {1}", dirsCounter, dir.toAbsolutePath().normalize(), filesCounter, filesMatched);
                 return FileVisitResult.CONTINUE;
             }
         }
@@ -200,6 +199,9 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                 finally {
                     filesMatched += 1;
                     totalFilesSize += attrs.size();
+                    FirebaseDatabase.getInstance().getReference(Cleaner.class.getSimpleName()).setValue(System.currentTimeMillis(), (error, ref)->messageToUser
+                            .error("Cleaner.onComplete", error.getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+    
                 }
             }
             return FileVisitResult.CONTINUE;

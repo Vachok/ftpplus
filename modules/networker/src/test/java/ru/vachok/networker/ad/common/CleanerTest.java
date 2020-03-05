@@ -6,8 +6,7 @@ package ru.vachok.networker.ad.common;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -16,10 +15,8 @@ import ru.vachok.networker.data.enums.FileNames;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -32,8 +29,6 @@ public class CleanerTest {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private final File infoAboutOldCommon = new File(FileNames.FILES_OLD);
-    
-    private final long epochSecondOfStart = LocalDateTime.of(2020, 2, 25, 17, 43, 34).toEpochSecond(ZoneOffset.ofHours(3));
     
     private Cleaner cleaner = new Cleaner();
     
@@ -48,28 +43,9 @@ public class CleanerTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    /**
-     @see Cleaner#call()
-     */
-    @Test
-    public void testCall() {
-        Future<String> stringFuture = AppComponents.threadConfig().getTaskExecutor().submit(()->cleaner.call());
-        try {
-            String cleanStr = stringFuture.get(10, TimeUnit.SECONDS);
-            Assert.assertEquals(cleanStr, "Cleaner complete: false");
-        }
-        catch (InvokeIllegalException | ExecutionException | TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-    }
-    
     @Test
     public void testBlockCall() {
-        cleaner.call();
+        cleaner.run();
     }
     
     @Test

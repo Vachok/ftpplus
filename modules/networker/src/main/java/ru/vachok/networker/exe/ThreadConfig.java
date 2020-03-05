@@ -19,19 +19,13 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.restapi.message.*;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -187,19 +181,30 @@ public class ThreadConfig implements AppConfigurationLocal {
         TASK_SCHEDULER.initialize();
         TASK_EXECUTOR.initialize();
     }
-
-
+    
+    
     public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Runnable runnable) {
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         for (Runnable r : executorQueue) {
             if (r.equals(runnable) || r instanceof DBMessenger) {
                 MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                    .warn(this.getClass().getSimpleName(), "execute", r.toString());
+                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }
         }
     }
-
+    
+    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Callable callable) {
+        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
+        for (Runnable r : executorQueue) {
+            if (r.equals(callable) || r instanceof DBMessenger) {
+                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
+                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
+                executorQueue.remove(r);
+            }
+        }
+    }
+    
     /**
      Killer
      */

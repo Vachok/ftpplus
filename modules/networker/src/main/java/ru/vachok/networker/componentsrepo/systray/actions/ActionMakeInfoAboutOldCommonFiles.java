@@ -3,17 +3,16 @@
 package ru.vachok.networker.componentsrepo.systray.actions;
 
 
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.StringJoiner;
-import java.util.concurrent.*;
 
 
 /**
@@ -30,8 +29,6 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
      */
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ActionMakeInfoAboutOldCommonFiles.class.getSimpleName());
     
-    private long timeoutSeconds;
-    
     private String fileName = FileNames.FILES_OLD;
 
     public void setFileName(String fileName) {
@@ -39,7 +36,6 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     }
     
     public void setTimeoutSeconds(long timeoutSeconds) {
-        this.timeoutSeconds = timeoutSeconds;
         this.fileName = fileName + ".t";
     }
     
@@ -49,20 +45,10 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     }
     
     protected String makeAction() {
-        Callable<String> infoCollector = new OldBigFilesInfoCollector();
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
-        try {
-            return submit.get(timeoutSeconds, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException e) {
-            messageToUser.warn(ActionMakeInfoAboutOldCommonFiles.class.getSimpleName(), "makeAction", e.getMessage() + Thread.currentThread().getState().name());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            throw new InvokeIllegalException(getClass().getSimpleName() + " FAILED");
-        }
-        catch (TimeoutException e) {
-            throw new InvokeIllegalException("TIMEOUT " + timeoutSeconds);
-        }
+        OldBigFilesInfoCollector infoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
+                .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        AppConfigurationLocal.getInstance().execute(infoCollector);
+        return infoCollector.getFromDatabase();
     }
     
     @Override
