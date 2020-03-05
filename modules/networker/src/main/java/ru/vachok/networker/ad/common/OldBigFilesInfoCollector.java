@@ -3,7 +3,10 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -31,6 +34,8 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest
  @since 22.11.2018 (14:53) */
+@Service("OldBigFilesInfoCollector")
+@Scope(ConstantsFor.SINGLETON)
 public class OldBigFilesInfoCollector implements Callable<String> {
     
     
@@ -77,8 +82,30 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             stringBuilder.append(Files.walkFileTree(Paths.get(startPath), new OldBigFilesInfoCollector.WalkerCommon()));
+            FirebaseDatabase.getInstance().getReference("oldfiles")
+                    .setValue(getFromDatabase(), (error, ref)->stringBuilder.append(error.getMessage()).append("\n").append(AbstractForms.fromArray(error.toException())));
         }
         catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        return stringBuilder.toString();
+    }
+    
+    public String getFromDatabase() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM common.oldfiles");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            float totalSizeMB = 0;
+            int totalFiles = 0;
+            while (resultSet.next()) {
+                totalSizeMB += resultSet.getFloat("size");
+                totalFiles++;
+            }
+            stringBuilder.append("Total file size in DB now: ").append(totalSizeMB).append(" megabytes\n");
+            stringBuilder.append(ConstantsFor.FILES).append(totalFiles);
+        }
+        catch (SQLException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
@@ -142,10 +169,13 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     private class WalkerCommon extends SimpleFileVisitor<Path> {
         
         
+        private final @NotNull String[] excludedFoldersForCleaner = ConstantsFor.getExcludedFoldersForCleaner();
+        
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             dirsCounter += 1;
             if (Arrays.stream(ConstantsFor.getExcludedFoldersForCleaner()).anyMatch(tabooDir->dir.toAbsolutePath().normalize().toString().contains(tabooDir))) {
+                messageToUser.info(getClass().getSimpleName(), "Skipped", dir.toString());
                 return FileVisitResult.SKIP_SUBTREE;
             }
             else {
@@ -157,19 +187,18 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             filesCounter += 1;
-            
             if (more2MBOld(attrs)) {
                 Files.setAttribute(file, DOS_ARCHIVE, true);
-                String attrArray = AbstractForms.fromArray(Files.readAttributes(file, "dos:*"));
+                String attrArray = AbstractForms.fromArray(Files.readAttributes(file, "*"));
                 float mByteSize = (float) attrs.size() / ConstantsFor.MBYTE;
                 try {
                     writeToDB(file, mByteSize, attrArray);
-                    filesMatched += 1;
                 }
                 catch (SQLException | RuntimeException e) {
                     return FileVisitResult.CONTINUE;
                 }
                 finally {
+                    filesMatched += 1;
                     totalFilesSize += attrs.size();
                 }
             }
@@ -184,6 +213,9 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+            String toString = MessageFormat.format("Dirs: {0}, files: {2}/{3}. Size {4} MB. Current dir: {1}", dirsCounter, dir.toAbsolutePath()
+                    .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
+            messageToUser.info(getClass().getSimpleName(), "postVisitDirectory", toString);
             return FileVisitResult.CONTINUE;
         }
     }

@@ -36,7 +36,7 @@ public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runna
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         toLog.add("Current directory: " + dir);
-        toLog.add("Files: " + Objects.requireNonNull(dir.toFile().listFiles()).length);
+        toLog.add(ConstantsFor.FILES + Objects.requireNonNull(dir.toFile().listFiles()).length);
         return FileVisitResult.CONTINUE;
     }
 

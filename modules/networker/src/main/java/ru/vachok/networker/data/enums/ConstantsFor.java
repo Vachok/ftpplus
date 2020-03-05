@@ -6,14 +6,14 @@ package ru.vachok.networker.data.enums;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.*;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -527,22 +527,46 @@ public enum ConstantsFor {
     public static final String VACHOK_VACHOK_RU = "vachok@vachok.ru";
 
     public static final String FIREBASE = "firebase";
-
+    
     public static final String OWNER = "owner";
-
+    
     public static final String TEMPNET = "tempnet";
-
+    
     public static final String NETWORKER = "ru.vachok.networker";
-
+    
     public static final String SSHADD = "/sshadd";
-
+    
     public static final String SSHCOM_GETALLOWDOMAINS = "sudo cat /etc/pf/allowdomain && exit";
-
+    
+    public static final String FILES = "Files: ";
+    
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
-        List<String> excludeFolders = new ArrayList<>();
+        Set<String> excludeFolders = new TreeSet<>();
+        final Set<Path> pathSet = getPathsAlreadyInDB();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));
         excludeFolders.addAll(FileSystemWorker.readFileToList(new File(FileNames.CLEANSTOP_TXT).getAbsolutePath()));
+        Iterator<Path> pathIterator = pathSet.iterator();
+        Object[] objects = pathSet.toArray();
+        for (int i = 0; i < objects.length - 1; i++) {
+            String toAdd = objects[i].toString();
+            excludeFolders.add(toAdd);
+        }
         return excludeFolders.toArray(new String[0]);
+    }
+    
+    private static Set<Path> getPathsAlreadyInDB() {
+        SortedSet<Path> retSet = new TreeSet<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM common.oldfiles");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                retSet.add(Paths.get(resultSet.getString("AbsolutePath")).subpath(0, 2));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return retSet;
     }
 }

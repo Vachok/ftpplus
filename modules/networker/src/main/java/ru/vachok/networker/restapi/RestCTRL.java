@@ -1,16 +1,13 @@
 package ru.vachok.networker.restapi;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -20,6 +17,7 @@ import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -27,12 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -250,17 +247,25 @@ public class RestCTRL {
         pfService.makeListRunner();
         return pfLists.toString();
     }
-
+    
     @GetMapping("/sshgetdomains")
     public String getAllowDomains() {
         PfListsSrv bean = (PfListsSrv) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
         return bean.runCom();
     }
-
+    
+    @GetMapping("/getoldfiles")
+    public String collectOldFiles() {
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
+                .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector, (int) TimeUnit.HOURS.toSeconds(9));
+        return oldBigFilesInfoCollector.getFromDatabase();
+    }
+    
     @Override
     public String toString() {
         return new StringJoiner(",\n", RestCTRL.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+                .toString();
     }
 }
