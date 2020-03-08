@@ -11,7 +11,10 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Year;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -527,19 +530,21 @@ public enum ConstantsFor {
     public static final String VACHOK_VACHOK_RU = "vachok@vachok.ru";
 
     public static final String FIREBASE = "firebase";
-    
+
     public static final String OWNER = "owner";
-    
+
     public static final String TEMPNET = "tempnet";
-    
+
     public static final String NETWORKER = "ru.vachok.networker";
-    
+
     public static final String SSHADD = "/sshadd";
-    
+
     public static final String SSHCOM_GETALLOWDOMAINS = "sudo cat /etc/pf/allowdomain && exit";
-    
+
     public static final String FILES = "Files: ";
-    
+
+    public static final String EXTENDED = " QUICK EXTENDED;";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();
@@ -554,7 +559,7 @@ public enum ConstantsFor {
         }
         return excludeFolders.toArray(new String[0]);
     }
-    
+
     private static Set<Path> getPathsAlreadyInDB() {
         SortedSet<Path> retSet = new TreeSet<>();
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
