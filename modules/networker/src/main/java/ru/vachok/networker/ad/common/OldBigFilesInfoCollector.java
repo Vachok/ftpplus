@@ -5,7 +5,6 @@ package ru.vachok.networker.ad.common;
 
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
@@ -19,7 +18,10 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -31,39 +33,38 @@ import java.util.concurrent.TimeUnit;
  Сбор информации о файла, в которые не заходили более 2 лет, и которые имеют размер более 25 мб.
  <p>
  Список папок-исключений: {@link ConstantsFor#EXCLUDED_FOLDERS_FOR_CLEANER}
- 
+
  @see ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest
  @since 22.11.2018 (14:53) */
 @Service("OldBigFilesInfoCollector")
-@Scope(ConstantsFor.SINGLETON)
 public class OldBigFilesInfoCollector implements Callable<String> {
-    
-    
+
+
     private static final String DOS_ARCHIVE = "dos:archive";
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OldBigFilesInfoCollector.class.getSimpleName());
-    
+
     private String reportUser;
-    
+
     @NotNull private String startPath = "\\\\srv-fs.eatmeat.ru\\common_new";
-    
+
     private long dirsCounter;
-    
+
     private long filesCounter;
-    
+
     private long totalFilesSize;
-    
+
     private long filesMatched;
-    
+
     @NotNull
     public String getStartPath() {
         return startPath;
     }
-    
+
     public OldBigFilesInfoCollector() {
         this.reportUser = "Not completed yet";
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OldBigFilesInfoCollector{");
@@ -75,7 +76,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Override
     public String call() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
@@ -90,7 +91,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         }
         return stringBuilder.toString();
     }
-    
+
     public String getFromDatabase() {
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
@@ -110,7 +111,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         }
         return stringBuilder.toString();
     }
-    
+
     private void writeToDB(@NotNull Path file, float mByteSize, String attrArray) throws SQLException {
         DataConnectTo localDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         List<String> cleanStop = FileSystemWorker.readFileToList(new File(FileNames.CLEANSTOP_TXT).getAbsolutePath());
@@ -130,7 +131,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
             }
         }
     }
-    
+
     @NotNull
     private String askUser() {
         String msg = MessageFormat.format("{0} total dirs, {1} total files scanned. Matched: {2} ({3} mb)",
@@ -145,7 +146,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         }
         return msg;
     }
-    
+
     private void writeToLog() {
         String logName = this.getClass().getSimpleName() + ".log";
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(logName))) {
@@ -155,7 +156,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
             messageToUser.error(e.getMessage() + " see line: 128");
         }
     }
-    
+
     /**
      @param attrs {@link BasicFileAttributes}
      @return более 15 мб и старше 2х лет.
@@ -165,12 +166,12 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR * 2) && attrs
                 .size() > ConstantsFor.MBYTE * oldfileminimumsizemb;
     }
-    
+
     private class WalkerCommon extends SimpleFileVisitor<Path> {
-        
-        
-        private final @NotNull String[] excludedFoldersForCleaner = ConstantsFor.getExcludedFoldersForCleaner();
-        
+
+
+        @NotNull private final String[] excludedFoldersForCleaner = ConstantsFor.getExcludedFoldersForCleaner();
+
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             dirsCounter += 1;
@@ -182,7 +183,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                 return FileVisitResult.CONTINUE;
             }
         }
-        
+
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             filesCounter += 1;
@@ -201,18 +202,18 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                     totalFilesSize += attrs.size();
                     FirebaseDatabase.getInstance().getReference(Cleaner.class.getSimpleName()).setValue(System.currentTimeMillis(), (error, ref)->messageToUser
                             .error("Cleaner.onComplete", error.getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
-    
+
                 }
             }
             return FileVisitResult.CONTINUE;
         }
-        
+
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) {
             messageToUser.warn(exc.getMessage() + " file: " + file.toAbsolutePath().normalize());
             return FileVisitResult.CONTINUE;
         }
-        
+
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             String toString = MessageFormat.format("Dirs: {0}, files: {2}/{3}. Size {4} MB. Current dir: {1}", dirsCounter, dir.toAbsolutePath()

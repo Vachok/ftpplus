@@ -5,15 +5,24 @@ package ru.vachok.networker.ad.common;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -63,7 +72,8 @@ public class OldBigFilesInfoCollectorTest {
 
     @Test
     public void realCall() {
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = new OldBigFilesInfoCollector();
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
+            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         oldBigFilesInfoCollector.call();
     }
 
