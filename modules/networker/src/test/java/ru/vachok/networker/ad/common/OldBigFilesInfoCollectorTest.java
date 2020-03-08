@@ -11,6 +11,7 @@ import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -71,7 +72,8 @@ public class OldBigFilesInfoCollectorTest {
 
     @Test
     public void realCall() {
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = new OldBigFilesInfoCollector();
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
+            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         oldBigFilesInfoCollector.call();
     }
 

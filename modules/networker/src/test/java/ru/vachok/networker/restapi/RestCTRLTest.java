@@ -19,6 +19,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.SshActs;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 
 /**
@@ -112,32 +113,13 @@ public class RestCTRLTest {
         }
     }
 
-    @NotNull
-    private Request.@NotNull Builder getBuilder(String urlPart) {
-        String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request.Builder builder = new Request.Builder();
-        builder.url(RestCTRLTest.SRV_LOCAL + urlPart);
-//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
-        builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
-        builder.addHeader("Content-Type", ConstantsFor.JSON);
-        return builder;
-    }
-
-    @NotNull
-    private static JsonObject getJSONObject() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add("ip", "10.200.213.233");
-        jsonObject.add("hour", "1");
-        jsonObject.add(ConstantsFor.OPTION, "add");
-        jsonObject.add(ConstantsFor.WHOCALLS, "ikudryashov@velkomfood.ru");
-        return jsonObject;
-    }
-
     @Test
     public void testSshCommandAddDomain() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        Request.Builder builder = getBuilder(ConstantsFor.SSHADD);
+        Request.Builder builder = new Request.Builder();
+        builder.url("http://rups00.eatmeat.ru:8880" + ConstantsFor.SSHADD);
+        builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        builder.addHeader("Content-Type", ConstantsFor.JSON);
         JsonObject jsonObject = new JsonObject();
         jsonObject.add("domain", "https://www.eatmeat.ru/");
         jsonObject.add("option", "add");
@@ -154,17 +136,58 @@ public class RestCTRLTest {
         }
     }
 
+    @NotNull
+    private static JsonObject getJSONObject() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("ip", "10.200.213.233");
+        jsonObject.add("hour", "1");
+        jsonObject.add(ConstantsFor.OPTION, "add");
+        jsonObject.add(ConstantsFor.WHOCALLS, "ikudryashov@velkomfood.ru");
+        return jsonObject;
+    }
+
+    @Test
+    public void getNetworkerPOSTResponse() {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(ConstantsFor.OPTION, "add");
+        jsonObject.add("domain", "http://www.2ip.ru");
+        Request.Builder newBuilder = getBuilder(ConstantsFor.SSHADD);
+        newBuilder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        newBuilder.addHeader("Content-Type", ConstantsFor.JSON);
+        RequestBody requestBody = RequestBody.create(jsonObject.toString().getBytes());
+        Request request = newBuilder.post(requestBody).build();
+        try (Response response = okHttpClient.newCall(request).execute();
+             ResponseBody responseBody = response.body()) {
+            String reqResp = MessageFormat.format("Requested url: {0}\n{1}", request.url().toString(), response.toString());
+            if (responseBody != null) {
+                String bodyString = responseBody.string();
+                if (bodyString.isEmpty()) {
+                    bodyString = reqResp;
+                    System.out.println("bodyString = " + bodyString);
+                }
+
+            }
+            else {
+                System.out.println("bodyNull = " + reqResp);
+            }
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+
     @Test
     public void sshCommandAddDomain() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add("domain", "https://www.eatmeat.ru/");
+        jsonObject.add("domain", "https://www.vachok.ru/");
         jsonObject.add("option", "add");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setContentType(ConstantsFor.JSON);
         request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
         request.setContent(jsonObject.toString().getBytes());
         String s = restCTRL.sshCommandAddDomain(request, new MockHttpServletResponse());
-        System.out.println("s = " + s);
+        Assert.assertTrue(s.contains("vachok.ru"), s);
     }
 
     @Test
@@ -175,12 +198,10 @@ public class RestCTRLTest {
 
     @Test
     public void addDomainRESTTest() {
-        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET);
+        Request.Builder builder = getBuilder(ConstantsFor.SSHADD);
         JsonObject jsonObject = getJSONObject();
-        jsonObject.set("ip", "add");
-        jsonObject.set("hour", "-2");
-        jsonObject.set(ConstantsFor.OPTION, "domain");
-        jsonObject.set(ConstantsFor.WHOCALLS, "http://www.eatmeat.ru");
+        jsonObject.add(ConstantsFor.OPTION, "add");
+        jsonObject.add("domain", "http://www.eatmeat.ru");
         RequestBody requestBody = RequestBody.create(jsonObject.toString().getBytes());
         builder.post(requestBody);
         Call call = new OkHttpClient().newCall(builder.build());
@@ -191,6 +212,18 @@ public class RestCTRLTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
+    }
+
+    @NotNull
+    private static Request.@NotNull Builder getBuilder(String urlPart) {
+        String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
+        OkHttpClient okHttpClient = new OkHttpClient();
+        Request.Builder builder = new Request.Builder();
+        builder.url(RestCTRLTest.SRV_RUPS + urlPart);
+//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
+        builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        builder.addHeader("Content-Type", ConstantsFor.JSON);
+        return builder;
     }
 
     @Test

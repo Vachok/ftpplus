@@ -15,12 +15,12 @@ import java.sql.*;
  @see MyISAMRepairTest
  @since 20.11.2019 (9:11) */
 public class MyISAMRepair implements InformationFactory {
-    
-    
+
+
     private Object classOption;
-    
+
     private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
+
     public String repairTable(String sql) {
         final long startRepairStamp = System.currentTimeMillis();
         StringBuilder stringBuilder = new StringBuilder();
@@ -40,14 +40,14 @@ public class MyISAMRepair implements InformationFactory {
         }
         return stringBuilder.toString();
     }
-    
+
     @Override
     public String getInfo() {
         String sql = "SHOW TABLE STATUS FROM velkom";
         if (classOption instanceof String) {
             sql = "SHOW TABLE STATUS FROM " + classOption;
         }
-        
+
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_SLOWLOG)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -62,7 +62,7 @@ public class MyISAMRepair implements InformationFactory {
         }
         return stringBuilder.toString();
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MyISAMRepair{");
@@ -70,8 +70,9 @@ public class MyISAMRepair implements InformationFactory {
         sb.append('}');
         return sb.toString();
     }
-    
-    private @NotNull String parseResults(@NotNull ResultSet resultSet) throws SQLException {
+
+    @NotNull
+    private String parseResults(@NotNull ResultSet resultSet) throws SQLException {
         ResultSetMetaData metaData = resultSet.getMetaData();
         int columnCount = metaData.getColumnCount();
         StringBuilder stringBuilder = new StringBuilder();
@@ -80,7 +81,7 @@ public class MyISAMRepair implements InformationFactory {
         }
         return stringBuilder.toString();
     }
-    
+
     @Override
     public void setClassOption(Object option) {
         if (option instanceof DataConnectTo) {
@@ -88,12 +89,12 @@ public class MyISAMRepair implements InformationFactory {
         }
         this.classOption = option;
     }
-    
+
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.classOption = aboutWhat;
         return getInfo();
     }
-    
-    
+
+
 }

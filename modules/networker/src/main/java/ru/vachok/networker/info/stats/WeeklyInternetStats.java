@@ -62,7 +62,8 @@ class WeeklyInternetStats implements Runnable, Stats {
     private InformationFactory informationFactory = InformationFactory.getInstance(INET_USAGE);
 
     @Contract(value = " -> new", pure = true)
-    public static @NotNull WeeklyInternetStats getInstance() {
+    @NotNull
+    public static WeeklyInternetStats getInstance() {
         return INST;
     }
 
@@ -75,12 +76,8 @@ class WeeklyInternetStats implements Runnable, Stats {
 
     @Override
     public String getInfoAbout(String aboutWhat) {
-        if (Stats.isSunday()) {
-            return getInfo();
-        }
-        else {
-            return MessageFormat.format("I will NOT start before: {0}. {1}", MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY), this.getClass().getSimpleName());
-        }
+        return Stats.isSunday() ? getInfo() : MessageFormat
+            .format("I will NOT start before: {0}. {1}", MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY), this.getClass().getSimpleName());
     }
 
     @Override
@@ -158,10 +155,20 @@ class WeeklyInternetStats implements Runnable, Stats {
         return new File(FileNames.INETSTATSIP_CSV).length();
     }
 
-    private @NotNull String daySunCounter() {
-        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
-        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
-        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        WeeklyInternetStats stats = (WeeklyInternetStats) o;
+
+        return totalBytes == stats.totalBytes && (fileName != null ? fileName.equals(stats.fileName) : stats.fileName == null) && (sql != null ? sql
+            .equals(stats.sql) : stats.sql == null) && informationFactory.equals(stats.informationFactory);
     }
 
     private void readStatsToCSVAndDeleteFromDB() {
@@ -304,31 +311,11 @@ class WeeklyInternetStats implements Runnable, Stats {
         return result;
     }
 
-    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        WeeklyInternetStats stats = (WeeklyInternetStats) o;
-
-        if (totalBytes != stats.totalBytes) {
-            return false;
-        }
-        if (!messageToUser.equals(stats.messageToUser)) {
-            return false;
-        }
-        if (fileName != null ? !fileName.equals(stats.fileName) : stats.fileName != null) {
-            return false;
-        }
-        if (sql != null ? !sql.equals(stats.sql) : stats.sql != null) {
-            return false;
-        }
-        return informationFactory.equals(stats.informationFactory);
+    @NotNull
+    private String daySunCounter() {
+        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
+        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
+        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
     }
 
     protected void setSql() {

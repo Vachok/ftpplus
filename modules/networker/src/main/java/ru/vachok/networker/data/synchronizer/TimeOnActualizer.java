@@ -1,7 +1,6 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.MyISAMRepair;
@@ -22,7 +21,6 @@ public class TimeOnActualizer implements Runnable {
 
     private String pcName;
 
-    @Contract(pure = true)
     public TimeOnActualizer(@NotNull String pcName) {
         this.pcName = pcName.replace(ConstantsFor.DOMAIN_EATMEATRU, "");
     }
@@ -72,7 +70,8 @@ public class TimeOnActualizer implements Runnable {
         }
     }
 
-    private @NotNull List<String> getPcNames() {
+    @NotNull
+    private List<String> getPcNames() {
         final String sql = "SELECT DISTINCT pcName FROM online";
         List<String> pcNames = new ArrayList<>();
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.RestApiHelper;
@@ -26,7 +27,7 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);
         JsonValue optValue = jsonObject.get(ConstantsFor.OPTION);
         boolean isAdd = optValue.toString().contains("add");
-        PfListsSrv bean = (PfListsSrv) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        PfListsSrv bean = new PfListsSrv((PfLists) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTS));
         bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
         String allowDomains = bean.runCom();
         try {

@@ -22,6 +22,7 @@ public class UserACLReplacerTest {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private final Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\");
+//    private final Path startPath = Paths.get("\\\\srv-fs\\Common_new\\KPI для участников программы\\");
     
     private UserACLReplacer userACLReplacer;
     

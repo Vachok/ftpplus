@@ -92,14 +92,16 @@ public class PfListsSrv {
     /**
      Формирует списки <b>pf</b>
 
-     @see PfListsCtr
+     @see PfListsSrv
      */
-    public void makeListRunner() {
+    public boolean makeListRunner() {
         try {
             buildFactory();
+            return true;
         }
         catch (FileNotFoundException | ExecutionException | InterruptedException | TimeoutException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeListRunner", e));
+            return false;
         }
     }
 

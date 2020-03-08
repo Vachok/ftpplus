@@ -3,6 +3,7 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
+import com.google.firebase.database.FirebaseDatabase;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
@@ -92,6 +93,8 @@ public class RegRuFTPLibsUploader implements Runnable {
         Thread.currentThread().setName(getClass().getSimpleName());
         if (chkPC()) {
             try {
+                FirebaseDatabase.getInstance().getReference("test").setValue("Upload start!", (error, ref)->messageToUser
+                    .warn(RegRuFTPLibsUploader.class.getSimpleName(), error.toException().getMessage(), " see line: 97 ***"));
                 String connectTo = uploadLibs();
                 MessageToUser.getInstance(MessageToUser.SWING, RegRuFTPLibsUploader.class.getSimpleName())
                     .infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
@@ -99,6 +102,8 @@ public class RegRuFTPLibsUploader implements Runnable {
             catch (AccessDeniedException | NullPointerException e) {
                 messageToUser.error(e.getMessage() + " see line: 57");
             }
+            FirebaseDatabase.getInstance().getReference("test").setValue("Upload complete!", (error, ref)->messageToUser
+                .warn(RegRuFTPLibsUploader.class.getSimpleName(), error.toException().getMessage(), " see line: 106 ***"));
         }
         else {
             System.err.println(UsefulUtilities.thisPC() + " this PC is not develop PC!");

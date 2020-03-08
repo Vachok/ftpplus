@@ -129,7 +129,7 @@ class LocalUserResolver extends UserInfo {
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
         List<String> timePath = null;
         try {
-            AppConfigurationLocal.getInstance().execute(scanUSERSFolder, timeOut);
+            AppConfigurationLocal.getInstance().executeGet(scanUSERSFolder, timeOut);
             timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         }
         catch (RuntimeException e) {

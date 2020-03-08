@@ -54,14 +54,16 @@ public abstract class UserInfo implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
 
     @Contract("null -> new")
-    public static @NotNull UserInfo getInstance(String type) {
+    @NotNull
+    public static UserInfo getInstance(String type) {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setName(UserInfo.class.getSimpleName());
         return type == null ? new UnknownUser(UserInfo.class.getSimpleName()) : checkType(type);
     }
 
     @Contract("null -> new")
-    private static @NotNull UserInfo checkType(String type) {
+    @NotNull
+    private static UserInfo checkType(String type) {
         PCInfo.checkValidNameWithoutEatmeat(type);
         return ModelAttributeNames.ADUSER.equals(type) ? new LocalUserResolver() : new ResolveUserInDataBase(type);
 
@@ -98,7 +100,8 @@ public abstract class UserInfo implements InformationFactory {
         messageToUser.info(UserInfo.class.getSimpleName(), methName, updateResults);
     }
 
-    public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
+    @NotNull
+    public static String uniqueUsersTableRecord(String pcName, String lastFileUse) {
         return DATABASE_WRITER.uniqueUserAddToDB(pcName, lastFileUse);
     }
 
@@ -107,7 +110,7 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
     }
 
     private static class DatabaseWriter {
@@ -119,7 +122,6 @@ public abstract class UserInfo implements InformationFactory {
 
         private String userName;
 
-        @Contract(pure = true)
         private DatabaseWriter() {
         }
 
@@ -158,7 +160,8 @@ public abstract class UserInfo implements InformationFactory {
          @throws SQLException statement
          @throws IndexOutOfBoundsException String[] split = userName.split(" ");
          */
-        private @NotNull String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException {
+        @NotNull
+        private String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException {
             String[] split = userName.split(" ");
             preparedStatement.setString(1, pcName);
             if (userName.toLowerCase().contains(ModelAttributeNames.USERS)) {
@@ -171,7 +174,8 @@ public abstract class UserInfo implements InformationFactory {
             return MessageFormat.format("{0}: {1}", preparedStatement.executeUpdate(), preparedStatement.toString());
         }
 
-        private @NotNull String uniqueUserAddToDB(String pcName, String userName) {
+        @NotNull
+        private String uniqueUserAddToDB(String pcName, String userName) {
             this.pcName = pcName;
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = MessageFormat.format("{0} on {1} is set.", userName, pcName);
@@ -189,13 +193,14 @@ public abstract class UserInfo implements InformationFactory {
             }
         }
 
-        private @NotNull String updTime(String pcName, boolean isOffline) {
+        @NotNull
+        private String updTime(String pcName, boolean isOffline) {
             this.pcName = pcName;
             AppConfigurationLocal.getInstance().execute(this::countWorkTime, 10);
             StringBuilder stringBuilder = new StringBuilder();
             String sql;
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-                    .valueOf(LocalDateTime.now()));
+                .valueOf(LocalDateTime.now()));
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
             if (isOffline) {
                 sql = sqlOff;
@@ -424,7 +429,7 @@ public abstract class UserInfo implements InformationFactory {
             if (e instanceof SQLException) {
                 messageToUser.error(getClass().getSimpleName(), methName, FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
                 if (e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
-                    String repairTable = new MyISAMRepair().repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_VELKOMVELKOMPC + " QUICK EXTENDED;");
+                    String repairTable = new MyISAMRepair().repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_VELKOMVELKOMPC + ConstantsFor.EXTENDED);
                     FileSystemWorker.appendObjectToFile(appendTo, repairTable);
                 }
             }

@@ -124,7 +124,7 @@ public class AppInfoOnLoad implements Runnable {
 
     private void toFirebase() {
         FirebaseApp app = AppComponents.getFirebaseApp();
-        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC().replace(".", ":"))
+        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC().replace(".", "_"))
                 .setValue(MessageFormat.format("{0} : {1}", new Date().toString(), app.toString()), (error, ref)->{
                     String s = ref.toString();
                     System.out.println("s = " + s);

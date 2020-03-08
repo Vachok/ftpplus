@@ -37,4 +37,10 @@ public class ConstantsForTest {
         String arrStr = Arrays.toString(forCleaner);
         Assert.assertTrue(arrStr.contains("V02.Инструкции"), arrStr);
     }
+    
+    @Test
+    public void testTestGetExcludedFoldersForCleaner() {
+        @NotNull String[] foldersForCleaner = ConstantsFor.getExcludedFoldersForCleaner();
+        System.out.println("foldersForCleaner = " + AbstractForms.fromArray(foldersForCleaner));
+    }
 }

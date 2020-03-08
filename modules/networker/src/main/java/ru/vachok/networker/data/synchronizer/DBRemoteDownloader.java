@@ -10,28 +10,32 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
  @see DBRemoteDownloaderTest
  @since 08.09.2019 (17:36) */
 class DBRemoteDownloader extends SyncData {
-    
-    
+
+
     private int lastLocalId;
-    
+
     private String dbToSync;
-    
+
     private List<String> jsonFromDB = new ArrayList<>();
-    
+
     DBRemoteDownloader(int lastLocalID) {
         this.lastLocalId = lastLocalID;
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBRemoteDownloader{");
@@ -40,7 +44,7 @@ class DBRemoteDownloader extends SyncData {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Override
     public String syncData() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -48,12 +52,12 @@ class DBRemoteDownloader extends SyncData {
         stringBuilder.append(writeJSON());
         return stringBuilder.toString();
     }
-    
+
     @Override
     public void setOption(Object option) {
         this.setDbToSync((String) option);
     }
-    
+
     @Override
     public void superRun() {
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync)) {
@@ -67,23 +71,23 @@ class DBRemoteDownloader extends SyncData {
             messageToUser.error(CONNECT_TO_LOCAL.getDataSource().getURL());
         }
     }
-    
+
     @Override
     public int uploadCollection(Collection stringsCollection, String tableName) {
         return new DBUploadUniversal(stringsCollection, tableName).uploadCollection(stringsCollection, tableName);
     }
-    
+
     @Override
     public int createTable(String dbPointTable, List<String> additionalColumns) {
         throw new TODOException("0");
-        
+
     }
-    
+
     @Override
     public String getDbToSync() {
         return dbToSync;
     }
-    
+
     @Override
     public void setDbToSync(@NotNull String dbToSync) {
         if (dbToSync.contains(".") & !dbToSync.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
@@ -93,18 +97,19 @@ class DBRemoteDownloader extends SyncData {
             this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync;
         }
     }
-    
+
     @Override
     public Map<String, String> makeColumns() {
         Map<String, String> colMap = new HashMap<>();
         colMap.put("Not ready", "17.09.2019 (10:09)");
         return colMap;
     }
-    
+
     private void fillListFromSQL() {
         try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
             String dbReg = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync.split("\\Q.\\E")[1];
             final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", dbReg, lastLocalId);
+            connection.setNetworkTimeout(Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()), (int) TimeUnit.MINUTES.toMillis(1));
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     jsonFromDB.addAll(makeJSONStrings(resultSet));
@@ -118,7 +123,7 @@ class DBRemoteDownloader extends SyncData {
             messageToUser.error(MessageFormat.format("{0} see line: 91 *** {1}", e.getMessage(), CONNECT_TO_REGRU.getDataSource().getURL()));
         }
     }
-    
+
     private String writeJSON() {
         String fileName = dbToSync + FileNames.EXT_TABLE;
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(fileName))) {
@@ -129,8 +134,9 @@ class DBRemoteDownloader extends SyncData {
             return e.getMessage() + " see line: 72";
         }
     }
-    
-    private @NotNull List<String> makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
+
+    @NotNull
+    private List<String> makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
         List<String> jsonStrings = new ArrayList<>();
         if (resultSet.first()) {
             while (resultSet.next()) {
@@ -146,9 +152,10 @@ class DBRemoteDownloader extends SyncData {
         }
         return jsonStrings;
     }
-    
+
     @Contract(pure = true)
-    private @NotNull JsonObject makeJsonObject(@NotNull ResultSet resultSet) throws SQLException {
+    @NotNull
+    private JsonObject makeJsonObject(@NotNull ResultSet resultSet) throws SQLException {
         JsonObject jsonObject = new JsonObject();
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int columnCount = resultSetMetaData.getColumnCount();

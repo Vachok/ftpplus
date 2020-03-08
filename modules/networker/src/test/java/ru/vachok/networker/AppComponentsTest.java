@@ -10,14 +10,19 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
@@ -45,28 +50,28 @@ import java.util.prefs.Preferences;
  @see AppComponents */
 @SuppressWarnings("ALL")
 public class AppComponentsTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testGetMailProps() {
         Properties props = AppComponents.getMailProps();
         Assert.assertTrue(props.size() > 3);
         Assert.assertEquals(props.getProperty("host"), ConstantsFor.SRV_MAIL3);
     }
-    
+
     @Test
     public void testGetProps() {
         Properties appProps = InitProperties.getTheProps();
@@ -74,19 +79,19 @@ public class AppComponentsTest {
         Assert.assertTrue(appProps.getProperty("server.port").equals("8880"));
         Assert.assertTrue(appProps.getProperty("application.name").equals("ru.vachok.networker-"));
     }
-    
+
     @Test
     public void testIpFlushDNS() {
         try {
             String cp866 = new String(UsefulUtilities.ipFlushDNS().getBytes(), "CP866");
             Assert.assertTrue(cp866.contains("DNS"), cp866);
-            
+
         }
         catch (UnsupportedEncodingException e) {
             Assert.assertNull(e, e.getMessage());
         }
     }
-    
+
     @Test
     public void testConnection() {
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING)) {
@@ -97,7 +102,7 @@ public class AppComponentsTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testVisitor() {
         HttpServletRequest request = new MockHttpServletRequest();
@@ -107,7 +112,7 @@ public class AppComponentsTest {
         map.put(timeSession, visitor);
         Assert.assertNotNull(map.get(timeSession));
     }
-    
+
     @Test
     public void testDiapazonedScanInfo() {
         try {
@@ -120,7 +125,7 @@ public class AppComponentsTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
-    
+
     @Test
     public void testGetUserPref() {
         Preferences pref = InitProperties.getUserPref();
@@ -132,40 +137,40 @@ public class AppComponentsTest {
             Assert.assertNull(e, e.getMessage());
         }
     }
-    
+
     @Contract(" -> fail")
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
         throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
-    
+
     @Test
     public void testSimpleCalculator() {
         SimpleCalculator simpleCalculator = new AppComponents().simpleCalculator();
         String stampFromDate = simpleCalculator.getStampFromDate("07-01-1984-02-00");
         Assert.assertEquals(stampFromDate, "442278000000");
     }
-    
+
     @Test
     public void testSshActs() {
         SshActs acts = new AppComponents().sshActs();
         String actsInet = acts.getInet();
         Assert.assertNull(actsInet);
     }
-    
+
     @Test
     public void testThreadConfig() {
         ThreadConfig threadConfig = AppComponents.threadConfig();
         String toStr = threadConfig.toString();
         Assert.assertTrue(toStr.contains("ThreadConfig{java.util.concurrent.ThreadPoolExecutor"), toStr);
     }
-    
+
     @Test
     public void testAdSrv() {
         ADSrv adSrv = AppComponents.adSrv();
         String toStr = adSrv.toString();
         Assert.assertTrue(toStr.contains("ADSrv{"), toStr);
     }
-    
+
     @Test
     public void testScanOnline() {
         NetScanService scanOnline = NetScanService.getInstance("ScanOnline");
@@ -180,22 +185,22 @@ public class AppComponentsTest {
         catch (UnknownHostException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    
+
     }
-    
+
     @Test
     public void testGetPFLists() {
         PfLists pfLists = new AppComponents().getPFLists();
         String toStr = pfLists.toString();
-        Assert.assertTrue(toStr.contains("PfLists{fullSquid"), toStr);
+        Assert.assertTrue(toStr.contains("{\"vipNet\":"), toStr);
     }
-    
+
     @Test
     public void testTestToString() {
         String toStr = new AppComponents().toString();
         Assert.assertTrue(toStr.contains("Nothing to show..."), toStr);
     }
-    
+
     @Test
     @Ignore
     public void testPcNamesScanner() {

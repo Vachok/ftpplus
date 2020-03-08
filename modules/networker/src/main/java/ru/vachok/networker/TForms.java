@@ -503,6 +503,7 @@ public class TForms {
             return brStringBuilder.toString();
         }
         else {
+            nStringBuilder.append(ConstantsFor.STR_N);
             return nStringBuilder.toString();
         }
     }
