@@ -6,6 +6,7 @@ package ru.vachok.networker.ad.usermanagement;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -35,6 +36,7 @@ public class OwnerFixerTest {
     }
 
     @Test
+    @Ignore
     public void testRun() {
         OwnerFixer ownerFixer = new OwnerFixer(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
         AppConfigurationLocal.getInstance().execute(ownerFixer, 20);

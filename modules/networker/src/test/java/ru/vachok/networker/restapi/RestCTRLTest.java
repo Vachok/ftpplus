@@ -219,7 +219,7 @@ public class RestCTRLTest {
         String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
         OkHttpClient okHttpClient = new OkHttpClient();
         Request.Builder builder = new Request.Builder();
-        builder.url(RestCTRLTest.SRV_RUPS + urlPart);
+        builder.url(RestCTRLTest.SRV_LOCAL + urlPart);
 //        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
         builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
         builder.addHeader("Content-Type", ConstantsFor.JSON);

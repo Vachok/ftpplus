@@ -29,6 +29,6 @@ public class RealTimeChildListenerTest {
     @Test
     public void testOnChildAdded() {
         boolean isSend = new RealTimeChildListener().sendValueToSQLDatabase("test", "test");
-        Assert.assertTrue(isSend);
+        Assert.assertFalse(isSend);
     }
 }
