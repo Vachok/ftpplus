@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ad.inet.AllowDomainHelper;
 import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
+import ru.vachok.networker.net.ssh.SSHCommander;
 
 
 @FunctionalInterface
@@ -13,6 +14,8 @@ public interface RestApiHelper {
 
 
     String DOMAIN = "allowdomainhelper";
+
+    String SSH = "sshcommandexec";
 
     @NotNull
     @Contract(value = " -> new")
@@ -22,6 +25,8 @@ public interface RestApiHelper {
                 return new TempInetRestControllerHelper();
             case DOMAIN:
                 return new AllowDomainHelper();
+            case SSH:
+                return new SSHCommander();
         }
         return new TempInetRestControllerHelper();
     }

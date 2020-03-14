@@ -20,6 +20,7 @@ import ru.vachok.networker.net.ssh.SshActs;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.stream.Stream;
 
 
 /**
@@ -105,7 +106,7 @@ public class RestCTRLTest {
         try (Response execute = newCall.execute();
              ResponseBody body = execute.body()) {
             String string = body != null ? body.string() : "null";
-            boolean contains = string.contains("INVALID") || string.contains(ConstantsFor.RULES);
+            boolean contains = Stream.of("INVALID", ConstantsFor.RULES, "ikudryashov@velkomfood.ru").anyMatch(string::contains);
             Assert.assertTrue(contains, string);
         }
         catch (IOException e) {
@@ -212,6 +213,61 @@ public class RestCTRLTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
+    }
+
+    @Test
+    public void testSshRest() {
+    }
+
+    @Test
+    public void testGetAllowDomains() {
+        String domains = restCTRL.getAllowDomains();
+        Assert.assertTrue(domains.contains(".www.vachok.ru"), domains);
+    }
+
+    @Test
+    public void testCollectOldFiles() {
+        String s = restCTRL.collectOldFiles();
+        Assert.assertTrue(s.contains("Total file size in DB now:"), s);
+    }
+
+    @Test
+    public void testDelOldFiles() {
+        try {
+            String s = restCTRL.delOldFiles(new MockHttpServletRequest());
+        }
+        catch (NullPointerException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+
+    @Test
+    public void testAppPermanentInet() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        JsonObject reqObject = new JsonObject();
+        reqObject.add("ip", "8.8.8.8");
+        reqObject.add("pflist", "squidlimited");
+        reqObject.add("restRequest", "addperm");
+        request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        request.setContentType(ConstantsFor.JSON);
+        request.setContent(reqObject.toString().getBytes());
+        JsonObject jsonObject = restCTRL.appPermanentInet(request);
+        System.out.println("request = " + reqObject.toString());
+        System.out.println("response = " + jsonObject.toString());
+        Assert.assertEquals(jsonObject.get(ConstantsFor.PARAM_NAME_SERVER).asString(), "192.168.13.42");
+    }
+
+    @Test
+    public void testSshCommandExecute() {
+        JsonObject jsonObject = new JsonObject();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        jsonObject.set(ConstantsFor.PARM_NAME_COMMAND, "ls;uname -a;exit");
+        request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        request.setContentType(ConstantsFor.JSON);
+        request.setContent(jsonObject.toString().getBytes());
+        String sshExec = restCTRL.sshCommandExecute(request);
+        Assert.assertTrue(sshExec.contains("!_passwords.xlsx"), sshExec);
+        Assert.assertTrue(sshExec.contains("Srv-GIT"), sshExec);
     }
 
     @NotNull

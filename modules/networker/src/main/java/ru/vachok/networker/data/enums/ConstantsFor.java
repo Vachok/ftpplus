@@ -545,6 +545,10 @@ public enum ConstantsFor {
 
     public static final String EXTENDED = " QUICK EXTENDED;";
 
+    public static final String PARAM_NAME_SERVER = "server";
+
+    public static final String PARM_NAME_COMMAND = "command";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();

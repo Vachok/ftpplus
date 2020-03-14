@@ -204,6 +204,9 @@ public class SshActs {
         return result;
     }
 
+    /**
+     @see SshActsTest#testAllowDomainDel()
+     */
     @SuppressWarnings("DuplicateStringLiteralInspection")
     public String allowDomainDel() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -228,11 +231,13 @@ public class SshActs {
                 .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
                 .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
                 .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
-                .append(ConstantsFor.SSH_INITPF).toString();
+                .append(ConstantsFor.SSH_INITPF);
 
-            String resStr = new SSHFactory.Builder(whatSrvNeed(), sshComBuilder.toString(), getClass().getSimpleName()).build().call();
+            String sshCom = sshComBuilder.toString();
+            String resStr = new SSHFactory.Builder(whatSrvNeed(), sshCom, getClass().getSimpleName()).build().call();
 
             stringBuilder.append(resStr.replace("\n", "<br>\n"));
+            stringBuilder.append(sshCom);
         });
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", stringBuilder.toString());
         return stringBuilder.toString();
@@ -377,6 +382,10 @@ public class SshActs {
     public void setVipNet() {
         this.vipNet = true;
         this.squid = false;
+    }
+
+    public String execSSHCommand(String sshCommand) {
+        return new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build().call();
     }
 
     @Override

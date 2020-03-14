@@ -1,10 +1,14 @@
 package ru.vachok.networker.restapi;
 
 
-import com.eclipsesource.json.*;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.common.Cleaner;
@@ -13,9 +17,11 @@ import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
+import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -26,9 +32,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 
 
@@ -36,23 +44,23 @@ import java.util.*;
  @see RestCTRLTest
  @since 15.12.2019 (19:42) */
 @SuppressWarnings("unused")
-@RestController
+@RestController("RestCTRL")
 public class RestCTRL {
-    
-    
+
+
     private static final String OKHTTP = "okhttp";
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRL.class.getSimpleName());
-    
+
     private static final String INVALID_USER = "INVALID USER";
-    
+
     private static final String GETOLDFILES = "/getoldfiles";
-    
+
     @GetMapping("/status")
     public String appStatus() {
         return UsefulUtilities.getRunningInformation();
     }
-    
+
     @GetMapping("/pc")
     public String uniqPC(@NotNull HttpServletRequest request) {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REST_PC_UNIQ);
@@ -252,14 +260,14 @@ public class RestCTRL {
         pfService.makeListRunner();
         return pfLists.toString();
     }
-    
+
     @GetMapping("/sshgetdomains")
     public String getAllowDomains() {
         PfListsSrv bean = (PfListsSrv) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
         return bean.runCom();
     }
-    
+
     @GetMapping(GETOLDFILES)
     public String collectOldFiles() {
         OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
@@ -267,22 +275,47 @@ public class RestCTRL {
         AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
         return oldBigFilesInfoCollector.getFromDatabase();
     }
-    
+
     @PostMapping(GETOLDFILES)
     public String delOldFiles(HttpServletRequest request) {
         Cleaner cleaner = (Cleaner) IntoApplication.getConfigurableApplicationContext().getBean(Cleaner.class.getSimpleName());
         if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
             AppConfigurationLocal.getInstance().execute(cleaner);
-            return ((OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext().getBean(OldBigFilesInfoCollector.class.getSimpleName())).getFromDatabase();
+            return ((OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext().getBean(OldBigFilesInfoCollector.class.getSimpleName()))
+                .getFromDatabase();
         }
         else {
             return INVALID_USER;
         }
     }
-    
+
+    @PostMapping("/addperm")
+    public JsonObject appPermanentInet(HttpServletRequest request) {
+        SshActs sshActs = (SshActs) IntoApplication.getConfigurableApplicationContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.set(ConstantsFor.PARAM_NAME_SERVER, sshActs.whatSrvNeed());
+        jsonResponse.set("tostr", sshActs.toString());
+        return jsonResponse;
+    }
+
+    @PostMapping("/sshcommandexec")
+    public String sshCommandExecute(HttpServletRequest request) {
+        String result = INVALID_USER;
+        SshActs sshActs = (SshActs) IntoApplication.getConfigurableApplicationContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
+        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
+            try (ServletInputStream stream = request.getInputStream()) {
+                result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(getJSON(readRequestBytes(request)));
+            }
+            catch (IOException e) {
+                result = AbstractForms.networkerTrace(e.getStackTrace());
+            }
+        }
+        return result;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", RestCTRL.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
     }
 }
