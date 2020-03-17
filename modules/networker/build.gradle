@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '8.0.2011'
+version = '8.0.2012'
 sourceCompatibility = 1.8
 
 repositories {
@@ -58,13 +58,13 @@ sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml", "application.properties", "**/*.json", "**/*.js", "msqldata.properties"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png","**/*.jpg", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml", "application.properties", "**/*.json", "**/*.js", "msqldata.properties"]
         }
     }
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.jar", "**/*.json", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png","**/*.jpg", "**/*.jar", "**/*.json", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
         }
     }
 }

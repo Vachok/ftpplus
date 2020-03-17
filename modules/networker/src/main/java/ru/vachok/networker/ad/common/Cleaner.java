@@ -8,9 +8,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -31,12 +31,11 @@ import java.util.concurrent.TimeUnit;
  @see CleanerTest
  @since 25.06.2019 (11:37) */
 @Service("Cleaner")
-@Scope(ConstantsFor.SINGLETON)
 public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
 
 
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, Cleaner.class.getSimpleName());
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.DB, Cleaner.class.getSimpleName());
 
     private Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
 
@@ -64,7 +63,7 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
         return sb.toString();
     }
 
-    private void makeDeletions() {
+    protected void makeDeletions() {
         fillPaths();
         for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
             Random random = new Random();
@@ -72,8 +71,9 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
             Path sourceDel = indexPath.get(index);
             Path copyPath;
             try {
-                copyPath = Files.move(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
-                    .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
+                String replacedPathStr = sourceDel.normalize().toAbsolutePath().toString().toLowerCase()
+                    .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\".toLowerCase());
+                copyPath = Files.move(sourceDel, Paths.get(replacedPathStr), StandardCopyOption.REPLACE_EXISTING);
                 if (copyPath.toFile().exists()) {
                     messageToUser.info(getClass().getSimpleName(), sourceDel.toAbsolutePath().toString(), "Moved " + copyPath.toAbsolutePath()
                         .toString() + ", db removed: " + removeFromDB(index));
@@ -84,7 +84,7 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
                 }
             }
             catch (IOException | RuntimeException e) {
-                messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", e.getMessage() + Thread.currentThread().getState().name());
+                messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", AbstractForms.fromArray(e));
             }
         }
     }

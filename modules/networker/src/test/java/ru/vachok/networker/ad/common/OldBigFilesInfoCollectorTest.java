@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
@@ -31,7 +30,6 @@ import java.util.concurrent.Future;
 /**
  @see OldBigFilesInfoCollector
  @since 17.06.2019 (14:41) */
-@Ignore
 public class OldBigFilesInfoCollectorTest {
 
 
@@ -74,6 +72,7 @@ public class OldBigFilesInfoCollectorTest {
     public void realCall() {
         OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        oldBigFilesInfoCollector.setStartPath("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\");
         oldBigFilesInfoCollector.call();
     }
 

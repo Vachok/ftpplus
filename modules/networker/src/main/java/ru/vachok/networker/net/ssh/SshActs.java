@@ -34,8 +34,7 @@ import java.util.regex.Pattern;
 
 
 /**
- SSH-actions class
-
+@see SshActsTest
  @since 29.11.2018 (13:01) */
 @Service(ModelAttributeNames.ATT_SSH_ACTS)
 @Scope(ConstantsFor.PROTOTYPE)

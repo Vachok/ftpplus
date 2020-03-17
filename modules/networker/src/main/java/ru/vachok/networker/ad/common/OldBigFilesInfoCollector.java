@@ -65,6 +65,10 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         this.reportUser = "Not completed yet";
     }
 
+    public void setStartPath(@NotNull String startPath) {
+        this.startPath = startPath;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OldBigFilesInfoCollector{");

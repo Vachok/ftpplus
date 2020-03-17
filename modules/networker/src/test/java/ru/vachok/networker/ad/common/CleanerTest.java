@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
@@ -29,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 /**
  @see Cleaner
  @since 25.06.2019 (10:28) */
-@Ignore
 public class CleanerTest {
 
 
@@ -54,6 +52,7 @@ public class CleanerTest {
     public void testBlockCall() {
         this.cleaner = (Cleaner) IntoApplication.getConfigurableApplicationContext().getBean(Cleaner.class.getSimpleName());
         cleaner.run();
+        cleaner.makeDeletions();
     }
 
     @Test
@@ -81,7 +80,7 @@ public class CleanerTest {
         return filesToDeleteWithAttrs;
     }
 
-    private int countLimitOfDeleteFiles(@NotNull File fileWithInfoAboutOldCommon) {
+    private static int countLimitOfDeleteFiles(@NotNull File fileWithInfoAboutOldCommon) {
         int stringsInLogFile = FileSystemWorker.countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize());
         long lastModified = fileWithInfoAboutOldCommon.lastModified();
 
