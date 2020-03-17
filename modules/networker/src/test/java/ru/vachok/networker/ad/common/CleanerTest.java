@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 /**
  @see Cleaner
  @since 25.06.2019 (10:28) */
+@Ignore
 public class CleanerTest {
 
 
