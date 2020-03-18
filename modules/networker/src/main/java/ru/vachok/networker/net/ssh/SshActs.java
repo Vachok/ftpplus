@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -331,8 +330,8 @@ public class SshActs {
             this.delDomain = delDomain.split("/")[0];
         }
 
-        String[] fromServerListDomains = getServerListDomains();
-        boolean anyMatch = Arrays.stream(fromServerListDomains).allMatch((domStr)->delDomain.contains(domStr));
+        String fromServerListDomains = getServerListDomains();
+        boolean anyMatch = fromServerListDomains.toLowerCase().contains(delDomain.toLowerCase());
 
         if (!anyMatch) {
             this.delDomain = "No domain to delete.";
@@ -341,7 +340,7 @@ public class SshActs {
     }
 
     @NotNull
-    private String[] getServerListDomains() {
+    private String getServerListDomains() {
         SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         Callable<String> factory = delDomBuilder.build();
         Future<String> future = Executors.newSingleThreadExecutor().submit(factory);
@@ -354,7 +353,7 @@ public class SshActs {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        return call.split("<br>\n");
+        return call;
     }
 
     public void setAllFalse() {

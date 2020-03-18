@@ -181,13 +181,13 @@ public class RestCTRLTest {
     @Test
     public void sshCommandAddDomain() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add("domain", "https://www.vachok.ru/");
+        jsonObject.add("domain", "https://www.eatmeat.ru/");
         jsonObject.add("option", "add");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setContentType(ConstantsFor.JSON);
         request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
         request.setContent(jsonObject.toString().getBytes());
-        String s = restCTRL.sshCommandAddDomain(request, new MockHttpServletResponse());
+        String s = restCTRL.helpDomain(request, new MockHttpServletResponse());
         Assert.assertTrue(s.contains("vachok.ru"), s);
     }
 
@@ -208,7 +208,9 @@ public class RestCTRLTest {
         Call call = new OkHttpClient().newCall(builder.build());
         try (Response execute = call.execute();
              ResponseBody responseBody = execute.body()) {
-            Assert.assertFalse(responseBody != null && responseBody.string().isEmpty(), requestBody.toString());
+            String stringResp = responseBody.string();
+            Assert.assertFalse(responseBody != null && stringResp.isEmpty(), requestBody.toString());
+            Assert.assertTrue(stringResp.contains(".eatmeat.ru"));
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
@@ -222,7 +224,7 @@ public class RestCTRLTest {
     @Test
     public void testGetAllowDomains() {
         String domains = restCTRL.getAllowDomains();
-        Assert.assertTrue(domains.contains(".www.vachok.ru"), domains);
+        Assert.assertTrue(domains.contains(".www.eatmeat.ru"), domains);
     }
 
     @Test
@@ -242,22 +244,6 @@ public class RestCTRLTest {
     }
 
     @Test
-    public void testAppPermanentInet() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        JsonObject reqObject = new JsonObject();
-        reqObject.add("ip", "8.8.8.8");
-        reqObject.add("pflist", "squidlimited");
-        reqObject.add("restRequest", "addperm");
-        request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
-        request.setContentType(ConstantsFor.JSON);
-        request.setContent(reqObject.toString().getBytes());
-        JsonObject jsonObject = restCTRL.appPermanentInet(request);
-        System.out.println("request = " + reqObject.toString());
-        System.out.println("response = " + jsonObject.toString());
-        Assert.assertEquals(jsonObject.get(ConstantsFor.PARAM_NAME_SERVER).asString(), "192.168.13.42");
-    }
-
-    @Test
     public void testSshCommandExecute() {
         JsonObject jsonObject = new JsonObject();
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -268,6 +254,19 @@ public class RestCTRLTest {
         String sshExec = restCTRL.sshCommandExecute(request);
         Assert.assertTrue(sshExec.contains("!_passwords.xlsx"), sshExec);
         Assert.assertTrue(sshExec.contains("Srv-GIT"), sshExec);
+    }
+
+    @Test
+    public void testDelDomain() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        JsonObject jsonObject = getJSONObject();
+        jsonObject.add(ConstantsFor.OPTION, ConstantsFor.DELETE);
+        jsonObject.add("domain", "http://www.eatmeat.ru");
+        request.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        request.setContentType(ConstantsFor.JSON);
+        request.setContent(jsonObject.toString().getBytes());
+        String respStr = restCTRL.helpDomain(request, new MockHttpServletResponse());
+        Assert.assertFalse(respStr.contains("www.eatmeat.ru<br>"), respStr);
     }
 
     @NotNull

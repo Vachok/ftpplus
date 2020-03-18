@@ -24,6 +24,8 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        String result = "Domain is exists";
+        boolean finished = false;
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);
         JsonValue optValue = jsonObject.get(ConstantsFor.OPTION);
         boolean isAdd = optValue.toString().contains("add");
@@ -33,22 +35,25 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
         try {
             messageToUser.info(allowDomains);
             if (allowDomains.contains("." + ipValue.asString().split("://")[1].split("/")[0])) {
-                return "Domain is exists";
+                finished = true;
             }
         }
         catch (ArrayIndexOutOfBoundsException e) {
             messageToUser.error("AllowDomainHelper.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
-        if (isAdd) {
-            setAllowDomain(ipValue.asString());
-            return allowDomainAdd();
-        }
-        else if (optValue.toString().contains(ConstantsFor.DELETE)) {
+        if (optValue.toString().contains(ConstantsFor.DELETE)) {
             setDelDomain(ipValue.asString());
-            return allowDomainDel();
+            result = allowDomainDel();
         }
-        else {
-            return "Error!";
+        else if (!finished) {
+            if (isAdd) {
+                setAllowDomain(ipValue.asString());
+                result = allowDomainAdd();
+            }
+            else {
+                result = "Error!";
+            }
         }
+        return result;
     }
 }

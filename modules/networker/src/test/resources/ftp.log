@@ -21888,3 +21888,369 @@ get "/usr/home/ITDept/vpn/keys/keys/travina200618.key" "f:\OneDrive\Докуме
 ls "/usr/home/ITDept/vpn/keys/keys/"
 ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/E7.pem" "f:\OneDrive\Документы\Велком\keys\E7.pem"
+get "/usr/home/ITDept/vpn/keys/keys/yumashina200618.crt" "f:\OneDrive\Документы\Велком\keys\yumashina200618.crt"
+get "/usr/home/ITDept/vpn/keys/keys/yumashina200618.csr" "f:\OneDrive\Документы\Велком\keys\yumashina200618.csr"
+get "/usr/home/ITDept/vpn/keys/keys/yumashina200618.key" "f:\OneDrive\Документы\Велком\keys\yumashina200618.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+----------
+Connect to: (18.03.2020 16:31:24)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,154).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,138,110).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (18.03.2020 16:31:33)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,136,241).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,140,83).
+MLSD
+Прервано пользователем.
+----------
+Connect to: (18.03.2020 16:31:46)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,136,239).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,137).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (18.03.2020 16:35:27)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,206).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,138,28).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (18.03.2020 16:35:51)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,124).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,138,1).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (18.03.2020 16:36:23)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,76).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,140,106).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.

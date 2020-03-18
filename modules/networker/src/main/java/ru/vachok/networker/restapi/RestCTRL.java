@@ -239,7 +239,7 @@ public class RestCTRL {
      @see RestCTRLTest#addDomainRESTTest()
      */
     @PostMapping(ConstantsFor.SSHADD)
-    public String sshCommandAddDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
+    public String helpDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
         String retStr = "";
         if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
             if (request.getContentType().equals(ConstantsFor.JSON)) {
@@ -289,13 +289,17 @@ public class RestCTRL {
         }
     }
 
-    @PostMapping("/addperm")
-    public JsonObject appPermanentInet(HttpServletRequest request) {
-        SshActs sshActs = (SshActs) IntoApplication.getConfigurableApplicationContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
-        JsonObject jsonResponse = new JsonObject();
-        jsonResponse.set(ConstantsFor.PARAM_NAME_SERVER, sshActs.whatSrvNeed());
-        jsonResponse.set("tostr", sshActs.toString());
-        return jsonResponse;
+    @PostMapping("/sshdel")
+    public String delDomain(HttpServletRequest request) {
+        String retStr = "";
+        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
+            if (request.getContentType().equals(ConstantsFor.JSON)) {
+                retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(getJSON(readRequestBytes(request)));
+                messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
+            }
+
+        }
+        return retStr + "\n" + getAllowDomains();
     }
 
     @PostMapping("/sshcommandexec")
