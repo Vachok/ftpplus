@@ -143,7 +143,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         messageToUser.warn(msg);
         String confirm = AppComponents.getMessageSwing(this.getClass().getSimpleName()).confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
         if (confirm.equals("ok")) {
-            new Cleaner();
+            new Cleaner(1);
         }
         else {
             writeToLog();
@@ -204,7 +204,8 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                 finally {
                     filesMatched += 1;
                     totalFilesSize += attrs.size();
-                    FirebaseDatabase.getInstance().getReference(Cleaner.class.getSimpleName()).setValue(System.currentTimeMillis(), (error, ref)->messageToUser
+                    FirebaseDatabase.getInstance().getReference(OldBigFilesInfoCollector.class.getSimpleName())
+                        .setValue(System.currentTimeMillis(), (error, ref)->messageToUser
                             .error("Cleaner.onComplete", error.getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
 
                 }

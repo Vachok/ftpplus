@@ -6,7 +6,6 @@ package ru.vachok.networker.ad.common;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
@@ -34,10 +33,21 @@ import java.util.concurrent.TimeUnit;
 public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
 
 
+    public void setLastModifiedLog(long lastModifiedLog) {
+        this.lastModifiedLog = lastModifiedLog;
+    }
+
+    public Cleaner() {
+    }
+
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.DB, Cleaner.class.getSimpleName());
 
     private Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
+
+    public Cleaner(long lastModifiedLog) {
+        this.lastModifiedLog = lastModifiedLog;
+    }
 
     private long lastModifiedLog = 1;
 
@@ -49,7 +59,7 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
     public void run() {
         FirebaseApp firebaseApp = AppComponents.getFirebaseApp();
         messageToUser.info(getClass().getSimpleName(), firebaseApp.getName(), "INITIALIZED");
-        FirebaseDatabase.getInstance().getReference(Cleaner.class.getSimpleName()).addListenerForSingleValueEvent(new ListenerForLastScanFiles());
+        makeDeletions();
     }
 
     @Override
