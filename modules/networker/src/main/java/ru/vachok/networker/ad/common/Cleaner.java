@@ -6,6 +6,7 @@ package ru.vachok.networker.ad.common;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
@@ -21,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -73,12 +75,13 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
         return sb.toString();
     }
 
-    protected void makeDeletions() {
+    private void makeDeletions() {
         fillPaths();
-        for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
+        List<Integer> indexes = new ArrayList<>(indexPath.keySet());
+        for (int i = 0; i < indexes.size(); i++) {
             Random random = new Random();
-            int index = random.nextInt(indexPath.size());
-            Path sourceDel = indexPath.get(index);
+            int index = random.nextInt(indexes.size());
+            Path sourceDel = indexPath.get(indexes.get(index));
             Path copyPath;
             try {
                 String replacedPathStr = sourceDel.normalize().toAbsolutePath().toString().toLowerCase()
@@ -95,6 +98,11 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
             }
             catch (IOException | RuntimeException e) {
                 messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", AbstractForms.fromArray(e));
+            }
+            finally {
+                FirebaseDatabase.getInstance().getReference(getClass().getSimpleName()).setValue(MessageFormat
+                    .format("{0}) {1}", i, sourceDel.toString()), (error, ref)->messageToUser
+                    .warn(Cleaner.class.getSimpleName(), error.getMessage(), " see line: 104 ***"));
             }
         }
     }
