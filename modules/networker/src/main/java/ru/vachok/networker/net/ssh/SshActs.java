@@ -382,8 +382,19 @@ public class SshActs {
         this.squid = false;
     }
 
-    public String execSSHCommand(String sshCommand) {
+    String execSSHCommand(String sshCommand) {
         return new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build().call();
+    }
+
+    /**
+     @param server сервер, для подклчения
+     @param command команда
+     @return результат выполнения
+
+     @see VpnHelper
+     */
+    String execSSHCommand(String server, String command) {
+        return new SSHFactory.Builder(server, command, getClass().getSimpleName()).build().call();
     }
 
     @Override

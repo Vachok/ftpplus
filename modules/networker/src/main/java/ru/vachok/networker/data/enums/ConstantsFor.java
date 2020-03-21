@@ -519,6 +519,8 @@ public enum ConstantsFor {
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
+    public static final String SRV_VPN = "srv-vpn.eatmeat.ru";
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     public static final String DOMAIN = "domain";

@@ -22,6 +22,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.net.ssh.SshActs;
+import ru.vachok.networker.net.ssh.VpnHelper;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -56,9 +57,17 @@ public class RestCTRL {
 
     private static final String GETOLDFILES = "/getoldfiles";
 
+    /**
+     @return статус приложения
+
+     @see RestCTRLTest#testAppStatus()
+     */
     @GetMapping("/status")
     public String appStatus() {
-        return UsefulUtilities.getRunningInformation();
+        String informationSys = UsefulUtilities.getRunningInformation();
+        String statusVpn = new VpnHelper().getStatus();
+
+        return statusVpn + "\n\n\n" + informationSys;
     }
 
     @GetMapping("/pc")

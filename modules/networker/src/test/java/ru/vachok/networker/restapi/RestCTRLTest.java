@@ -60,6 +60,7 @@ public class RestCTRLTest {
     @Test
     public void testAppStatus() {
         String s = restCTRL.appStatus();
+        System.out.println("s = " + s);
         Assert.assertTrue(s.contains("amd64 Arch"));
     }
 
