@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -34,8 +33,7 @@ import java.util.regex.Pattern;
 
 
 /**
- SSH-actions class
-
+@see SshActsTest
  @since 29.11.2018 (13:01) */
 @Service(ModelAttributeNames.ATT_SSH_ACTS)
 @Scope(ConstantsFor.PROTOTYPE)
@@ -204,6 +202,9 @@ public class SshActs {
         return result;
     }
 
+    /**
+     @see SshActsTest#testAllowDomainDel()
+     */
     @SuppressWarnings("DuplicateStringLiteralInspection")
     public String allowDomainDel() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -228,11 +229,13 @@ public class SshActs {
                 .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
                 .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
                 .append(ConstantsFor.SSH_SQUID_RECONFIGURE)
-                .append(ConstantsFor.SSH_INITPF).toString();
+                .append(ConstantsFor.SSH_INITPF);
 
-            String resStr = new SSHFactory.Builder(whatSrvNeed(), sshComBuilder.toString(), getClass().getSimpleName()).build().call();
+            String sshCom = sshComBuilder.toString();
+            String resStr = new SSHFactory.Builder(whatSrvNeed(), sshCom, getClass().getSimpleName()).build().call();
 
             stringBuilder.append(resStr.replace("\n", "<br>\n"));
+            stringBuilder.append(sshCom);
         });
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", stringBuilder.toString());
         return stringBuilder.toString();
@@ -327,8 +330,8 @@ public class SshActs {
             this.delDomain = delDomain.split("/")[0];
         }
 
-        String[] fromServerListDomains = getServerListDomains();
-        boolean anyMatch = Arrays.stream(fromServerListDomains).allMatch((domStr)->delDomain.contains(domStr));
+        String fromServerListDomains = getServerListDomains();
+        boolean anyMatch = fromServerListDomains.toLowerCase().contains(delDomain.toLowerCase());
 
         if (!anyMatch) {
             this.delDomain = "No domain to delete.";
@@ -337,7 +340,7 @@ public class SshActs {
     }
 
     @NotNull
-    private String[] getServerListDomains() {
+    private String getServerListDomains() {
         SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         Callable<String> factory = delDomBuilder.build();
         Future<String> future = Executors.newSingleThreadExecutor().submit(factory);
@@ -350,7 +353,7 @@ public class SshActs {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        return call.split("<br>\n");
+        return call;
     }
 
     public void setAllFalse() {
@@ -377,6 +380,21 @@ public class SshActs {
     public void setVipNet() {
         this.vipNet = true;
         this.squid = false;
+    }
+
+    String execSSHCommand(String sshCommand) {
+        return new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build().call();
+    }
+
+    /**
+     @param server сервер, для подклчения
+     @param command команда
+     @return результат выполнения
+
+     @see VpnHelper
+     */
+    String execSSHCommand(String server, String command) {
+        return new SSHFactory.Builder(server, command, getClass().getSimpleName()).build().call();
     }
 
     @Override

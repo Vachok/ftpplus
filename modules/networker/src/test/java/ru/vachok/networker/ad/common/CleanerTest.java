@@ -10,11 +10,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -52,7 +52,9 @@ public class CleanerTest {
 
     @Test
     public void testBlockCall() {
-        this.cleaner = (Cleaner) IntoApplication.getConfigurableApplicationContext().getBean(Cleaner.class.getSimpleName());
+        this.cleaner = new Cleaner();
+        cleaner.setLastModifiedLog(Long
+            .parseLong(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(OldBigFilesInfoCollector.class.getSimpleName())));
         cleaner.run();
     }
 
@@ -81,7 +83,7 @@ public class CleanerTest {
         return filesToDeleteWithAttrs;
     }
 
-    private int countLimitOfDeleteFiles(@NotNull File fileWithInfoAboutOldCommon) {
+    private static int countLimitOfDeleteFiles(@NotNull File fileWithInfoAboutOldCommon) {
         int stringsInLogFile = FileSystemWorker.countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize());
         long lastModified = fileWithInfoAboutOldCommon.lastModified();
 

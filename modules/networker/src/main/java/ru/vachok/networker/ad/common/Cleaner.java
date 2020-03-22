@@ -8,9 +8,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -31,14 +32,24 @@ import java.util.concurrent.TimeUnit;
  @see CleanerTest
  @since 25.06.2019 (11:37) */
 @Service("Cleaner")
-@Scope(ConstantsFor.SINGLETON)
 public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
 
 
+    public void setLastModifiedLog(long lastModifiedLog) {
+        this.lastModifiedLog = lastModifiedLog;
+    }
+
+    public Cleaner() {
+    }
+
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, Cleaner.class.getSimpleName());
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.DB, Cleaner.class.getSimpleName());
 
     private Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
+
+    public Cleaner(long lastModifiedLog) {
+        this.lastModifiedLog = lastModifiedLog;
+    }
 
     private long lastModifiedLog = 1;
 
@@ -50,7 +61,7 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
     public void run() {
         FirebaseApp firebaseApp = AppComponents.getFirebaseApp();
         messageToUser.info(getClass().getSimpleName(), firebaseApp.getName(), "INITIALIZED");
-        FirebaseDatabase.getInstance().getReference(Cleaner.class.getSimpleName()).addListenerForSingleValueEvent(new ListenerForLastScanFiles());
+        makeDeletions();
     }
 
     @Override
@@ -66,14 +77,16 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
 
     private void makeDeletions() {
         fillPaths();
-        for (int i = 0; i < limitOfDeleteFiles(indexPath.size()); i++) {
+        List<Integer> indexes = new ArrayList<>(indexPath.keySet());
+        for (int i = 0; i < indexes.size(); i++) {
             Random random = new Random();
-            int index = random.nextInt(indexPath.size());
-            Path sourceDel = indexPath.get(index);
+            int index = random.nextInt(indexes.size());
+            Path sourceDel = indexPath.get(indexes.get(index));
             Path copyPath;
             try {
-                copyPath = Files.move(sourceDel, Paths.get(sourceDel.normalize().toAbsolutePath().toString()
-                    .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\")), StandardCopyOption.REPLACE_EXISTING);
+                String replacedPathStr = sourceDel.normalize().toAbsolutePath().toString().toLowerCase()
+                    .replace("\\\\srv-fs.eatmeat.ru\\common_new\\", "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\".toLowerCase());
+                copyPath = Files.move(sourceDel, Paths.get(replacedPathStr), StandardCopyOption.REPLACE_EXISTING);
                 if (copyPath.toFile().exists()) {
                     messageToUser.info(getClass().getSimpleName(), sourceDel.toAbsolutePath().toString(), "Moved " + copyPath.toAbsolutePath()
                         .toString() + ", db removed: " + removeFromDB(index));
@@ -84,7 +97,12 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
                 }
             }
             catch (IOException | RuntimeException e) {
-                messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", e.getMessage() + Thread.currentThread().getState().name());
+                messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", AbstractForms.fromArray(e));
+            }
+            finally {
+                FirebaseDatabase.getInstance().getReference(getClass().getSimpleName()).setValue(MessageFormat
+                    .format("{0}) {1}", i, sourceDel.toString()), (error, ref)->messageToUser
+                    .warn(Cleaner.class.getSimpleName(), error.getMessage(), " see line: 104 ***"));
             }
         }
     }

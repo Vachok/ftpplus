@@ -37,19 +37,19 @@ public interface AppConfigurationLocal extends Runnable {
                 return AppComponents.threadConfig();
         }
     }
-    
+
     default void execute(Runnable runnable) {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         AppComponents.threadConfig().cleanQueue(executor, runnable);
         executor.submit(runnable);
     }
-    
+
     default void execute(Callable callable) {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         AppComponents.threadConfig().cleanQueue(executor, callable);
         executor.submit(callable);
     }
-    
+
     default void executeGet(Callable<?> callable, int timeOutSeconds) {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         Future<?> submit = executor.submit(callable);

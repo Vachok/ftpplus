@@ -29,6 +29,7 @@ public class SshActsTest {
         try {
             String domainAddString = domainAddStringFuture.get(30, TimeUnit.SECONDS);
             Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);
+            System.out.println("domainAddString = " + domainAddString);
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();

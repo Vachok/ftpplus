@@ -519,6 +519,10 @@ public enum ConstantsFor {
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
+    public static final String SRV_VPN = "srv-vpn.eatmeat.ru";
+
+    public static final String GIT_SERVER = "http://srv-inetstat.eatmeat.ru:1234";
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     public static final String DOMAIN = "domain";
@@ -544,6 +548,10 @@ public enum ConstantsFor {
     public static final String FILES = "Files: ";
 
     public static final String EXTENDED = " QUICK EXTENDED;";
+
+    public static final String PARAM_NAME_SERVER = "server";
+
+    public static final String PARM_NAME_COMMAND = "command";
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {

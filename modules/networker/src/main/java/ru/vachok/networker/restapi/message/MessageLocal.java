@@ -6,6 +6,7 @@ package ru.vachok.networker.restapi.message;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -128,7 +129,7 @@ public class MessageLocal implements MessageToUser {
             }
         }
         catch (RuntimeException e) {
-            e.printStackTrace();
+            System.err.println(AbstractForms.fromArray(e));
         }
         if (UsefulUtilities.getLogLevel() > 1 & typeLog.equalsIgnoreCase("info")) {
             MessageToUser.getInstance(MessageToUser.FILE, headerMsg).error(headerMsg, titleMsg, bodyMsg);

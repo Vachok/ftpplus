@@ -8,14 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
@@ -24,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -65,6 +65,10 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         this.reportUser = "Not completed yet";
     }
 
+    public void setStartPath(@NotNull String startPath) {
+        this.startPath = startPath;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OldBigFilesInfoCollector{");
@@ -84,10 +88,14 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         try {
             stringBuilder.append(Files.walkFileTree(Paths.get(startPath), new OldBigFilesInfoCollector.WalkerCommon()));
             FirebaseDatabase.getInstance().getReference("oldfiles")
-                    .setValue(getFromDatabase(), (error, ref)->stringBuilder.append(error.getMessage()).append("\n").append(AbstractForms.fromArray(error.toException())));
+                .setValue(getFromDatabase(), (error, ref)->stringBuilder.append(error.getMessage()).append("\n")
+                    .append(AbstractForms.fromArray(error.toException())));
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        finally {
+            InitProperties.getTheProps().setProperty(OldBigFilesInfoCollector.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
         }
         return stringBuilder.toString();
     }
@@ -114,7 +122,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
 
     private void writeToDB(@NotNull Path file, float mByteSize, String attrArray) throws SQLException {
         DataConnectTo localDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        List<String> cleanStop = FileSystemWorker.readFileToList(new File(FileNames.CLEANSTOP_TXT).getAbsolutePath());
+        String[] cleanStop = ConstantsFor.getExcludedFoldersForCleaner();
         for (String stop : cleanStop) {
             if (file.toString().contains(stop)) {
                 file = Paths.get("blackhole");
@@ -139,7 +147,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         messageToUser.warn(msg);
         String confirm = AppComponents.getMessageSwing(this.getClass().getSimpleName()).confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
         if (confirm.equals("ok")) {
-            new Cleaner();
+            new Cleaner(1);
         }
         else {
             writeToLog();
@@ -169,9 +177,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
 
     private class WalkerCommon extends SimpleFileVisitor<Path> {
 
-
-        @NotNull private final String[] excludedFoldersForCleaner = ConstantsFor.getExcludedFoldersForCleaner();
-
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             dirsCounter += 1;
@@ -200,7 +205,8 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                 finally {
                     filesMatched += 1;
                     totalFilesSize += attrs.size();
-                    FirebaseDatabase.getInstance().getReference(Cleaner.class.getSimpleName()).setValue(System.currentTimeMillis(), (error, ref)->messageToUser
+                    FirebaseDatabase.getInstance().getReference(OldBigFilesInfoCollector.class.getSimpleName())
+                        .setValue(System.currentTimeMillis(), (error, ref)->messageToUser
                             .error("Cleaner.onComplete", error.getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
 
                 }
