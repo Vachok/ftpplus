@@ -35,10 +35,14 @@ public class VpnHelperTest {
         Assert.assertTrue(statusVpn.contains("OpenVPN CLIENT LIST"), statusVpn);
     }
 
+    /**
+     @see VpnHelper#getConfig(String)
+     */
     @Test
     public void testGetConfig() {
         String kudrConf = vpnHelper.getConfig("kudr");
-        Assert.assertTrue(kudrConf.contains("config.zip"), kudrConf);
+        Assert.assertTrue(kudrConf.contains("kudrhome.crt"), kudrConf);
+        System.out.println("kudrConf = " + kudrConf);
     }
 
     @Test
