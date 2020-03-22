@@ -1,6 +1,7 @@
 package ru.vachok.networker.net.ssh;
 
 
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.IOException;
@@ -33,6 +34,10 @@ public class VpnHelper extends SshActs {
             result = result + "\n" + whatSrvNeed() + " openvpn-status: \n" + execSSHCommand(GET_STATUS_COMMAND);
         }
         return result;
+    }
+
+    public String getConfig(String keyName) {
+        throw new TODOException("22.03.2020 (9:50)");
     }
 
     @Override

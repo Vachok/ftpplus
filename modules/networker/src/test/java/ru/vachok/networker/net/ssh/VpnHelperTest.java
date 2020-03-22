@@ -1,6 +1,7 @@
 package ru.vachok.networker.net.ssh;
 
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -29,8 +30,20 @@ public class VpnHelperTest {
     }
 
     @Test
-    public void getStatusTest() {
+    public void testGetStatus() {
         String statusVpn = vpnHelper.getStatus();
-        System.out.println("statusVpn = " + statusVpn);
+        Assert.assertTrue(statusVpn.contains("OpenVPN CLIENT LIST"), statusVpn);
+    }
+
+    @Test
+    public void testGetConfig() {
+        String kudrConf = vpnHelper.getConfig("kudr");
+        Assert.assertTrue(kudrConf.contains("config.zip"), kudrConf);
+    }
+
+    @Test
+    public void testTestToString() {
+        String s = vpnHelper.toString();
+        Assert.assertTrue(s.contains("VpnHelper["), s);
     }
 }
