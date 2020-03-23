@@ -98,6 +98,9 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
             }
             catch (IOException | RuntimeException e) {
                 messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", AbstractForms.fromArray(e));
+                Thread.currentThread().checkAccess();
+                AppConfigurationLocal.getInstance().execute(new Cleaner());
+                Thread.currentThread().interrupt();
             }
             finally {
                 FirebaseDatabase.getInstance().getReference(getClass().getSimpleName()).setValue(MessageFormat
