@@ -3,7 +3,6 @@
 package ru.vachok.networker.ad;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -34,37 +33,39 @@ import java.util.stream.Collectors;
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
-    
-    
+
+
     protected static final String STR_ADPHOTO = "adphoto";
-    
+
     private static final String ALERT_AD_FOTO =
             "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
                     "target=\"_blank\">\\\\srv-mail3.eatmeat" +
                     ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
-    
+
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
-    
+
     private static MessageToUser messageToUser = MessageToUser
             .getInstance(MessageToUser.LOCAL_CONSOLE, ActDirectoryCTRL.class.getSimpleName());
-    
+
     private ADSrv adSrv;
-    
+
     private String titleStr = "PowerShell. Применить на SRV-MAIL3";
-    
+
     private PhotoConverterSRV photoConverterSRV;
-    
+
     private HttpServletRequest request;
-    
+
     private Model model;
-    
-    @Contract(pure = true)
+
     @Autowired
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
     }
-    
+
+    /**
+     @see ActDirectoryCTRLTest#testAdUsersComps()
+     */
     @GetMapping("/ad")
     public String adUsersComps(@NotNull HttpServletRequest request, @NotNull Model model) {
         this.request = request;
@@ -80,31 +81,31 @@ public class ActDirectoryCTRL {
         }
         return "ad";
     }
-    
-    private @NotNull String queryStringExists() {
+
+    @NotNull
+    private String queryStringExists() {
         HTMLInfo inetUse = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG_HTMLMAKER);
         String queryString = this.request.getQueryString();
         String queryStringIP = new NameOrIPChecker(queryString).resolveInetAddress().getHostAddress();
         InternetUse makeCSV = InternetUse.getInstance(queryStringIP);
         String fileName = queryString + ".csv";
         AppComponents.threadConfig().getTaskExecutor().execute(()->makeCSV.getInfoAbout(fileName));
-        
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        
-        String infoAboutInetUse;
+
+        String infoAboutPC;
         try {
-            infoAboutInetUse = inetUse.fillAttribute(queryString);
+            infoAboutPC = inetUse.fillAttribute(queryString);
         }
         catch (RuntimeException e) {
-            infoAboutInetUse = HTMLGeneration.MESSAGE_RU_ERROR_NULL;
+            infoAboutPC = HTMLGeneration.MESSAGE_RU_ERROR_NULL;
         }
-        model.addAttribute(ModelAttributeNames.HEAD, infoAboutInetUse);
+        model.addAttribute(ModelAttributeNames.HEAD, infoAboutPC);
         String detailsHTML = makeDetailedReport(queryString);
         model.addAttribute(ModelAttributeNames.DETAILS, detailsHTML);
         return "aditem";
     }
-    
+
     private String makeDetailedReport(String queryString) {
         HTMLInfo inetUse = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG_HTMLMAKER);
         inetUse.setClassOption(queryString);
@@ -120,7 +121,7 @@ public class ActDirectoryCTRL {
         }
         return detailsHTML;
     }
-    
+
     @GetMapping("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
         this.photoConverterSRV = photoConverterSRV;
@@ -138,7 +139,7 @@ public class ActDirectoryCTRL {
         }
         return STR_ADPHOTO;
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ActDirectoryCTRL{");

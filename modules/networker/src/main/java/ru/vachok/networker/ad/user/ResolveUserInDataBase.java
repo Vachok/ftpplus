@@ -10,6 +10,7 @@ import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -76,7 +77,36 @@ class ResolveUserInDataBase extends UserInfo {
                 res = new UnknownUser(this.toString()).getInfoAbout(aboutWhat);
             }
         }
+        res = res + " Last online: " + getLastOnlineTime();
         return res;
+    }
+
+    @NotNull
+    private List<String> searchDatabase(int linesLimit, String sql) {
+        List<String> retList = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
+                preparedStatement.setInt(2, linesLimit);
+                preparedStatement.setQueryTimeout(18);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DB_FIELD_WHENQUERIED);
+                        String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
+                            .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
+                        retList.add(addStr);
+                    }
+                }
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+            }
+        }
+        catch (SQLException e) {
+            retList.add(e.getMessage());
+            retList.add(AbstractForms.fromArray(e));
+        }
+        return retList;
     }
 
     @Override
@@ -124,7 +154,21 @@ class ResolveUserInDataBase extends UserInfo {
         return result;
     }
 
-    private @NotNull List<String> checkDataBase(String aboutWhat, int resultsLimit) {
+    private String getLastOnlineTime() {
+        if (NetScanService.isReach(aboutWhat.toString())) {
+            return "NOW!";
+        }
+        else {
+            String info = PCInfo.getInstance(aboutWhat.toString()).getInfo();
+            if (info.toLowerCase().contains("last online")) {
+                info = info.split("online:")[1];
+            }
+            return info;
+        }
+    }
+
+    @NotNull
+    private List<String> checkDataBase(String aboutWhat, int resultsLimit) {
         List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
         if (results.size() > 0) {
             messageToUser.info(this.getClass().getSimpleName(), RESULTS, String.valueOf(results.size()));
@@ -143,33 +187,6 @@ class ResolveUserInDataBase extends UserInfo {
             }
         }
         return results;
-    }
-
-    private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
-        List<String> retList = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
-                preparedStatement.setInt(2, linesLimit);
-                preparedStatement.setQueryTimeout(18);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DB_FIELD_WHENQUERIED);
-                        String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
-                                .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
-                        retList.add(addStr);
-                    }
-                }
-            }
-            catch (RuntimeException e) {
-                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
-            }
-        }
-        catch (SQLException e) {
-            retList.add(e.getMessage());
-            retList.add(AbstractForms.fromArray(e));
-        }
-        return retList;
     }
 
     @Contract(value = "null -> false", pure = true)
