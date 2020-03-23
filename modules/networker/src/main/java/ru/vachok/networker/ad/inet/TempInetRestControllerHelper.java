@@ -22,6 +22,7 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
         String retStr = jsonObject.toString();
         String inputIP = jsonObject.get("ip").asString();
         String hourAsString = jsonObject.get("hour").asString();
+        String option = jsonObject.get("option").asString();
         long hoursToOpenInet = 0;
         if (hourAsString != null) {
             hoursToOpenInet = Long.parseLong(hourAsString);
@@ -30,13 +31,13 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
             hoursToOpenInet = TimeUnit.DAYS.toHours(365);
         }
         String whocalls = jsonObject.get(ConstantsFor.WHOCALLS).asString();
-        String[] params = {inputIP, String.valueOf(hoursToOpenInet), whocalls};
+        String[] params = {inputIP, String.valueOf(hoursToOpenInet), option, whocalls};
         String tempInetResult = getAnswer(params);
         return MessageFormat.format("{0}\n{1}", retStr, tempInetResult);
     }
 
     private String getAnswer(@NotNull String... params) {
-        return new TemporaryFullInternet(params[0], Long.parseLong(params[1]), "add", params[2]).call();
+        return new TemporaryFullInternet(params[0], Long.parseLong(params[1]), params[2], params[3]).call();
     }
 
 }

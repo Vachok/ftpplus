@@ -523,6 +523,8 @@ public enum ConstantsFor {
 
     public static final String GIT_SERVER = "http://srv-inetstat.eatmeat.ru:1234";
 
+    public static final String ADD = "add";
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     public static final String DOMAIN = "domain";

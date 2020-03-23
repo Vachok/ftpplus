@@ -86,7 +86,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     @Override
     public void run() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
-        if (optionToDo != null && optionToDo.equals("add")) {
+        if (optionToDo != null && optionToDo.equalsIgnoreCase(ConstantsFor.ADD)) {
             messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd());
         }
         execOldMeth();
@@ -97,18 +97,9 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         this.delStamp = timeStampOff;
     }
 
-    public String call() {
-        String doAdd = getClass().getSimpleName();
-        if (optionToDo != null && optionToDo.equals("add")) {
-            doAdd = doAdd();
-            messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd);
-        }
-        execOldMeth();
-        return doAdd;
-    }
-
     @SuppressWarnings("FeatureEnvy")
-    private @NotNull String doAdd() {
+    @NotNull
+    private String doAdd() {
         SSH_FACTORY.setConnectToSrv(NEEDED_SRV);
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInputIpOrHostName);
         StringBuilder retBuilder = new StringBuilder();
@@ -118,7 +109,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
 
         if (tempString24HRSFile.replace("\\Q.\\E", "").contains(sshIP.replace("\\Q.\\E", ""))) {
             retBuilder.append("<h2>")
-                    .append(getClass().getSimpleName())
+                .append(getClass().getSimpleName())
                     .append(" doAdd: ")
                     .append(sshIP)
                     .append(" is exist!</h2><br>")
@@ -136,7 +127,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
                 String sshCommand = new StringBuilder()
                         .append(ConstantsFor.SSH_SUDO_ECHO)
                     .append("\"").append(sshIP).append(" #")
-                        .append(delStamp).append("\"").append(ConstantsFor.SSHCOM_24HRS).append(ConstantsFor.SSH_INITPF).toString();
+                    .append(delStamp).append("\"").append(ConstantsFor.SSHCOM_24HRS).append(ConstantsFor.SSH_INITPF).toString();
                 SSH_FACTORY.setCommandSSH(sshCommand);
                 retBuilder.append(SSH_FACTORY.call());
             }
@@ -145,7 +136,8 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return retBuilder.toString();
     }
 
-    private @NotNull String sshCall() {
+    @NotNull
+    private String sshCall() {
         StringBuilder tempString24HRSBuilder = new StringBuilder();
         try {
             SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
@@ -161,12 +153,26 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return tempString24HRSBuilder.toString();
     }
 
+    public String call() {
+        String doAdd = getClass().getSimpleName();
+        if (optionToDo != null && optionToDo.equals(ConstantsFor.ADD)) {
+            doAdd = doAdd();
+            messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd);
+        }
+        else if (optionToDo.equalsIgnoreCase(ConstantsFor.DELETE)) {
+            doAdd = "TODO! 23.03.2020 (16:42)";
+        }
+        execOldMeth();
+        return doAdd;
+    }
+
     @Contract(pure = true)
     private static Map<String, String> get24hrsTempInetList() {
         return InternetUse.get24hrsTempInetList();
     }
 
-    private @NotNull StringBuilder getSSHCommandBuider(String listWhere) {
+    @NotNull
+    private StringBuilder getSSHCommandBuider(String listWhere) {
         StringBuilder comSSHBuilder = new StringBuilder();
         comSSHBuilder.append("sudo cp /etc/pf/");
         comSSHBuilder.append(listWhere);
