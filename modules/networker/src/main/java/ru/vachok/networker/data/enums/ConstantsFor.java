@@ -427,7 +427,7 @@ public enum ConstantsFor {
     /**
      SSH-command
      */
-    public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
+    public static final String SSH_SUDO_GREP_V = "sudo grep -v -w '";
 
     public static final String SSH_ETCPF = " /etc/pf/";
 

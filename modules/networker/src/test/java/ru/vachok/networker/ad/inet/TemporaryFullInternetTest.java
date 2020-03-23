@@ -62,7 +62,7 @@ public class TemporaryFullInternetTest {
 
     @Test
     public void testRunAdd() {
-        TemporaryFullInternet fullInternet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add", new MockHttpServletRequest().getRemoteAddr());
+        TemporaryFullInternet fullInternet = new TemporaryFullInternet("8.8.8.8", 1, ConstantsFor.ADD, new MockHttpServletRequest().getRemoteAddr());
         String getStr = AppConfigurationLocal.getInstance().submitAsString(fullInternet::toString, 15);
         Assert.assertTrue(getStr.contains("8.8.8.8"), getStr);
     }

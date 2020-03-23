@@ -29,15 +29,26 @@ public class TempInetRestControllerHelperTest {
     }
 
     @Test
-    public void testGetInetResult() {
+    public void addInet() {
+        String resultAdd = testGetInetResult(ConstantsFor.ADD);
+        Assert.assertTrue(resultAdd.contains("}"));
+        Assert.assertTrue(resultAdd.split("}")[1].contains("8.8.8.8"), resultAdd);
+    }
+
+    private String testGetInetResult(String option) {
         TempInetRestControllerHelper tempInetRestControllerHelper = new TempInetRestControllerHelper();
         JsonObject object = new JsonObject();
         object.add("ip", "8.8.8.8");
         object.add("hour", "1");
-        object.add(ConstantsFor.OPTION, "add");
+        object.add(ConstantsFor.OPTION, option);
         object.add(ConstantsFor.WHOCALLS, "test");
-        String resultAdd = tempInetRestControllerHelper.getResult(object);
-        boolean assertion = resultAdd.contains("exist!") || resultAdd.contains("ok");
-        Assert.assertTrue(assertion, resultAdd);
+        return tempInetRestControllerHelper.getResult(object);
+    }
+
+    @Test
+    public void delInet() {
+        String resultAdd = testGetInetResult(ConstantsFor.DELETE);
+        Assert.assertTrue(resultAdd.contains("}"));
+        Assert.assertFalse(resultAdd.split("}")[1].contains("8.8.8.8"), resultAdd);
     }
 }

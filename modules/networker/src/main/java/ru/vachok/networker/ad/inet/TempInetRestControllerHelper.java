@@ -22,7 +22,7 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
         String retStr = jsonObject.toString();
         String inputIP = jsonObject.get("ip").asString();
         String hourAsString = jsonObject.get("hour").asString();
-        String option = jsonObject.get("option").asString();
+        String option = jsonObject.get(ConstantsFor.OPTION).asString();
         long hoursToOpenInet = 0;
         if (hourAsString != null) {
             hoursToOpenInet = Long.parseLong(hourAsString);

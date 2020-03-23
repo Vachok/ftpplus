@@ -89,6 +89,9 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         if (optionToDo != null && optionToDo.equalsIgnoreCase(ConstantsFor.ADD)) {
             messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd());
         }
+        else if (optionToDo != null && optionToDo.equalsIgnoreCase(ConstantsFor.DELETE)) {
+            messageToUser.info(String.valueOf(doDelete("")));
+        }
         execOldMeth();
     }
 
@@ -153,17 +156,17 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return tempString24HRSBuilder.toString();
     }
 
-    public String call() {
-        String doAdd = getClass().getSimpleName();
-        if (optionToDo != null && optionToDo.equals(ConstantsFor.ADD)) {
-            doAdd = doAdd();
-            messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd);
+    private static String doDelete(String delIp) {
+        String sshC = new StringBuilder()
+            .append(ConstantsFor.SSH_SUDO_GREP_V).append(delIp).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;")
+            .append(ConstantsFor.SSH_INITPF).toString();
+        SSH_FACTORY.setCommandSSH(sshC);
+        String sshCommandResult = SSH_FACTORY.call();
+        Long aLong = SSH_CHECKER_MAP.remove(delIp);
+        if (!(aLong == null)) {
+            MINI_LOGGER.add(new Date(aLong) + ", doDelete: " + sshC);
         }
-        else if (optionToDo.equalsIgnoreCase(ConstantsFor.DELETE)) {
-            doAdd = "TODO! 23.03.2020 (16:42)";
-        }
-        execOldMeth();
-        return doAdd;
+        return sshCommandResult;
     }
 
     @Contract(pure = true)
@@ -283,19 +286,23 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         }
     }
 
-    private void mapEntryParse(String x, Long y, long atomicTimeLong) {
-        String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3));
-        MINI_LOGGER.add(willBeDel);
-        this.delStamp = y;
-        if (delStamp < atomicTimeLong) {
-            boolean isDelete = doDelete(x);
-            MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is " + true + "\n" + x + " is delete = " + isDelete);
-            MINI_LOGGER.add("delStamp = " + delStamp);
-            MINI_LOGGER.add("ConstantsFor.getAtomicTime()-delStamp = " + (atomicTimeLong - delStamp));
+    public String call() {
+        String doAdd = getClass().getSimpleName();
+        if (optionToDo != null && optionToDo.equals(ConstantsFor.ADD)) {
+            doAdd = doAdd();
+            messageToUser.info(this.getClass().getSimpleName(), "RUN", doAdd);
         }
-        else {
-            MINI_LOGGER.add("IP" + " = " + x + " time: " + y + " (" + new Date(y) + ")");
+        else if (optionToDo != null && optionToDo.equalsIgnoreCase(ConstantsFor.DELETE)) {
+            userInputIpOrHostName = new NameOrIPChecker(userInputIpOrHostName).resolveInetAddress().getHostAddress();
+            if (userInputIpOrHostName.matches(ConstantsFor.PATTERN_IP.pattern()) & !userInputIpOrHostName.contains("127.0")) {
+                doAdd = doDelete(userInputIpOrHostName);
+            }
+            else {
+                doAdd = userInputIpOrHostName + " incorrect name!";
+            }
         }
+        AppConfigurationLocal.getInstance().execute(this::execOldMeth);
+        return doAdd;
     }
 
     private void chkWithList(@NotNull String[] x) {
@@ -306,18 +313,19 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         }
     }
 
-    private static boolean doDelete(String delDomainName) {
-        String sshC = new StringBuilder()
-                .append(ConstantsFor.SSH_SUDO_GREP_V).append(delDomainName)
-            .append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;")
-                .append(ConstantsFor.SSH_INITPF).toString();
-        SSH_FACTORY.setCommandSSH(sshC);
-        String sshCommand = SSH_FACTORY.call();
-        Long aLong = SSH_CHECKER_MAP.remove(delDomainName);
-        if (!(aLong == null)) {
-            MINI_LOGGER.add(new Date(aLong) + ", doDelete: " + sshCommand);
+    private void mapEntryParse(String x, Long y, long atomicTimeLong) {
+        String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3));
+        MINI_LOGGER.add(willBeDel);
+        this.delStamp = y;
+        if (delStamp < atomicTimeLong) {
+            boolean isDelete = doDelete(x).toLowerCase().contains(x);
+            MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is " + true + "\n" + x + " is delete = " + isDelete);
+            MINI_LOGGER.add("delStamp = " + delStamp);
+            MINI_LOGGER.add("ConstantsFor.getAtomicTime()-delStamp = " + (atomicTimeLong - delStamp));
         }
-        return SSH_CHECKER_MAP.containsKey(delDomainName);
+        else {
+            MINI_LOGGER.add("IP" + " = " + x + " time: " + y + " (" + new Date(y) + ")");
+        }
     }
 
     private static String addBackToList(String ip, String accList) {
