@@ -170,9 +170,10 @@ public class OldBigFilesInfoCollector implements Callable<String> {
      @return более 15 мб и старше 2х лет.
      */
     private boolean more2MBOld(@NotNull BasicFileAttributes attrs) {
-        int oldfileminimumsizemb = Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldfileminimumsizemb", "10"));
-        return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR * 2) && attrs
-                .size() > ConstantsFor.MBYTE * oldfileminimumsizemb;
+        int oldfileminimumsizemb = Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldfilessize", "10"));
+        return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(Long
+            .parseLong(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldfilesperiod", "730"))) && attrs
+            .size() > ConstantsFor.MBYTE * oldfileminimumsizemb;
     }
 
     private class WalkerCommon extends SimpleFileVisitor<Path> {
