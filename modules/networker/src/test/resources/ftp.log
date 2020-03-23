@@ -23162,3 +23162,28 @@ MLSD
 226 Transfer complete
 QUIT
 221 Goodbye.
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/chernyshova200623.crt" "f:\OneDrive\Документы\Велком\keys\chernyshova200623.crt"
+get "/usr/home/ITDept/vpn/keys/keys/chernyshova200623.csr" "f:\OneDrive\Документы\Велком\keys\chernyshova200623.csr"
+get "/usr/home/ITDept/vpn/keys/keys/chernyshova200623.key" "f:\OneDrive\Документы\Велком\keys\chernyshova200623.key"
+get "/usr/home/ITDept/vpn/keys/keys/EB.pem" "f:\OneDrive\Документы\Велком\keys\EB.pem"
+get "/usr/home/ITDept/vpn/keys/keys/EC.pem" "f:\OneDrive\Документы\Велком\keys\EC.pem"
+get "/usr/home/ITDept/vpn/keys/keys/ED.pem" "f:\OneDrive\Документы\Велком\keys\ED.pem"
+get "/usr/home/ITDept/vpn/keys/keys/kovalchuk200623.crt" "f:\OneDrive\Документы\Велком\keys\kovalchuk200623.crt"
+get "/usr/home/ITDept/vpn/keys/keys/kovalchuk200623.csr" "f:\OneDrive\Документы\Велком\keys\kovalchuk200623.csr"
+get "/usr/home/ITDept/vpn/keys/keys/kovalchuk200623.key" "f:\OneDrive\Документы\Велком\keys\kovalchuk200623.key"
+get "/usr/home/ITDept/vpn/keys/keys/popov200623.crt" "f:\OneDrive\Документы\Велком\keys\popov200623.crt"
+get "/usr/home/ITDept/vpn/keys/keys/popov200623.csr" "f:\OneDrive\Документы\Велком\keys\popov200623.csr"
+get "/usr/home/ITDept/vpn/keys/keys/popov200623.key" "f:\OneDrive\Документы\Велком\keys\popov200623.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!

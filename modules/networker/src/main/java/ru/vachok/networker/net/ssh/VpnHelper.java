@@ -19,13 +19,14 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
+ @see VpnHelperTest
  @since 21.03.2020 (12:34) */
 public class VpnHelper extends SshActs {
 
 
     private static final String GET_STATUS_COMMAND = "cat openvpn-status && exit";
 
-    private static final String URL_WITH_KEYS = ConstantsFor.GIT_SERVER + "/?p=.git;a=tree;f=vpn/keys/keys;h=630f3a1a66209d3569bae93df371200d24400f12;hb=refs/heads/rem";
+    private static final String URL_WITH_KEYS = ConstantsFor.GIT_SERVER + "/?p=.git;a=tree;f=vpn/keys/keys;h=e2ff30b915f6277e541cc9415b7ce025fc0b11f4;hb=HEAD";
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, VpnHelper.class.getSimpleName());
 
@@ -73,9 +74,9 @@ public class VpnHelper extends SshActs {
     @NotNull
     private OkHttpClient buildClient() {
         OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
-        okBuild.connectTimeout(2, TimeUnit.SECONDS);
-        okBuild.readTimeout(10, TimeUnit.SECONDS);
-        okBuild.callTimeout(20, TimeUnit.SECONDS);
+        okBuild.connectTimeout(5, TimeUnit.SECONDS);
+        okBuild.readTimeout(30, TimeUnit.SECONDS);
+        okBuild.callTimeout(40, TimeUnit.SECONDS);
         return okBuild.build();
     }
 
@@ -98,7 +99,7 @@ public class VpnHelper extends SshActs {
                 Elements linkElements = elements.tagName("a");
                 if (linkElements.text().contains(keyName)) {
                     Elements html = linkElements.tagName("a");
-                    stringBuilder.append(ConstantsFor.GIT_SERVER).append(html.get(1).attr("href")).append("\n");
+                    stringBuilder.append(ConstantsFor.GIT_SERVER).append(html.get(1).attr("href")).append("\n<br>");
                 }
             }
         }

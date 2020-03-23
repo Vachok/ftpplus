@@ -326,6 +326,17 @@ public class RestCTRL {
         return result;
     }
 
+    @GetMapping("/getvpnkey")
+    public String getVPNKey(HttpServletRequest request) {
+        if (request.getQueryString() == null && request.getQueryString().isEmpty()) {
+            throw new IllegalArgumentException("No argument!");
+        }
+        else {
+            VpnHelper vpnHelper = new VpnHelper();
+            return vpnHelper.getConfig(request.getQueryString());
+        }
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", RestCTRL.class.getSimpleName() + "[\n", "\n]")
