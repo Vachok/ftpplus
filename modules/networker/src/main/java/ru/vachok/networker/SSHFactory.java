@@ -154,7 +154,7 @@ public class SSHFactory implements Callable<String> {
             this.session.disconnect();
         }
         catch (IOException | JSchException | RuntimeException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".call", e));
+            messageToUser.error("SSHFactory.call", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             this.session.disconnect();
         }
         messageToUser.warn("CALL FROM CLASS: ", classCaller, MessageFormat.format("session connected {1}, to server: {0}", connectToSrv, session.isConnected()));
@@ -171,9 +171,7 @@ public class SSHFactory implements Callable<String> {
         }
         catch (RuntimeException e) {
             setRespChannelToField();
-            messageToUser.error(MessageFormat
-                    .format("SSHFactory.connect\n{0}: {1}\nParameters: []\nReturn: java.io.InputStream\nStack:\n{2}", e.getClass().getTypeName(), e
-                            .getMessage(), new TForms().fromArray(e)));
+            messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
@@ -204,14 +202,14 @@ public class SSHFactory implements Callable<String> {
             properties.load(getClass().getResourceAsStream("/static/sshclient.properties"));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("SSHFactory.setRespChannelToField: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error("SSHFactory.setRespChannelToField", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
 
         try {
             jSch.addIdentity(getPem());
         }
         catch (JSchException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
+            messageToUser.error("SSHFactory.setRespChannelToField", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         Objects.requireNonNull(session).setConfig(properties);
         try {
@@ -219,7 +217,7 @@ public class SSHFactory implements Callable<String> {
             session.connect(SSH_TIMEOUT);
         }
         catch (JSchException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
+            messageToUser.error("SSHFactory.setRespChannelToField", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         try {
             this.respChannel = session.openChannel(sessionType);
@@ -269,7 +267,7 @@ public class SSHFactory implements Callable<String> {
                 }
             }
             catch (SQLException | IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".Pem", e));
+                messageToUser.error("SSHFactory.getPem", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
         }
         pemFile.deleteOnExit();
