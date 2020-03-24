@@ -2,6 +2,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import ru.vachok.networker.AbstractForms;
@@ -45,7 +46,12 @@ public class FirebaseMessage implements MessageToUser {
 
     @Override
     public void info(String s) {
-        FirebaseDatabase.getInstance().getReference(s).setValue(s, new Compl());
+        try {
+            FirebaseDatabase.getInstance().getReference(s).setValue(s, new Compl());
+        }
+        catch (DatabaseException e) {
+            FirebaseDatabase.getInstance().getReference(getClass().getSimpleName()).setValue(s, new Compl());
+        }
     }
 
     @Override
