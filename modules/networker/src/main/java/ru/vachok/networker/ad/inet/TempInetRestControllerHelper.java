@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.RestApiHelper;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,6 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
     }
 
     private String getAnswer(@NotNull String... params) {
-        return new TemporaryFullInternet(params[0], Long.parseLong(params[1]), params[2], params[3]).call();
+        return AppConfigurationLocal.getInstance().submitAsString(new TemporaryFullInternet(params[0], Long.parseLong(params[1]), params[2], params[3]), 12);
     }
-
 }
