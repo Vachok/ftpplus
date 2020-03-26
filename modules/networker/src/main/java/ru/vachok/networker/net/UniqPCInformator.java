@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
@@ -69,13 +70,13 @@ public class UniqPCInformator implements InformationFactory {
             return retStr;
         }
         else {
-            return getInfoAbout("");
+            return AbstractForms.fromArray(getAsJson());
         }
     }
 
     @Override
     public String getInfoAbout(String aboutWhat) {
-        return AbstractForms.fromArray(getAsJson());
+        return PCInfo.getInstance(aboutWhat).getInfo();
     }
 
     @NotNull

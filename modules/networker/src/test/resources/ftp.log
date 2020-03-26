@@ -23257,3 +23257,15 @@ ls "/etc/openvpn/client/"
 put "d:\Temp\_tc\myconfig.conf" "/etc/openvpn/client/myconfig.conf"
 ls "/etc/openvpn/client/"
 connection to 194.67.86.51 closed - bye bye!
+CONNECT \194.67.86.51
+connected to 194.67.86.51
+ls "/"
+ls "/home/"
+ls "/home/kudr/"
+ls "/home/kudr/networker/"
+ls "/home/kudr/"
+ls "/home/"
+ls "/"
+ls "/tmp/"
+ls "/"
+connection to 194.67.86.51 closed - bye bye!

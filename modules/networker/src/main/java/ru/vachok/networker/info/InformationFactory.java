@@ -60,7 +60,8 @@ public interface InformationFactory {
     String getInfoAbout(String aboutWhat);
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static @NotNull InformationFactory getInstance(@NotNull String type) {
+    @NotNull
+    static InformationFactory getInstance(@NotNull String type) {
         final ListsController listsController = new ListsController();
         switch (type) {
             case INET_USAGE:

@@ -72,13 +72,14 @@ public class RestCTRL {
 
     @GetMapping("/pc")
     public String uniqPC(@NotNull HttpServletRequest request) {
+        String result;
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REST_PC_UNIQ);
         if (request.getQueryString() != null) {
-            return informationFactory.getInfo();
+            return informationFactory.getInfoAbout(request.getQueryString());
         }
         else {
             informationFactory.setClassOption(true);
-            return informationFactory.getInfoAbout("");
+            return informationFactory.getInfo();
         }
     }
 
