@@ -65,13 +65,22 @@ public class RestCTRLTest {
     }
 
     @Test
-    public void uniqPC() {
-
+    public void testUniqPC() {
         String info = instance.getInfo();
         Assert.assertTrue(info.contains("10.10.10.1"));
         instance.setClassOption(true);
         info = instance.getInfo();
         Assert.assertTrue(info.contains("{\"ip\":\"10.10.10.1\",\"pcname\":\"10.10.10.1\"}"));
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setQueryString("do0213");
+        String do0213Info = restCTRL.uniqPC(request);
+        Assert.assertTrue(do0213Info.contains("ikudryashov"), do0213Info);
+        System.out.println(do0213Info);
+        MockHttpServletRequest requestIP = new MockHttpServletRequest();
+        requestIP.setQueryString("10.200.213.85");
+        String ip21385Info = restCTRL.uniqPC(request);
+        Assert.assertTrue(do0213Info.contains("ikudryashov"), ip21385Info);
+        System.out.println(ip21385Info);
     }
 
     @Test

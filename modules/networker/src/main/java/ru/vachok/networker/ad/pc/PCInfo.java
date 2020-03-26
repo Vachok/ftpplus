@@ -41,12 +41,7 @@ public abstract class PCInfo implements InformationFactory {
             return tvPcInformation;
         }
         else {
-            try {
-                PCInfo.pcName = InetAddress.getByAddress(InetAddress.getByName(aboutWhat).getAddress()).getHostName();
-            }
-            catch (UnknownHostException e) {
-                PCInfo.pcName = aboutWhat;
-            }
+            PCInfo.pcName = aboutWhat;
             if (NetScanService.isReach(pcName) && new NameOrIPChecker(pcName).isLocalAddress()) {
                 AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, false));
                 return new PCOn(pcName);

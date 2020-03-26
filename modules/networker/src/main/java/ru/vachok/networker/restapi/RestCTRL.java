@@ -14,6 +14,7 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.common.Cleaner;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -70,16 +71,42 @@ public class RestCTRL {
         return statusVpn + "\n\n\n" + informationSys;
     }
 
+    /**
+     @return no formatting pc name
+
+     @see RestCTRLTest#testUniqPC()
+     */
     @GetMapping("/pc")
     public String uniqPC(@NotNull HttpServletRequest request) {
         String result;
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REST_PC_UNIQ);
         if (request.getQueryString() != null) {
-            return informationFactory.getInfoAbout(request.getQueryString());
+            String queryStr = request.getQueryString();
+            String infoAbout = informationFactory.getInfoAbout(queryStr);
+            try {
+                infoAbout = infoAbout.split("><")[1].split(">")[1].split("</")[0];
+            }
+            catch (IndexOutOfBoundsException e) {
+                infoAbout = e.getMessage() + "\n" + infoAbout;
+            }
+            if (infoAbout.contains("Online =")) {
+                infoAbout = clearStr(infoAbout);
+            }
+            infoAbout = infoAbout + " Realtime resolve: " + new NameOrIPChecker(queryStr).resolveInetAddress();
+            return infoAbout + "\n\nQuery: " + request.getQueryString();
         }
         else {
             informationFactory.setClassOption(true);
             return informationFactory.getInfo();
+        }
+    }
+
+    private String clearStr(String about) {
+        try {
+            return about.split("font color=")[1].split(">")[1].split("</")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            return about;
         }
     }
 
