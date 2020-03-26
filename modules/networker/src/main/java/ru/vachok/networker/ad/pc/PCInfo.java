@@ -45,7 +45,6 @@ public abstract class PCInfo implements InformationFactory {
                 PCInfo.pcName = InetAddress.getByAddress(InetAddress.getByName(aboutWhat).getAddress()).getHostName();
             }
             catch (UnknownHostException e) {
-                messageToUser.error("PCInfo.getInstance", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
                 PCInfo.pcName = aboutWhat;
             }
             if (NetScanService.isReach(pcName) && new NameOrIPChecker(pcName).isLocalAddress()) {
@@ -74,7 +73,7 @@ public abstract class PCInfo implements InformationFactory {
         PCInfo.pcName = pcName;
         @NotNull String result = "null";
         boolean finished = false;
-        InetAddress inetAddress = null;
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
         if (pcName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
             try {
                 inetAddress = InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress());
@@ -89,12 +88,12 @@ public abstract class PCInfo implements InformationFactory {
             pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
         }
         if (!finished) {
-            result = notFinished(inetAddress, pcName);
+            result = validateNameNotFinished(inetAddress, pcName);
         }
         return result;
     }
 
-    private static String notFinished(InetAddress inetAddress, @NotNull String pcName) {
+    private static String validateNameNotFinished(InetAddress inetAddress, @NotNull String pcName) {
         @NotNull String result = "null";
         boolean finished = false;
         try {

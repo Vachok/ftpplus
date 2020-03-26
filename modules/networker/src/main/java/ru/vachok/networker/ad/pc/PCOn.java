@@ -44,7 +44,7 @@ class PCOn extends PCInfo {
 
     private Set<String> ipsWithInet = FileSystemWorker.readFileToSet(new File(FileNames.INETSTATSIP_CSV).toPath().toAbsolutePath().normalize());
 
-    private @NotNull String sql;
+    @NotNull private String sql;
 
     private String pcName;
 
@@ -60,7 +60,8 @@ class PCOn extends PCInfo {
         this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
     }
 
-    private @NotNull String getUserLogin() {
+    @NotNull
+    private String getUserLogin() {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setName("getUserLogin");
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
@@ -94,7 +95,8 @@ class PCOn extends PCInfo {
 
      @return Крайнее имя пользователя на ПК do0213 - ikudryashov (Wed Aug 14 17:48:43 MSK 2019)
      */
-    private @NotNull String getHTMLCurrentUserName() {
+    @NotNull
+    private String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         List<String> timeName = userInfo.getLogins(pcName, Integer.MAX_VALUE);
         String timesUserLast;
@@ -120,9 +122,9 @@ class PCOn extends PCInfo {
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCOn.class.getSimpleName() + "[\n", "\n]")
-                .add("sql = '" + sql + "'")
-                .add("pcName = '" + pcName + "'")
-                .toString();
+            .add("sql = '" + sql + "'")
+            .add("pcName = '" + pcName + "'")
+            .toString();
     }
 
     @Override
@@ -130,18 +132,19 @@ class PCOn extends PCInfo {
         this.pcName = (String) option;
     }
 
-    private @NotNull String parseUserFolders(@NotNull String userFolderFile) {
+    @NotNull
+    private String timeNameAndDate(@NotNull String timeName) {
         StringBuilder stringBuilder = new StringBuilder();
-        String[] strings = userFolderFile.split(" ");
-        stringBuilder.append(strings[1])
-                .append(" ");
+        stringBuilder.append(Paths.get(timeName.split(" ")[1]).getFileName().toString());
         try {
-            stringBuilder.append(new Date(Long.parseLong(strings[0])));
+            stringBuilder.append(":date:").append(Long.parseLong(timeName.split(" ")[0]));
         }
         catch (NumberFormatException e) {
-            stringBuilder.append(ConstantsFor.OFFLINE);
+            messageToUser.warn(PCOn.class.getSimpleName(), e.getMessage(), " see line: 209 ***");
         }
-        stringBuilder.append("<br>");
+        catch (RuntimeException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
         return stringBuilder.toString();
     }
 
@@ -209,18 +212,19 @@ class PCOn extends PCInfo {
         return onlinePC;
     }
 
-    private @NotNull String timeNameAndDate(@NotNull String timeName) {
+    @NotNull
+    private String parseUserFolders(@NotNull String userFolderFile) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(Paths.get(timeName.split(" ")[1]).getFileName().toString());
+        String[] strings = userFolderFile.split(" ");
+        stringBuilder.append(strings[1])
+            .append(" ");
         try {
-            stringBuilder.append(":date:").append(Long.parseLong(timeName.split(" ")[0]));
+            stringBuilder.append(new Date(Long.parseLong(strings[0])));
         }
         catch (NumberFormatException e) {
-            messageToUser.warn(PCOn.class.getSimpleName(), e.getMessage(), " see line: 209 ***");
+            stringBuilder.append(ConstantsFor.OFFLINE);
         }
-        catch (RuntimeException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
-        }
+        stringBuilder.append("<br>");
         return stringBuilder.toString();
     }
 
