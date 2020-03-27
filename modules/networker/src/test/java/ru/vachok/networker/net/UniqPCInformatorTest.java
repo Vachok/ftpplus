@@ -42,7 +42,9 @@ public class UniqPCInformatorTest {
     public void testGetInfoAbout() {
         this.uniqPCInformator = new UniqPCInformator();
         String infoA = uniqPCInformator.getInfoAbout("");
-        Assert.assertTrue(infoA.contains("\"ip\":\"10.200.213.85\",\"pcname\":\"do0213.eatmeat.ru\""), infoA);
+        Assert.assertTrue(infoA.contains("unique PC in net"), infoA);
+        String infoAbout = uniqPCInformator.getInfoAbout("do0202");
+        Assert.assertTrue(infoAbout.contains(" : "), infoAbout);
     }
 
     @Test

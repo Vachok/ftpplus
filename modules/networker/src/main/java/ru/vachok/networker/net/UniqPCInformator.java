@@ -66,7 +66,7 @@ public class UniqPCInformator implements InformationFactory {
         if (!isJson) {
             Map<String, String> pcs = getPcs();
             String retStr = AbstractForms.fromArray(pcs);
-            retStr = pcs.size() + " utique PC in net.\n\n" + retStr;
+            retStr = pcs.size() + " unique PC in net.\n\n" + retStr;
             return retStr;
         }
         else {
@@ -74,9 +74,17 @@ public class UniqPCInformator implements InformationFactory {
         }
     }
 
+    /**
+     @see UniqPCInformatorTest#testGetInfoAbout()
+     */
     @Override
     public String getInfoAbout(String aboutWhat) {
-        return PCInfo.getInstance(aboutWhat).getInfo();
+        String info;
+        info = aboutWhat.isEmpty() ? AbstractForms.fromArray(getAsJson()) : PCInfo.getInstance(aboutWhat).getInfo();
+        if (!info.contains(" : ")) {
+            info = getInfo();
+        }
+        return info;
     }
 
     @NotNull
