@@ -23315,3 +23315,27 @@ CONNECT \192.168.13.155
 connected to 192.168.13.155
 ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/davidov200630.crt" "f:\OneDrive\Документы\Велком\keys\davidov200630.crt"
+get "/usr/home/ITDept/vpn/keys/keys/davidov200630.csr" "f:\OneDrive\Документы\Велком\keys\davidov200630.csr"
+get "/usr/home/ITDept/vpn/keys/keys/davidov200630.key" "f:\OneDrive\Документы\Велком\keys\davidov200630.key"
+get "/usr/home/ITDept/vpn/keys/keys/FA.pem" "f:\OneDrive\Документы\Велком\keys\FA.pem"
+get "/usr/home/ITDept/vpn/keys/keys/FB.pem" "f:\OneDrive\Документы\Велком\keys\FB.pem"
+get "/usr/home/ITDept/vpn/keys/keys/tebenkov200630.crt" "f:\OneDrive\Документы\Велком\keys\tebenkov200630.crt"
+get "/usr/home/ITDept/vpn/keys/keys/tebenkov200630.csr" "f:\OneDrive\Документы\Велком\keys\tebenkov200630.csr"
+get "/usr/home/ITDept/vpn/keys/keys/tebenkov200630.key" "f:\OneDrive\Документы\Велком\keys\tebenkov200630.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
