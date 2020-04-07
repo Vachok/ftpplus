@@ -89,13 +89,9 @@ public class InternetSync extends SyncData implements Runnable {
             .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddr + ".csv");
         int jsonCreated = createJSON(FileSystemWorker.readFileToQueue(filePath));
         String txtRenamed = renameToTXT(filePath);
-        String tblComent = checkComment();
-        if (tblComent.equals(getCurrentUserPC())) {
-            return MessageFormat.format("{0} created {1} rows. {2}", txtRenamed, jsonCreated, tblComent);
-        }
-        else {
-            return MessageFormat.format("{0} created {1} rows. Comment NEW: {2}", txtRenamed, jsonCreated, setComment());
-        }
+        String tblComment = checkComment();
+        return tblComment.equals(getCurrentUserPC()) ? MessageFormat.format("{0} created {1} rows. {2}", txtRenamed, jsonCreated, tblComment) : MessageFormat
+            .format("{0} created {1} rows. Comment NEW: {2}", txtRenamed, jsonCreated, setComment());
     }
 
     @Contract(pure = true)

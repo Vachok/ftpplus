@@ -9,7 +9,9 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.firebase.RealTimeChildListener;
@@ -22,7 +24,9 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -65,7 +69,9 @@ public class AppInfoOnLoad implements Runnable {
         }
         finally {
             checkFileExitLastAndWriteMiniLog();
-            if (Runtime.getRuntime().freeMemory() > (350 * ConstantsFor.MBYTE) && NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
+            boolean isMemOk = Runtime.getRuntime().freeMemory() > (350 * ConstantsFor.MBYTE);
+            messageToUser.info(getClass().getSimpleName(), "isMemOk", isMemOk + ": " + Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE);
+            if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
                 SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
                 AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 3600);
             }
@@ -129,9 +135,9 @@ public class AppInfoOnLoad implements Runnable {
                     String s = ref.toString();
                     System.out.println("s = " + s);
                 });
-    
+
         FirebaseDatabase.getInstance().getReference().addChildEventListener(new RealTimeChildListener());
-    
+
         if (!UsefulUtilities.thisPC().contains("rups")) {
             FirebaseDatabase.getInstance().getReference("test")
                     .removeValue((error, ref)->messageToUser
