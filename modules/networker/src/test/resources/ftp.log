@@ -23490,3 +23490,22 @@ ls "/usr/home/ITDept/vpn/keys/keys/"
 ls "/usr/home/ITDept/vpn/keys/keys/"
 get "/usr/home/ITDept/vpn/keys/keys/antonov200616.crt" "d:\Temp\_tc\antonov200616.crt"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/FF.pem" "f:\OneDrive\Документы\Велком\keys\FF.pem"
+get "/usr/home/ITDept/vpn/keys/keys/shvab200709.crt" "f:\OneDrive\Документы\Велком\keys\shvab200709.crt"
+get "/usr/home/ITDept/vpn/keys/keys/shvab200709.csr" "f:\OneDrive\Документы\Велком\keys\shvab200709.csr"
+get "/usr/home/ITDept/vpn/keys/keys/shvab200709.key" "f:\OneDrive\Документы\Велком\keys\shvab200709.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
