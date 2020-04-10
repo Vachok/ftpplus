@@ -23509,3 +23509,20 @@ get "/usr/home/ITDept/vpn/keys/keys/shvab200709.key" "f:\OneDrive\Докумен
 ls "/usr/home/ITDept/vpn/keys/keys/"
 ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0100.pem" "f:\OneDrive\Документы\Велком\keys\0100.pem"
+get "/usr/home/ITDept/vpn/keys/keys/tsasura200710.crt" "f:\OneDrive\Документы\Велком\keys\tsasura200710.crt"
+get "/usr/home/ITDept/vpn/keys/keys/tsasura200710.csr" "f:\OneDrive\Документы\Велком\keys\tsasura200710.csr"
+get "/usr/home/ITDept/vpn/keys/keys/tsasura200710.key" "f:\OneDrive\Документы\Велком\keys\tsasura200710.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!

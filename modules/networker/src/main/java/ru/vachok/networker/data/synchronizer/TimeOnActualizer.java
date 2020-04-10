@@ -9,7 +9,6 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class TimeOnActualizer implements Runnable {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TimeOnActualizer.class.getSimpleName());
 
-    private String pcName;
+    private final String pcName;
 
     public TimeOnActualizer(@NotNull String pcName) {
         this.pcName = pcName.replace(ConstantsFor.DOMAIN_EATMEATRU, "");
@@ -114,9 +113,7 @@ public class TimeOnActualizer implements Runnable {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setTimestamp(1, actualTimeOn);
-
-            messageToUser.info(this.getClass().getSimpleName(),
-                MessageFormat.format("setInPcUserDB executeUpdate: {0}\n", preparedStatement.executeUpdate()), preparedStatement.toString());
+            preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
             messageToUser.error("TimeOnActualizer.setInPcUserDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
