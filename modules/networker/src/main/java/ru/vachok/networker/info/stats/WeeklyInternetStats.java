@@ -112,23 +112,11 @@ class WeeklyInternetStats implements Runnable, Stats {
         String bodyMsg = " = " + iPsWithInet + " size in kb";
         messageToUser.info(headerMsg, titleMsg, bodyMsg);
         if (!new File(FileNames.WEEKLY_LCK).exists() && Stats.isSunday()) {
-            createLckFile();
             readStatsToCSVAndDeleteFromDB();
             AppConfigurationLocal.getInstance().execute(new WeeklyInternetStats.InetStatSorter());
         }
         else {
             throw new InvokeIllegalException(LocalDate.now().getDayOfWeek().name() + " not best day for stats...");
-        }
-    }
-
-    private void createLckFile() {
-        File fileLck = new File(FileNames.WEEKLY_LCK);
-        fileLck.deleteOnExit();
-        try {
-            fileLck.createNewFile();
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
         }
     }
 
@@ -345,7 +333,9 @@ class WeeklyInternetStats implements Runnable, Stats {
             try {
                 messageToUser.info(this.getClass().getSimpleName(), "running", submit.get());
                 SyncData syncData = SyncData.getInstance("10.200.202.55");
-                AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(syncData::superRun);
+                if (!new File(FileNames.WEEKLY_LCK).exists()) {
+                    AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(syncData::superRun);
+                }
                 trunkDB();
             }
             catch (InterruptedException | ExecutionException e) {

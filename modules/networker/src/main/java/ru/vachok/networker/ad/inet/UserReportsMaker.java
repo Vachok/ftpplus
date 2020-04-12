@@ -14,11 +14,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
 import java.util.*;
 
 
@@ -26,20 +28,20 @@ import java.util.*;
  @see UserReportsMakerTest
  @since 14.10.2019 (11:40) */
 public class UserReportsMaker extends InternetUse {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserReportsMaker.class.getSimpleName());
-    
+
     private String userCred;
-    
+
     UserReportsMaker(String type) {
         this.userCred = type;
     }
-    
+
     /**
      @param fileName имя csv-файла
      @return {@link java.net.URI}
-     
+
      @see UserReportsMakerTest#testGetInfoAbout()
      */
     @Override
@@ -61,7 +63,7 @@ public class UserReportsMaker extends InternetUse {
         for (String site : uniqSites) {
             FileSystemWorker.appendObjectToFile(new File(fileName), site + "," + Collections.frequency(sitesAll, site));
         }
-        
+
         try {
             return outFile.toPath().toAbsolutePath().toUri().toURL().toString();
         }
@@ -69,7 +71,7 @@ public class UserReportsMaker extends InternetUse {
             return e.getMessage();
         }
     }
-    
+
     private @NotNull Map<Date, String> getMapUsage() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         Map<Date, String> timeSite = new TreeMap<>();
@@ -80,7 +82,7 @@ public class UserReportsMaker extends InternetUse {
              ResultSet resultSet = preparedStatement.executeQuery()) {
             if (resultSet.first()) {
                 timeSite.put(new Date(resultSet.getLong(ConstantsFor.DBCOL_STAMP)), "Start.log");
-                
+
             }
             while (resultSet.next()) {
                 timeSite.put(new Date(resultSet.getLong(ConstantsFor.DBCOL_STAMP)), MessageFormat
@@ -97,21 +99,17 @@ public class UserReportsMaker extends InternetUse {
         messageToUser.info(this.getClass().getSimpleName(), "Returning MAP: ", timeSite.size() + " records");
         return timeSite;
     }
-    
-    private boolean delOldFile(@NotNull File outFile) {
-        boolean retBool;
+
+    private void delOldFile(@NotNull File outFile) {
         outFile.deleteOnExit();
         try {
             Files.deleteIfExists(outFile.toPath());
-            retBool = !outFile.exists();
         }
         catch (IOException e) {
             messageToUser.error("UserReportsMaker", "delOldFile", e.getMessage() + " see line: 79");
-            retBool = outFile.delete();
         }
-        return retBool;
     }
-    
+
     private String resolveTableName() {
         if (userCred.contains(".")) {
             return userCred.replaceAll("\\Q.\\E", "_");
@@ -120,7 +118,7 @@ public class UserReportsMaker extends InternetUse {
             return userCred;
         }
     }
-    
+
     private @NotNull JsonObject toJSON(@NotNull Map.Entry<Date, String> entry) {
         JsonObject inetUse = new JsonObject();
         String localDateStr = String.valueOf(LocalDateTime.ofEpochSecond(entry.getKey().getTime() / 1000, 0, ZoneOffset.ofHours(3)).toLocalDate());
@@ -142,7 +140,7 @@ public class UserReportsMaker extends InternetUse {
         }
         return inetUse;
     }
-    
+
     @Contract(pure = true)
     private @NotNull String createDBQuery() {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_INETSTATS + userCred);
@@ -154,7 +152,7 @@ public class UserReportsMaker extends InternetUse {
         }
         return "SELECT * FROM inetstats." + userCred + " WHERE squidans NOT IN ('TCP_DENIED/403') ORDER BY stamp;";
     }
-    
+
     private @NotNull String parseDomainName(@NotNull String unparsedDomain) {
         unparsedDomain = unparsedDomain.replace(ConstantsFor.HTTPS, "http://").replace("http://", "");
         unparsedDomain = unparsedDomain.split("/")[0];
@@ -163,12 +161,12 @@ public class UserReportsMaker extends InternetUse {
         }
         return unparsedDomain;
     }
-    
+
     @Override
     public void setClassOption(@NotNull Object option) {
         this.userCred = (String) option;
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserReportsMaker{");
@@ -176,12 +174,12 @@ public class UserReportsMaker extends InternetUse {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Override
     public String getInfo() {
         return AbstractForms.fromArray(getMapUsage());
     }
-    
+
     private String parseJSONObj(@NotNull List<JsonObject> jsonS) {
         return String.valueOf(jsonS.get(0).get(ConstantsFor.DBCOL_STAMP));
     }

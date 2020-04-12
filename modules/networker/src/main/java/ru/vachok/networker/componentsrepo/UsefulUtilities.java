@@ -52,7 +52,7 @@ import java.util.concurrent.*;
 public abstract class UsefulUtilities {
 
 
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh"};
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh", ".lck", "IntoApplication."};
 
     private static final Properties APP_PROPS = InitProperties.getTheProps();
 

@@ -21,6 +21,7 @@ import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -75,6 +76,29 @@ public class InternetSync extends SyncData implements Runnable {
     @Override
     public void setDbToSync(String dbToSync) {
         this.ipAddr = dbToSync;
+    }
+
+    /**
+     @see InternetSyncTest#testSuperRun()
+     */
+    @Override
+    public void superRun() {
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
+            throw new InvokeIllegalException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
+        }
+        String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
+        File[] inetFiles = new File(inetstatsPathStr).listFiles();
+        for (File inetFile : Objects.requireNonNull(inetFiles, ()->MessageFormat.format("No files in {0}", inetstatsPathStr))) {
+            String fileName = inetFile.getName();
+            if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+                this.ipAddr = fileName.replace(".csv", "");
+                this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+                createLckFile();
+                String syncMe = syncData();
+                new File(FileNames.WEEKLY_LCK).delete();
+                messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
+            }
+        }
     }
 
     @Override
@@ -132,26 +156,15 @@ public class InternetSync extends SyncData implements Runnable {
         return retInt;
     }
 
-    /**
-     @see InternetSyncTest#testSuperRun()
-     */
-    @Override
-    public void superRun() {
-        if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
-            throw new InvokeIllegalException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
+    private void createLckFile() {
+        File fileLck = new File(FileNames.WEEKLY_LCK);
+        fileLck.deleteOnExit();
+        try {
+            fileLck.createNewFile();
         }
-        String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
-        File[] inetFiles = new File(inetstatsPathStr).listFiles();
-        for (File inetFile : Objects.requireNonNull(inetFiles, ()->MessageFormat.format("No files in {0}", inetstatsPathStr))) {
-            String fileName = inetFile.getName();
-            if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-                this.ipAddr = fileName.replace(".csv", "");
-                this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-                String syncMe = syncData();
-                messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
-            }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
         }
-        new File(FileNames.WEEKLY_LCK).delete();
     }
 
     private int createJSON(@NotNull Queue<String> fileQueue) {

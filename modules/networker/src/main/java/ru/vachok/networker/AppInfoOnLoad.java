@@ -46,7 +46,7 @@ public class AppInfoOnLoad implements Runnable {
 
     private final AppConfigurationLocal onStartTasksLoader = new OnStartTasksLoader();
 
-    private static int thisDelay = UsefulUtilities.getScansDelay();
+    private static final int THIS_DELAY = UsefulUtilities.getScansDelay();
 
     @Override
     public void run() {
@@ -148,7 +148,7 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
-        sb.append(", thisDelay=").append(thisDelay);
+        sb.append(", thisDelay=").append(THIS_DELAY);
         sb.append(", thisPC=").append(UsefulUtilities.thisPC());
         sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
         sb.append('}');

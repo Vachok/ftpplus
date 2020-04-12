@@ -86,14 +86,14 @@ public class OldBigFilesInfoCollector implements Callable<String> {
             OldBigFilesInfoCollector.WalkerCommon walkerCommon = getWalker();
             IntoApplication.getConfigurableApplicationContext().publishEvent(reportUser);
             stringBuilder.append(Files.walkFileTree(Paths.get(startPath), walkerCommon));
+            new File(FileNames.WALKER_LCK).delete();
         }
-        catch (IOException e) {
+        catch (IOException | InvokeIllegalException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         finally {
             this.reportUser = stringBuilder.toString();
             InitProperties.getTheProps().setProperty(OldBigFilesInfoCollector.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
-            new File(FileNames.WALKER_LCK).delete();
         }
         return stringBuilder.toString();
     }
@@ -240,7 +240,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             String toString = MessageFormat.format("Dirs: {0}, files: {2}/{3}. Size {4} MB. Current dir: {1}", dirsCounter, dir.toAbsolutePath()
                     .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
-            messageToUser.info(getClass().getSimpleName(), "postVisitDirectory", toString);
+            messageToUser.info(getClass().getSimpleName(), MessageFormat.format("hash:{0}", hashCode()), toString);
             return FileVisitResult.CONTINUE;
         }
     }

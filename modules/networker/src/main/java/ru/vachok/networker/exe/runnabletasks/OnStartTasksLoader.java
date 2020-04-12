@@ -58,7 +58,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
 
     private static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
 
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OnStartTasksLoader.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OnStartTasksLoader.class.getSimpleName());
 
     @Override
     public void run() {
