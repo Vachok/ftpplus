@@ -8,15 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -44,7 +45,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OldBigFilesInfoCollector.class.getSimpleName());
 
-    private String reportUser;
+    private String reportUser = ConstantsFor.RUNNING;
 
     @NotNull private String startPath = "\\\\srv-fs.eatmeat.ru\\common_new";
 
@@ -59,10 +60,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     @NotNull
     public String getStartPath() {
         return startPath;
-    }
-
-    public OldBigFilesInfoCollector() {
-        this.reportUser = "Not completed yet";
     }
 
     public void setStartPath(@NotNull String startPath) {
@@ -86,18 +83,36 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), new OldBigFilesInfoCollector.WalkerCommon()));
-            FirebaseDatabase.getInstance().getReference("oldfiles")
-                .setValue(getFromDatabase(), (error, ref)->stringBuilder.append(error.getMessage()).append("\n")
-                    .append(AbstractForms.fromArray(error.toException())));
+            OldBigFilesInfoCollector.WalkerCommon walkerCommon = getWalker();
+            IntoApplication.getConfigurableApplicationContext().publishEvent(reportUser);
+            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), walkerCommon));
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         finally {
+            this.reportUser = stringBuilder.toString();
             InitProperties.getTheProps().setProperty(OldBigFilesInfoCollector.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
+            new File(FileNames.WALKER_LCK).delete();
         }
         return stringBuilder.toString();
+    }
+
+    private OldBigFilesInfoCollector.WalkerCommon getWalker() {
+        File walkFile = new File(FileNames.WALKER_LCK);
+        walkFile.deleteOnExit();
+        if (walkFile.exists()) {
+            throw new InvokeIllegalException(walkFile.getAbsolutePath() + " : " + new Date(walkFile.lastModified()));
+        }
+        else {
+            try {
+                Files.createFile(walkFile.toPath());
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+            return new OldBigFilesInfoCollector.WalkerCommon();
+        }
     }
 
     public String getFromDatabase() {

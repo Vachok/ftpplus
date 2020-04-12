@@ -6,6 +6,7 @@ package ru.vachok.networker.exe;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
@@ -13,19 +14,26 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
+import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
-import ru.vachok.networker.restapi.message.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -37,6 +45,8 @@ import java.util.concurrent.locks.ReentrantLock;
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
+@Service("ThreadConfig")
+@Scope(ConstantsFor.SINGLETON)
 public class ThreadConfig implements AppConfigurationLocal {
 
 
@@ -60,8 +70,8 @@ public class ThreadConfig implements AppConfigurationLocal {
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
 
     private Runnable r = new Thread();
 
@@ -181,8 +191,8 @@ public class ThreadConfig implements AppConfigurationLocal {
         TASK_SCHEDULER.initialize();
         TASK_EXECUTOR.initialize();
     }
-    
-    
+
+
     public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Runnable runnable) {
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         for (Runnable r : executorQueue) {
@@ -193,7 +203,7 @@ public class ThreadConfig implements AppConfigurationLocal {
             }
         }
     }
-    
+
     public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Callable callable) {
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         for (Runnable r : executorQueue) {
@@ -204,7 +214,7 @@ public class ThreadConfig implements AppConfigurationLocal {
             }
         }
     }
-    
+
     /**
      Killer
      */
@@ -317,7 +327,7 @@ public class ThreadConfig implements AppConfigurationLocal {
     private class ASExec extends AsyncConfigurerSupport {
 
 
-        private SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor("A");
+        private final SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor("A");
 
         @Contract(pure = true)
         private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {

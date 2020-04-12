@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.RestApiHelper;
@@ -20,6 +21,16 @@ public class SSHCommander implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        int codeVer = jsonObject.getInt("code", -1);
+        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
+            return makeActions(jsonObject);
+        }
+        else {
+            throw new InvokeIllegalException(jsonObject.toString());
+        }
+    }
+
+    private String makeActions(JsonObject jsonObject) {
         JsonValue value = jsonObject.get(ConstantsFor.PARM_NAME_COMMAND);
         SshActs sshActs = (SshActs) IntoApplication.getConfigurableApplicationContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
         return sshActs.execSSHCommand(value.asString());

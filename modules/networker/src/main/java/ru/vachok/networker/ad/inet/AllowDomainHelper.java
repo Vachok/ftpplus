@@ -6,6 +6,7 @@ import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
@@ -24,6 +25,16 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        int codeVer = jsonObject.getInt("code", -1);
+        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
+            return makeActions(jsonObject);
+        }
+        else {
+            throw new InvokeIllegalException(jsonObject.toString());
+        }
+    }
+
+    private String makeActions(JsonObject jsonObject) {
         String result = "Domain is exists";
         boolean finished = false;
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);
@@ -55,5 +66,6 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
             }
         }
         return result;
+
     }
 }

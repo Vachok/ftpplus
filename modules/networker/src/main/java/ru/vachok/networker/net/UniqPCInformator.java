@@ -90,11 +90,14 @@ public class UniqPCInformator implements InformationFactory {
     @NotNull
     private Map<String, String> getPcs() {
         Map<String, String> uniqPCs = new TreeMap<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);
-             PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                uniqPCs.put(resultSet.getString(SQL_PCNAME), resultSet.getString("ip"));
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE)) {
+                preparedStatement.setQueryTimeout(17);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        uniqPCs.put(resultSet.getString(SQL_PCNAME), resultSet.getString("ip"));
+                    }
+                }
             }
         }
         catch (SQLException e) {

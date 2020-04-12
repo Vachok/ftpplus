@@ -93,4 +93,8 @@ public enum FileNames {
     public static final String USERLOGINCOUNTER_TXT = "user_login_counter.txt";
 
     public static final String CLEANSTOP_TXT = "cleanstop.txt";
+
+    public static final String WALKER_LCK = "walker.lck";
+
+    public static final String WEEKLY_LCK = "weekly.lck";
 }

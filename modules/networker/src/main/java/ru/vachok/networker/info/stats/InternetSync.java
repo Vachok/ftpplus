@@ -41,7 +41,7 @@ public class InternetSync extends SyncData implements Runnable {
 
     private String ipAddr;
 
-    private Connection connection;
+    private final Connection connection;
 
     private String dbFullName;
 
@@ -140,7 +140,6 @@ public class InternetSync extends SyncData implements Runnable {
         if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             throw new InvokeIllegalException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
         }
-
         String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
         File[] inetFiles = new File(inetstatsPathStr).listFiles();
         for (File inetFile : Objects.requireNonNull(inetFiles, ()->MessageFormat.format("No files in {0}", inetstatsPathStr))) {
@@ -152,7 +151,7 @@ public class InternetSync extends SyncData implements Runnable {
                 messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
             }
         }
-
+        new File(FileNames.WEEKLY_LCK).delete();
     }
 
     private int createJSON(@NotNull Queue<String> fileQueue) {

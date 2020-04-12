@@ -54,8 +54,6 @@ public class RestCTRL {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRL.class.getSimpleName());
 
-    private static final String INVALID_USER = "INVALID USER";
-
     private static final String GETOLDFILES = "/getoldfiles";
 
     /**
@@ -108,55 +106,6 @@ public class RestCTRL {
         catch (IndexOutOfBoundsException e) {
             return about;
         }
-    }
-
-    @NotNull
-    private List<String> getFromDB() {
-        List<String> validUIDs = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_UIDS_FULL);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from velkom.restuids");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                validUIDs.add(resultSet.getString("uid"));
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return validUIDs;
-    }
-
-    @NotNull
-    private String getFileShow(String userAgent) {
-        StringBuilder stringBuilder = new StringBuilder();
-        long totalSize = 0;
-        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
-        if (file.listFiles() == null) {
-            throw new IllegalArgumentException(file.getAbsolutePath());
-        }
-        else {
-            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
-            for (File listFile : Objects.requireNonNull(file.listFiles())) {
-                long fileSizeKB = listFile.length() / 1024;
-                totalSize = totalSize + fileSizeKB;
-                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
-                String uAgent;
-                try {
-                    uAgent = userAgent.toLowerCase();
-                }
-                catch (RuntimeException e) {
-                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
-                }
-                if (uAgent.contains(OKHTTP)) {
-                    stringBuilder.append("\n");
-                }
-                else {
-                    stringBuilder.append("<br>");
-                }
-            }
-            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
-        }
-        return stringBuilder.toString();
     }
 
     @GetMapping("/db")
@@ -214,36 +163,27 @@ public class RestCTRL {
     @PostMapping("/tempnet")
     public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
         RestApiHelper tempInetRestControllerHelper = RestApiHelper.getInstance(TempInetRestControllerHelper.class.getSimpleName());
-        boolean ipForInetValid = checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION));
         String contentType = request.getContentType(); //application/json
         response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
-        String retStr;
-        if (contentType.equalsIgnoreCase(ConstantsFor.JSON) & ipForInetValid) {
-            JsonObject jsonObject = getJSON(readRequestBytes(request));
-            retStr = tempInetRestControllerHelper.getResult(jsonObject);
-        }
-        else {
-            retStr = INVALID_USER;
-        }
-        return retStr;
+        JsonObject jsonObject = getJSON(readRequestBytes(request));
+        jsonObject.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+        return tempInetRestControllerHelper.getResult(jsonObject);
     }
 
-    private boolean checkValidUID(String headerAuthorization) {
-        boolean isValid = false;
-        List<String> validUIDs = getFromDB();
-        if (validUIDs.size() == 0) {
-            FileSystemWorker.readFileToList("uid.txt");
+    /**
+     @see RestCTRLTest#addDomainRESTTest()
+     */
+    @PostMapping(ConstantsFor.SSHADD)
+    public String helpDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
+        String retStr = "";
+        if (request.getContentType().equals(ConstantsFor.JSON)) {
+            JsonObject jsonO = getJSON(readRequestBytes(request));
+            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+            retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
+            messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
         }
-        for (String validUID : validUIDs) {
-            if (headerAuthorization.equals(validUID)) {
-                messageToUser.info(getClass().getSimpleName(), "checkValidUID", validUID);
-                isValid = true;
-            }
-            else {
-                messageToUser.warn(getClass().getSimpleName(), "checkValidUID", validUID + " != " + headerAuthorization);
-            }
-        }
-        return isValid;
+
+        return retStr + "\n" + getAllowDomains();
     }
 
     private JsonObject getJSON(byte[] contentBytes) {
@@ -272,20 +212,19 @@ public class RestCTRL {
         return contentBytes;
     }
 
-    /**
-     @see RestCTRLTest#addDomainRESTTest()
-     */
-    @PostMapping(ConstantsFor.SSHADD)
-    public String helpDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
-        String retStr = "";
-        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
-            if (request.getContentType().equals(ConstantsFor.JSON)) {
-                retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(getJSON(readRequestBytes(request)));
-                messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
-            }
+    @GetMapping("/sshgetdomains")
+    public String getAllowDomains() {
+        PfListsSrv bean = (PfListsSrv) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
+        return bean.runCom();
+    }
 
-        }
-        return retStr + "\n" + getAllowDomains();
+    @PostMapping(GETOLDFILES)
+    public String delOldFiles(HttpServletRequest request) {
+        Cleaner cleaner = (Cleaner) IntoApplication.getConfigurableApplicationContext().getBean(Cleaner.class.getSimpleName());
+        AppConfigurationLocal.getInstance().execute(cleaner);
+        return ((OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext().getBean(OldBigFilesInfoCollector.class.getSimpleName()))
+            .getFromDatabase();
     }
 
     @GetMapping("/getsshlists")
@@ -298,13 +237,6 @@ public class RestCTRL {
         return pfLists.toString();
     }
 
-    @GetMapping("/sshgetdomains")
-    public String getAllowDomains() {
-        PfListsSrv bean = (PfListsSrv) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
-        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
-        return bean.runCom();
-    }
-
     @GetMapping(GETOLDFILES)
     public String collectOldFiles() {
         OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
@@ -313,45 +245,65 @@ public class RestCTRL {
         return oldBigFilesInfoCollector.getFromDatabase();
     }
 
-    @PostMapping(GETOLDFILES)
-    public String delOldFiles(HttpServletRequest request) {
-        Cleaner cleaner = (Cleaner) IntoApplication.getConfigurableApplicationContext().getBean(Cleaner.class.getSimpleName());
-        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
-            AppConfigurationLocal.getInstance().execute(cleaner);
-            return ((OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext().getBean(OldBigFilesInfoCollector.class.getSimpleName()))
-                .getFromDatabase();
-        }
-        else {
-            return INVALID_USER;
-        }
-    }
-
     @PostMapping("/sshdel")
     public String delDomain(HttpServletRequest request) {
         String retStr = "";
-        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
-            if (request.getContentType().equals(ConstantsFor.JSON)) {
-                retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(getJSON(readRequestBytes(request)));
-                messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
-            }
-
+        if (request.getContentType().equals(ConstantsFor.JSON)) {
+            JsonObject jsonO = getJSON(readRequestBytes(request));
+            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+            retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
+            messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
         }
         return retStr + "\n" + getAllowDomains();
     }
 
     @PostMapping("/sshcommandexec")
     public String sshCommandExecute(HttpServletRequest request) {
-        String result = INVALID_USER;
+        String result;
         SshActs sshActs = (SshActs) IntoApplication.getConfigurableApplicationContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
-        if (checkValidUID(request.getHeader(ConstantsFor.AUTHORIZATION))) {
-            try (ServletInputStream stream = request.getInputStream()) {
-                result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(getJSON(readRequestBytes(request)));
-            }
-            catch (IOException e) {
-                result = AbstractForms.networkerTrace(e.getStackTrace());
-            }
+        try (ServletInputStream stream = request.getInputStream()) {
+            JsonObject jsonO = getJSON(readRequestBytes(request));
+            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+            result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
         }
+        catch (IOException e) {
+            result = AbstractForms.networkerTrace(e.getStackTrace());
+        }
+
         return result;
+    }
+
+    @NotNull
+    private String getFileShow(String userAgent) {
+        StringBuilder stringBuilder = new StringBuilder();
+        long totalSize = 0;
+        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
+        if (file.listFiles() == null) {
+            throw new IllegalArgumentException(file.getAbsolutePath());
+        }
+        else {
+            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
+            for (File listFile : Objects.requireNonNull(file.listFiles())) {
+                long fileSizeKB = listFile.length() / 1024;
+                totalSize = totalSize + fileSizeKB;
+                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
+                String uAgent;
+                try {
+                    uAgent = userAgent.toLowerCase();
+                }
+                catch (RuntimeException e) {
+                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
+                }
+                if (uAgent.contains(OKHTTP)) {
+                    stringBuilder.append("\n");
+                }
+                else {
+                    stringBuilder.append("<br>");
+                }
+            }
+            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
+        }
+        return stringBuilder.toString();
     }
 
     @GetMapping("/getvpnkey")

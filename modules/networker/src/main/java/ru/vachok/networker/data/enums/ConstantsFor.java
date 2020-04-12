@@ -555,6 +555,8 @@ public enum ConstantsFor {
 
     public static final String PARM_NAME_COMMAND = "command";
 
+    public static final String RUNNING = "Walker_running";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();

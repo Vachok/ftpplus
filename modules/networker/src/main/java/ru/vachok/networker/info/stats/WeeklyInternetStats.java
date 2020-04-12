@@ -111,15 +111,25 @@ class WeeklyInternetStats implements Runnable, Stats {
         String titleMsg = new File(FileNames.INETSTATSIP_CSV).getAbsolutePath();
         String bodyMsg = " = " + iPsWithInet + " size in kb";
         messageToUser.info(headerMsg, titleMsg, bodyMsg);
-
-        if (Stats.isSunday()) {
+        if (!new File(FileNames.WEEKLY_LCK).exists() && Stats.isSunday()) {
+            createLckFile();
             readStatsToCSVAndDeleteFromDB();
             AppConfigurationLocal.getInstance().execute(new WeeklyInternetStats.InetStatSorter());
         }
         else {
             throw new InvokeIllegalException(LocalDate.now().getDayOfWeek().name() + " not best day for stats...");
         }
+    }
 
+    private void createLckFile() {
+        File fileLck = new File(FileNames.WEEKLY_LCK);
+        fileLck.deleteOnExit();
+        try {
+            fileLck.createNewFile();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
 
     @Override
