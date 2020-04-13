@@ -47,7 +47,7 @@ public class RegRuFTPLibsUploader implements Runnable {
 
     @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
 
-    private static File[] retMassive = new File[2];
+    private static final File[] FILES_TO_UPLOAD = new File[2];
 
     private String ftpPass;
 
@@ -236,11 +236,7 @@ public class RegRuFTPLibsUploader implements Runnable {
         return stringBuilder.toString();
     }
 
-    File[] getLibFiles() {
-
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
-        String format = simpleDateFormat.format(new Date());
-
+    private File[] getLibFiles() {
         Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
         try {
             pathRoot = pathRoot.getRoot();
@@ -249,7 +245,13 @@ public class RegRuFTPLibsUploader implements Runnable {
         catch (IOException e) {
             messageToUser.warn(RegRuFTPLibsUploader.class.getSimpleName(), e.getMessage(), " see line: 237 ***");
         }
-        return retMassive;
+        finally {
+            InitProperties instance = InitProperties.getInstance(InitProperties.DB_LOCAL);
+            Properties props = instance.getProps();
+            props.setProperty("app", FILES_TO_UPLOAD[0].getName());
+            instance.setProps(props);
+        }
+        return FILES_TO_UPLOAD;
     }
 
     @NotNull
@@ -323,11 +325,13 @@ public class RegRuFTPLibsUploader implements Runnable {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyww");
             String format = simpleDateFormat.format(new Date());
             String appVersion = "8.0." + format;
+
+            InitProperties.setPreference("version", appVersion);
             if (file.getFileName().toString().contains("networker-" + appVersion + ".jar")) {
-                retMassive[0] = file.toFile();
+                FILES_TO_UPLOAD[0] = file.toFile();
             }
             if (file.getFileName().toString().contains(ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar")) {
-                retMassive[1] = file.toFile();
+                FILES_TO_UPLOAD[1] = file.toFile();
             }
             return FileVisitResult.CONTINUE;
         }
