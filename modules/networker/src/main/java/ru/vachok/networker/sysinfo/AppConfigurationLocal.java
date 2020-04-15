@@ -74,7 +74,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default void schedule(Runnable runnable, int timeInMinPerion) {
-        schedule(runnable, 0, TimeUnit.MINUTES.toMillis(timeInMinPerion));
+        schedule(runnable, System.currentTimeMillis() + timeInMinPerion, (int) TimeUnit.MINUTES.toMillis(timeInMinPerion));
     }
 
     default void schedule(Runnable runnable, long timeFirstRun, long period) {

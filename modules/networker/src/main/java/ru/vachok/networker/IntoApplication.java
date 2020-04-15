@@ -47,19 +47,11 @@ public class IntoApplication {
 
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
 
-    private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+    private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
 
     @Contract(pure = true)
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
-        FileSystemWorker.writeFile(IntoApplication.class.getSimpleName() + "." + configurableApplicationContext.hashCode(), AbstractForms
-            .networkerTrace(Thread.currentThread().getStackTrace()));
-        if (configurableApplicationContext != null) {
-            return configurableApplicationContext;
-        }
-        else {
-            configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
-            return configurableApplicationContext;
-        }
+        return configurableApplicationContext;
     }
 
     public static void main(@NotNull String[] args) {
@@ -67,7 +59,6 @@ public class IntoApplication {
         JsonObject appStart = new JsonObject();
         appStart.add(PropertiesNames.TIMESTAMP, ConstantsFor.START_STAMP);
         appStart.add("hdate", new Date(ConstantsFor.START_STAMP).toString());
-        appStart.add("configurableApplicationContext", configurableApplicationContext.hashCode());
         appStart.add("scheduleTrunkPcUserAuto", UsefulUtilities.scheduleTrunkPcUserAuto());
         FileSystemWorker.appendObjectToFile(new File(FileNames.APP_JSON), appStart);
         setUTF8Enc();
