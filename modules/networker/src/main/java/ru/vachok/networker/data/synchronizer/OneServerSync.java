@@ -23,7 +23,7 @@ public class OneServerSync extends SyncData {
 
     private DataConnectTo dataConnectTo;
 
-    private File file;
+    private final File file;
 
     public OneServerSync() {
         this.dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
@@ -124,7 +124,7 @@ public class OneServerSync extends SyncData {
             messageToUser.error(e.getMessage());
         }
         finally {
-            System.out.println("dbToSync = " + dbToSync);
+            messageToUser.info(getClass().getSimpleName(), "synced", dbToSync);
         }
     }
 

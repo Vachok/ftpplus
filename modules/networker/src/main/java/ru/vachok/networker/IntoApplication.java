@@ -47,12 +47,13 @@ public class IntoApplication {
 
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
 
-    private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+    private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
 
     @Contract(pure = true)
     public static ConfigurableApplicationContext getContext() {
-        FileSystemWorker.writeFile(IntoApplication.class.getSimpleName() + "." + configurableApplicationContext.hashCode(), AbstractForms
-            .networkerTrace(Thread.currentThread().getStackTrace()));
+        if (configurableApplicationContext == null) {
+            configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+        }
         return configurableApplicationContext;
 
     }
@@ -113,7 +114,7 @@ public class IntoApplication {
     }
 
     static void appInfoStarter() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        @NotNull Runnable infoAndSched = AppInfoOnLoad.getI();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
     }
 }

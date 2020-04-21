@@ -154,6 +154,22 @@ public class RestCTRL {
     }
 
     /**
+     @see RestCTRLTest#addDomainRESTTest()
+     */
+    @PostMapping(ConstantsFor.SSHADD)
+    public String helpDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
+        String retStr = "";
+        if (request.getContentType().equals(ConstantsFor.JSON)) {
+            JsonObject jsonO = getJSON(readRequestBytes(request));
+            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+            retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
+            messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
+        }
+
+        return retStr + "\n" + getAllowDomains();
+    }
+
+    /**
      @param request {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
      @return json
@@ -168,22 +184,6 @@ public class RestCTRL {
         JsonObject jsonObject = getJSON(readRequestBytes(request));
         jsonObject.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
         return tempInetRestControllerHelper.getResult(jsonObject);
-    }
-
-    /**
-     @see RestCTRLTest#addDomainRESTTest()
-     */
-    @PostMapping(ConstantsFor.SSHADD)
-    public String helpDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
-        String retStr = "";
-        if (request.getContentType().equals(ConstantsFor.JSON)) {
-            JsonObject jsonO = getJSON(readRequestBytes(request));
-            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-            retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
-            messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
-        }
-
-        return retStr + "\n" + getAllowDomains();
     }
 
     private JsonObject getJSON(byte[] contentBytes) {
@@ -214,35 +214,59 @@ public class RestCTRL {
 
     @GetMapping("/sshgetdomains")
     public String getAllowDomains() {
-        PfListsSrv bean = (PfListsSrv) IntoApplication.getContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
-        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
-        return bean.runCom();
+        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
+            PfListsSrv bean = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+            bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
+            return bean.runCom();
+        }
     }
 
     @PostMapping(GETOLDFILES)
     public String delOldFiles(HttpServletRequest request) {
-        Cleaner cleaner = (Cleaner) IntoApplication.getContext().getBean(Cleaner.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(cleaner);
-        return ((OldBigFilesInfoCollector) IntoApplication.getContext().getBean(OldBigFilesInfoCollector.class.getSimpleName()))
-            .getFromDatabase();
+        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
+            Cleaner cleaner = (Cleaner) context.getBean(Cleaner.class.getSimpleName());
+            AppConfigurationLocal.getInstance().execute(cleaner);
+            return ((OldBigFilesInfoCollector) context.getBean(OldBigFilesInfoCollector.class.getSimpleName()))
+                .getFromDatabase();
+        }
     }
 
     @GetMapping("/getsshlists")
     public String sshRest() {
-        ConfigurableApplicationContext context = IntoApplication.getContext();
-        PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
-        PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
-        messageToUser.warn(getClass().getSimpleName(), "sshRest", new Date(pfLists.getTimeStampToNextUpdLong()).toString());
-        pfService.makeListRunner();
-        return pfLists.toString();
+        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
+            PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+            PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
+            messageToUser.warn(getClass().getSimpleName(), "sshRest", new Date(pfLists.getTimeStampToNextUpdLong()).toString());
+            pfService.makeListRunner();
+            return pfLists.toString();
+        }
     }
 
     @GetMapping(GETOLDFILES)
     public String collectOldFiles() {
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getContext()
-            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
-        return oldBigFilesInfoCollector.getFromDatabase();
+        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
+            OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
+                .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+            AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
+            return oldBigFilesInfoCollector.getFromDatabase();
+        }
+    }
+
+    @PostMapping("/sshcommandexec")
+    public String sshCommandExecute(HttpServletRequest request) {
+        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
+            String result;
+            SshActs sshActs = (SshActs) context.getBean(ModelAttributeNames.ATT_SSH_ACTS);
+            try (ServletInputStream stream = request.getInputStream()) {
+                JsonObject jsonO = getJSON(readRequestBytes(request));
+                jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+                result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
+            }
+            catch (IOException e) {
+                result = AbstractForms.networkerTrace(e.getStackTrace());
+            }
+            return result;
+        }
     }
 
     @PostMapping("/sshdel")
@@ -255,22 +279,6 @@ public class RestCTRL {
             messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
         }
         return retStr + "\n" + getAllowDomains();
-    }
-
-    @PostMapping("/sshcommandexec")
-    public String sshCommandExecute(HttpServletRequest request) {
-        String result;
-        SshActs sshActs = (SshActs) IntoApplication.getContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
-        try (ServletInputStream stream = request.getInputStream()) {
-            JsonObject jsonO = getJSON(readRequestBytes(request));
-            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-            result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
-        }
-        catch (IOException e) {
-            result = AbstractForms.networkerTrace(e.getStackTrace());
-        }
-
-        return result;
     }
 
     @NotNull

@@ -3,11 +3,12 @@
 package ru.vachok.networker.componentsrepo.systray.actions;
 
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ConfigurableApplicationContext;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -25,11 +26,6 @@ import java.util.StringJoiner;
 public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
 
 
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ActionMakeInfoAboutOldCommonFiles.class.getSimpleName());
-
     private String fileName = FileNames.FILES_OLD;
 
     public void setFileName(String fileName) {
@@ -46,11 +42,15 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     }
 
     protected String makeAction() {
-        OldBigFilesInfoCollector infoCollector = (OldBigFilesInfoCollector) IntoApplication.getContext()
-            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
-        infoCollector.setStartPath(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldcleanpath"));
-        AppConfigurationLocal.getInstance().execute(infoCollector);
-        return infoCollector.getFromDatabase();
+        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
+            OldBigFilesInfoCollector infoCollector = (OldBigFilesInfoCollector) context.getBean(OldBigFilesInfoCollector.class.getSimpleName());
+            infoCollector.setStartPath(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldcleanpath"));
+            AppConfigurationLocal.getInstance().execute(infoCollector);
+            return infoCollector.getFromDatabase();
+        }
+        catch (BeansException e) {
+            return AbstractForms.fromArray(e);
+        }
     }
 
     @Override

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -84,7 +83,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             OldBigFilesInfoCollector.WalkerCommon walkerCommon = getWalker();
-            IntoApplication.getContext().publishEvent(reportUser);
             stringBuilder.append(Files.walkFileTree(Paths.get(startPath), walkerCommon));
             new File(FileNames.WALKER_LCK).delete();
         }

@@ -4,6 +4,7 @@ package ru.vachok.networker.net.ssh;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -33,7 +34,10 @@ public class SSHCommander implements RestApiHelper {
 
     private String makeActions(JsonObject jsonObject) {
         JsonValue value = jsonObject.get(ConstantsFor.PARM_NAME_COMMAND);
-        SshActs sshActs = (SshActs) getContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
-        return sshActs.execSSHCommand(value.asString());
+        try (ConfigurableApplicationContext context = getContext()) {
+            SshActs sshActs = (SshActs) context.getBean(ModelAttributeNames.ATT_SSH_ACTS);
+            return sshActs.execSSHCommand(value.asString());
+        }
+
     }
 }

@@ -193,23 +193,23 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
 
-    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Runnable runnable) {
-        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
+    public void cleanQueue(Runnable runnable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         for (Runnable r : executorQueue) {
             if (r.equals(runnable) || r instanceof DBMessenger) {
                 MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
+                    .warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }
         }
     }
 
-    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Callable callable) {
-        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
+    public void cleanQueue(Callable callable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         for (Runnable r : executorQueue) {
             if (r.equals(callable) || r instanceof DBMessenger) {
                 MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
+                    .warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }
         }

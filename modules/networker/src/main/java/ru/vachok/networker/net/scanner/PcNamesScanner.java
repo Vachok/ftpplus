@@ -57,10 +57,6 @@ public class PcNamesScanner implements NetScanService {
 
     private String thePc = "";
 
-    public static PcNamesScanner getI() {
-        return pcNamesScanner;
-    }
-
     public String getThePc() {
         return thePc;
     }

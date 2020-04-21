@@ -3,14 +3,12 @@
 package ru.vachok.networker.ad.common;
 
 
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -34,14 +32,13 @@ import java.util.concurrent.TimeUnit;
 public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
 
 
-    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.DB, Cleaner.class.getSimpleName());
+    private final Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
 
-    private Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, Cleaner.class.getSimpleName());
 
     private long lastModifiedLog = 1;
 
-    private List<String> remainFiles = new ArrayList<>();
+    private final List<String> remainFiles = new ArrayList<>();
 
     private int deleteTodayLimit = 0;
 
@@ -61,8 +58,6 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
      */
     @Override
     public void run() {
-        FirebaseApp firebaseApp = AppComponents.getFirebaseApp();
-        messageToUser.info(getClass().getSimpleName(), firebaseApp.getName(), "INITIALIZED");
         makeDeletions();
     }
 

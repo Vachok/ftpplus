@@ -36,7 +36,13 @@ import java.util.List;
 public class AppInfoOnLoad implements Runnable {
 
 
-    public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
+    private static final AppInfoOnLoad INST = new AppInfoOnLoad();
+
+    private static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
+
+    public static Runnable getI() {
+        return INST;
+    }
 
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
@@ -47,6 +53,9 @@ public class AppInfoOnLoad implements Runnable {
     private final AppConfigurationLocal onStartTasksLoader = new OnStartTasksLoader();
 
     private static final int THIS_DELAY = UsefulUtilities.getScansDelay();
+
+    private AppInfoOnLoad() {
+    }
 
     @Override
     public void run() {
@@ -68,7 +77,6 @@ public class AppInfoOnLoad implements Runnable {
             messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 61 ***");
         }
         finally {
-            checkFileExitLastAndWriteMiniLog();
             boolean isMemOk = Runtime.getRuntime().freeMemory() > (350 * ConstantsFor.MBYTE);
             messageToUser.info(getClass().getSimpleName(), "isMemOk", isMemOk + ": " + Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE);
             if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
@@ -80,6 +88,7 @@ public class AppInfoOnLoad implements Runnable {
                     .error(this.getClass().getSimpleName(), "Sync not running", UsefulUtilities.getRunningInformation());
             }
             toFirebase();
+            checkFileExitLastAndWriteMiniLog();
         }
     }
 

@@ -38,27 +38,27 @@ import java.util.concurrent.ConcurrentMap;
  @since 09.06.2019 (21:38) */
 @SuppressWarnings("ALL")
 public class ScanOnlineTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testGetTimeToEndStr() {
-        String timeToEnd = new AppInfoOnLoad().toString();
+        String timeToEnd = AppInfoOnLoad.getI().toString();
         Assert.assertTrue(timeToEnd.contains("thisDelay="), timeToEnd);
     }
-    
+
     @Test
     public void testGetPingResultStr() {
         List<String> toSortFileList = FileSystemWorker.readFileToList(new File(FileNames.ONSCAN).getAbsolutePath());
@@ -67,7 +67,7 @@ public class ScanOnlineTest {
         String fileOnScanSortedAsString = FileSystemWorker.readFile(FileNames.ONSCAN);
         Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"), fileOnScanSortedAsString);
     }
-    
+
     @Test
     public void testIsReach() {
         Deque<InetAddress> dev = NetKeeper.getDequeOfOnlineDev();
@@ -79,14 +79,14 @@ public class ScanOnlineTest {
         catch (UnknownHostException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    
+
         NetScanService scanOnline = new PingerFromFile();
         boolean reachableIP = false;
         InetAddress poll = dev.poll();
         reachableIP = NetScanService.isReach(poll.getHostAddress());
         Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
-    
+
     @Test
     public void testRun() {
         NetScanService scanOnline = new ScanOnline();
@@ -94,25 +94,25 @@ public class ScanOnlineTest {
         Assert.assertTrue(new File("ScanOnline.onList").exists());
         Assert.assertTrue(FileSystemWorker.readFile("ScanOnline.onList").contains("Checked:"));
     }
-    
+
     @Test
     public void testToString() {
         String newScanOnline = NetScanService.getInstance("ScanOnline").toString();
         Assert.assertTrue(newScanOnline.contains("Since "), newScanOnline);
     }
-    
+
     @Test
     public void testGetMonitoringRunnable() {
         Runnable runnable = new ScanOnline().getMonitoringRunnable();
         Assert.assertNotNull(runnable);
     }
-    
+
     @Test
     public void testGetStatistics() {
         String statistics = new ScanOnline().getStatistics();
         Assert.assertTrue(statistics.contains("<p>"));
     }
-    
+
     @Test
     public void testGetExecution() {
         String execution = new ScanOnline().getExecution();
@@ -123,7 +123,7 @@ public class ScanOnlineTest {
             Assert.assertTrue(execution.isEmpty());
         }
     }
-    
+
     @Test
     public void testPingDevices() {
         try {
@@ -141,42 +141,42 @@ public class ScanOnlineTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testWriteLogToFile() {
         Assert.assertTrue(new ScanOnline().writeLog().equals("true"));
     }
-    
+
     @Test
     public void testToString1() {
         String toStr = new ScanOnline().toString();
         Assert.assertTrue(toStr.contains("Максимальное кол-во онлайн адресов"), toStr);
     }
-    
+
     @Test
     public void testGetFileMAXOnlines() {
         File onlinesMax = new ScanOnline().getFileMAXOnlines();
         Assert.assertTrue(onlinesMax.getAbsolutePath().contains("lan\\onlines.max"));
     }
-    
+
     @Test
     public void testGetOnlinesFile() {
         File fileOn = new ScanOnline().getOnlinesFile();
         Assert.assertFalse(fileOn.getAbsolutePath().contains("lan"), fileOn.getAbsolutePath());
     }
-    
+
     @Test
     public void testGetReplaceFileNamePattern() {
         String pattern = new ScanOnline().getReplaceFileNamePattern();
         Assert.assertEquals(pattern, "scanonline.last");
     }
-    
+
     @Test
     public void testScanOnlineLastBigger() {
         List<String> strings = new ScanOnline().scanOnlineLastBigger();
         Assert.assertTrue(strings.size() > 1);
     }
-    
+
     @Test
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
@@ -194,14 +194,14 @@ public class ScanOnlineTest {
         }
         Assert.assertTrue(isCopyOk);
     }
-    
+
     private void copyOfIsReach() {
         File onlinesFile = new File(FileNames.ONSCAN);
         String inetAddrStr = "";
         ConcurrentMap<String, String> onLinesResolve = NetKeeper.getOnLinesResolve();
         Map<String, String> offLines = NetKeeper.editOffLines();
         boolean xReachable = true;
-        
+
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
              PrintStream printStream = new PrintStream(outputStream)
         ) {
