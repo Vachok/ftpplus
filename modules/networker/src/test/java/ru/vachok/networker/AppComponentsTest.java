@@ -7,12 +7,9 @@ import org.jetbrains.annotations.Contract;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -21,20 +18,15 @@ import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.scanner.NetScanCtr;
-import ru.vachok.networker.net.scanner.PcNamesScannerWorks;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -199,22 +191,5 @@ public class AppComponentsTest {
     public void testTestToString() {
         String toStr = new AppComponents().toString();
         Assert.assertTrue(toStr.contains("Nothing to show..."), toStr);
-    }
-
-    @Test
-    @Ignore
-    public void testPcNamesScanner() {
-        File file = new File(FileNames.SCAN_TMP);
-        file.delete();
-        Assert.assertFalse(file.exists());
-        InitProperties.setPreference(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis() - 100));
-        InitProperties.getTheProps().setProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis() - 100));
-        PcNamesScannerWorks scanner = new PcNamesScannerWorks();
-        NetScanCtr option = new NetScanCtr(scanner);
-        option.setModel(new ExtendedModelMap());
-        option.setRequest(new MockHttpServletRequest());
-        option.setResponse(new MockHttpServletResponse());
-        scanner.setClassOption(option);
-        scanner.run();
     }
 }

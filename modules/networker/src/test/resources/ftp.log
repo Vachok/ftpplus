@@ -1,4 +1,4 @@
-﻿----------
+﻿﻿----------
 Connect to: (08.08.2019 22:29:17)
 hostname=10.10.111.52:50021
 username=kudr
@@ -23906,4 +23906,44 @@ ls "/usr/ports/"
 ls "/usr/"
 ls "/usr/home/"
 ls "/usr/home/kudr/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/src/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0103.pem" "f:\OneDrive\Документы\Велком\keys\0103.pem"
+get "/usr/home/ITDept/vpn/keys/keys/ruzieva200717.crt" "f:\OneDrive\Документы\Велком\keys\ruzieva200717.crt"
+get "/usr/home/ITDept/vpn/keys/keys/ruzieva200717.csr" "f:\OneDrive\Документы\Велком\keys\ruzieva200717.csr"
+get "/usr/home/ITDept/vpn/keys/keys/ruzieva200717.key" "f:\OneDrive\Документы\Велком\keys\ruzieva200717.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0104.pem" "f:\OneDrive\Документы\Велком\keys\0104.pem"
+get "/usr/home/ITDept/vpn/keys/keys/levchenko200720.crt" "f:\OneDrive\Документы\Велком\keys\levchenko200720.crt"
+get "/usr/home/ITDept/vpn/keys/keys/levchenko200720.csr" "f:\OneDrive\Документы\Велком\keys\levchenko200720.csr"
+get "/usr/home/ITDept/vpn/keys/keys/levchenko200720.key" "f:\OneDrive\Документы\Велком\keys\levchenko200720.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!

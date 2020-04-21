@@ -18,14 +18,12 @@ import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 
 /**
@@ -125,7 +123,8 @@ public interface NetScanService extends Runnable {
             case PINGER_FILE:
                 return new PingerFromFile();
             case PCNAMESSCANNER:
-                return new PcNamesScanner();
+                FileSystemWorker.appendObjectToFile(new File("PcNamesScanner"), PcNamesScanner.getI().hashCode() + " " + new Date().getTime());
+                return PcNamesScanner.getI();
             default:
                 return new ScanOnline();
         }

@@ -20,8 +20,8 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -59,7 +59,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     @Override
     public void run() {
         delFilePatterns();
-        execute(new PcNamesScanner());
+        execute(NetScanService.getInstance(NetScanService.PCNAMESSCANNER));
         schedule(this::dbSendAppJson, 30);
         execute(this::getWeekPCStats);
     }

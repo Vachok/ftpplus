@@ -46,8 +46,8 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     }
 
     protected String makeAction() {
-        OldBigFilesInfoCollector infoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
-                .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        OldBigFilesInfoCollector infoCollector = (OldBigFilesInfoCollector) IntoApplication.getContext()
+            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         infoCollector.setStartPath(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldcleanpath"));
         AppConfigurationLocal.getInstance().execute(infoCollector);
         return infoCollector.getFromDatabase();

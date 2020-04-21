@@ -84,7 +84,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             OldBigFilesInfoCollector.WalkerCommon walkerCommon = getWalker();
-            IntoApplication.getConfigurableApplicationContext().publishEvent(reportUser);
+            IntoApplication.getContext().publishEvent(reportUser);
             stringBuilder.append(Files.walkFileTree(Paths.get(startPath), walkerCommon));
             new File(FileNames.WALKER_LCK).delete();
         }

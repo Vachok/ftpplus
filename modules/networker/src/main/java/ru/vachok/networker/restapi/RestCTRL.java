@@ -214,22 +214,22 @@ public class RestCTRL {
 
     @GetMapping("/sshgetdomains")
     public String getAllowDomains() {
-        PfListsSrv bean = (PfListsSrv) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        PfListsSrv bean = (PfListsSrv) IntoApplication.getContext().getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
         return bean.runCom();
     }
 
     @PostMapping(GETOLDFILES)
     public String delOldFiles(HttpServletRequest request) {
-        Cleaner cleaner = (Cleaner) IntoApplication.getConfigurableApplicationContext().getBean(Cleaner.class.getSimpleName());
+        Cleaner cleaner = (Cleaner) IntoApplication.getContext().getBean(Cleaner.class.getSimpleName());
         AppConfigurationLocal.getInstance().execute(cleaner);
-        return ((OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext().getBean(OldBigFilesInfoCollector.class.getSimpleName()))
+        return ((OldBigFilesInfoCollector) IntoApplication.getContext().getBean(OldBigFilesInfoCollector.class.getSimpleName()))
             .getFromDatabase();
     }
 
     @GetMapping("/getsshlists")
     public String sshRest() {
-        ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
+        ConfigurableApplicationContext context = IntoApplication.getContext();
         PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
         messageToUser.warn(getClass().getSimpleName(), "sshRest", new Date(pfLists.getTimeStampToNextUpdLong()).toString());
@@ -239,8 +239,8 @@ public class RestCTRL {
 
     @GetMapping(GETOLDFILES)
     public String collectOldFiles() {
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
-                .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getContext()
+            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
         return oldBigFilesInfoCollector.getFromDatabase();
     }
@@ -260,7 +260,7 @@ public class RestCTRL {
     @PostMapping("/sshcommandexec")
     public String sshCommandExecute(HttpServletRequest request) {
         String result;
-        SshActs sshActs = (SshActs) IntoApplication.getConfigurableApplicationContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
+        SshActs sshActs = (SshActs) IntoApplication.getContext().getBean(ModelAttributeNames.ATT_SSH_ACTS);
         try (ServletInputStream stream = request.getInputStream()) {
             JsonObject jsonO = getJSON(readRequestBytes(request));
             jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));

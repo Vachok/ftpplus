@@ -45,7 +45,7 @@ public class ExitApp extends Thread implements Externalizable {
 
      @see #exitAppDO()
      */
-    private static Collection<String> miniLoggerLast = new ArrayList<>();
+    private static final Collection<String> miniLoggerLast = new ArrayList<>();
 
     /**
      Причина выхода
@@ -55,7 +55,7 @@ public class ExitApp extends Thread implements Externalizable {
     /**
      Имя файлв для {@link ObjectOutput}
      */
-    private String fileName = ExitApp.class.getSimpleName();
+    private final String fileName = ExitApp.class.getSimpleName();
 
     public ExitApp(FileInputStream inFileStream) {
     }
@@ -75,7 +75,7 @@ public class ExitApp extends Thread implements Externalizable {
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
-    private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
+    private final long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
     /**
      @param reasonExit {@link #reasonExit}
@@ -217,13 +217,13 @@ public class ExitApp extends Thread implements Externalizable {
     private void exitAppDO() {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
             initProperties.setProps(InitProperties.getTheProps());
             if (devices.size() > 0) {
                 miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
                 miniLoggerLast.add("Last" + " = " + devices.getLast());
                 miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
-                        .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+                    .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
             }
             miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
             FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());

@@ -11,7 +11,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.data.enums.PropertiesNames;
@@ -62,7 +61,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
 
     private String whoCalls = UsefulUtilities.thisPC();
 
-    private long initStamp = System.currentTimeMillis();
+    private final long initStamp = System.currentTimeMillis();
 
     private static final String NEEDED_SRV = new AppComponents().sshActs().whatSrvNeed();
 
@@ -223,7 +222,6 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         if (fromSSH24HrsList.isEmpty()) {
             MINI_LOGGER.add("fromSSH24HrsList.isEmpty()");
             AppConfigurationLocal.getInstance().execute(this::writeLog, 21);
-            throw new InvokeIllegalException(getClass().getSimpleName() + " fromSSH24HrsList.isEmpty()");
         }
         else {
             String[] strings = PAT_BR_N.split(fromSSH24HrsList);

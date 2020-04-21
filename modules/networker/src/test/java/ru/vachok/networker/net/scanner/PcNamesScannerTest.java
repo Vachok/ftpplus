@@ -20,6 +20,7 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -47,7 +48,7 @@ public class PcNamesScannerTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System
         .nanoTime());
 
-    private static final PcNamesScanner PC_SCANNER = new PcNamesScanner();
+    private static final PcNamesScanner PC_SCANNER = (PcNamesScanner) NetScanService.getInstance(NetScanService.PCNAMESSCANNER);
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
@@ -63,7 +64,6 @@ public class PcNamesScannerTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        this.netScanCtr = new NetScanCtr(new PcNamesScannerWorks());
         this.netScanCtr.setModel(new ExtendedModelMap());
     }
 

@@ -49,11 +49,17 @@ public class PcNamesScanner implements NetScanService {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
+    private static final PcNamesScanner pcNamesScanner = new PcNamesScanner();
+
     private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
 
-    private static List<String> logMini = new ArrayList<>();
+    private static final List<String> logMini = new ArrayList<>();
 
     private String thePc = "";
+
+    public static PcNamesScanner getI() {
+        return pcNamesScanner;
+    }
 
     public String getThePc() {
         return thePc;
@@ -61,6 +67,9 @@ public class PcNamesScanner implements NetScanService {
 
     public void setThePc(String thePc) {
         this.thePc = thePc;
+    }
+
+    private PcNamesScanner() {
     }
 
     @Override
@@ -334,7 +343,7 @@ public class PcNamesScanner implements NetScanService {
     private class ScannerUSR implements NetScanService {
 
 
-        @NotNull private Properties props = InitProperties.getTheProps();
+        @NotNull private final Properties props = InitProperties.getTheProps();
 
         @Override
         public void run() {
@@ -449,6 +458,4 @@ public class PcNamesScanner implements NetScanService {
 
         }
     }
-
-
 }

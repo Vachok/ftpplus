@@ -18,7 +18,7 @@ import java.text.MessageFormat;
 public class InvokeIllegalException extends IllegalStateException {
 
 
-    private String message;
+    private final String message;
 
     public InvokeIllegalException(String message) {
         this.message = message;

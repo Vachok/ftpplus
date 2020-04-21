@@ -72,7 +72,7 @@ public class OldBigFilesInfoCollectorTest {
 
     @Test
     public void realCall() {
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getConfigurableApplicationContext()
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getContext()
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         oldBigFilesInfoCollector.call();
     }

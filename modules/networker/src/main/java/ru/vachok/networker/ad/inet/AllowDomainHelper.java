@@ -40,7 +40,7 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);
         JsonValue optValue = jsonObject.get(ConstantsFor.OPTION);
         boolean isAdd = optValue.toString().contains("add");
-        PfListsSrv bean = new PfListsSrv((PfLists) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTS));
+        PfListsSrv bean = new PfListsSrv((PfLists) IntoApplication.getContext().getBean(ConstantsFor.BEANNAME_PFLISTS));
         bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
         String allowDomains = bean.runCom();
         try {
