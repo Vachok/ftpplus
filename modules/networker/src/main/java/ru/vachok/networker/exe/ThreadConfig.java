@@ -125,7 +125,7 @@ public class ThreadConfig implements AppConfigurationLocal {
         scThreadPoolExecutor.setCorePoolSize(PROCESSORS);
         scThreadPoolExecutor.setMaximumPoolSize(20);
         scThreadPoolExecutor.setRemoveOnCancelPolicy(true);
-        scThreadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        scThreadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER);
         TASK_SCHEDULER.prefersShortLivedTasks();
         TASK_SCHEDULER.setThreadNamePrefix("S");

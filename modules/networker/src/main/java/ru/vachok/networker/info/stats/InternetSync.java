@@ -306,6 +306,34 @@ public class InternetSync extends SyncData implements Runnable {
         return i;
     }
 
+    @Override
+    public int hashCode() {
+        int result = ipAddr != null ? ipAddr.hashCode() : 0;
+        result = 31 * result + (connection != null ? connection.hashCode() : 0);
+        result = 31 * result + (dbFullName != null ? dbFullName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof InternetSync)) {
+            return false;
+        }
+
+        InternetSync sync = (InternetSync) o;
+
+        if (ipAddr != null ? !ipAddr.equals(sync.ipAddr) : sync.ipAddr != null) {
+            return false;
+        }
+        if (connection != null ? !connection.equals(sync.connection) : sync.connection != null) {
+            return false;
+        }
+        return dbFullName != null ? dbFullName.equals(sync.dbFullName) : sync.dbFullName == null;
+    }
+
     public InternetSync(@NotNull String type) {
         super();
         this.ipAddr = type;

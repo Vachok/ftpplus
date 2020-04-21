@@ -65,6 +65,54 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         this.startPath = startPath;
     }
 
+    public String getFromDatabase() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM common.oldfiles");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            float totalSizeMB = 0;
+            int totalFiles = 0;
+            while (resultSet.next()) {
+                totalSizeMB += resultSet.getFloat("size");
+                totalFiles++;
+            }
+            stringBuilder.append("Total file size in DB now: ").append(totalSizeMB).append(" megabytes\n");
+            stringBuilder.append(ConstantsFor.FILES).append(totalFiles);
+        }
+        catch (SQLException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        return stringBuilder.toString();
+    }
+
+    private OldBigFilesInfoCollector.WalkerCommon getWalker() {
+        File walkFile = new File(FileNames.WALKER_LCK);
+        if (walkFile.exists()) {
+            throw new InvokeIllegalException(walkFile.getAbsolutePath() + " : " + new Date(walkFile.lastModified()));
+        }
+        else {
+            try {
+                Files.createFile(walkFile.toPath());
+                walkFile.deleteOnExit();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+            return new OldBigFilesInfoCollector.WalkerCommon();
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = reportUser != null ? reportUser.hashCode() : 0;
+        result = 31 * result + startPath.hashCode();
+        result = 31 * result + (int) (dirsCounter ^ (dirsCounter >>> 32));
+        result = 31 * result + (int) (filesCounter ^ (filesCounter >>> 32));
+        result = 31 * result + (int) (totalFilesSize ^ (totalFilesSize >>> 32));
+        result = 31 * result + (int) (filesMatched ^ (filesMatched >>> 32));
+        return result;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OldBigFilesInfoCollector{");
@@ -96,41 +144,33 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    private OldBigFilesInfoCollector.WalkerCommon getWalker() {
-        File walkFile = new File(FileNames.WALKER_LCK);
-        walkFile.deleteOnExit();
-        if (walkFile.exists()) {
-            throw new InvokeIllegalException(walkFile.getAbsolutePath() + " : " + new Date(walkFile.lastModified()));
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        else {
-            try {
-                Files.createFile(walkFile.toPath());
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-            return new OldBigFilesInfoCollector.WalkerCommon();
+        if (!(o instanceof OldBigFilesInfoCollector)) {
+            return false;
         }
-    }
 
-    public String getFromDatabase() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM common.oldfiles");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            float totalSizeMB = 0;
-            int totalFiles = 0;
-            while (resultSet.next()) {
-                totalSizeMB += resultSet.getFloat("size");
-                totalFiles++;
-            }
-            stringBuilder.append("Total file size in DB now: ").append(totalSizeMB).append(" megabytes\n");
-            stringBuilder.append(ConstantsFor.FILES).append(totalFiles);
+        OldBigFilesInfoCollector collector = (OldBigFilesInfoCollector) o;
+
+        if (dirsCounter != collector.dirsCounter) {
+            return false;
         }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        if (filesCounter != collector.filesCounter) {
+            return false;
         }
-        return stringBuilder.toString();
+        if (totalFilesSize != collector.totalFilesSize) {
+            return false;
+        }
+        if (filesMatched != collector.filesMatched) {
+            return false;
+        }
+        if (reportUser != null ? !reportUser.equals(collector.reportUser) : collector.reportUser != null) {
+            return false;
+        }
+        return startPath.equals(collector.startPath);
     }
 
     private void writeToDB(@NotNull Path file, float mByteSize, String attrArray) throws SQLException {
@@ -142,7 +182,8 @@ public class OldBigFilesInfoCollector implements Callable<String> {
             }
             else {
                 try (Connection connection = localDCT.getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES)) {
-                    try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO oldfiles (AbsolutePath, size, Attributes) VALUES (?, ?, ?)")) {
+                    try (PreparedStatement preparedStatement = connection
+                        .prepareStatement("INSERT INTO oldfiles (AbsolutePath, size, Attributes) VALUES (?, ?, ?)")) {
                         preparedStatement.setString(1, file.toAbsolutePath().normalize().toString());
                         preparedStatement.setFloat(2, mByteSize);
                         preparedStatement.setString(3, attrArray);
@@ -156,7 +197,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     @NotNull
     private String askUser() {
         String msg = MessageFormat.format("{0} total dirs, {1} total files scanned. Matched: {2} ({3} mb)",
-                dirsCounter, filesCounter, filesMatched, totalFilesSize / ConstantsFor.MBYTE);
+            dirsCounter, filesCounter, filesMatched, totalFilesSize / ConstantsFor.MBYTE);
         messageToUser.warn(msg);
         String confirm = AppComponents.getMessageSwing(this.getClass().getSimpleName()).confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
         if (confirm.equals("ok")) {
@@ -190,6 +231,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     }
 
     private class WalkerCommon extends SimpleFileVisitor<Path> {
+
 
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
@@ -237,7 +279,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             String toString = MessageFormat.format("Dirs: {0}, files: {2}/{3}. Size {4} MB. Current dir: {1}", dirsCounter, dir.toAbsolutePath()
-                    .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
+                .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
             messageToUser.info(getClass().getSimpleName(), MessageFormat.format("hash:{0}", hashCode()), toString);
             return FileVisitResult.CONTINUE;
         }

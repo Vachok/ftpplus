@@ -1,13 +1,18 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import com.eclipsesource.json.*;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -17,23 +22,51 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  @see DBUploadUniversalTest
  @since 15.09.2019 (13:07) */
 class DBUploadUniversal extends SyncData {
-    
-    
+
+
     private Collection toUploadCollection;
-    
-    private List<String> columnsList = new ArrayList<>();
-    
+
+    private final List<String> columnsList = new ArrayList<>();
+
     private String dbToSync;
-    
+
     DBUploadUniversal(Collection toUploadCollection, String dbToSync) {
         this.toUploadCollection = toUploadCollection;
         this.dbToSync = dbToSync;
     }
-    
+
     DBUploadUniversal(String dbToSync) {
         this.dbToSync = dbToSync;
     }
-    
+
+    @Override
+    public int hashCode() {
+        int result = toUploadCollection != null ? toUploadCollection.hashCode() : 0;
+        result = 31 * result + columnsList.hashCode();
+        result = 31 * result + (dbToSync != null ? dbToSync.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DBUploadUniversal)) {
+            return false;
+        }
+
+        DBUploadUniversal universal = (DBUploadUniversal) o;
+
+        if (toUploadCollection != null ? !toUploadCollection.equals(universal.toUploadCollection) : universal.toUploadCollection != null) {
+            return false;
+        }
+        if (!columnsList.equals(universal.columnsList)) {
+            return false;
+        }
+        return dbToSync != null ? dbToSync.equals(universal.dbToSync) : universal.dbToSync == null;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", DBUploadUniversal.class.getSimpleName() + "[\n", "\n]")
@@ -41,17 +74,17 @@ class DBUploadUniversal extends SyncData {
             .add("dbToSync = '" + dbToSync + "'")
             .toString();
     }
-    
+
     @Override
     public String getDbToSync() {
         return dbToSync;
     }
-    
+
     @Override
     public void setDbToSync(String dbToSync) {
         this.dbToSync = dbToSync;
     }
-    
+
     @Override
     public void setOption(Object option) {
         if (option instanceof Collection) {
@@ -61,16 +94,16 @@ class DBUploadUniversal extends SyncData {
             throw new IllegalArgumentException(option.toString());
         }
     }
-    
+
     @Override
     public String syncData() {
         if (toUploadCollection.size() <= 0 && dbToSync.isEmpty()) {
             throw new IllegalArgumentException(this.dbToSync + "\n" + this.toUploadCollection.size());
         }
-    
+
         return MessageFormat.format("{0} rows uploaded to {1}", uploadCollection(toUploadCollection, dbToSync), dbToSync);
     }
-    
+
     @Override
     public int uploadCollection(Collection stringsCollection, @NotNull String tableName) {
         this.dbToSync = tableName;
@@ -98,13 +131,13 @@ class DBUploadUniversal extends SyncData {
         uploadReal();
         return columnsList.size();
     }
-    
+
     @Override
     public int createTable(String dbPointTable, List<String> additionalColumns) {
         throw new TODOException("0");
-        
+
     }
-    
+
     @Contract(pure = true)
     private @NotNull String getCreateQuery() {
         return "CREATE TABLE `build_gradle` (\n" +
@@ -120,7 +153,7 @@ class DBUploadUniversal extends SyncData {
             "ROW_FORMAT=COMPRESSED\n" +
             ";";
     }
-    
+
     private void uploadReal() {
         Deque<String> colDeq = new ConcurrentLinkedDeque<>(toUploadCollection);
         String sql;
@@ -139,7 +172,7 @@ class DBUploadUniversal extends SyncData {
             messageToUser.error(e.getMessage());
         }
     }
-    
+
     private @NotNull String getSQL(String first) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] values = new String[columnsList.size()];
@@ -167,12 +200,12 @@ class DBUploadUniversal extends SyncData {
         stringBuilder.append(")");
         return stringBuilder.toString();
     }
-    
+
     @Override
     public Map<String, String> makeColumns() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.makeColumns( Map<String, String> ) at 15.09.2019 - (13:08)");
     }
-    
+
     @Override
     public void superRun() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.superRun( void ) at 15.09.2019 - (13:08)");

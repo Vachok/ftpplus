@@ -135,7 +135,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             Files.deleteIfExists(Paths.get(FileNames.COMMON_OWN));
         }
         catch (IOException e) {
-            messageToUser.warn(OnStartTasksLoader.class.getSimpleName(), "runCommonScan", e.getMessage() + Thread.currentThread().getState().name());
+            messageToUser.error("OnStartTasksLoader.runCommonScan", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
             Date day2030 = MyCalen.getThisDay(20, 30);

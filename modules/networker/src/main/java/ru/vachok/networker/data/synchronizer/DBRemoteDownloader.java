@@ -26,14 +26,42 @@ import java.util.concurrent.TimeUnit;
 class DBRemoteDownloader extends SyncData {
 
 
-    private int lastLocalId;
+    private final int lastLocalId;
 
     private String dbToSync;
 
-    private List<String> jsonFromDB = new ArrayList<>();
+    private final List<String> jsonFromDB = new ArrayList<>();
 
     DBRemoteDownloader(int lastLocalID) {
         this.lastLocalId = lastLocalID;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = lastLocalId;
+        result = 31 * result + (dbToSync != null ? dbToSync.hashCode() : 0);
+        result = 31 * result + jsonFromDB.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DBRemoteDownloader)) {
+            return false;
+        }
+
+        DBRemoteDownloader that = (DBRemoteDownloader) o;
+
+        if (lastLocalId != that.lastLocalId) {
+            return false;
+        }
+        if (dbToSync != null ? !dbToSync.equals(that.dbToSync) : that.dbToSync != null) {
+            return false;
+        }
+        return jsonFromDB.equals(that.jsonFromDB);
     }
 
     @Override
@@ -46,16 +74,36 @@ class DBRemoteDownloader extends SyncData {
     }
 
     @Override
-    public String syncData() {
-        StringBuilder stringBuilder = new StringBuilder();
-        fillListFromSQL();
-        stringBuilder.append(writeJSON());
-        return stringBuilder.toString();
+    public String getDbToSync() {
+        return dbToSync;
+    }
+
+    @Override
+    public void setDbToSync(@NotNull String dbToSync) {
+        if (dbToSync.contains(".") & !dbToSync.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            this.dbToSync = dbToSync;
+        }
+        else {
+            this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync;
+        }
+    }
+
+    @Override
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        return new DBUploadUniversal(stringsCollection, tableName).uploadCollection(stringsCollection, tableName);
     }
 
     @Override
     public void setOption(Object option) {
         this.setDbToSync((String) option);
+    }
+
+    @Override
+    public String syncData() {
+        StringBuilder stringBuilder = new StringBuilder();
+        fillListFromSQL();
+        stringBuilder.append(writeJSON());
+        return stringBuilder.toString();
     }
 
     @Override
@@ -73,29 +121,9 @@ class DBRemoteDownloader extends SyncData {
     }
 
     @Override
-    public int uploadCollection(Collection stringsCollection, String tableName) {
-        return new DBUploadUniversal(stringsCollection, tableName).uploadCollection(stringsCollection, tableName);
-    }
-
-    @Override
     public int createTable(String dbPointTable, List<String> additionalColumns) {
         throw new TODOException("0");
 
-    }
-
-    @Override
-    public String getDbToSync() {
-        return dbToSync;
-    }
-
-    @Override
-    public void setDbToSync(@NotNull String dbToSync) {
-        if (dbToSync.contains(".") & !dbToSync.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            this.dbToSync = dbToSync;
-        }
-        else {
-            this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync;
-        }
     }
 
     @Override

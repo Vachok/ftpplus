@@ -13,7 +13,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.synchronizer.SyncData;
-import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.firebase.RealTimeChildListener;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
@@ -40,19 +39,19 @@ public class AppInfoOnLoad implements Runnable {
 
     private static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
 
-    public static Runnable getI() {
-        return INST;
-    }
-
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
 
     private final AppConfigurationLocal scheduleDefiner = AppConfigurationLocal.getInstance(AppConfigurationLocal.SCHEDULE_DEFINER);
 
-    private final AppConfigurationLocal onStartTasksLoader = new OnStartTasksLoader();
+    private final AppConfigurationLocal onStartTasksLoader = AppConfigurationLocal.getInstance(AppConfigurationLocal.ON_START_LOADER);
 
     private static final int THIS_DELAY = UsefulUtilities.getScansDelay();
+
+    public static Runnable getI() {
+        return INST;
+    }
 
     private AppInfoOnLoad() {
     }
@@ -105,14 +104,12 @@ public class AppInfoOnLoad implements Runnable {
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(UsefulUtilities.getBuildStamp());
-        String name = "AppInfoOnLoad.infoForU";
-        messageToUser.info(name, ConstantsFor.STR_FINISH, " = " + stringBuilder);
         getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
             Runnable runInfoForU = ()->FileSystemWorker
                 .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
             messageToUser.info(UsefulUtilities.getIISLogSize());
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runInfoForU);
+            AppConfigurationLocal.getInstance().execute(runInfoForU);
         }
         catch (RuntimeException e) {
             messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 100 ***");
@@ -123,15 +120,6 @@ public class AppInfoOnLoad implements Runnable {
 
     }
 
-    private void checkFileExitLastAndWriteMiniLog() {
-        StringBuilder exitLast = new StringBuilder();
-        if (new File("exit.last").exists()) {
-            exitLast.append(AbstractForms.fromArray(FileSystemWorker.readFileToList("exit.last")));
-        }
-        getMiniLogger().add(exitLast.toString());
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
-    }
-
     @Contract(pure = true)
     public static List<String> getMiniLogger() {
         return MINI_LOGGER;
@@ -140,18 +128,27 @@ public class AppInfoOnLoad implements Runnable {
     private void toFirebase() {
         FirebaseApp app = AppComponents.getFirebaseApp();
         FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC().replace(".", "_"))
-                .setValue(MessageFormat.format("{0} : {1}", new Date().toString(), app.toString()), (error, ref)->{
-                    String s = ref.toString();
-                    System.out.println("s = " + s);
-                });
+            .setValue(MessageFormat.format("{0} : {1}", new Date().toString(), app.toString()), (error, ref)->{
+                String s = ref.toString();
+                System.out.println("s = " + s);
+            });
 
         FirebaseDatabase.getInstance().getReference().addChildEventListener(new RealTimeChildListener());
 
         if (!UsefulUtilities.thisPC().contains("rups")) {
             FirebaseDatabase.getInstance().getReference("test")
-                    .removeValue((error, ref)->messageToUser
-                            .error("AppInfoOnLoad.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+                .removeValue((error, ref)->messageToUser
+                    .error("AppInfoOnLoad.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
         }
+    }
+
+    private void checkFileExitLastAndWriteMiniLog() {
+        StringBuilder exitLast = new StringBuilder();
+        if (new File("exit.last").exists()) {
+            exitLast.append(AbstractForms.fromArray(FileSystemWorker.readFileToList("exit.last")));
+        }
+        getMiniLogger().add(exitLast.toString());
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
 
     @Override

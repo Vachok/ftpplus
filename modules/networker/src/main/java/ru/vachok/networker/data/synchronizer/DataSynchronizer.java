@@ -32,13 +32,13 @@ public class DataSynchronizer extends SyncData {
 
     private final long startStamp = System.currentTimeMillis();
 
-    private String dbToSync = ConstantsFor.DB_VELKOMVELKOMPC;
-
     private final String columnName = ConstantsFor.DBCOL_IDREC;
 
-    private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-
     private final Map<Integer, String> colNames = new ConcurrentHashMap<>();
+
+    private String dbToSync = ConstantsFor.DB_VELKOMVELKOMPC;
+
+    private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
 
     private int columnsNum = 0;
 
@@ -52,13 +52,55 @@ public class DataSynchronizer extends SyncData {
     }
 
     @Override
-    public String getDbToSync() {
-        return dbToSync;
+    public int hashCode() {
+        int result = (int) (startStamp ^ (startStamp >>> 32));
+        result = 31 * result + dbToSync.hashCode();
+        result = 31 * result + columnName.hashCode();
+        result = 31 * result + dataConnectTo.hashCode();
+        result = 31 * result + colNames.hashCode();
+        result = 31 * result + columnsNum;
+        result = 31 * result + dbObj.hashCode();
+        result = 31 * result + totalRows;
+        result = 31 * result + dbsTotal;
+        return result;
     }
 
     @Override
-    public void setDbToSync(String dbToSync) {
-        this.dbToSync = dbToSync;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DataSynchronizer)) {
+            return false;
+        }
+
+        DataSynchronizer that = (DataSynchronizer) o;
+
+        if (startStamp != that.startStamp) {
+            return false;
+        }
+        if (columnsNum != that.columnsNum) {
+            return false;
+        }
+        if (totalRows != that.totalRows) {
+            return false;
+        }
+        if (dbsTotal != that.dbsTotal) {
+            return false;
+        }
+        if (!dbToSync.equals(that.dbToSync)) {
+            return false;
+        }
+        if (!columnName.equals(that.columnName)) {
+            return false;
+        }
+        if (!dataConnectTo.equals(that.dataConnectTo)) {
+            return false;
+        }
+        if (!colNames.equals(that.colNames)) {
+            return false;
+        }
+        return dbObj.equals(that.dbObj);
     }
 
     @Override
@@ -70,6 +112,16 @@ public class DataSynchronizer extends SyncData {
             .add("colNames = " + colNames)
             .add("columnsNum = " + columnsNum)
             .toString();
+    }
+
+    @Override
+    public String getDbToSync() {
+        return dbToSync;
+    }
+
+    @Override
+    public void setDbToSync(String dbToSync) {
+        this.dbToSync = dbToSync;
     }
 
     @NotNull
