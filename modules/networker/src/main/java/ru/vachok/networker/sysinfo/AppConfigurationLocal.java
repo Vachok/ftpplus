@@ -39,13 +39,12 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default void execute(Runnable runnable) {
-        final ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         AppComponents.threadConfig().cleanQueue(runnable);
-        executor.execute(runnable);
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
 
     default void execute(Callable callable) {
-        final ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         AppComponents.threadConfig().cleanQueue(callable);
         executor.submit(callable);
     }
@@ -67,21 +66,25 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default void execute(Runnable runnable, long timeOutSeconds) {
-        final ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
-        Future<?> submit = executor.submit(runnable);
+        ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        Future<?> submit = poolExecutor.submit(runnable);
         AppComponents.threadConfig().cleanQueue(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new ThreadTimeout(submit, timeOutSeconds));
     }
 
     default void schedule(Runnable runnable, int timeInMinPerion) {
-        schedule(runnable, TimeUnit.SECONDS.toMillis(timeInMinPerion), TimeUnit.MINUTES.toMillis(timeInMinPerion));
+        schedule(runnable, 0, (int) TimeUnit.MINUTES.toMillis(timeInMinPerion));
     }
 
     default void schedule(Runnable runnable, long timeFirstRun, long period) {
         ScheduledThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         executorQueue.removeIf(runnable1->runnable1.equals(runnable));
-        poolExecutor.scheduleWithFixedDelay(runnable, timeFirstRun, period, TimeUnit.MILLISECONDS);
+        long initialDelay = timeFirstRun - System.currentTimeMillis();
+        if (initialDelay < 0) {
+            initialDelay = 0;
+        }
+        poolExecutor.scheduleWithFixedDelay(runnable, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
     default String submitAsString(Callable<?> callableQuestion, int timeOutInSec) {

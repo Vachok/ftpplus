@@ -14,7 +14,6 @@ buildscript {
 }
 
 plugins {
-    id "com.gradle.build-scan" version "2.1"
     id 'java'
     id 'idea'
     id "org.springframework.boot" version "2.0.4.RELEASE"
@@ -69,11 +68,6 @@ sourceSets {
             includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png","**/*.jpg", "**/*.jar", "**/*.json", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
         }
     }
-}
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
 }
 
 githubRelease {

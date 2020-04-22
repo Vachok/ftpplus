@@ -23947,3 +23947,44 @@ get "/usr/home/ITDept/vpn/keys/keys/levchenko200720.key" "f:\OneDrive\Докум
 ls "/usr/home/ITDept/vpn/keys/keys/"
 ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "d:\Temp\_tc\pftop"
+get "/usr/home/kudr/pftop" "D:\pftop"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "D:\pftop"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/config" "D:\config"
+get "/usr/home/kudr/pftop" "D:\pftop"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+rm "/usr/home/kudr/pftop"
+ls "/usr/home/kudr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "D:\pftop"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "D:\pftop"
+get "/usr/home/kudr/pftop" "D:\pftop"
+get "/usr/home/kudr/pftop" "D:\pftop"
+connection to 192.168.13.30 closed - bye bye!

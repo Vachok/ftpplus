@@ -33,11 +33,6 @@ sourceSets {
     }
 }
 
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-}
-
 dependencies {
     compile fileTree('lib/')
     // https://mvnrepository.com/artifact/com.pff/java-libpst
