@@ -167,7 +167,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         }
         catch (SQLException | IOException e) {
             if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE)) {
-                messageToUser.error("OnStartTasksLoader.dbSendAppJson", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                messageToUser.warn(OnStartTasksLoader.class.getSimpleName(), e.getMessage(), " see line: 170 ***");
             }
         }
     }

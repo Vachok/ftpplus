@@ -4,8 +4,7 @@ package ru.vachok.networker.ad.inet;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -44,15 +43,10 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);
         JsonValue optValue = jsonObject.get(ConstantsFor.OPTION);
         boolean isAdd = optValue.toString().contains("add");
-        try (ConfigurableApplicationContext context = IntoApplication.getContext();) {
-
-            PfListsSrv bean = new PfListsSrv((PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS));
-            bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
-            this.allowDomains = bean.runCom();
-        }
-        catch (BeansException e) {
-            messageToUser.error("AllowDomainHelper.makeActions", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        PfListsSrv bean = new PfListsSrv((PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS));
+        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
+        this.allowDomains = bean.runCom();
         try {
             messageToUser.info(allowDomains);
             if (allowDomains.contains("." + ipValue.asString().split("://")[1].split("/")[0])) {

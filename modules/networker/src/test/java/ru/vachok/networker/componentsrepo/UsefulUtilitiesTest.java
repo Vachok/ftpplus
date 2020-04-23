@@ -156,7 +156,9 @@ public class UsefulUtilitiesTest {
         Assert.assertEquals(fromArray, "visit_\n" +
             ".tv\n" +
             ".own\n" +
-            ".rgh\n");
+            ".rgh\n" +
+            ".lck\n" +
+            "IntoApplication.\n");
     }
 
     @Test

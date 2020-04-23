@@ -64,7 +64,8 @@ public class SyncDataTest {
     @Test
     public void testGetInstance() {
         String toString = syncData.toString();
-        Assert.assertEquals(toString, "InternetSync{ipAddr='velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=}");
+        Assert.assertEquals(toString, "InternetSync{ipAddr='velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=\n" +
+            "}");
     }
 
     @Test

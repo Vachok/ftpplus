@@ -216,7 +216,8 @@ public class InternetSyncTest {
     @Test
     public void testToString() {
         String toStr = syncData.toString();
-        Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.85', dbFullName='inetstats.10_200_213_85', connection=}");
+        Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.85', dbFullName='inetstats.10_200_213_85', connection=\n" +
+            "}");
     }
 
     @Test

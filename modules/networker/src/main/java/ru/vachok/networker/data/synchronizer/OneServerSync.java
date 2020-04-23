@@ -11,6 +11,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -106,7 +107,8 @@ public class OneServerSync extends SyncData {
                         String line = scanner.nextLine();
                         JsonObject parsedObj = (JsonObject) Json.parse(line);
                         try (PreparedStatement preparedStatement = connection
-                            .prepareStatement("INSERT INTO " + ConstantsFor.DB_ARCHIVEVELKOMPC + " (idrec, NamePP, AddressPP, SegmentPP, instr, OnlineNow, userName) values (?,?,?,?,?,?,?)")) {
+                            .prepareStatement("INSERT INTO archive.velkompc (idrec, NamePP, AddressPP, SegmentPP, instr, OnlineNow, userName) values (?,?,?,?,?,?,?)")) {
+                            preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(10));
                             preparedStatement.setInt(1, Integer.parseInt(parsedObj.getString(ConstantsFor.DBCOL_IDREC, "0")));
                             preparedStatement.setString(2, parsedObj.getString(ConstantsFor.DBCOL_NAMEPP, "0"));
                             preparedStatement.setString(3, parsedObj.getString(ConstantsFor.DBCOL_ADDRPP, "0"));

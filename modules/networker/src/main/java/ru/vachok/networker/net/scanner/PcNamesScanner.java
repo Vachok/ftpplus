@@ -51,6 +51,10 @@ public class PcNamesScanner implements NetScanService {
 
     private static final PcNamesScanner pcNamesScanner = new PcNamesScanner();
 
+    public static PcNamesScanner getI() {
+        return pcNamesScanner;
+    }
+
     private static final List<String> logMini = new ArrayList<>();
 
     private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));

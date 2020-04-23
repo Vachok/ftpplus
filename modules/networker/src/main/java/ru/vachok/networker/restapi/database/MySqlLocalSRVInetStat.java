@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 /**
  @see MySqlLocalSRVInetStatTest
  @since 04.09.2019 (16:42) */
-@SuppressWarnings("JDBCResourceOpenedButNotSafelyClosed")
 class MySqlLocalSRVInetStat implements DataConnectTo {
 
 
@@ -119,10 +118,8 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return resultsUpload;
     }
 
-    @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-        Connection connection = null;
         if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
             this.dbName = dbName.split("\\Q.\\E")[0];
             this.tableName = dbName.split("\\Q.\\E")[1];
@@ -131,7 +128,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             throw new IllegalArgumentException(dbName);
         }
         MysqlDataSource defDataSource = new MysqlDataSource();
-
         defDataSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
         defDataSource.setPort(3306);
         defDataSource.setPassword("1qaz@WSX");
@@ -144,11 +140,18 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setAutoReconnect(true);
         defDataSource.setCreateDatabaseIfNotExist(true);
+        Connection connection = null;
         try {
             connection = defDataSource.getConnection();
+            return connection;
         }
-        catch (SQLException e) {
-            messageToUser.warn("MySqlLocalSRVInetStat", "getDefaultConnection", e.getMessage() + " see line: 189");
+        catch (SQLException throwables) {
+            messageToUser.error(throwables.getMessage());
+        }
+        finally {
+            if (connection == null) {
+                connection = DataConnectTo.getInstance(DataConnectTo.REGRUCONNECTION).getDefaultConnection(dbName);
+            }
         }
         return connection;
     }

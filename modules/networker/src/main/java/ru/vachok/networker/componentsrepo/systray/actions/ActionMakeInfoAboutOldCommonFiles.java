@@ -3,9 +3,7 @@
 package ru.vachok.networker.componentsrepo.systray.actions;
 
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ConfigurableApplicationContext;
-import ru.vachok.networker.AbstractForms;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.data.enums.FileNames;
@@ -42,15 +40,11 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     }
 
     protected String makeAction() {
-        try (ConfigurableApplicationContext context = IntoApplication.getContext()) {
-            OldBigFilesInfoCollector infoCollector = (OldBigFilesInfoCollector) context.getBean(OldBigFilesInfoCollector.class.getSimpleName());
-            infoCollector.setStartPath(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldcleanpath"));
-            AppConfigurationLocal.getInstance().execute(infoCollector);
-            return infoCollector.getFromDatabase();
-        }
-        catch (BeansException e) {
-            return AbstractForms.fromArray(e);
-        }
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        OldBigFilesInfoCollector infoCollector = (OldBigFilesInfoCollector) context.getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        infoCollector.setStartPath(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldcleanpath"));
+        AppConfigurationLocal.getInstance().execute(infoCollector);
+        return infoCollector.getFromDatabase();
     }
 
     @Override

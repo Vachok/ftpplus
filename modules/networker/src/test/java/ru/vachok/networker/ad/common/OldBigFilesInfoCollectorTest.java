@@ -72,7 +72,7 @@ public class OldBigFilesInfoCollectorTest {
 
     @Test
     public void realCall() {
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getContext()
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) IntoApplication.getBeansFactory()
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         oldBigFilesInfoCollector.call();
     }
@@ -100,7 +100,7 @@ public class OldBigFilesInfoCollectorTest {
     public void testConfirm() {
         try {
             String confirm = MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
-                    .confirm(this.getClass().getSimpleName(), "Do you want to clean?", "msg");
+                .confirm(this.getClass().getSimpleName(), "Do you want to clean?", "msg");
             System.out.println("confirm = " + confirm);
         }
         catch (UnsupportedOperationException e) {

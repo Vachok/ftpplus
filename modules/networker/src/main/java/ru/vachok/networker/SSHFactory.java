@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.exceptions.NetException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.NetScanService;
@@ -53,7 +53,7 @@ public class SSHFactory implements Callable<String> {
 
     public static final String DBTABLE_GENERALJSCH = "general-jsch";
 
-    private InitProperties initProperties = InitProperties.getInstance(DBTABLE_GENERALJSCH);
+    private final InitProperties initProperties = InitProperties.getInstance(DBTABLE_GENERALJSCH);
 
     private String connectToSrv;
 
@@ -63,7 +63,7 @@ public class SSHFactory implements Callable<String> {
 
     private String userName;
 
-    private String classCaller;
+    private final String classCaller;
 
     private Path tempFile;
 
@@ -153,7 +153,7 @@ public class SSHFactory implements Callable<String> {
             tempFile.toFile().deleteOnExit();
             this.session.disconnect();
         }
-        catch (IOException | JSchException | RuntimeException e) {
+        catch (IOException | JSchException | RuntimeException | NetException e) {
             messageToUser.error("SSHFactory.call", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             this.session.disconnect();
         }
@@ -164,7 +164,7 @@ public class SSHFactory implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    private InputStream connect() throws IOException, JSchException {
+    private InputStream connect() throws IOException, JSchException, NetException {
         boolean isConnected;
         try {
             setRespChannelToField();
@@ -176,8 +176,8 @@ public class SSHFactory implements Callable<String> {
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
-            throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
-                    respChannel.toString(), NetScanService.isReach(connectToSrv), connectToSrv, triedIP()));
+            throw new NetException(MessageFormat.format("RespChannel: {0} is {1} connected to {2}!",
+                respChannel.toString(), NetScanService.isReach(connectToSrv), connectToSrv), triedIP());
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));

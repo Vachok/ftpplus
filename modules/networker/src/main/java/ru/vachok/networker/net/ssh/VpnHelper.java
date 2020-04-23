@@ -36,7 +36,7 @@ public class VpnHelper extends SshActs {
         String result;
         try {
             InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_VPN);
-            if (byName.isReachable(200)) {
+            if (byName.isReachable(500)) {
                 result = execSSHCommand(byName.getHostAddress(), GET_STATUS_COMMAND);
             }
             else {

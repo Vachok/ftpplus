@@ -5,7 +5,9 @@ package ru.vachok.networker.info.stats;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -17,16 +19,20 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 
 /**
@@ -110,17 +116,16 @@ public class WeeklyInternetStatsTest {
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
-        if (!Stats.isSunday()) {
-            assertTrue(csvStats.size() == 1, AbstractForms.fromArray(csvStats));
+        if (!statFile.delete()) {
+            statFile.deleteOnExit();
         }
-        statFile.deleteOnExit();
     }
 
     @Test
     public void testDeleteFrom() {
-        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.114", "1");
+        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.200.55", "1");
         if (!Stats.isSunday()) {
-            Assert.assertTrue(i == 1, i + " rows deleted for 10.200.213.114");
+            Assert.assertTrue(i == 1, i + " rows deleted for 10.200.200.55");
         }
     }
 
