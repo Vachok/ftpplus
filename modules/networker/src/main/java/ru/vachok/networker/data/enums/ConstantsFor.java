@@ -557,6 +557,10 @@ public enum ConstantsFor {
 
     public static final String RUNNING = "Walker_running";
 
+    public static final String ISTRANET = "Istranet";
+
+    public static final String FORTEX = "Fortex";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();

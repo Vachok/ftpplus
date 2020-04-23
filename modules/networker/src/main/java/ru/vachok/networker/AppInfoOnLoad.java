@@ -93,7 +93,8 @@ public class AppInfoOnLoad implements Runnable {
 
     private void setCurrentProvider() {
         try {
-            NetKeeper.setCurrentProvider(new Tracerouting().call());
+            String currentProviderName = new Tracerouting().call();
+            NetKeeper.setCurrentProvider(currentProviderName);
         }
         catch (Exception e) {
             NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");

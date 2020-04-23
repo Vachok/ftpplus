@@ -3,8 +3,13 @@
 package ru.vachok.networker.net.ssh;
 
 
-import com.eclipsesource.json.JsonObject;
-import com.google.firebase.database.*;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
+import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
@@ -13,6 +18,8 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
@@ -21,21 +28,19 @@ import java.util.regex.Pattern;
  @see TraceroutingTest
  @since 24.05.2019 (9:30) */
 public class Tracerouting implements Callable<String> {
-    
-    
+
+
     private static final Pattern COMPILE = Pattern.compile(";");
-    
-    private static final String DB_REFERENCE = "chswitch";
-    
+
+    private static final String DB_REFERENCE = "ProviderName";
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, Tracerouting.class.getSimpleName());
-    
+
     @Override
     public String call() throws Exception {
-        String providerTraceStr = getProviderTraceStr();
-        FirebaseDatabase.getInstance().getReference(DB_REFERENCE).addValueEventListener(new Tracerouting.ProviderChangeListener(providerTraceStr));
-        return providerTraceStr;
+        return getProviderTraceStr();
     }
-    
+
     /**
      Traceroute
      <p>
@@ -48,9 +53,9 @@ public class Tracerouting implements Callable<String> {
      Если {@code callForRoute.contains("91.210.85.")} : добавим в {@link StringBuilder} - {@code "FORTEX"} <br>
      Else if {@code callForRoute.contains("176.62.185.129")} : добавим {@code "ISTRANET"} <br>
      Если {@code callForRoute.contains("LOG: ")} добавим {@link String#split(String)}[1] по {@code "LOG: "}
-     
+
      @return {@link StringBuilder#toString()} собравший инфо из строки с сервера.
-     
+
      @throws ArrayIndexOutOfBoundsException при разборе строки
      */
     private @NotNull String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
@@ -61,10 +66,14 @@ public class Tracerouting implements Callable<String> {
         stringBuilder.append("<br><a href=\"/makeok\">");
         if (callForRoute.contains("91.210.85.")) {
             stringBuilder.append("<h3>FORTEX</h3>");
+            FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.FORTEX, new Tracerouting.ComplListener(ConstantsFor.FORTEX));
+
         }
         else {
             if (callForRoute.contains("176.62.185.129")) {
                 stringBuilder.append("<h3>ISTRANET</h3>");
+                FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.ISTRANET, new Tracerouting.ComplListener(ConstantsFor.ISTRANET));
+
             }
         }
         stringBuilder.append("</a></br>");
@@ -80,17 +89,17 @@ public class Tracerouting implements Callable<String> {
         }
         return stringBuilder.toString();
     }
-    
+
     /**
      Лог переключений инета.
-     
+
      @return {@code "sudo cat /home/kudr/inet.log"} or {@link InterruptedException}, {@link ExecutionException}, {@link TimeoutException}
      */
     private String getInetLog() {
-        
+
         SSHFactory sshFactory = new SSHFactory.Builder(new SshActs().whatSrvNeed(), "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
-    
+
         try {
             return submit.get(10, TimeUnit.SECONDS);
         }
@@ -98,35 +107,28 @@ public class Tracerouting implements Callable<String> {
             return e.getMessage() + " inet switching log. May be getDefaultDS error. Keep calm - it's ok";
         }
     }
-    
-    private static class ProviderChangeListener implements ValueEventListener {
-        
-        
-        private final String providerTraceStr;
-        
-        public ProviderChangeListener(String providerTraceStr) {
-            this.providerTraceStr = providerTraceStr;
+
+    private class ComplListener implements DatabaseReference.CompletionListener {
+
+        private final String prName;
+
+        ComplListener(String prName) {
+            this.prName = prName;
         }
-        
+
         @Override
-        public void onDataChange(DataSnapshot snapshot) {
-            if (!snapshot.getValue(String.class).equalsIgnoreCase(providerTraceStr)) {
-                FirebaseDatabase.getInstance().getReference(DB_REFERENCE)
-                        .setValue(providerTraceStr, (error, ref)->messageToUser.warn(Tracerouting.class.getSimpleName(), "onComplete", error.getMessage()));
+        public void onComplete(DatabaseError error, DatabaseReference ref) {
+            messageToUser.info(this.getClass().getSimpleName(), prName, new Date().toString());
+            try (Firestore fireStore = FirestoreClient.getFirestore()) {
+                Map<String, Object> upMap = new ConcurrentHashMap<>();
+                upMap.put(prName, new Date().toString());
+                ApiFuture<WriteResult> stats = fireStore.collection("stats").document(DB_REFERENCE).update(upMap);
+                WriteResult result = stats.get();
+                messageToUser.info(String.valueOf(result.getUpdateTime()));
             }
-        }
-        
-        @Override
-        public void onCancelled(DatabaseError error) {
-            messageToUser.warn(Tracerouting.class.getSimpleName(), "onCancelled", error.getMessage());
-        }
-        
-        @Override
-        public String toString() {
-            final JsonObject jsonObject = new JsonObject();
-            jsonObject.add("className", "ProviderChangeListener");
-            jsonObject.add("providerTraceStr", providerTraceStr);
-            return jsonObject.toString();
+            catch (Exception e) {
+                messageToUser.warn(Tracerouting.ComplListener.class.getSimpleName(), e.getMessage(), " see line: 131 ***");
+            }
         }
     }
 }
