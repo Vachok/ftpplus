@@ -29,6 +29,7 @@ public interface RestApiHelper {
 
     String SSH = "sshcommandexec";
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @NotNull
     static RestApiHelper getInstance(@NotNull String type) {
         switch (type) {

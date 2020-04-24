@@ -12,7 +12,6 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -46,22 +45,6 @@ class PropsHelper {
         }
     }
 
-    public static void reloadApplicationPropertiesFromFile() {
-        File propsFile = new File(FileNames.CONSTANTSFOR_PROPERTIES);
-        Properties fromApp = getAppPr();
-        try {
-            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, true);
-            Properties propsFromFile = InitProperties.getInstance(InitProperties.FILE).getProps();
-            fromApp.clear();
-            fromApp.putAll(propsFromFile);
-            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, false);
-        }
-        catch (IOException e) {
-            System.err.println(MessageFormat.format("Reloading properties from file {0} error: {1}", FileNames.CONSTANTSFOR_PROPERTIES, e.getMessage()));
-        }
-
-    }
-
     @Contract(pure = true)
     static Properties getAppPr() {
         boolean isSmallSize = APP_PR.size() < 9;
@@ -78,9 +61,26 @@ class PropsHelper {
             }
             else {
                 messageToUser.error("PropsHelper.getAppPr", "Can't load properties", AbstractForms.networkerTrace(Thread.currentThread().getStackTrace()));
+                reloadApplicationPropertiesFromFile();
             }
         }
         return APP_PR;
+    }
+
+    static void reloadApplicationPropertiesFromFile() {
+        File propsFile = new File(FileNames.CONSTANTSFOR_PROPERTIES);
+        Properties fromApp = getAppPr();
+        try {
+            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, true);
+            Properties propsFromFile = InitProperties.getInstance(InitProperties.FILE).getProps();
+            fromApp.clear();
+            fromApp.putAll(propsFromFile);
+            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, false);
+        }
+        catch (IOException e) {
+            messageToUser.error("PropsHelper.reloadApplicationPropertiesFromFile", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+
     }
 
     private void loadPropsFromDB() {

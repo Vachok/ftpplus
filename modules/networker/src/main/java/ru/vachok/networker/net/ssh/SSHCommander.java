@@ -35,6 +35,11 @@ public class SSHCommander implements RestApiHelper {
         JsonValue value = jsonObject.get(ConstantsFor.PARM_NAME_COMMAND);
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
         SshActs sshActs = (SshActs) context.getBean(ModelAttributeNames.ATT_SSH_ACTS);
-        return sshActs.execSSHCommand(value.asString());
+        if (jsonObject.names().contains(ConstantsFor.PARAM_NAME_SERVER)) {
+            return sshActs.execSSHCommand(jsonObject.get(ConstantsFor.PARAM_NAME_SERVER).asString(), value.asString());
+        }
+        else {
+            return sshActs.execSSHCommand(value.asString());
+        }
     }
 }

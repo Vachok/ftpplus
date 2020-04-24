@@ -93,7 +93,7 @@ public class AppInfoOnLoad implements Runnable {
 
     private void setCurrentProvider() {
         try {
-            String currentProviderName = new Tracerouting().call();
+            String currentProviderName = (String) AppConfigurationLocal.getInstance().executeGet(new Tracerouting(), 10);
             NetKeeper.setCurrentProvider(currentProviderName);
         }
         catch (Exception e) {

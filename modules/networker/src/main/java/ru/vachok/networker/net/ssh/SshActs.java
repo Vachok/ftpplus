@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 
 /**
-@see SshActsTest
+ @see SshActsTest
  @since 29.11.2018 (13:01) */
 @Service(ModelAttributeNames.ATT_SSH_ACTS)
 @Scope(ConstantsFor.PROTOTYPE)
@@ -382,6 +382,20 @@ public class SshActs {
         this.squid = false;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActs{");
+        sb.append("allowDomain='").append(allowDomain).append('\'');
+        sb.append(", comment='").append(comment).append('\'');
+        sb.append(", delDomain='").append(delDomain).append('\'');
+        sb.append(", inet='").append(inet).append('\'');
+        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
+        sb.append(", numOfHours='").append(numOfHours).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
     String execSSHCommand(String sshCommand) {
         return new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build().call();
     }
@@ -395,19 +409,5 @@ public class SshActs {
      */
     String execSSHCommand(String server, String command) {
         return new SSHFactory.Builder(server, command, getClass().getSimpleName()).build().call();
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActs{");
-        sb.append("allowDomain='").append(allowDomain).append('\'');
-        sb.append(", comment='").append(comment).append('\'');
-        sb.append(", delDomain='").append(delDomain).append('\'');
-        sb.append(", inet='").append(inet).append('\'');
-        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
-        sb.append(", numOfHours='").append(numOfHours).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 }

@@ -20,6 +20,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
@@ -58,7 +59,7 @@ public class Tracerouting implements Callable<String> {
 
      @throws ArrayIndexOutOfBoundsException при разборе строки
      */
-    private @NotNull String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
+    private @NotNull String getProviderTraceStr() throws InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory sshFactory = new SSHFactory.Builder(new SshActs().whatSrvNeed(), "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
         Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
@@ -130,5 +131,11 @@ public class Tracerouting implements Callable<String> {
                 messageToUser.warn(Tracerouting.ComplListener.class.getSimpleName(), e.getMessage(), " see line: 131 ***");
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", Tracerouting.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
 }

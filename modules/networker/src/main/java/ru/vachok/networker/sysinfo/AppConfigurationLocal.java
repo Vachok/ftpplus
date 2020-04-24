@@ -9,6 +9,7 @@ import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
 
+import java.text.MessageFormat;
 import java.util.concurrent.*;
 
 
@@ -49,20 +50,25 @@ public interface AppConfigurationLocal extends Runnable {
         executor.submit(callable);
     }
 
-    default void executeGet(Callable<?> callable, int timeOutSeconds) {
+    default Object executeGet(Callable<?> callable, int timeOutSeconds) {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         Future<?> submit = executor.submit(callable);
+        Object o;
         try {
-            System.out.println("submit.get() = " + submit.get(timeOutSeconds, TimeUnit.SECONDS));
+            o = submit.get(timeOutSeconds, TimeUnit.SECONDS);
+            System.out.println(MessageFormat.format("submit.get() = {0}", o));
         }
         catch (InterruptedException e) {
+            o = e.getMessage();
             System.err.println(e.getMessage());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
+            o = e.getMessage();
             System.err.println(e.getMessage());
         }
+        return o;
     }
 
     default void execute(Runnable runnable, long timeOutSeconds) {
