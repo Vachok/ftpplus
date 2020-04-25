@@ -165,11 +165,10 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
     public void cleanQueue(Runnable runnable) {
-        MessageToUser theMessage = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
         BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         boolean isRemove = executorQueue.removeIf(r->r.equals(runnable) || r instanceof DBMessenger);
         if (isRemove) {
-            theMessage.warn(getClass().getSimpleName(), "TASK_EXECUTOR removed:", runnable.getClass().getSimpleName());
+            messageToUser.warn(getClass().getSimpleName(), "TASK_EXECUTOR removed:", runnable.getClass().getSimpleName());
         }
     }
 
@@ -177,8 +176,7 @@ public class ThreadConfig implements AppConfigurationLocal {
         BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         for (Runnable r : executorQueue) {
             if (r.equals(callable) || r instanceof DBMessenger) {
-                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                    .warn(this.getClass().getSimpleName(), "execute", r.toString());
+                messageToUser.warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }
         }
