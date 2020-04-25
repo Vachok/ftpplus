@@ -26,6 +26,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -56,6 +57,11 @@ public class AppInfoOnLoad implements Runnable {
     private AppInfoOnLoad() {
     }
 
+    @Contract(pure = true)
+    public static List<String> getMiniLogger() {
+        return MINI_LOGGER;
+    }
+
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
@@ -65,7 +71,7 @@ public class AppInfoOnLoad implements Runnable {
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
 
-        AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, (int) ConstantsFor.DELAY);
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().schedule(this::setCurrentProvider, 1, TimeUnit.MINUTES);
 
         AppConfigurationLocal.getInstance().execute(syncData::superRun);
 
@@ -91,17 +97,6 @@ public class AppInfoOnLoad implements Runnable {
         }
     }
 
-    private void setCurrentProvider() {
-        try {
-            String currentProviderName = (String) AppConfigurationLocal.getInstance().executeGet(new Tracerouting(), 10);
-            NetKeeper.setCurrentProvider(currentProviderName);
-        }
-        catch (Exception e) {
-            NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");
-            Thread.currentThread().interrupt();
-        }
-    }
-
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(UsefulUtilities.getBuildStamp());
@@ -119,11 +114,6 @@ public class AppInfoOnLoad implements Runnable {
             AppConfigurationLocal.getInstance().execute(onStartTasksLoader);
         }
 
-    }
-
-    @Contract(pure = true)
-    public static List<String> getMiniLogger() {
-        return MINI_LOGGER;
     }
 
     private void toFirebase() {
@@ -150,6 +140,20 @@ public class AppInfoOnLoad implements Runnable {
         }
         getMiniLogger().add(exitLast.toString());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
+    }
+
+    private void setCurrentProvider() {
+        String currentProviderName = "setCurrentProvider failed";
+        try {
+            currentProviderName = (String) AppConfigurationLocal.getInstance().executeGet(new Tracerouting(), 10);
+            NetKeeper.setCurrentProvider(currentProviderName);
+        }
+        catch (RuntimeException e) {
+            NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");
+        }
+        finally {
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName()).info(currentProviderName);
+        }
     }
 
     @Override
