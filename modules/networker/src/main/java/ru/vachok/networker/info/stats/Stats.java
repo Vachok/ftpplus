@@ -34,7 +34,8 @@ public interface Stats extends InformationFactory {
     }
 
     static boolean isSunday() {
-        return LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY);
+        String osName = System.getProperty("os.name");
+        return !osName.toLowerCase().contains("free") && !osName.toLowerCase().contains("lin") && LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY);
     }
 
     @Contract("_ -> new")
