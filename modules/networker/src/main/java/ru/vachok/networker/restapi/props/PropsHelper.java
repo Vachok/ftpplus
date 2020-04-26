@@ -5,13 +5,10 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherConstants;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -28,6 +25,8 @@ class PropsHelper {
     private static final Properties APP_PR = new Properties();
 
     private static final Properties MAIL_PR = new Properties();
+
+    private static final File PR_FILE = new File(FileNames.CONSTANTSFOR_PROPERTIES);
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PropsHelper.class.getSimpleName());
 
@@ -48,7 +47,15 @@ class PropsHelper {
     @Contract(pure = true)
     static Properties getAppPr() {
         boolean isSmallSize = APP_PR.size() < 9;
-        if (isSmallSize) {
+        boolean fileReadOnly = PR_FILE.exists() && !PR_FILE.canWrite();
+        if (fileReadOnly) {
+            APP_PR.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+            isSmallSize = APP_PR.size() < 9;
+            if (!isSmallSize) {
+                InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(APP_PR);
+            }
+        }
+        else if (isSmallSize) {
             new PropsHelper().loadPropsFromDB();
             isSmallSize = APP_PR.size() < 9;
             if (isSmallSize) {
@@ -68,18 +75,10 @@ class PropsHelper {
     }
 
     static void reloadApplicationPropertiesFromFile() {
-        File propsFile = new File(FileNames.CONSTANTSFOR_PROPERTIES);
         Properties fromApp = getAppPr();
-        try {
-            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, true);
-            Properties propsFromFile = InitProperties.getInstance(InitProperties.FILE).getProps();
-            fromApp.clear();
-            fromApp.putAll(propsFromFile);
-            Files.setAttribute(propsFile.toPath(), OtherConstants.READONLY, false);
-        }
-        catch (IOException e) {
-            messageToUser.error("PropsHelper.reloadApplicationPropertiesFromFile", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
+        Properties propsFromFile = InitProperties.getInstance(InitProperties.FILE).getProps();
+        fromApp.clear();
+        fromApp.putAll(propsFromFile);
 
     }
 

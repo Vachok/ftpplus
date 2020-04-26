@@ -137,7 +137,6 @@ public class DataSynchronizer extends SyncData {
                             messageToUser.warn(getClass().getSimpleName(), "NO SYNC:", dbName);
                         }
                         else {
-                            messageToUser.info(getClass().getSimpleName(), "Added to sync:", dbName);
                             dbNames.add(dbName);
                         }
                         Thread.currentThread().setName(dbName);
@@ -255,7 +254,7 @@ public class DataSynchronizer extends SyncData {
         }
         catch (NumberFormatException | SQLException e) {
             if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
-                DataConnectTo.getInstance(DataConnectTo.FIREBASE).createTable(tableName, Collections.EMPTY_LIST);
+                DataConnectTo.getInstance(DataConnectTo.TESTING).createTable(tableName, Collections.EMPTY_LIST);
                 retInt = 0;
             }
             else {
@@ -345,7 +344,9 @@ public class DataSynchronizer extends SyncData {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(7));
                     while (resultSet.next()) {
-                        tblNames.add(resultSet.getString("Name"));
+                        String tableName = resultSet.getString("Name");
+                        tblNames.add(tableName);
+
                     }
                 }
             }

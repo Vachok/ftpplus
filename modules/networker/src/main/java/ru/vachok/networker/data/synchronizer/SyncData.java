@@ -135,7 +135,7 @@ public abstract class SyncData implements DataConnectTo {
         }
         catch (SQLException e) {
             if (e.getMessage().contains("не найден")) {
-                retInt = DataConnectTo.getInstance(DataConnectTo.FIREBASE).createTable(syncDB, Collections.EMPTY_LIST);
+                retInt = DataConnectTo.getInstance(DataConnectTo.TESTING).createTable(syncDB, Collections.EMPTY_LIST);
             }
             else {
                 messageToUser.error(e.getMessage() + " see line: 169 ***");

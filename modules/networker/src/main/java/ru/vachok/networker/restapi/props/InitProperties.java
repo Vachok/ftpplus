@@ -7,8 +7,10 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.prefs.BackingStoreException;
@@ -42,7 +44,9 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     static InitProperties getInstance(@NotNull String type) {
         switch (type) {
             case FILE:
-                return new FilePropsLocal(ConstantsFor.class.getSimpleName());
+                FilePropsLocal filePr = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+                filePr.setPropFile(new File(FileNames.CONSTANTSFOR_PROPERTIES));
+                return filePr;
             case DB_MEMTABLE:
                 return new MemoryProperties();
             case DB_LOCAL:

@@ -118,7 +118,7 @@ public class UserInfoTest {
             }
 
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.FIREBASE)
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING)
             .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace(DataConnectTo.DBNAME_VELKOM_POINT, ""))) {
             createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -163,7 +163,7 @@ public class UserInfoTest {
 
     private void createTable() {
         String dbName = "pcuser";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.FIREBASE).getDefaultConnection(dbName)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbName)) {
             boolean contains = connection.getMetaData().getURL().contains("jdbc:h2:mem:velkompc") || connection.getMetaData().getURL()
                 .contains("jdbc:mysql://10.10.111.65:3306/pcuser");
             Assert.assertTrue(contains, connection.getMetaData().getURL());

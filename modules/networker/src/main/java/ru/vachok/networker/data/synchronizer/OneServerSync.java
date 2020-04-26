@@ -11,7 +11,6 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -20,11 +19,11 @@ import java.util.concurrent.TimeUnit;
 public class OneServerSync extends SyncData {
 
 
+    private final File file;
+
     private String dbToSync;
 
     private DataConnectTo dataConnectTo;
-
-    private final File file;
 
     public OneServerSync() {
         this.dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
@@ -101,14 +100,14 @@ public class OneServerSync extends SyncData {
     @Override
     public void superRun() {
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_ARCHIVEVELKOMPC)) {
-            try (InputStream inputStream = new FileInputStream(file)) {
-                try (Scanner scanner = new Scanner(inputStream)) {
-                    while (scanner.hasNextLine()) {
-                        String line = scanner.nextLine();
-                        JsonObject parsedObj = (JsonObject) Json.parse(line);
-                        try (PreparedStatement preparedStatement = connection
-                            .prepareStatement("INSERT INTO archive.velkompc (idrec, NamePP, AddressPP, SegmentPP, instr, OnlineNow, userName) values (?,?,?,?,?,?,?)")) {
-                            preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(10));
+            try (PreparedStatement preparedStatement = connection
+                .prepareStatement("INSERT INTO archive.velkompc (idrec, NamePP, AddressPP, SegmentPP, instr, OnlineNow, userName) values (?,?,?,?,?,?,?)")) {
+                try (InputStream inputStream = new FileInputStream(file)) {
+                    preparedStatement.setQueryTimeout(100);
+                    try (Scanner scanner = new Scanner(inputStream)) {
+                        while (scanner.hasNextLine()) {
+                            String line = scanner.nextLine();
+                            JsonObject parsedObj = (JsonObject) Json.parse(line);
                             preparedStatement.setInt(1, Integer.parseInt(parsedObj.getString(ConstantsFor.DBCOL_IDREC, "0")));
                             preparedStatement.setString(2, parsedObj.getString(ConstantsFor.DBCOL_NAMEPP, "0"));
                             preparedStatement.setString(3, parsedObj.getString(ConstantsFor.DBCOL_ADDRPP, "0"));
@@ -116,10 +115,11 @@ public class OneServerSync extends SyncData {
                             preparedStatement.setString(5, parsedObj.getString("instr", "0"));
                             preparedStatement.setString(6, parsedObj.getString(ConstantsNet.ONLINE_NOW, "0"));
                             preparedStatement.setString(7, parsedObj.getString(ConstantsFor.DBFIELD_USERNAME, "0"));
-                            preparedStatement.executeUpdate();
+                            preparedStatement.addBatch();
                         }
                     }
                 }
+                preparedStatement.executeBatch();
             }
         }
         catch (SQLException | IOException e) {
