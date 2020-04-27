@@ -43,7 +43,6 @@ public class TimeOnActualizer implements Runnable {
                 final String sql = "SELECT idrec FROM velkompc WHERE NamePP LIKE '" + pcName
                     .replace(ConstantsFor.DOMAIN_EATMEATRU, "") + "%' AND OnlineNow = 0 ORDER BY idrec DESC LIMIT 1";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                    preparedStatement.setQueryTimeout(150);
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
                             int idrec = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
@@ -110,10 +109,12 @@ public class TimeOnActualizer implements Runnable {
 
     private void setInPcUserDB(String pcName, Timestamp actualTimeOn) {
         final String sql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`= ? WHERE `pcName` like '%s%%'", pcName);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setTimestamp(1, actualTimeOn);
-            preparedStatement.executeUpdate();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setQueryTimeout((int) ConstantsFor.DELAY);
+                preparedStatement.setTimestamp(1, actualTimeOn);
+                preparedStatement.executeUpdate();
+            }
         }
         catch (SQLException e) {
             messageToUser.error("TimeOnActualizer.setInPcUserDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
