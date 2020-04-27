@@ -29,7 +29,7 @@ import static ru.vachok.networker.data.enums.ConstantsFor.FIREBASE;
 public class FBAdmin {
 
 
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, FBAdmin.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.FILE, FBAdmin.class.getSimpleName());
 
     public FBAdmin() {
         initSDK();
@@ -53,17 +53,20 @@ public class FBAdmin {
     @NotNull
     private String getCred() {
         File file = new File(FIREBASE);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.general");
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkom.general");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                if (resultSet.getString(ConstantsFor.DBCOL_PROPERTY).equalsIgnoreCase(FIREBASE)) {
-                    byte[] bins = resultSet.getBytes("bin");
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(FIREBASE)) {
-                        fileOutputStream.write(bins);
-                    }
-                    catch (IOException e) {
-                        messageToUser.error("FBAdmin.getCred", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.general")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkom.general")) {
+                preparedStatement.setQueryTimeout(10);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        if (resultSet.getString(ConstantsFor.DBCOL_PROPERTY).equalsIgnoreCase(FIREBASE)) {
+                            byte[] bins = resultSet.getBytes("bin");
+                            try (FileOutputStream fileOutputStream = new FileOutputStream(FIREBASE)) {
+                                fileOutputStream.write(bins);
+                            }
+                            catch (IOException e) {
+                                messageToUser.error("FBAdmin.getCred", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                            }
+                        }
                     }
                 }
             }
