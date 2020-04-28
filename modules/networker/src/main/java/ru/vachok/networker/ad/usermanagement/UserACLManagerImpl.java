@@ -12,30 +12,36 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 
 /**
  @see UserACLManagerImplTest
  @since 17.07.2019 (11:44) */
 abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserACLManagerImpl.class.getSimpleName());
-    
+
     protected Path startPath;
-    
+
     private UserPrincipal oldUser;
-    
+
     private UserPrincipal newUser;
-    
+
     private UserACLManagerImpl aclManager;
-    
+
     public abstract String getResult();
-    
+
     public static void setACLToAdminsOnly(@NotNull Path pathToFile) {
         AclFileAttributeView attributeView = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class);
         try {
@@ -51,7 +57,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
                 .format("UserACLManager.setACLToAdminsOnly: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
-    
+
     /**
      @param userPrincipal для кого создать acl
      @param rwInherit r - только чтение, rw - чтение/запись, i - наследовать. <br> Если нужно сделать разрешение ТОЛЬКО к объекту - i не ставим. Если нужно к дереву = добавляем i.
@@ -67,7 +73,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         }
         builder.setType(AclEntryType.ALLOW);
         builder.setPrincipal(userPrincipal);
-    
+
         if (rwInherit.toLowerCase().contains("i")) {
             builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
             builder.setFlags(AclEntryFlag.FILE_INHERIT);
@@ -77,7 +83,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         }
         return builder.build();
     }
-    
+
     private static @NotNull Set<AclEntryPermission> setReadOnlyPermission() {
         Set<AclEntryPermission> permList = new LinkedHashSet<>();
         for (AclEntryPermission permission : AclEntryPermission.values()) {
@@ -88,13 +94,13 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         }
         return permList;
     }
-    
+
     public abstract void setClassOption(Object classOption);
-    
+
     UserACLManagerImpl(Path startPath) {
         this.startPath = startPath;
     }
-    
+
     public static @NotNull String addAccess(UserPrincipal newUser, Path startPath) {
         try {
             UserACLAdder adder = new UserACLAdder(startPath);
@@ -106,7 +112,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         }
         return startPath + " added " + newUser.getName();
     }
-    
+
     public static String removeAccess(UserPrincipal oldUser, Path startPath) {
         try {
             Files.walkFileTree(startPath, new UserACLDeleter(oldUser));
@@ -117,7 +123,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         }
         return startPath + " removed " + oldUser.getName();
     }
-    
+
     public static @NotNull String replaceUsers(UserPrincipal oldUser, Path foldersFilePath, UserPrincipal newUser) {
         try {
             UserACLReplacer replacer = new UserACLReplacer(oldUser, foldersFilePath, newUser);
@@ -128,7 +134,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         }
         return MessageFormat.format("{0} users changed.\nWAS: {1} ; NOW: {2}", foldersFilePath, oldUser, newUser);
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserACLCommonManagerImpl{");
@@ -136,7 +142,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         sb.append('}');
         return sb.toString();
     }
-    
+
     static @NotNull AclEntry createACLForUserFromExistsACL(@NotNull AclEntry templateACL, UserPrincipal userNeeded) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
         aclBuilder.setPermissions(templateACL.permissions());
@@ -145,10 +151,12 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
         aclBuilder.setFlags(templateACL.flags());
         return aclBuilder.build();
     }
-    
+
     @Contract("_, _ -> new")
     protected static @NotNull UserACLManagerImpl getI(@NotNull String type, Path startPath) {
         switch (type) {
+            case UserACLManager.RESTORE:
+                return new UserACLRestorer(startPath);
             case UserACLManager.ADD:
                 return new UserACLAdder(startPath);
             case UserACLManager.DEL:
@@ -157,7 +165,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
                 return new UserACLReplacer(startPath);
         }
     }
-    
+
     private void aclFromFile(Path foldersFilePath) {
         Queue<String> foldersWithACL = FileSystemWorker.readFileToQueue(foldersFilePath);
         while (!foldersWithACL.isEmpty()) {
@@ -165,10 +173,10 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
             messageToUser.warn(foldersWithACL.size() + " foldersWithACL size.");
         }
     }
-    
+
     private void replaceACL(@NotNull String folderWithACL) {
         Path path = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\");
-        
+
         if (!folderWithACL.isEmpty()) {
             path = Paths.get(folderWithACL).normalize();
         }

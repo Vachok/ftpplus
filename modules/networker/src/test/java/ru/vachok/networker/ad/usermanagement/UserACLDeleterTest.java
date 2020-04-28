@@ -19,22 +19,21 @@ import java.nio.file.attribute.UserPrincipal;
  @see UserACLDeleter
  @since 26.07.2019 (11:15) */
 public class UserACLDeleterTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
-    
+
     @Test
     public void testDeleter() {
         UserPrincipal oldUser = null;
@@ -44,9 +43,11 @@ public class UserACLDeleterTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-
-//        UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Маркетинг-Упаковка\\"));
-        String removeAccess = UserACLManagerImpl.removeAccess(oldUser, Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
+        finally {
+            Assert.assertNotNull(oldUser);
+        }
+        UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.DEL, Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\"));
+        String removeAccess = userACLManager.removeAccess(oldUser);
         Assert.assertTrue(removeAccess.contains("removed"));
     }
 }

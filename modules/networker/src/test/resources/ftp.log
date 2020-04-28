@@ -24069,3 +24069,28 @@ get "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents
 ls "/usr/home/kudr/networker/"
 ls "/usr/home/kudr/networker/"
 ls "/usr/home/kudr/networker/"
+CONNECT \192.168.13.155
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/"
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0105.pem" "f:\OneDrive\Документы\Велком\keys\0105.pem"
+get "/usr/home/ITDept/vpn/keys/keys/a.s.cedilin210428.crt" "f:\OneDrive\Документы\Велком\keys\a.s.cedilin210428.crt"
+get "/usr/home/ITDept/vpn/keys/keys/a.s.cedilin210428.csr" "f:\OneDrive\Документы\Велком\keys\a.s.cedilin210428.csr"
+get "/usr/home/ITDept/vpn/keys/keys/a.s.cedilin210428.key" "f:\OneDrive\Документы\Велком\keys\a.s.cedilin210428.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!

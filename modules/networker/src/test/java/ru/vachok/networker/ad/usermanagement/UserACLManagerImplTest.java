@@ -36,37 +36,37 @@ import java.util.concurrent.LinkedBlockingQueue;
  @see UserACLManagerImpl
  @since 17.07.2019 (11:44) */
 public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private UserPrincipal oldUser;
-    
+
     private UserPrincipal newUser;
-    
-    private int filesCounter = 0;
-    
-    private int foldersCounter = 0;
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    private Collection<String> filesACLs = new LinkedBlockingQueue<>();
-    
-    private Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
-    
+
+    private final int filesCounter = 0;
+
+    private final int foldersCounter = 0;
+
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+
+    private final Collection<String> filesACLs = new LinkedBlockingQueue<>();
+
+    private final Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
+
     private UserACLManager userACLManager;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @BeforeMethod
     public void setFields() {
         try {
@@ -77,7 +77,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void addAccess() {
         this.userACLManager = UserACLManager.getInstance(UserACLManager.ADD, startPath);
@@ -90,7 +90,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         String addAccessStr = UserACLManagerImpl.addAccess(newUser, startPath);
         Assert.assertTrue(addAccessStr.contains("added"));
     }
-    
+
     @Test
     public void removeAccess() {
         this.userACLManager = UserACLManager.getInstance(UserACLManager.DEL, startPath);
@@ -103,7 +103,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         String removeResult = UserACLManagerImpl.removeAccess(newUser, startPath);
         Assert.assertTrue(removeResult.contains("testClean removed"));
     }
-    
+
     @Test
     public void testReplaceUsers() {
         this.userACLManager = UserACLManager.getInstance("", startPath);
@@ -116,7 +116,15 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         String replaceResults = UserACLManagerImpl.replaceUsers(oldUser, startPath, newUser);
         Assert.assertTrue(replaceResults.contains("testClean users changed"));
     }
-    
+
+    @Test
+    public void testRestoreACL() {
+        UserACLManager instance = UserACLManager
+            .getInstance(UserACLManager.RESTORE, Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_ЗП\\"));
+        String result = instance.getResult();
+        System.out.println("result = " + result);
+    }
+
     @Test
     public void testCreateACLForUserFromExistsACL() {
         AclFileAttributeView attributeView = Files.getFileAttributeView(Paths.get("."), AclFileAttributeView.class);
@@ -125,7 +133,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
                 AclEntry existsACL = UserACLManagerImpl.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UpakFilesTest.res")));
                 AclEntry newACL = UserACLManagerImpl.createACLFor(Files.getOwner(Paths.get("UpakFilesTest.res")), "rw");
                 Assert.assertTrue(newACL.toString()
-                        .contains("READ_DATA/WRITE_DATA/APPEND_DATA/READ_NAMED_ATTRS/WRITE_NAMED_ATTRS/EXECUTE/DELETE_CHILD/READ_ATTRIBUTES/WRITE_ATTRIBUTES/DELETE/READ_ACL/WRITE_ACL/WRITE_OWNER/SYNCHRONIZE"), newACL
+                    .contains("READ_DATA/WRITE_DATA/APPEND_DATA/READ_NAMED_ATTRS/WRITE_NAMED_ATTRS/EXECUTE/DELETE_CHILD/READ_ATTRIBUTES/WRITE_ATTRIBUTES/DELETE/READ_ACL/WRITE_ACL/WRITE_OWNER/SYNCHRONIZE"), newACL
                         .toString());
             }
         }
@@ -133,25 +141,25 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     public void testCreateNewACL() {
         UserPrincipal principalToSet = null;
         Path pathToTest = Paths.get("\\\\rups00.eatmeat.ru\\c$\\Users\\ikudryashov\\Documents\\lan");
         Path pathToSetACL = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\userchanger\\");
-    
+
         try {
             principalToSet = Files.getOwner(pathToTest);
-        
+
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    
+
         AclFileAttributeView ownerACL = Files.getFileAttributeView(pathToTest, AclFileAttributeView.class);
         AclFileAttributeView toSetACL = Files.getFileAttributeView(pathToSetACL, AclFileAttributeView.class);
         List<AclEntry> checkList = new ArrayList<>();
-    
+
         try {
             List<AclEntry> entries = checkPathToSet(toSetACL, principalToSet);
             Files.getFileAttributeView(pathToSetACL, AclFileAttributeView.class).setAcl(entries);
@@ -163,13 +171,13 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         String checkString = new TForms().fromArray(checkList);
         Assert.assertTrue(checkString.contains(principalToSet.getName()));
     }
-    
+
     private @NotNull List<AclEntry> checkPathToSet(@NotNull AclFileAttributeView toSetACL, UserPrincipal principalToSet) throws InvalidObjectException {
         AclEntry acl = UserACLManagerImpl.createACLFor(principalToSet, "rw");
         try {
             List<AclEntry> aclListToSET = Collections.synchronizedList(toSetACL.getAcl());
             List<AclEntry> newAclList = new ArrayList<>();
-            
+
             for (AclEntry aclEntry : aclListToSET) {
                 if (!aclEntry.principal().equals(principalToSet)) {
                     newAclList.add(aclEntry);
@@ -187,7 +195,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         }
         throw new InvalidObjectException(acl.toString());
     }
-    
+
     private @NotNull AclEntry changeACL(@NotNull AclEntry acl) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
         aclBuilder.setPermissions(acl.permissions());
@@ -196,7 +204,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         aclBuilder.setFlags(acl.flags());
         return aclBuilder.build();
     }
-    
+
     @Test
     public void testAdd() {
         UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.ADD, Paths

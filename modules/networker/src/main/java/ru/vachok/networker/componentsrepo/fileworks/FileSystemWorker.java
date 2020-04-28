@@ -245,42 +245,45 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
     @NotNull
     public static String readFile(String fileName) {
-        final long stArt = System.currentTimeMillis();
         StringBuilder stringBuilder = new StringBuilder();
         boolean exists = new File(fileName).exists();
         if (exists) {
-            try (InputStream inputStream = new FileInputStream(fileName);
-                 InputStreamReader reader = new InputStreamReader(inputStream);
-                 BufferedReader bufferedReader = new BufferedReader(reader)
-            ) {
-                int avaBytes = inputStream.available();
-                stringBuilder
-                        .append("Bytes in stream: ")
-                        .append(avaBytes)
-                        .append("\n<br>");
-                while (bufferedReader.ready()) {
-                    stringBuilder
-                            .append(bufferedReader.readLine())
-                            .append("\n<br>");
-                }
-            }
-            catch (IOException e) {
-                stringBuilder.append(e.getMessage());
-            }
+            stringBuilder.append(fileRead(fileName, "UTF-8"));
         }
         else {
             stringBuilder
-                    .append("File: ")
-                    .append(fileName)
-                    .append(" does not exists!");
+                .append("File: ")
+                .append(fileName)
+                .append(" does not exists!");
         }
-        String msgTimeSp = new StringBuilder()
-            .append("FileSystemWorker.readFile: ")
-            .append((float) (System.currentTimeMillis() - stArt) / 1000)
-            .append(ConstantsFor.STR_SEC_SPEND)
-            .toString();
-        messageToUser.info(msgTimeSp);
         return stringBuilder.toString();
+    }
+
+    private static String fileRead(String fileName, String enc) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream = new FileInputStream(fileName);
+             InputStreamReader reader = new InputStreamReader(inputStream, enc);
+             BufferedReader bufferedReader = new BufferedReader(reader)
+        ) {
+            int avaBytes = inputStream.available();
+            stringBuilder
+                .append("Bytes in stream: ")
+                .append(avaBytes)
+                .append("\n<br>");
+            while (bufferedReader.ready()) {
+                stringBuilder
+                    .append(bufferedReader.readLine())
+                    .append("\n<br>");
+            }
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String readFile(String fileName, String enc) {
+        return fileRead(fileName, enc);
     }
 
     @NotNull
@@ -313,7 +316,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             file.delete();
         }
         try (OutputStream outputStream = new FileOutputStream(fileName);
-             PrintStream printStream = new PrintStream(outputStream, true)
+             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
         ) {
             toFileRec.forEach(printStream::println);
         }
