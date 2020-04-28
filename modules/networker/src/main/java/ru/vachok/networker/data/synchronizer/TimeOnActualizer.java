@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -26,7 +27,12 @@ public class TimeOnActualizer implements Runnable {
 
     @Override
     public void run() {
-        setTimeOnFromBigDB();
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
+            setTimeOnFromBigDB();
+        }
+        else {
+            messageToUser.warn(getClass().getSimpleName(), "not run on ", System.getProperty("os.name"));
+        }
     }
 
     private void setTimeOnFromBigDB() {
