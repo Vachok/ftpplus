@@ -6,13 +6,11 @@ package ru.vachok.networker.net.scanner;
 import com.eclipsesource.json.JsonObject;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
@@ -38,7 +36,6 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.net.scanner.PcNamesScannerTest
  @since 21.08.2018 (14:40) */
 @Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
-@Scope(ConstantsFor.SINGLETON)
 @EnableAsync(proxyTargetClass = true)
 public class PcNamesScanner implements NetScanService {
 
@@ -297,9 +294,6 @@ public class PcNamesScanner implements NetScanService {
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(stringBuilder.toString(), true);
     }
 
-    /**
-     @throws InvokeIllegalException если БД не записана
-     */
     private void closePrefix() {
         boolean isSmallDBWritten = NetScanService.writeUsersToDBFromSET();
         NetKeeper.getPcNamesForSendToDatabase().clear();
@@ -417,11 +411,6 @@ public class PcNamesScanner implements NetScanService {
             return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }
 
-        /**
-         @return {@link #toString()}
-
-         @throws InvokeIllegalException {@link #scanPCPrefixes()} , set not written to DB
-         */
         @Override
         public String getExecution() {
             scanPCPrefixes();
@@ -437,9 +426,6 @@ public class PcNamesScanner implements NetScanService {
             return new ScanMessagesCreator().fillUserPCForWEBModel();
         }
 
-        /**
-         @throws InvokeIllegalException {@link #onePrefixSET(String)}, not written
-         */
         private void scanPCPrefixes() {
             Set<String> setToDB = NetKeeper.getPcNamesForSendToDatabase();
             for (String pcNamePREFIX : ConstantsNet.getPcPrefixes()) {

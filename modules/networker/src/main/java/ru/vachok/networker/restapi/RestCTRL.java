@@ -85,7 +85,7 @@ public class RestCTRL {
         }
         else {
             informationFactory.setClassOption(true);
-            return informationFactory.getInfo();
+            return informationFactory.getInfo().replaceAll("\\Q<br>", "\n");
         }
     }
 
@@ -108,7 +108,7 @@ public class RestCTRL {
             while (resultSet.next()) {
                 showMap.put(resultSet.getString("VARIABLE_NAME"), resultSet.getString("VARIABLE_VALUE"));
             }
-            return AbstractForms.fromArray(showMap);
+            return AbstractForms.fromArray(showMap).replaceAll("\\Q<br>", "\n");
         }
         catch (SQLException e) {
             return e.getMessage() + " \n<br>\n" + AbstractForms.fromArray(e);
@@ -161,7 +161,7 @@ public class RestCTRL {
         String statusVpn = new VpnHelper().getStatus();
         String informationSys = UsefulUtilities.getRunningInformation();
         String sshAns = connectToSrvInetstat();
-        return String.join("\n\n\n", statusVpn, informationSys, sshAns);
+        return String.join("\n\n\n", statusVpn, informationSys, sshAns).replaceAll("\\Q<br>", "\n");
     }
 
     @PostMapping(GETOLDFILES)
@@ -282,7 +282,7 @@ public class RestCTRL {
         PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
         messageToUser.warn(getClass().getSimpleName(), "sshRest", new Date(pfLists.getTimeStampToNextUpdLong()).toString());
         pfService.makeListRunner();
-        return pfLists.toString();
+        return pfLists.toString().replaceAll("\\Q<br>", "\n");
     }
 
     @GetMapping(GETOLDFILES)
@@ -291,7 +291,7 @@ public class RestCTRL {
         OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
-        return oldBigFilesInfoCollector.getFromDatabase();
+        return oldBigFilesInfoCollector.getFromDatabase().replaceAll("\\Q<br>", "\n");
     }
 
     @PostMapping("/sshcommandexec")
@@ -329,7 +329,7 @@ public class RestCTRL {
         }
         else {
             VpnHelper vpnHelper = new VpnHelper();
-            return vpnHelper.getConfig(request.getQueryString());
+            return vpnHelper.getConfig(request.getQueryString()).replaceAll("\\Q<br>", "\n");
         }
     }
 
