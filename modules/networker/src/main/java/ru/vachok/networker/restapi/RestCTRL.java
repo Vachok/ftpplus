@@ -88,7 +88,7 @@ public class RestCTRL {
         }
         else {
             informationFactory.setClassOption(true);
-            return informationFactory.getInfo().replaceAll("\\Q<br>", "\n");
+            return informationFactory.getInfo();
         }
     }
 
@@ -111,7 +111,7 @@ public class RestCTRL {
             while (resultSet.next()) {
                 showMap.put(resultSet.getString("VARIABLE_NAME"), resultSet.getString("VARIABLE_VALUE"));
             }
-            return AbstractForms.fromArray(showMap).replaceAll("\\Q<br>", "\n");
+            return AbstractForms.fromArray(showMap);
         }
         catch (SQLException e) {
             return e.getMessage() + " \n<br>\n" + AbstractForms.fromArray(e);
@@ -164,7 +164,7 @@ public class RestCTRL {
         String statusVpn = new VpnHelper().getStatus();
         String informationSys = UsefulUtilities.getRunningInformation();
         String sshAns = connectToSrvInetstat();
-        return String.join("\n\n\n", statusVpn, informationSys, sshAns).replaceAll("\\Q<br>", "\n");
+        return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
     @PostMapping(GETOLDFILES)
@@ -284,7 +284,7 @@ public class RestCTRL {
         PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
         pfService.makeListRunner();
-        return pfLists.toString().replaceAll("\\Q<br>", "\n");
+        return pfLists.toString();
     }
 
     @GetMapping(GETOLDFILES)
@@ -293,7 +293,7 @@ public class RestCTRL {
         OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
-        return oldBigFilesInfoCollector.getFromDatabase().replaceAll("\\Q<br>", "\n");
+        return oldBigFilesInfoCollector.getFromDatabase();
     }
 
     @PostMapping("/sshcommandexec")
@@ -331,7 +331,7 @@ public class RestCTRL {
         }
         else {
             VpnHelper vpnHelper = new VpnHelper();
-            return vpnHelper.getConfig(request.getQueryString()).replaceAll("\\Q<br>", "\n");
+            return vpnHelper.getConfig(request.getQueryString());
         }
     }
 
