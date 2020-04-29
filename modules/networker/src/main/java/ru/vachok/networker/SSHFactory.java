@@ -9,7 +9,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
@@ -65,6 +67,8 @@ public class SSHFactory implements Callable<String> {
     private Channel respChannel;
 
     private String builderToStr;
+
+    private final File sshErr = new File(FileNames.SSH_ERR);
 
     public Path getTempFile() {
         return tempFile;
@@ -137,7 +141,7 @@ public class SSHFactory implements Callable<String> {
             this.session.disconnect();
         }
         catch (IOException | RuntimeException e) {
-            messageToUser.error("SSHFactory.call", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
             stringBuilder.append(e.getMessage());
             this.session.disconnect();
         }
@@ -157,14 +161,13 @@ public class SSHFactory implements Callable<String> {
         }
         catch (RuntimeException e) {
             setRespChannelToField();
-            messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         try {
             respChannel.connect(ConstantsFor.SSH_TIMEOUT);
-            ((ChannelExec) respChannel).setErrStream(new FileOutputStream(SSH_ERR));
         }
         catch (JSchException | RuntimeException e) {
-            messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return respChannel.getInputStream();
     }
@@ -181,14 +184,14 @@ public class SSHFactory implements Callable<String> {
             session.connect(ConstantsFor.SSH_TIMEOUT);
         }
         catch (JSchException | RuntimeException e) {
-            messageToUser.error("SSHFactory.setRespChannelToField", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         try {
             this.respChannel = session.openChannel(sessionType);
             ((ChannelExec) respChannel).setCommand(commandSSH);
         }
         catch (JSchException e) {
-            messageToUser.error(e.getMessage());
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         Objects.requireNonNull(respChannel);
     }
@@ -205,13 +208,13 @@ public class SSHFactory implements Callable<String> {
             sessionLoc = jSch.getSession(userName, getConnectToSrv());
         }
         catch (JSchException e) {
-            messageToUser.error(e.getMessage());
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         try {
             jSch.addIdentity(getPem());
         }
         catch (JSchException | RuntimeException e) {
-            messageToUser.error("SSHFactory.setRespChannelToField", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         if (sessionLoc != null) {
             return sessionLoc;
@@ -227,7 +230,7 @@ public class SSHFactory implements Callable<String> {
             properties.load(getClass().getResourceAsStream("/static/sshclient.properties"));
         }
         catch (IOException e) {
-            messageToUser.error("SSHFactory.setRespChannelToField", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return properties;
     }
@@ -266,7 +269,7 @@ public class SSHFactory implements Callable<String> {
                 }
             }
             catch (SQLException | IOException e) {
-                messageToUser.error("SSHFactory.getPem", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
             }
         }
         pemFile.deleteOnExit();
@@ -279,7 +282,7 @@ public class SSHFactory implements Callable<String> {
             inetAddress = InetAddress.getByAddress(InetAddress.getByName(this.connectToSrv).getAddress());
         }
         catch (UnknownHostException e) {
-            messageToUser.error("SSHFactory.triedIP", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return inetAddress;
     }

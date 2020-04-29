@@ -283,8 +283,19 @@ public class RestCTRL {
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
         PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
-        pfService.makeListRunner();
-        return pfLists.toString();
+        if (pfService.makeListRunner()) {
+            return pfLists.toString();
+        }
+        else {
+            SSHFactory.Builder sshB = new SSHFactory.Builder("srv-nat.eatmeat.ru", getCommand(), this.getClass().getSimpleName());
+            return AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 10);
+        }
+    }
+
+    private String getCommand() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;sudo cat /etc/pf/squid;sudo cat /etc/pf/squidlimited;exit");
+        return stringBuilder.toString();
     }
 
     @GetMapping(GETOLDFILES)

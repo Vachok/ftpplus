@@ -101,4 +101,6 @@ public enum FileNames {
     public static final String _STACK_TXT = "-stack.txt";
 
     public static final String OLDFILES_LOG = "old_files.log";
+
+    public static final String SSH_ERR = "ssh.err.log";
 }
