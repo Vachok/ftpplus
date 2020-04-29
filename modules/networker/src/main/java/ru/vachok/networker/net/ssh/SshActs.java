@@ -158,7 +158,7 @@ public class SshActs {
     /**
      @see SshActsTest#testAllowDomainAdd()
      */
-    public String allowDomainAdd() {
+    public String allowDomainAdd() throws InvokeIllegalException {
         String result;
         if (ipAddrOnly != null && ipAddrOnly.equalsIgnoreCase(ConstantsFor.DELETE)) {
             this.delDomain = allowDomain;
@@ -242,7 +242,7 @@ public class SshActs {
         return stringBuilder.toString();
     }
 
-    private String checkDName() {
+    private String checkDName() throws InvokeIllegalException {
         try {
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
         }

@@ -15,7 +15,7 @@ import java.text.MessageFormat;
  <p>
 
  @since 23.06.2019 (0:27) */
-public class InvokeIllegalException extends IllegalStateException {
+public class InvokeIllegalException extends Throwable {
 
 
     private final String message;

@@ -85,21 +85,23 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    private OldBigFilesInfoCollector.WalkerCommon getWalker() {
-        File walkFile = new File(FileNames.WALKER_LCK);
-        if (walkFile.exists()) {
-            throw new InvokeIllegalException(walkFile.getAbsolutePath() + " : " + new Date(walkFile.lastModified()));
+    @Override
+    public String call() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            OldBigFilesInfoCollector.WalkerCommon walkerCommon = getWalker();
+            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), walkerCommon));
+            new File(FileNames.WALKER_LCK).delete();
         }
-        else {
-            try {
-                Files.createFile(walkFile.toPath());
-                walkFile.deleteOnExit();
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-            return new OldBigFilesInfoCollector.WalkerCommon();
+        catch (IOException | InvokeIllegalException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray((Exception) e));
         }
+        finally {
+            this.reportUser = stringBuilder.toString();
+            InitProperties.getTheProps().setProperty(OldBigFilesInfoCollector.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
+        }
+        return stringBuilder.toString();
     }
 
     @Override
@@ -125,23 +127,21 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         return sb.toString();
     }
 
-    @Override
-    public String call() {
-        Thread.currentThread().setName(this.getClass().getSimpleName());
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            OldBigFilesInfoCollector.WalkerCommon walkerCommon = getWalker();
-            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), walkerCommon));
-            new File(FileNames.WALKER_LCK).delete();
+    private OldBigFilesInfoCollector.WalkerCommon getWalker() throws InvokeIllegalException {
+        File walkFile = new File(FileNames.WALKER_LCK);
+        if (walkFile.exists()) {
+            throw new InvokeIllegalException(walkFile.getAbsolutePath() + " : " + new Date(walkFile.lastModified()));
         }
-        catch (IOException | InvokeIllegalException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        else {
+            try {
+                Files.createFile(walkFile.toPath());
+                walkFile.deleteOnExit();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+            return new OldBigFilesInfoCollector.WalkerCommon();
         }
-        finally {
-            this.reportUser = stringBuilder.toString();
-            InitProperties.getTheProps().setProperty(OldBigFilesInfoCollector.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
-        }
-        return stringBuilder.toString();
     }
 
     @Override

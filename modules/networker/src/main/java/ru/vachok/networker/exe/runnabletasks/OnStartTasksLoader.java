@@ -11,7 +11,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ad.common.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
@@ -40,6 +39,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
@@ -152,12 +152,12 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `upstring`, `json`) VALUES (?, ?, ?)";
         try (Connection connection = dataConnectTo.getDefaultConnection(DBNAME_LOG_DBMESSENGER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                Queue<String> logJson;
+                Queue<String> logJson = new LinkedList<>();
                 if (path.toFile().exists()) {
                     logJson = FileSystemWorker.readFileToQueue(path);
                 }
                 else {
-                    throw new InvokeIllegalException(this.getClass().getSimpleName() + "dbSendAppJson");
+                    logJson.add(this.getClass().getSimpleName() + "dbSendAppJson");
                 }
                 while (!logJson.isEmpty()) {
                     executeStatement(preparedStatement, logJson);

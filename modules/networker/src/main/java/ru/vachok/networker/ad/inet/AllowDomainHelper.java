@@ -15,6 +15,8 @@ import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.text.MessageFormat;
+
 
 /**
  @see AllowDomainHelperTest
@@ -24,20 +26,24 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AllowDomainHelper.class.getSimpleName());
 
-    private String allowDomains;
-
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
         int codeVer = jsonObject.getInt("code", -1);
-        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
-            return makeActions(jsonObject);
+        String authStr = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
+        try {
+            if (checkValidUID(authStr, codeVer)) {
+                return makeActions(jsonObject);
+            }
+            else {
+                return MessageFormat.format("Bad AUTH for {0}, code: {1}", authStr, codeVer);
+            }
         }
-        else {
-            throw new InvokeIllegalException(jsonObject.toString());
+        catch (InvokeIllegalException e) {
+            return e.getMessage();
         }
     }
 
-    private String makeActions(JsonObject jsonObject) {
+    private String makeActions(JsonObject jsonObject) throws InvokeIllegalException {
         String result = "Domain is exists";
         boolean finished = false;
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);
@@ -46,7 +52,7 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
         PfListsSrv bean = new PfListsSrv((PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS));
         bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
-        this.allowDomains = bean.runCom();
+        String allowDomains = bean.runCom();
         try {
             messageToUser.info(allowDomains);
             if (allowDomains.contains("." + ipValue.asString().split("://")[1].split("/")[0])) {

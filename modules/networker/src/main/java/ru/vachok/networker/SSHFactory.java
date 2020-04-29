@@ -41,7 +41,7 @@ public class SSHFactory implements Callable<String> {
 
     public static final String DBTABLE_GENERALJSCH = "general-jsch";
 
-    private static final int SSH_TIMEOUT = 3000;
+    private static final int SSH_TIMEOUT = 2000;
 
     /**
      Файл с ошибкой.

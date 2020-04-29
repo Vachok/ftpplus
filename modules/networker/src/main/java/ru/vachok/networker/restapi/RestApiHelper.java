@@ -44,7 +44,7 @@ public interface RestApiHelper {
         return new RestError();
     }
 
-    default boolean checkValidUID(String headerAuthorization, int minCodeVer) {
+    default boolean checkValidUID(String headerAuthorization, int minCodeVer) throws InvokeIllegalException {
         boolean isValid = false;
         List<String> validUIDs = getFromDB();
         if (validUIDs.size() == 0) {

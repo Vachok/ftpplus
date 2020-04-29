@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi.props;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -69,7 +68,7 @@ public class MemoryProperties extends DBPropsCallable {
     @Override
     public boolean delProps() {
         if (InitProperties.getInstance(InitProperties.FILE).getProps().size() < 17) {
-            throw new InvokeIllegalException("SET FILE PROPS FIRST!");
+            throw new IllegalStateException("SET FILE PROPS FIRST!");
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {

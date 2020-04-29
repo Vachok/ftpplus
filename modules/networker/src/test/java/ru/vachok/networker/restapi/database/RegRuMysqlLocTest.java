@@ -11,7 +11,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -27,28 +26,28 @@ import java.sql.SQLException;
  @see RegRuMysqlLoc
  @since 14.07.2019 (12:34) */
 public class RegRuMysqlLocTest {
-    
-    
+
+
     private RegRuMysqlLoc regRuLocal;
-    
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @BeforeMethod
     public void initDcT() {
         this.regRuLocal = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
     }
-    
+
     @Test
     public void testGetDefaultConnection() {
         try (Connection connection = regRuLocal.getDefaultConnection("test.test")) {
@@ -60,27 +59,24 @@ public class RegRuMysqlLocTest {
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
     }
-    
+
     @Test
     public void testToString() {
-        
+
         try{
             System.out.println(regRuLocal.toString());
         }catch (ExceptionInInitializerError e){
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e.getStackTrace()));
         }
     }
-    
+
     @Test
     public void testGetDataSource() {
         MysqlDataSource source = regRuLocal.getDataSource();
         Assert.assertEquals("jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_testing", source.getURL());
     }
-    
+
     @Test
     public void testDropTable() {
         try {
@@ -91,7 +87,7 @@ public class RegRuMysqlLocTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void testUploadCollection() {
         try {

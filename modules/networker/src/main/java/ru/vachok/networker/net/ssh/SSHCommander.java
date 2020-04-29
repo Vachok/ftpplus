@@ -41,8 +41,7 @@ public class SSHCommander implements RestApiHelper {
             }
         }
         else {
-
-            throw new InvokeIllegalException(result + "\n" + authorizationHeader + ":" + codeVer + " BAD AUTH!");
+            result = result + "\n" + authorizationHeader + ":" + codeVer + " BAD AUTH!";
         }
         return result;
     }

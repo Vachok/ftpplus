@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.NetKeeper;
@@ -42,80 +43,80 @@ import static ru.vachok.networker.data.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 /**
  Да запуска скана из {@link DiapazonScan}
  <p>
- 
+
  @see ExecScanTest
  @since 24.03.2019 (16:01) */
 public class ExecScan extends DiapazonScan {
-    
-    
+
+
     private static final int HOME_VLAN = 111;
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ExecScan.class.getSimpleName());
-    
+
     protected static final String PAT_IS_ONLINE = " is online";
-    
-    private File vlanFile;
-    
+
+    private final File vlanFile;
+
     private boolean isTest;
-    
+
     private long stArt;
-    
-    private int fromVlan;
-    
-    private int toVlan;
-    
-    private Queue<String> ipsQueue = new LinkedList<>();
-    
-    private String whatVlan;
-    
-    private Preferences preferences = InitProperties.getUserPref();
-    
+
+    private final int fromVlan;
+
+    private final int toVlan;
+
+    private final Queue<String> ipsQueue = new LinkedList<>();
+
+    private final String whatVlan;
+
+    private final Preferences preferences = InitProperties.getUserPref();
+
     private int thirdOctet;
-    
+
     private int fourthOctet;
-    
+
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
-        
+
         this.fromVlan = fromVlan;
-        
+
         this.toVlan = toVlan;
-        
+
         this.whatVlan = whatVlan;
-        
+
         this.vlanFile = vlanFile;
-    
+
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-        
+
     }
-    
+
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile, boolean isTest) {
-        
+
         this.fromVlan = fromVlan;
-        
+
         this.toVlan = toVlan;
-        
+
         this.whatVlan = whatVlan;
-        
+
         this.vlanFile = vlanFile;
-        
+
         this.isTest = isTest;
-    
+
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
-    
+
     protected ExecScan() {
-        
+
         this.fromVlan = HOME_VLAN;
-        
+
         this.toVlan = HOME_VLAN + 1;
-        
+
         this.whatVlan = "10.10.";
-        
+
         this.vlanFile = new File("home.test");
-    
+
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", ExecScan.class.getSimpleName() + "[\n", "\n]")
@@ -127,10 +128,17 @@ public class ExecScan extends DiapazonScan {
             .add("whatVlan = '" + whatVlan + "'")
             .toString();
     }
-    
+
     @Override
     public void run() {
-        Thread jobThread = new Thread(this::makeJob);
+        Thread jobThread = new Thread(()->{
+            try {
+                makeJob();
+            }
+            catch (InvokeIllegalException e) {
+                messageToUser.error("ExecScan.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
+        });
         try {
             jobThread.run();
         }
@@ -139,10 +147,10 @@ public class ExecScan extends DiapazonScan {
             jobThread.interrupt();
             Runtime.getRuntime().runFinalization();
         }
-    
+
     }
-    
-    private void makeJob() {
+
+    private void makeJob() throws InvokeIllegalException {
         File ipsWithInet = new File(FileNames.INETSTATSIP_CSV);
         ipsQueue.clear();
         ipsQueue.addAll(FileSystemWorker.readFileToQueue(ipsWithInet.toPath().toAbsolutePath().normalize()));
@@ -153,7 +161,7 @@ public class ExecScan extends DiapazonScan {
             messageToUser.info(copyOldResult);
         }
         if (isLocalDequeCapacityBiggerZero) {
-            
+
             boolean execScanB = execScan();
             messageToUser.info(this.getClass().getSimpleName(), MessageFormat
                 .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
@@ -162,15 +170,15 @@ public class ExecScan extends DiapazonScan {
             messageToUser.error(getExecution(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
         }
     }
-    
-    private boolean cpOldFile() {
+
+    private boolean cpOldFile() throws InvokeIllegalException {
         String vlanFileName = vlanFile.getName();
         vlanFileName = vlanFileName.replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
         String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
         Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
         return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
     }
-    
+
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
         try {
@@ -185,7 +193,7 @@ public class ExecScan extends DiapazonScan {
             return false;
         }
     }
-    
+
     /**
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
@@ -210,7 +218,7 @@ public class ExecScan extends DiapazonScan {
             }
         }
     }
-    
+
     private void setSpend() {
         long spendMS = System.currentTimeMillis() - stArt;
         try {
@@ -223,7 +231,7 @@ public class ExecScan extends DiapazonScan {
             messageToUser.error("ExecScan.setSpend", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
-    
+
     /**
      @param thirdOctet третий октет vlan
      @param fourthOctet четвертый октет vlan
@@ -237,7 +245,7 @@ public class ExecScan extends DiapazonScan {
         InitProperties.setPreference(DiapazonScan.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
         pingDev(byAddress);
     }
-    
+
     private void pingDev(@NotNull InetAddress byAddress) throws IOException {
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
@@ -256,7 +264,7 @@ public class ExecScan extends DiapazonScan {
             getAllDevLocalDeq().add(HTMLGeneration.getInstance("").setColor(ConstantsFor.RED, hostName));
         }
     }
-    
+
     private int calcTimeOutMSec() {
         int timeOutMSec = (int) ConstantsFor.DELAY / 2;
         if (UsefulUtilities.thisPC().equalsIgnoreCase("home")) {
@@ -264,12 +272,12 @@ public class ExecScan extends DiapazonScan {
         }
         return timeOutMSec;
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), vlanFile, isTest, stArt, fromVlan, toVlan, ipsQueue, whatVlan, preferences, thirdOctet, fourthOctet);
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -293,7 +301,7 @@ public class ExecScan extends DiapazonScan {
             Objects.equals(whatVlan, scan.whatVlan) &&
             preferences.equals(scan.preferences);
     }
-    
+
     private void writeToDB(String hostAddress, String hostName) {
         final String sql = "INSERT INTO lan.online (ip, pcName, inet) VALUES (?, ?, ?)";
         if (hostName == null || hostName.isEmpty()) {
@@ -312,19 +320,19 @@ public class ExecScan extends DiapazonScan {
             messageToUser.error(getClass().getSimpleName(), "writeToDB", FileSystemWorker.error(getClass().getSimpleName() + ".writeToDB", e));
         }
     }
-    
+
     private void printToFile(String hostAddress, String hostName, int thirdOctet, int fourthOctet) throws IOException {
-        
+
         try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
              PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true)
         ) {
             printStream.println(hostAddress + " " + hostName);
             messageToUser.info(getClass().getSimpleName() + ".oneIpScan ip online " + whatVlan + thirdOctet + "." + fourthOctet, vlanFile.getName(), " = " + vlanFile
                 .length() + ConstantsFor.STR_BYTES);
-            
+
         }
     }
-    
+
     @Contract(pure = true)
     private String checkIP(String ipAddress) {
         String retStr = "N";

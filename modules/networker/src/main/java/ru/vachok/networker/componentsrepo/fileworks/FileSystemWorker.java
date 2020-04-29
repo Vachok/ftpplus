@@ -159,12 +159,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return result;
     }
 
-    public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
+    public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) throws InvokeIllegalException {
         boolean retBool = false;
 
         if (!originalFile.exists()) {
             throw new InvokeIllegalException(MessageFormat.format("Can''t copy! Original file not found : {0}\n{1}", originalFile.getAbsolutePath(), AbstractForms
-                    .networkerTrace(Thread.currentThread().getStackTrace())));
+                .networkerTrace(Thread.currentThread().getStackTrace())));
         }
         if (isNeedDelete) {
             if (copyFile(originalFile, pathToCopy)) {

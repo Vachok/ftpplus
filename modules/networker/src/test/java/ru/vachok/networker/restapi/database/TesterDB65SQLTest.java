@@ -7,7 +7,6 @@ import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -76,14 +75,6 @@ public class TesterDB65SQLTest {
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        catch (InvokeIllegalException e) {
-            if (UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
-                Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
-            else {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
         }
         System.out.println("stringBuilder = " + stringBuilder.toString());
     }

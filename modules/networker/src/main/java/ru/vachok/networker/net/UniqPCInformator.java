@@ -5,7 +5,6 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -57,7 +56,7 @@ public class UniqPCInformator implements InformationFactory {
             this.isJson = (boolean) option;
         }
         else {
-            throw new InvokeIllegalException("Only boolean accepted");
+            throw new IllegalArgumentException("Only boolean accepted");
         }
     }
 

@@ -8,7 +8,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -42,13 +41,8 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
         actionMake.setTimeoutSeconds(5);
         actionMake.setFileName(oldFile.getName());
-        try {
-            String makeAction = actionMake.makeAction();
-            System.out.println("makeAction = " + makeAction);
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertTrue(e.getMessage().contains("TIMEOUT"), e.getMessage());
-        }
+        String makeAction = actionMake.makeAction();
+        System.out.println("makeAction = " + makeAction);
         oldFile.deleteOnExit();
     }
 

@@ -79,12 +79,36 @@ public class InternetSync extends SyncData implements Runnable {
     }
 
     /**
+     @param stringsCollection коллекция строк
+     @param tableName ip-адрес
+     @return {@link #sendToDatabase(JsonObject)}
+
+     @see InternetSyncTest#testUploadCollection()
+     */
+    @Override
+    public int uploadCollection(Collection stringsCollection, @NotNull String tableName) {
+        int retInt = 0;
+        if (tableName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            this.dbFullName = ConstantsFor.DB_INETSTATS + tableName.replaceAll("\\Q.\\E", "_");
+        }
+        else {
+            throw new IllegalArgumentException(tableName);
+        }
+        List<String> collectList = new ArrayList<>(stringsCollection);
+        for (String s : collectList) {
+            JsonObject jsonObject = parseAsObject(s);
+            retInt += sendToDatabase(jsonObject);
+        }
+        return retInt;
+    }
+
+    /**
      @see InternetSyncTest#testSuperRun()
      */
     @Override
     public void superRun() {
         if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
-            throw new InvokeIllegalException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
+            throw new IllegalStateException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
         }
         String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
         File[] inetFiles = new File(inetstatsPathStr).listFiles();
@@ -106,13 +130,44 @@ public class InternetSync extends SyncData implements Runnable {
         throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.setOption( void ) at 13.10.2019 - (13:21)");
     }
 
+    /**
+     @param ipAddr ip-адрес
+     @see InternetSyncTest#testCreateTable()
+     */
+    protected String createTable(@NotNull String ipAddr) {
+        if (!ipAddr.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            throw new IllegalArgumentException(ipAddr);
+        }
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        String readFileStr = readSQLCreateQuery();
+        readFileStr = readFileStr.replace(ConstantsFor.FIELDNAME_ADDR, ipAddr.replaceAll("\\Q.\\E", "_")).replace(ConstantsFor.DBFIELD_PCNAME, getCurrentUserPC());
+        final String sql = readFileStr;
+        FileSystemWorker.appendObjectToFile(new File("create.table"), sql);
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"))) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                int executeUpdateInt = preparedStatement.executeUpdate();
+                return MessageFormat.format("Updated: {0}. Query: \n{1}", executeUpdateInt, sql);
+            }
+        }
+        catch (SQLException e) {
+            return MessageFormat
+                .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()), sql);
+        }
+    }
+
     @Override
     public String syncData() {
         Path rootPath = Paths.get(".");
         Path filePath = Paths.get(rootPath.toAbsolutePath().normalize()
             .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddr + ".csv");
         int jsonCreated = createJSON(FileSystemWorker.readFileToQueue(filePath));
-        String txtRenamed = renameToTXT(filePath);
+        String txtRenamed = "null";
+        try {
+            txtRenamed = renameToTXT(filePath);
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error("InternetSync.syncData", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
         String tblComment = checkComment();
         return tblComment.equals(getCurrentUserPC()) ? MessageFormat.format("{0} created {1} rows. {2}", txtRenamed, jsonCreated, tblComment) : MessageFormat
             .format("{0} created {1} rows. Comment NEW: {2}", txtRenamed, jsonCreated, setComment());
@@ -132,29 +187,7 @@ public class InternetSync extends SyncData implements Runnable {
         return result;
     }
 
-    /**
-     @param stringsCollection коллекция строк
-     @param tableName ip-адрес
-     @return {@link #sendToDatabase(JsonObject)}
 
-     @see InternetSyncTest#testUploadCollection()
-     */
-    @Override
-    public int uploadCollection(Collection stringsCollection, @NotNull String tableName) {
-        int retInt = 0;
-        if (tableName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            this.dbFullName = ConstantsFor.DB_INETSTATS + tableName.replaceAll("\\Q.\\E", "_");
-        }
-        else {
-            throw new InvokeIllegalException("15.10.2019 (9:42)");
-        }
-        List<String> collectList = new ArrayList<>(stringsCollection);
-        for (String s : collectList) {
-            JsonObject jsonObject = parseAsObject(s);
-            retInt += sendToDatabase(jsonObject);
-        }
-        return retInt;
-    }
 
     private void createLckFile() {
         File fileLck = new File(FileNames.WEEKLY_LCK);
@@ -341,30 +374,7 @@ public class InternetSync extends SyncData implements Runnable {
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
     }
 
-    /**
-     @param ipAddr ip-адрес
-     @see InternetSyncTest#testCreateTable()
-     */
-    protected String createTable(@NotNull String ipAddr) {
-        if (!ipAddr.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            throw new InvokeIllegalException(ipAddr);
-        }
-        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        String readFileStr = readSQLCreateQuery();
-        readFileStr = readFileStr.replace(ConstantsFor.FIELDNAME_ADDR, ipAddr.replaceAll("\\Q.\\E", "_")).replace(ConstantsFor.DBFIELD_PCNAME, getCurrentUserPC());
-        final String sql = readFileStr;
-        FileSystemWorker.appendObjectToFile(new File("create.table"), sql);
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"))) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                int executeUpdateInt = preparedStatement.executeUpdate();
-                return MessageFormat.format("Updated: {0}. Query: \n{1}", executeUpdateInt, sql);
-            }
-        }
-        catch (SQLException e) {
-            return MessageFormat
-                .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()), sql);
-        }
-    }
+
 
     @NotNull
     private String setComment() {
@@ -394,7 +404,7 @@ public class InternetSync extends SyncData implements Runnable {
     }
 
     @NotNull
-    private String renameToTXT(Path filePath) {
+    private String renameToTXT(Path filePath) throws InvokeIllegalException {
         String retStr;
         int records = countRecords(filePath);
         Path cpPath = filePath.toAbsolutePath().normalize().getParent();

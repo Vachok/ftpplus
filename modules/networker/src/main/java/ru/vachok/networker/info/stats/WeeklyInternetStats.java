@@ -94,7 +94,7 @@ class WeeklyInternetStats implements Runnable, Stats {
             this.informationFactory = (InformationFactory) option;
         }
         else {
-            throw new InvokeIllegalException(WeeklyInternetStats.class.getSimpleName());
+            throw new IllegalArgumentException(WeeklyInternetStats.class.getSimpleName());
         }
     }
 
@@ -116,7 +116,7 @@ class WeeklyInternetStats implements Runnable, Stats {
             AppConfigurationLocal.getInstance().execute(new WeeklyInternetStats.InetStatSorter());
         }
         else {
-            throw new InvokeIllegalException(LocalDate.now().getDayOfWeek().name() + " not best day for stats...");
+            messageToUser.warn(MessageFormat.format("Not approved: \n{0} weekly.lck\n{1} isSunday", new File(FileNames.WEEKLY_LCK).exists(), Stats.isSunday()));
         }
     }
 
@@ -386,10 +386,15 @@ class WeeklyInternetStats implements Runnable, Stats {
                     csvTMPFilesQueue.add(file);
                 }
             }
-            makeCSV(ip, csvTMPFilesQueue);
+            try {
+                makeCSV(ip, csvTMPFilesQueue);
+            }
+            catch (InvokeIllegalException e) {
+                messageToUser.error("InetStatSorter.makeFile", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
         }
 
-        private void makeCSV(String ip, @NotNull Collection<File> queueCSVFilesFromRoot) {
+        private void makeCSV(String ip, @NotNull Collection<File> queueCSVFilesFromRoot) throws InvokeIllegalException {
             String fileSeparator = System.getProperty(PropertiesNames.SYS_SEPARATOR);
             String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + FileNames.DIR_INETSTATS + fileSeparator;
             File finalFile = new File(pathInetStats + ip + ".csv");

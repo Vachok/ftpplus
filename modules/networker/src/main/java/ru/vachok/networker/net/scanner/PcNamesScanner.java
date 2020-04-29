@@ -228,10 +228,6 @@ public class PcNamesScanner implements NetScanService {
         try {
             closePrefix();
         }
-        catch (InvokeIllegalException e) {
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((NetScanService::writeUsersToDBFromSET));
-            messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 408 ***");
-        }
         finally {
             if (NetKeeper.getPcNamesForSendToDatabase().size() > 0) {
                 NetScanService.writeUsersToDBFromSET();

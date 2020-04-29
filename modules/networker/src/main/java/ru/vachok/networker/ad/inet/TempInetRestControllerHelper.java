@@ -3,6 +3,7 @@ package ru.vachok.networker.ad.inet;
 
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -21,11 +22,16 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
         int codeVer = jsonObject.getInt("code", -1);
-        if (!checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
-            return INVALID_USER;
+        try {
+            if (!checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
+                return INVALID_USER;
+            }
+            else {
+                return makeActions(jsonObject);
+            }
         }
-        else {
-            return makeActions(jsonObject);
+        catch (InvokeIllegalException e) {
+            return INVALID_USER;
         }
 
     }

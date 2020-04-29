@@ -3,7 +3,6 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -67,7 +66,7 @@ class ACLDatabaseSearcher extends ACLParser {
             this.linesLimit = Integer.parseInt(classOption.toString());
         }
         else {
-            throw new InvokeIllegalException(getClass().getSimpleName());
+            throw new IllegalArgumentException(getClass().getSimpleName());
         }
     }
 
@@ -132,7 +131,7 @@ class ACLDatabaseSearcher extends ACLParser {
 
     private int foundPatternMap() {
         if (searchPatterns.size() <= 0) {
-            throw new InvokeIllegalException("Nothing to search! Set List of patterns via setInfo()");
+            throw new IllegalArgumentException("Nothing to search! Set List of patterns via setInfo()");
         }
         if (!readAllACLWithSearchPatternFromDB()) {
             readAllACLWithSearchPatternFromFile();

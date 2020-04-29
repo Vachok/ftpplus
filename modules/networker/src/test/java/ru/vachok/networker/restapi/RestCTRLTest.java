@@ -12,6 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -284,7 +285,12 @@ public class RestCTRLTest {
 
     @NotNull
     private static Request.@NotNull Builder getBuilder(String urlPart) {
-        String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
+        try {
+            String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
         OkHttpClient okHttpClient = new OkHttpClient();
         Request.Builder builder = new Request.Builder();
         builder.url(RestCTRLTest.SRV_LOCAL + urlPart);

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 
 
 /**
@@ -79,6 +78,6 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
 
     @Override
     default String confirm(String s, String s1, String s2) {
-        throw new InvokeIllegalException("06.08.2019 (11:39)");
+        throw new UnsupportedOperationException("29.04.2020 (11:41)");
     }
 }

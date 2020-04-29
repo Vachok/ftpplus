@@ -9,6 +9,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -82,7 +83,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             Files.walkFileTree(startPath, this);
             copyExistsFiles(timeStart);
         }
-        catch (IOException e) {
+        catch (IOException | InvokeIllegalException e) {
             messageToUser.error(MessageFormat.format("CommonRightsChecker.run: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         finally {
@@ -174,7 +175,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         return sb.toString();
     }
 
-    private void copyExistsFiles(final long timeStart) {
+    private void copyExistsFiles(final long timeStart) throws InvokeIllegalException {
         if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
             try {
                 Files.createDirectories(logsCopyStopPath);
@@ -206,11 +207,11 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     private class RightsWriter {
 
 
-        private String dir;
+        private final String dir;
 
-        private String owner;
+        private final String owner;
 
-        private String acl;
+        private final String acl;
 
         RightsWriter(String dir, String owner, String acl) {
             this.dir = dir;

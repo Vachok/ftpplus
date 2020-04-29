@@ -14,7 +14,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -85,7 +84,7 @@ public class TemporaryFullInternetTest {
         MINI_LOGGER.add(tempFile);
 
         if (tempFile.isEmpty()) {
-            throw new InvokeIllegalException("File is empty");
+            throw new IllegalStateException("File is empty");
         }
         else {
             String[] strings = PAT_BR_N.split(tempFile);

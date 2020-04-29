@@ -10,7 +10,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -87,14 +86,6 @@ public class WeeklyInternetStatsTest {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(stats);
             submit.get(4, TimeUnit.SECONDS);
         }
-        catch (InvokeIllegalException e) {
-            if (Stats.isSunday()) {
-                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-            }
-            else {
-                Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-            }
-        }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
@@ -154,18 +145,8 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testWriteLog() {
-        try {
-            String logStr = stats.writeObj(this.getClass().getSimpleName(), "test");
-            System.out.println("logStr = " + logStr);
-        }
-        catch (InvokeIllegalException e) {
-            if (!Stats.isSunday()) {
-                Assert.assertNotNull(e);
-            }
-            else {
-                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-            }
-        }
+        String logStr = stats.writeObj(this.getClass().getSimpleName(), "test");
+        System.out.println("logStr = " + logStr);
     }
 
     @Test

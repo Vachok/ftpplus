@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -139,7 +140,12 @@ public class ExitApp extends Thread implements Externalizable {
             .error("ExitApp.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
         VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         miniLoggerLast.add(reasonExit);
-        copyAvail();
+        try {
+            copyAvail();
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error("ExitApp.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
     }
 
     @Override
@@ -157,7 +163,7 @@ public class ExitApp extends Thread implements Externalizable {
 
      @see FileSystemWorker
      */
-    private void copyAvail() {
+    private void copyAvail() throws InvokeIllegalException {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(FileNames.PING_TV);
         FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()

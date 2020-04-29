@@ -12,6 +12,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -189,8 +190,13 @@ public class ScanOnlineTest {
         List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
         boolean isCopyOk = true;
         if (!new File(FileNames.ONLINES_MAX).exists()) {
-            isCopyOk = FileSystemWorker
-                .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.ONLINES_MAX).getAbsolutePath()).toAbsolutePath().normalize(), false);
+            try {
+                isCopyOk = FileSystemWorker
+                    .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.ONLINES_MAX).getAbsolutePath()).toAbsolutePath().normalize(), false);
+            }
+            catch (InvokeIllegalException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            }
         }
         Assert.assertTrue(isCopyOk);
     }

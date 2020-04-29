@@ -5,7 +5,6 @@ package ru.vachok.networker.info.stats;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.info.InformationFactory;
 
@@ -46,7 +45,7 @@ public interface Stats extends InformationFactory {
             case InformationFactory.STATS_SUDNAY_PC_SORT:
                 return new ComputerUserResolvedStats();
             default:
-                throw new InvokeIllegalException(MessageFormat.format("NOT CORRECT INSTANCE: {0} in {1}", type, Stats.class.getSimpleName()));
+                throw new IllegalArgumentException(MessageFormat.format("NOT CORRECT INSTANCE: {0} in {1}", type, Stats.class.getSimpleName()));
         }
     }
 

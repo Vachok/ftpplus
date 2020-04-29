@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -50,7 +51,7 @@ public class SshActsCTRL {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SshActsCTRL.class.getSimpleName());
 
-    private PfLists pfLists;
+    private final PfLists pfLists;
 
     /**
      {@link SshActs}
@@ -170,7 +171,12 @@ public class SshActsCTRL {
         this.sshActs = sshActsL;
         model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getAllowDomain() + " добавлен");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), ()->"No address: " + sshActsL.getAllowDomain()));
+        try {
+            model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), ()->"No address: " + sshActsL.getAllowDomain()));
+        }
+        catch (InvokeIllegalException e) {
+            model.addAttribute("ok", e.getMessage());
+        }
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }

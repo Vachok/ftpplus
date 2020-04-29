@@ -12,6 +12,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -142,7 +143,12 @@ import java.util.concurrent.LinkedBlockingDeque;
         String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
         Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
         if (vlanFile.length() > 5) {
-            FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
+            try {
+                FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
+            }
+            catch (InvokeIllegalException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            }
         }
     }
 

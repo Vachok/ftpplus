@@ -5,7 +5,6 @@ import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -151,49 +150,14 @@ public class DataSynchronizer extends SyncData {
         return dbNames;
     }
 
-    /**
-     @return results
-
-     @see DataSynchronizerTest#testSyncData()
-     */
     @Override
-    public String syncData() {
-        final String sql = String.format("SELECT * FROM %s WHERE %s > %d", dbToSync, columnName, getLastLocalID(dbToSync));
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(sql).append("\n");
-        int uploadedCount;
-        Queue<JsonObject> jsonObjects = new LinkedList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(7));
-                String[] columns = getColumns(preparedStatement);
-                this.columnsNum = columns.length;
-                stringBuilder.append(Arrays.toString(columns)).append("\n");
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    Files.deleteIfExists(dbObj.toPath());
-                    while (resultSet.next()) {
-                        JsonObject jsonObject = new JsonObject();
-                        for (int i = 0; i < columns.length; i++) {
-                            jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
-                        }
-                        jsonObjects.add(jsonObject);
-                    }
-                }
-            }
-        }
-        catch (SQLException | IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
-        }
-        uploadedCount = uploadCollection(jsonObjects, dbToSync);
-        if (uploadedCount != -666) {
-            stringBuilder.append(uploadedCount).append(" items uploaded").append("\n");
+    public void setOption(Object option) {
+        if (option instanceof DataConnectTo) {
+            this.dataConnectTo = (DataConnectTo) option;
         }
         else {
-            throw new InvokeIllegalException(stringBuilder.toString());
+            throw new IllegalArgumentException("Set " + DataConnectTo.class.getSimpleName());
         }
-        messageToUser.info(this.getClass().getSimpleName(), "syncData", stringBuilder.toString());
-        this.totalRows += uploadedCount;
-        return stringBuilder.toString();
     }
 
     @Override
@@ -266,14 +230,49 @@ public class DataSynchronizer extends SyncData {
         return retInt;
     }
 
+    /**
+     @return results
+
+     @see DataSynchronizerTest#testSyncData()
+     */
     @Override
-    public void setOption(Object option) {
-        if (option instanceof DataConnectTo) {
-            this.dataConnectTo = (DataConnectTo) option;
+    public String syncData() {
+        final String sql = String.format("SELECT * FROM %s WHERE %s > %d", dbToSync, columnName, getLastLocalID(dbToSync));
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(sql).append("\n");
+        int uploadedCount;
+        Queue<JsonObject> jsonObjects = new LinkedList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(7));
+                String[] columns = getColumns(preparedStatement);
+                this.columnsNum = columns.length;
+                stringBuilder.append(Arrays.toString(columns)).append("\n");
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    Files.deleteIfExists(dbObj.toPath());
+                    while (resultSet.next()) {
+                        JsonObject jsonObject = new JsonObject();
+                        for (int i = 0; i < columns.length; i++) {
+                            jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
+                        }
+                        jsonObjects.add(jsonObject);
+                    }
+                }
+            }
+        }
+        catch (SQLException | IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        uploadedCount = uploadCollection(jsonObjects, dbToSync);
+        if (uploadedCount != -666) {
+            stringBuilder.append(uploadedCount).append(" items uploaded").append("\n");
         }
         else {
-            throw new InvokeIllegalException("Set " + DataConnectTo.class.getSimpleName());
+            stringBuilder.append("Nothing to upload");
         }
+        messageToUser.info(this.getClass().getSimpleName(), "syncData", stringBuilder.toString());
+        this.totalRows += uploadedCount;
+        return stringBuilder.toString();
     }
 
     @Override
