@@ -21,10 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -39,9 +36,9 @@ import java.util.concurrent.TimeUnit;
 public class SSHFactory implements Callable<String> {
 
 
-    public static final String DBTABLE_GENERALJSCH = "general-jsch";
+    private static final String DBTABLE_GENERALJSCH = "general-jsch";
 
-    private static final int SSH_TIMEOUT = 2000;
+    private static final int SSH_TIMEOUT = 1000;
 
     /**
      Файл с ошибкой.
@@ -166,7 +163,6 @@ public class SSHFactory implements Callable<String> {
         }
         try {
             respChannel.connect(SSH_TIMEOUT);
-            respChannel.getSession().setTimeout(SSH_TIMEOUT);
             ((ChannelExec) respChannel).setErrStream(new FileOutputStream(SSH_ERR));
         }
         catch (JSchException | RuntimeException e) {
@@ -196,7 +192,7 @@ public class SSHFactory implements Callable<String> {
         catch (JSchException e) {
             messageToUser.error(e.getMessage());
         }
-        respChannel.run();
+        Objects.requireNonNull(respChannel);
     }
 
     /**
