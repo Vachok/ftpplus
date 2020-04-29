@@ -71,7 +71,7 @@ public class AppInfoOnLoad implements Runnable {
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
 
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setCurrentProvider, 0, 1, TimeUnit.MINUTES);
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setCurrentProvider, 0, 2, TimeUnit.MINUTES);
 
         AppConfigurationLocal.getInstance().execute(syncData::superRun);
 
