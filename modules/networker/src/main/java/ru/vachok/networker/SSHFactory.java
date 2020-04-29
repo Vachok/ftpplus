@@ -38,8 +38,6 @@ public class SSHFactory implements Callable<String> {
 
     private static final String DBTABLE_GENERALJSCH = "general-jsch";
 
-    private static final int SSH_TIMEOUT = 1000;
-
     /**
      Файл с ошибкой.
      */
@@ -162,7 +160,7 @@ public class SSHFactory implements Callable<String> {
             messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         try {
-            respChannel.connect(SSH_TIMEOUT);
+            respChannel.connect(ConstantsFor.SSH_TIMEOUT);
             ((ChannelExec) respChannel).setErrStream(new FileOutputStream(SSH_ERR));
         }
         catch (JSchException | RuntimeException e) {
@@ -180,7 +178,7 @@ public class SSHFactory implements Callable<String> {
         Properties properties = getConProps();
         try {
             session.setConfig(properties);
-            session.connect(SSH_TIMEOUT);
+            session.connect(ConstantsFor.SSH_TIMEOUT);
         }
         catch (JSchException | RuntimeException e) {
             messageToUser.error("SSHFactory.setRespChannelToField", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));

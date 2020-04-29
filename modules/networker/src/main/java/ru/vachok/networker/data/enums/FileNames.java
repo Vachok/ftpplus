@@ -99,4 +99,6 @@ public enum FileNames {
     public static final String WEEKLY_LCK = "weekly.lck";
 
     public static final String _STACK_TXT = "-stack.txt";
+
+    public static final String OLDFILES_LOG = "old_files.log";
 }

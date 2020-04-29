@@ -563,6 +563,10 @@ public enum ConstantsFor {
 
     public static final String FORTEX = "Fortex";
 
+    public static final String VPN_LIST = "OpenVPN CLIENT LIST";
+
+    public static final int SSH_TIMEOUT = 10000;
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();

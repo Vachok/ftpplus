@@ -3,13 +3,17 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.sql.Connection;
@@ -17,10 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -34,11 +35,13 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
 
     private final Map<Integer, Path> indexPath = new ConcurrentHashMap<>();
 
+    private final List<String> remainFiles = new ArrayList<>();
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, Cleaner.class.getSimpleName());
 
-    private long lastModifiedLog = 1;
+    private final File cleanLog = new File(FileNames.OLDFILES_LOG);
 
-    private final List<String> remainFiles = new ArrayList<>();
+    private long lastModifiedLog = 1;
 
     private int deleteTodayLimit = 0;
 
@@ -58,7 +61,20 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
      */
     @Override
     public void run() {
-        makeDeletions();
+        if (cleanLog.length() > ConstantsFor.MBYTE) {
+            cleanLog.delete();
+        }
+        else {
+            cleanLog.deleteOnExit();
+        }
+        File fileLck = new File(FileNames.WALKER_LCK);
+        if (!fileLck.exists()) {
+            makeDeletions();
+        }
+        else {
+            FileSystemWorker.appendObjectToFile(cleanLog, MessageFormat.format("***    {0}\nNOT RUNNING: {1}   ***", new Date(), fileLck.getAbsolutePath()));
+        }
+        FileSystemWorker.appendObjectToFile(cleanLog, MessageFormat.format("\n{0} ***\n", new Date().getTime()));
     }
 
     private void makeDeletions() {
@@ -75,12 +91,14 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
                     copyPath = Files.move(sourceDel, replacedPath, StandardCopyOption.REPLACE_EXISTING);
                 }
                 if (copyPath.toFile().exists()) {
-                    messageToUser.info(getClass().getSimpleName(), sourceDel.toAbsolutePath().toString(), "Moved " + copyPath.toAbsolutePath()
-                        .toString() + ", db removed: " + removeFromDB(index));
+                    FileSystemWorker.appendObjectToFile(cleanLog, MessageFormat
+                        .format("{0}, {1}\nMoved {2} db removed: {3}", getClass().getSimpleName(), sourceDel.toAbsolutePath().toString(), copyPath.toAbsolutePath()
+                            .toString(), removeFromDB(index)));
                 }
                 else {
-                    messageToUser
-                        .warning(getClass().getSimpleName(), "NOT MOVED!", copyPath.toAbsolutePath().toString() + " old exists: " + sourceDel.toFile().exists());
+                    FileSystemWorker.appendObjectToFile(cleanLog, MessageFormat
+                        .format("{0} NOT MOVED!\n{1} old exists: {2}", getClass().getSimpleName(), copyPath.toAbsolutePath().toString(), sourceDel.toFile()
+                            .exists()));
                 }
             }
             catch (NoSuchFileException e) {
@@ -88,38 +106,52 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Runnable {
             }
             catch (IOException | RuntimeException e) {
                 messageToUser.warn(Cleaner.class.getSimpleName(), "makeDeletions", AbstractForms.fromArray(e));
+                FileSystemWorker.appendObjectToFile(cleanLog, AbstractForms.fromArray(e));
             }
             finally {
                 if (sourceDel != null) {
-                    String mesg = MessageFormat.format("{0}) {1}", index, sourceDel.toString());
-                    FirebaseDatabase.getInstance().getReference(getClass().getSimpleName())
-                        .setValue(mesg, (error, ref)->messageToUser.warn(Cleaner.class.getSimpleName(), error.getMessage(), " see line: 104 ***"));
+                    String message = MessageFormat.format("{0}) {1}", index, sourceDel.toString());
+                    setValToFB(message);
+                    FileSystemWorker.appendObjectToFile(cleanLog, message);
                 }
             }
         }
     }
 
     private void fillPaths() {
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from common.oldfiles");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                if (resultSet.getInt("moved") == 0) {
-                    indexPath.put(resultSet.getInt(1), Paths.get(resultSet.getString(2)));
-                }
-                else {
-                    messageToUser.info(getClass().getSimpleName(), "already moved: ", resultSet.getString(2));
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_COMMONOLDFILES)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from common.oldfiles")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        if (resultSet.getInt("moved") == 0) {
+                            indexPath.put(resultSet.getInt(1), Paths.get(resultSet.getString(2)));
+                        }
+                        else {
+                            messageToUser.info(getClass().getSimpleName(), "already moved: ", resultSet.getString(2));
+                        }
+                    }
                 }
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 70");
+            messageToUser.warn(Cleaner.class.getSimpleName(), e.getMessage(), " see line: 120 ***");
         }
         finally {
             this.deleteTodayLimit = limitOfDeleteFiles(indexPath.size());
-            messageToUser.warn(this.getClass().getSimpleName(), "Today LIMIT is ", String.valueOf(deleteTodayLimit));
+            FileSystemWorker
+                .appendObjectToFile(cleanLog, MessageFormat.format("Today LIMIT is {0}  *** {1}", String.valueOf(deleteTodayLimit), new Date().toString()));
         }
 
+    }
+
+    private void setValToFB(String message) {
+        try {
+            DatabaseReference fbDBReference = FirebaseDatabase.getInstance().getReference(getClass().getSimpleName());
+            fbDBReference.setValue(message, (error, ref)->messageToUser.warn(Cleaner.class.getSimpleName(), error.getMessage(), " see line: 104 ***"));
+        }
+        catch (RuntimeException ignore) {
+            //29.04.2020 (14:43)
+        }
     }
 
     private Path genSrcDel(int i) {

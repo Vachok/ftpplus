@@ -21,19 +21,17 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
     @NotNull
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        @NotNull String result = INVALID_USER;
         int codeVer = jsonObject.getInt("code", -1);
         try {
-            if (!checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
-                return INVALID_USER;
-            }
-            else {
-                return makeActions(jsonObject);
+            if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
+                result = makeActions(jsonObject);
             }
         }
         catch (InvokeIllegalException e) {
-            return INVALID_USER;
+            result = e.getMessage() + " " + getClass().getSimpleName() + ".getResult";
         }
-
+        return result;
     }
 
     private String makeActions(JsonObject jsonObject) {
@@ -55,6 +53,7 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
     }
 
     private String getAnswer(@NotNull String... params) {
-        return AppConfigurationLocal.getInstance().submitAsString(new TemporaryFullInternet(params[0], Long.parseLong(params[1]), params[2], params[3]), 12);
+        return AppConfigurationLocal.getInstance()
+            .submitAsString(new TemporaryFullInternet(params[0], Long.parseLong(params[1]), params[2], params[3]), ConstantsFor.SSH_TIMEOUT);
     }
 }

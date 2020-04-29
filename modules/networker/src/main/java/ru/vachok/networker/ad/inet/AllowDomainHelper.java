@@ -5,7 +5,6 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -60,7 +59,7 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
             }
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            messageToUser.error("AllowDomainHelper.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            result = e.getMessage() + " " + getClass().getSimpleName() + ".makeActions";
         }
         if (optValue.toString().contains(ConstantsFor.DELETE)) {
             setDelDomain(ipValue.asString());

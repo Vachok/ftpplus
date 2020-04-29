@@ -59,14 +59,6 @@ public class RestCTRL {
 
     private static final String GETOLDFILES = "/getoldfiles";
 
-    @GetMapping("/sshgetdomains")
-    public String getAllowDomains() {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        PfListsSrv bean = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
-        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
-        return bean.runCom();
-    }
-
     /**
      @return no formatting pc name
 
@@ -151,6 +143,14 @@ public class RestCTRL {
         return filesShow;
     }
 
+    @GetMapping("/sshgetdomains")
+    public String getAllowDomains() {
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        PfListsSrv bean = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
+        return bean.runCom();
+    }
+
     /**
      @return статус приложения
 
@@ -164,17 +164,12 @@ public class RestCTRL {
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
-    private String connectToSrvInetstat() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h && exit", UsefulUtilities.class.getSimpleName());
-        Future<String> sshF = Executors.newSingleThreadExecutor().submit(sshFactoryB.build());
-        String sshAns;
-        try {
-            sshAns = sshF.get(15, TimeUnit.SECONDS).replace("Filesystem Size Used Avail Capacity Mounted on", "\n");
-        }
-        catch (RuntimeException | InterruptedException | ExecutionException | TimeoutException e) {
-            sshAns = e.getMessage();
-        }
-        return sshAns;
+    @PostMapping(GETOLDFILES)
+    public String delOldFiles(HttpServletRequest request) {
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        Cleaner cleaner = (Cleaner) context.getBean(Cleaner.class.getSimpleName());
+        AppConfigurationLocal.getInstance().execute(cleaner);
+        return ((OldBigFilesInfoCollector) context.getBean(OldBigFilesInfoCollector.class.getSimpleName())).getFromDatabase();
     }
 
     /**
@@ -187,9 +182,7 @@ public class RestCTRL {
             JsonObject jsonO = getJSON(readRequestBytes(request));
             jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
             retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
-            messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
         }
-
         return retStr + "\n" + getAllowDomains();
     }
 
@@ -269,13 +262,17 @@ public class RestCTRL {
         return tempInetRestControllerHelper.getResult(jsonObject);
     }
 
-    @PostMapping(GETOLDFILES)
-    public String delOldFiles(HttpServletRequest request) {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        Cleaner cleaner = (Cleaner) context.getBean(Cleaner.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(cleaner);
-        return ((OldBigFilesInfoCollector) context.getBean(OldBigFilesInfoCollector.class.getSimpleName()))
-            .getFromDatabase();
+    private String connectToSrvInetstat() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        Future<String> sshF = Executors.newSingleThreadExecutor().submit(sshFactoryB.build());
+        String sshAns;
+        try {
+            sshAns = sshF.get(ConstantsFor.SSH_TIMEOUT, TimeUnit.SECONDS).replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
+        }
+        catch (RuntimeException | InterruptedException | ExecutionException | TimeoutException e) {
+            sshAns = new StringBuilder().append(e.getMessage()).append("\n").append(getClass().getSimpleName()).append(".connectToSrvInetstat").toString();
+        }
+        return sshAns;
     }
 
     @GetMapping("/getsshlists")

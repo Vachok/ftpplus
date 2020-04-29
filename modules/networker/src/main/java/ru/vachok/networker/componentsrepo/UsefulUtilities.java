@@ -98,6 +98,20 @@ public abstract class UsefulUtilities {
         return delay;
     }
 
+    private static String getStorageInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (FileSystem fileSystem = FileSystems.getDefault()) {
+            for (FileStore storeSys : fileSystem.getFileStores()) {
+                stringBuilder.append(storeSys.getUsableSpace() / ConstantsFor.MBYTE).append("/").append(storeSys.getTotalSpace() / ConstantsFor.MBYTE)
+                    .append(" on ").append(storeSys.name()).append(" type: ").append(storeSys.type()).append("\n");
+            }
+        }
+        catch (IOException | RuntimeException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(UsefulUtilities.class.getSimpleName()).append(".getStorageInfo");
+        }
+        return stringBuilder.toString();
+    }
+
     @NotNull
     public static String getRunningInformation() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -107,20 +121,6 @@ public abstract class UsefulUtilities {
         stringBuilder.append("Disks: ").append("\n").append(getStorageInfo()).append("***\n\n");
         return stringBuilder.toString();
 
-    }
-
-    private static String getStorageInfo() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (FileSystem fileSystem = FileSystems.getDefault()) {
-            for (FileStore storeSys : fileSystem.getFileStores()) {
-                stringBuilder.append(storeSys.getUsableSpace() / ConstantsFor.MBYTE).append("/").append(storeSys.getTotalSpace() / ConstantsFor.MBYTE).append(" on ")
-                    .append(storeSys.name()).append("\n");
-            }
-        }
-        catch (IOException | RuntimeException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        return stringBuilder.toString();
     }
 
     /**
