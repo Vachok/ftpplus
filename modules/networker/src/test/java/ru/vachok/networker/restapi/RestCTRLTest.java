@@ -218,8 +218,11 @@ public class RestCTRLTest {
         Call call = new OkHttpClient().newCall(builder.build());
         try (Response execute = call.execute();
              ResponseBody responseBody = execute.body()) {
-            String stringResp = responseBody.string();
-            Assert.assertFalse(responseBody != null && stringResp.isEmpty(), requestBody.toString());
+            String stringResp = "null";
+            if (responseBody != null) {
+                stringResp = responseBody.string();
+            }
+            Assert.assertFalse(stringResp.isEmpty(), requestBody.toString());
             Assert.assertTrue(stringResp.contains(".eatmeat.ru"));
         }
         catch (IOException e) {

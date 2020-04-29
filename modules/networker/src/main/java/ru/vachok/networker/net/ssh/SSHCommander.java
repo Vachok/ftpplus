@@ -22,20 +22,29 @@ public class SSHCommander implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        String result = jsonObject.toString();
         int codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
-        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
-            String srvAns;
+        String authorizationHeader = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
+        boolean isValid = false;
+        try {
+            isValid = checkValidUID(authorizationHeader, codeVer);
+        }
+        catch (InvokeIllegalException e) {
+            result = e.getMessage();
+        }
+        if (isValid) {
             try {
-                srvAns = makeActions(jsonObject);
+                result = makeActions(jsonObject);
             }
             catch (RuntimeException e) {
-                srvAns = e.getMessage();
+                result = e.getMessage();
             }
-            return srvAns;
         }
         else {
-            throw new InvokeIllegalException(jsonObject.toString());
+
+            throw new InvokeIllegalException(result + "\n" + authorizationHeader + ":" + codeVer + " BAD AUTH!");
         }
+        return result;
     }
 
     private String makeActions(JsonObject jsonObject) {

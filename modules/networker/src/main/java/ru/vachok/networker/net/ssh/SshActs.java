@@ -20,6 +20,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -343,17 +344,7 @@ public class SshActs {
     private String getServerListDomains() {
         SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         Callable<String> factory = delDomBuilder.build();
-        Future<String> future = Executors.newSingleThreadExecutor().submit(factory);
-        String call;
-        try {
-            call = future.get(60, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            call = MessageFormat.format("SshActs.getServerListDomains:<br>\n {0}, ({1})", e.getMessage(), e.getClass().getName());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        return call;
+        return AppConfigurationLocal.getInstance().submitAsString(factory, 15);
     }
 
     public void setAllFalse() {
