@@ -33,7 +33,7 @@ public class PfListsSrv {
 
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
 
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PfListsSrv.class.getSimpleName());
 
     /**
@@ -153,9 +153,8 @@ public class PfListsSrv {
         build.setCommandSSH("sudo cat /home/kudr/inet.log && exit");
         String inetLog = build.call();
         pfListsInstAW.setInetLog(inetLog);
-
         Future<String> checkUniqueInListsFuture = AppComponents.threadConfig().getTaskExecutor().submit(new AccessListsCheckUniq());
-        String inetUniqStr = checkUniqueInListsFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+        String inetUniqStr = checkUniqueInListsFuture.get(3, TimeUnit.SECONDS);
         pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
     }
 

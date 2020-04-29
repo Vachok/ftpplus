@@ -41,7 +41,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.TreeMap;
 import java.util.concurrent.*;
 
 
@@ -280,7 +283,6 @@ public class RestCTRL {
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
         PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
-        messageToUser.warn(getClass().getSimpleName(), "sshRest", new Date(pfLists.getTimeStampToNextUpdLong()).toString());
         pfService.makeListRunner();
         return pfLists.toString().replaceAll("\\Q<br>", "\n");
     }

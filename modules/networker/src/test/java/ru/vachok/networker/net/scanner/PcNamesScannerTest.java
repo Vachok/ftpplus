@@ -58,6 +58,7 @@ public class PcNamesScannerTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
+        this.netScanCtr = new NetScanCtr(PC_SCANNER);
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
         }
