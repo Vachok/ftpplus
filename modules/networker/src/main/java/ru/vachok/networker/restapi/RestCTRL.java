@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.ad.common.Cleaner;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
@@ -19,6 +20,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
@@ -40,6 +42,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -157,8 +160,21 @@ public class RestCTRL {
     public String appStatus() {
         String statusVpn = new VpnHelper().getStatus();
         String informationSys = UsefulUtilities.getRunningInformation();
+        String sshAns = connectToSrvInetstat();
+        return String.join("\n\n\n", statusVpn, informationSys, sshAns);
+    }
 
-        return statusVpn + "\n\n\n" + informationSys;
+    private String connectToSrvInetstat() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h && exit", UsefulUtilities.class.getSimpleName());
+        Future<String> sshF = Executors.newSingleThreadExecutor().submit(sshFactoryB.build());
+        String sshAns;
+        try {
+            sshAns = sshF.get(15, TimeUnit.SECONDS).replace("Filesystem Size Used Avail Capacity Mounted on", "\n");
+        }
+        catch (RuntimeException | InterruptedException | ExecutionException | TimeoutException e) {
+            sshAns = e.getMessage();
+        }
+        return sshAns;
     }
 
     /**

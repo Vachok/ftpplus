@@ -22,9 +22,16 @@ public class SSHCommander implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
-        int codeVer = jsonObject.getInt("code", -1);
+        int codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
         if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
-            return makeActions(jsonObject);
+            String srvAns;
+            try {
+                srvAns = makeActions(jsonObject);
+            }
+            catch (RuntimeException e) {
+                srvAns = e.getMessage();
+            }
+            return srvAns;
         }
         else {
             throw new InvokeIllegalException(jsonObject.toString());

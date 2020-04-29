@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
@@ -118,12 +117,9 @@ public abstract class UsefulUtilities {
                     .append(storeSys.name()).append("\n");
             }
         }
-        catch (IOException e) {
+        catch (IOException | RuntimeException e) {
             stringBuilder.append(e.getMessage());
         }
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h && exit", UsefulUtilities.class.getSimpleName());
-        stringBuilder.append(OtherKnownDevices.SRV_INETSTAT + ": $df -h && exit").append("\n");
-        stringBuilder.append(sshFactoryB.build().call());
         return stringBuilder.toString();
     }
 
