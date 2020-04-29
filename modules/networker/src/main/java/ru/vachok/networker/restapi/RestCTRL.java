@@ -56,17 +56,12 @@ public class RestCTRL {
 
     private static final String GETOLDFILES = "/getoldfiles";
 
-    /**
-     @return статус приложения
-
-     @see RestCTRLTest#testAppStatus()
-     */
-    @GetMapping("/status")
-    public String appStatus() {
-        String informationSys = UsefulUtilities.getRunningInformation();
-        String statusVpn = new VpnHelper().getStatus();
-
-        return statusVpn + "\n\n\n" + informationSys;
+    @GetMapping("/sshgetdomains")
+    public String getAllowDomains() {
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        PfListsSrv bean = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
+        return bean.runCom();
     }
 
     /**
@@ -153,12 +148,17 @@ public class RestCTRL {
         return filesShow;
     }
 
-    @GetMapping("/sshgetdomains")
-    public String getAllowDomains() {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        PfListsSrv bean = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
-        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
-        return bean.runCom();
+    /**
+     @return статус приложения
+
+     @see RestCTRLTest#testAppStatus()
+     */
+    @GetMapping("/status")
+    public String appStatus() {
+        String statusVpn = new VpnHelper().getStatus();
+        String informationSys = UsefulUtilities.getRunningInformation();
+
+        return statusVpn + "\n\n\n" + informationSys;
     }
 
     /**
@@ -201,6 +201,39 @@ public class RestCTRL {
             messageToUser.error("RestCTRL.readRequestBytes", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return contentBytes;
+    }
+
+    @NotNull
+    private String getFileShow(String userAgent) {
+        StringBuilder stringBuilder = new StringBuilder();
+        long totalSize = 0;
+        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
+        if (file.listFiles() == null) {
+            throw new IllegalArgumentException(file.getAbsolutePath());
+        }
+        else {
+            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
+            for (File listFile : Objects.requireNonNull(file.listFiles())) {
+                long fileSizeKB = listFile.length() / 1024;
+                totalSize = totalSize + fileSizeKB;
+                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
+                String uAgent;
+                try {
+                    uAgent = userAgent.toLowerCase();
+                }
+                catch (RuntimeException e) {
+                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
+                }
+                if (uAgent.contains(OKHTTP)) {
+                    stringBuilder.append("\n");
+                }
+                else {
+                    stringBuilder.append("<br>");
+                }
+            }
+            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
+        }
+        return stringBuilder.toString();
     }
 
     /**
@@ -262,39 +295,6 @@ public class RestCTRL {
             result = AbstractForms.networkerTrace(e.getStackTrace());
         }
         return result;
-    }
-
-    @NotNull
-    private String getFileShow(String userAgent) {
-        StringBuilder stringBuilder = new StringBuilder();
-        long totalSize = 0;
-        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
-        if (file.listFiles() == null) {
-            throw new IllegalArgumentException(file.getAbsolutePath());
-        }
-        else {
-            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
-            for (File listFile : Objects.requireNonNull(file.listFiles())) {
-                long fileSizeKB = listFile.length() / 1024;
-                totalSize = totalSize + fileSizeKB;
-                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
-                String uAgent;
-                try {
-                    uAgent = userAgent.toLowerCase();
-                }
-                catch (RuntimeException e) {
-                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
-                }
-                if (uAgent.contains(OKHTTP)) {
-                    stringBuilder.append("\n");
-                }
-                else {
-                    stringBuilder.append("<br>");
-                }
-            }
-            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
-        }
-        return stringBuilder.toString();
     }
 
     @PostMapping("/sshdel")

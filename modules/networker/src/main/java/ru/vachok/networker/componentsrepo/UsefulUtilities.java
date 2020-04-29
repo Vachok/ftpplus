@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
@@ -29,8 +30,8 @@ import java.io.*;
 import java.lang.management.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.FileSystem;
+import java.nio.file.*;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -104,8 +105,26 @@ public abstract class UsefulUtilities {
         stringBuilder.append("CPU information:").append("\n").append(getOS()).append("***\n\n");
         stringBuilder.append("Memory information:").append("\n").append(getMemory()).append("***\n\n");
         stringBuilder.append("Runtime information:").append("\n").append(getRuntime()).append("***\n\n");
+        stringBuilder.append("Disks: ").append("\n").append(getStorageInfo()).append("***\n\n");
         return stringBuilder.toString();
 
+    }
+
+    private static String getStorageInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (FileSystem fileSystem = FileSystems.getDefault()) {
+            for (FileStore storeSys : fileSystem.getFileStores()) {
+                stringBuilder.append(storeSys.getUsableSpace() / ConstantsFor.MBYTE).append("/").append(storeSys.getTotalSpace() / ConstantsFor.MBYTE).append(" on ")
+                    .append(storeSys.name()).append("\n");
+            }
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h && exit", UsefulUtilities.class.getSimpleName());
+        stringBuilder.append(OtherKnownDevices.SRV_INETSTAT + ": $df -h && exit").append("\n");
+        stringBuilder.append(sshFactoryB.build().call());
+        return stringBuilder.toString();
     }
 
     /**
@@ -129,33 +148,6 @@ public abstract class UsefulUtilities {
         stringBuilder.append(getTotalCPUTimeInformation()).append("\n");
 
         return stringBuilder.toString();
-    }
-
-    /**
-     @return точное время как {@code long}
-
-     @see UsefulUtilitiesTest#testGetAtomicTime()
-     */
-    public static long getAtomicTime() {
-        long result;
-        TimeChecker t = new TimeChecker();
-        Future<TimeInfo> infoFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(t);
-        try {
-            TimeInfo call = infoFuture.get(20, TimeUnit.SECONDS);
-            call.computeDetails();
-            result = call.getReturnTime();
-        }
-        catch (InterruptedException | RuntimeException e) {
-            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 180 ***");
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            result = System.currentTimeMillis();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 185 ***");
-            result = System.currentTimeMillis();
-        }
-        return result;
     }
 
     @NotNull
@@ -192,6 +184,33 @@ public abstract class UsefulUtilities {
         stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
         stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
         return stringBuilder.toString();
+    }
+
+    /**
+     @return точное время как {@code long}
+
+     @see UsefulUtilitiesTest#testGetAtomicTime()
+     */
+    public static long getAtomicTime() {
+        long result;
+        TimeChecker t = new TimeChecker();
+        Future<TimeInfo> infoFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(t);
+        try {
+            TimeInfo call = infoFuture.get(20, TimeUnit.SECONDS);
+            call.computeDetails();
+            result = call.getReturnTime();
+        }
+        catch (InterruptedException | RuntimeException e) {
+            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 180 ***");
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            result = System.currentTimeMillis();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 185 ***");
+            result = System.currentTimeMillis();
+        }
+        return result;
     }
 
     @NotNull
