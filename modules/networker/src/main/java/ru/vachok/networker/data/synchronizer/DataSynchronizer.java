@@ -261,7 +261,7 @@ public class DataSynchronizer extends SyncData {
             }
         }
         catch (SQLException | IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+            messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 264 ***");
         }
         uploadedCount = uploadCollection(jsonObjects, dbToSync);
         if (uploadedCount != -666) {

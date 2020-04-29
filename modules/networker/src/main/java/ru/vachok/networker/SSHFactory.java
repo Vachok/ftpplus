@@ -17,6 +17,7 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,6 +53,8 @@ public class SSHFactory implements Callable<String> {
 
     private final String classCaller;
 
+    private final File sshErr = new File(FileNames.SSH_ERR);
+
     private String connectToSrv;
 
     private String commandSSH;
@@ -67,8 +70,6 @@ public class SSHFactory implements Callable<String> {
     private Channel respChannel;
 
     private String builderToStr;
-
-    private final File sshErr = new File(FileNames.SSH_ERR);
 
     public Path getTempFile() {
         return tempFile;
@@ -133,12 +134,10 @@ public class SSHFactory implements Callable<String> {
         Queue<String> recQueue = new LinkedList<>();
         byte[] bytes = new byte[ConstantsFor.KBYTE];
         int readBytes;
-        try {
-            try (InputStream connect = connect();
-                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connect))) {
-                bufferedReader.lines().forEach(recQueue::add);
-            }
-            this.session.disconnect();
+        try (InputStream connect = connect();
+             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connect))) {
+            bufferedReader.lines().forEach(recQueue::add);
+            this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
         }
         catch (IOException | RuntimeException e) {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
@@ -146,10 +145,12 @@ public class SSHFactory implements Callable<String> {
             this.session.disconnect();
         }
         finally {
+            this.session.disconnect();
             messageToUser.warn("CALL FROM CLASS: ", classCaller, MessageFormat.format("session connected {1}, to server: {0}", connectToSrv, session.isConnected()));
             while (!recQueue.isEmpty()) {
                 stringBuilder.append(recQueue.poll()).append("<br>\n");
             }
+            FileSystemWorker.writeFile(tempFile.toAbsolutePath().normalize().toString(), stringBuilder.toString());
         }
         return stringBuilder.toString();
     }
@@ -172,7 +173,6 @@ public class SSHFactory implements Callable<String> {
         return respChannel.getInputStream();
     }
 
-    @SuppressWarnings("DuplicateStringLiteralInspection")
     private void setRespChannelToField() {
         Thread.currentThread().setName(MessageFormat.format("SSH:{0}:{1}", connectToSrv, classCaller));
         JSch jSch = new JSch();
