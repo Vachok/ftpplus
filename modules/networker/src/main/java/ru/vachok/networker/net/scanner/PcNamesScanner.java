@@ -51,6 +51,8 @@ public class PcNamesScanner implements NetScanService {
 
     private static final PcNamesScanner pcNamesScanner = new PcNamesScanner();
 
+    private final File lastNetScan = new File(FileNames.LASTNETSCAN_TXT);
+
     public static PcNamesScanner getI() {
         return pcNamesScanner;
     }
@@ -70,6 +72,14 @@ public class PcNamesScanner implements NetScanService {
     }
 
     private PcNamesScanner() {
+        if (!lastNetScan.exists()) {
+            try {
+                lastNetScan.createNewFile();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -127,7 +137,7 @@ public class PcNamesScanner implements NetScanService {
 
     @Override
     public String writeLog() {
-        return FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
+        return FileSystemWorker.writeFile(lastNetScan.getAbsolutePath(), AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
     }
 
     @Override
