@@ -100,8 +100,6 @@ public interface AppConfigurationLocal extends Runnable {
             return (String) submit.get(timeOutInSec, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
             return AbstractForms.networkerTrace(e);
         }
     }

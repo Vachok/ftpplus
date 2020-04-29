@@ -55,6 +55,8 @@ public class SSHFactory implements Callable<String> {
 
     private final File sshErr = new File(FileNames.SSH_ERR);
 
+    private static final String IS_CONNECTED = " session is Connected";
+
     private String connectToSrv;
 
     private String commandSSH;
@@ -77,6 +79,7 @@ public class SSHFactory implements Callable<String> {
 
     public void setTempFile(Path tempFile) {
         this.tempFile = tempFile;
+        this.tempFile.toFile().deleteOnExit();
     }
 
     public String getSessionType() {
@@ -134,18 +137,24 @@ public class SSHFactory implements Callable<String> {
         Queue<String> recQueue = new LinkedList<>();
         byte[] bytes = new byte[ConstantsFor.KBYTE];
         int readBytes;
-        try (InputStream connect = connect();
-             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connect))) {
-            bufferedReader.lines().forEach(recQueue::add);
-            this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
+        try (InputStream connect = connect()) {
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connect))) {
+                bufferedReader.lines().forEach(recQueue::add);
+                this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
+                this.tempFile.toFile().deleteOnExit();
+            }
+            this.session.disconnect();
         }
         catch (IOException | RuntimeException e) {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
-            stringBuilder.append(e.getMessage());
+            recQueue.add(e.getMessage());
+            recQueue.add(AbstractForms.networkerTrace(e));
             this.session.disconnect();
+            recQueue.add(session.isConnected() + IS_CONNECTED);
         }
         finally {
             this.session.disconnect();
+            stringBuilder.append(session.isConnected()).append(IS_CONNECTED);
             messageToUser.warn("CALL FROM CLASS: ", classCaller, MessageFormat.format("session connected {1}, to server: {0}", connectToSrv, session.isConnected()));
             while (!recQueue.isEmpty()) {
                 stringBuilder.append(recQueue.poll()).append("<br>\n");

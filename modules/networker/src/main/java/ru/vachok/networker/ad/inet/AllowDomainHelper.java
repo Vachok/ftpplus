@@ -25,24 +25,29 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AllowDomainHelper.class.getSimpleName());
 
+    private JsonObject jsonObject;
+
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
-        int codeVer = jsonObject.getInt("code", -1);
-        String authStr = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
+        String result;
+        this.jsonObject = jsonObject;
+        int codeVer = this.jsonObject.getInt("code", -1);
+        String authStr = this.jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
         try {
             if (checkValidUID(authStr, codeVer)) {
-                return makeActions(jsonObject);
+                result = makeActions();
             }
             else {
-                return MessageFormat.format("Bad AUTH for {0}, code: {1}", authStr, codeVer);
+                result = MessageFormat.format("Bad AUTH for {0}, code: {1}", authStr, codeVer);
             }
         }
         catch (InvokeIllegalException e) {
-            return e.getMessage();
+            result = e.getMessage();
         }
+        return result;
     }
 
-    private String makeActions(JsonObject jsonObject) throws InvokeIllegalException {
+    private String makeActions() throws InvokeIllegalException {
         String result = "Domain is exists";
         boolean finished = false;
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);

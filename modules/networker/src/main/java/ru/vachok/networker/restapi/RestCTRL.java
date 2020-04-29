@@ -283,13 +283,8 @@ public class RestCTRL {
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
         PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
         PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
-        if (pfService.makeListRunner()) {
-            return pfLists.toString();
-        }
-        else {
-            SSHFactory.Builder sshB = new SSHFactory.Builder("srv-nat.eatmeat.ru", getCommand(), this.getClass().getSimpleName());
-            return AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 10);
-        }
+        SSHFactory.Builder sshB = new SSHFactory.Builder("srv-nat.eatmeat.ru", getCommand(), this.getClass().getSimpleName());
+        return AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 10);
     }
 
     private String getCommand() {
@@ -330,7 +325,6 @@ public class RestCTRL {
             JsonObject jsonO = getJSON(readRequestBytes(request));
             jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
             retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
-            messageToUser.info(getClass().getSimpleName(), ConstantsFor.SSHADD, retStr);
         }
         return retStr + "\n" + getAllowDomains();
     }
@@ -338,7 +332,7 @@ public class RestCTRL {
     @GetMapping("/getvpnkey")
     public String getVPNKey(HttpServletRequest request) {
         if (request.getQueryString() == null && request.getQueryString().isEmpty()) {
-            throw new IllegalArgumentException("No argument!");
+            return "getvpnkey error: No argument!";
         }
         else {
             VpnHelper vpnHelper = new VpnHelper();
