@@ -145,6 +145,7 @@ public class SSHFactory implements Callable<String> {
                 bufferedReader.lines().forEach(recQueue::add);
             }
             this.session.disconnect();
+            messageToUser.info("CALL FROM CLASS: ", classCaller, MessageFormat.format("Command {1} ok on server: {0}", connectToSrv, commandSSH));
         }
         catch (IOException | RuntimeException e) {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
@@ -154,9 +155,9 @@ public class SSHFactory implements Callable<String> {
             recQueue.add(session.isConnected() + IS_CONNECTED);
         }
         finally {
-            this.session.disconnect();
-            stringBuilder.append(session.isConnected()).append(IS_CONNECTED);
-            messageToUser.warn("CALL FROM CLASS: ", classCaller, MessageFormat.format("session connected {1}, to server: {0}", connectToSrv, session.isConnected()));
+            if (this.respChannel.isConnected()) {
+                this.respChannel.disconnect();
+            }
             while (!recQueue.isEmpty()) {
                 stringBuilder.append(recQueue.poll()).append("<br>\n");
             }

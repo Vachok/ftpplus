@@ -98,9 +98,6 @@ public class NetMonitorPTV implements NetScanService {
             if (IS_RUN) {
                 pingIPTV();
             }
-            else {
-                messageToUser.warn(getClass().getSimpleName(), PTV, "Is false in " + InitProperties.getInstance(InitProperties.DB_MEMTABLE).toString());
-            }
         }
         catch (IOException e) {
             messageToUser.warn(NetMonitorPTV.class.getSimpleName(), "run", e.getMessage() + Thread.currentThread().getState().name());
