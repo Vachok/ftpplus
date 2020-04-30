@@ -527,6 +527,10 @@ public enum ConstantsFor {
 
     public static final String PARAM_NAME_CODE = "code";
 
+    public static final String[] SSH_LIST_COMMANDS = {"sudo cat /etc/pf/vipnet;exit", "sudo cat /etc/pf/tempfull;exit", "sudo cat /etc/pf/24hrs;exit", "sudo cat /etc/pf/squid;exit", "sudo cat /etc/pf/squidlimited;exit"};
+
+    ;
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     public static final String DOMAIN = "domain";

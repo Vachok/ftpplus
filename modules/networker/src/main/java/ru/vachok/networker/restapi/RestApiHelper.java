@@ -8,7 +8,7 @@ import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.net.ssh.SSHCommander;
+import ru.vachok.networker.net.ssh.JSONSSHCommandExecutor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -39,7 +39,7 @@ public interface RestApiHelper {
             case DOMAIN:
                 return new AllowDomainHelper();
             case SSH:
-                return new SSHCommander();
+                return new JSONSSHCommandExecutor();
         }
         return new RestError();
     }

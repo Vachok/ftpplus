@@ -51,7 +51,7 @@ public enum SwitchesWiFi {
     public static final String HP_3500_YL_217_SCHETFAKT = "10.200.217.252";
 
     public static final String HP_2530_217 = "10.200.217.253";
-    
+
     public static final String HP_2530_218 = "10.200.218.254";
 
     public static final String HP_2530_48_ADM_YURDEP = "10.200.213.253";
@@ -83,7 +83,7 @@ public enum SwitchesWiFi {
     public static final String C_213_RV_2FLOOR = "10.200.213.104";
 
     public static final String C_213_6_2FLOOR = "10.200.213.6";
-    
+
     public static final String C_218_3_OKK = "10.200.218.3";
 
     public static final String WPG_1000 = "10.200.214.3";
@@ -93,27 +93,25 @@ public enum SwitchesWiFi {
     public static final String C_216_3_HOTEL = "10.200.216.3";
 
     public static final String C_216_4_HOTEL = "10.200.216.4";
-    
+
     public static final String HP_3500_2_SERVERNAYA = "10.1.1.111";
-    
+
     public static final String HP_2610_24_SERVERNAYA = "10.1.1.228";
-    
+
     /**
      IP srv-nat.eatmeat.ru
      */
     public static final String IPADDR_SRVNAT = "192.168.13.30";
-    
+
     public static final String RUPSGATE = "rupsgate.eatmeat.ru";
-    
+
     /**
      Адрес локального git
      */
     public static final String HOSTNAME_SRVGITEATMEATRU = "srv-git.eatmeat.ru";
-    
+
     /**
      IP stv-git.eatmeat.ru
      */
     public static final String IPADDR_SRVGIT = "192.168.13.42";
-    
-    public static final String IPADDR_SRVINETSTAT = "192.168.13.155";
 }

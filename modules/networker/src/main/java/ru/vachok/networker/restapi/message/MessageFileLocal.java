@@ -8,12 +8,13 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.*;
+import java.time.LocalTime;
 
 
 class MessageFileLocal implements MessageToUser {
 
 
-    private static final File appLog = new File(FileNames.APP_JSON);
+    private File appLog = new File(FileNames.APP_JSON);
 
     private static final String WARN = "warn";
 
@@ -111,9 +112,7 @@ class MessageFileLocal implements MessageToUser {
     }
 
     private void pringAppLog(String logType) {
-        System.out.println(this.headerMsg);
-        System.out.println(this.bodyMsg);
-        System.out.println(this.titleMsg);
+        chkAppLogFile();
         JsonObject jsonObject = new JsonObject();
         try (OutputStream outputStream = new FileOutputStream(appLog, true);
              PrintStream printStream = new PrintStream(outputStream, true)) {
@@ -123,7 +122,22 @@ class MessageFileLocal implements MessageToUser {
             printStream.println(jsonObject.toString());
         }
         catch (RuntimeException | IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void chkAppLogFile() {
+        System.out.println(this.headerMsg);
+        System.out.println(this.bodyMsg);
+        System.out.println(this.titleMsg);
+        if (appLog.exists() && appLog.length() > ConstantsFor.MBYTE) {
+            boolean isDelete = this.appLog.delete();
+            if (isDelete) {
+                appLog = new File(FileNames.APP_JSON);
+            }
+            else {
+                appLog = new File(FileNames.APP_JSON + "." + LocalTime.now().toSecondOfDay());
+            }
         }
     }
 

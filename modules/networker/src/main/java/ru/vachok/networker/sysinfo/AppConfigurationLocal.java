@@ -3,7 +3,6 @@ package ru.vachok.networker.sysinfo;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -100,9 +99,9 @@ public interface AppConfigurationLocal extends Runnable {
     default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
         ThreadConfig.cleanQueue(callableQuestion);
         String result;
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<String> submit = executor.submit(callableQuestion);
         try {
-            Future<String> submit = executor.submit(callableQuestion);
             String s = submit.get(timeOutInSec, TimeUnit.SECONDS);
             if (submit.isDone()) {
                 result = s;
@@ -113,10 +112,12 @@ public interface AppConfigurationLocal extends Runnable {
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
-            result = AbstractForms.networkerTrace(e);
+            result = MessageFormat
+                .format("\n\n{0}\n{1}", "***stack***".toUpperCase(), AbstractForms.fromArray(e));
         }
         finally {
-            System.out.println("executor = " + executor.toString());
+            System.out.println("executor = " + callableQuestion.getClass().getName());
+            System.out.println("executor = " + submit.isDone());
         }
         return result;
     }

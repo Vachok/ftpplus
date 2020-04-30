@@ -103,4 +103,6 @@ public enum FileNames {
     public static final String OLDFILES_LOG = "old_files.log";
 
     public static final String SSH_ERR = "ssh.err.log";
+
+    public static final String SSH_LISTS = "ssh.lists";
 }

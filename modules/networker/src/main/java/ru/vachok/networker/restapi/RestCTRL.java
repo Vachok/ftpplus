@@ -1,9 +1,7 @@
 package ru.vachok.networker.restapi;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +17,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
@@ -45,7 +44,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.TreeMap;
-import java.util.concurrent.*;
+
+import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
 
 
 /**
@@ -265,32 +265,57 @@ public class RestCTRL {
         return tempInetRestControllerHelper.getResult(jsonObject);
     }
 
-    private String connectToSrvInetstat() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        Future<String> sshF = Executors.newSingleThreadExecutor().submit(sshFactoryB.build());
-        String sshAns;
-        try {
-            sshAns = sshF.get(ConstantsFor.SSH_TIMEOUT, TimeUnit.SECONDS).replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
-        }
-        catch (RuntimeException | InterruptedException | ExecutionException | TimeoutException e) {
-            sshAns = new StringBuilder().append(e.getMessage()).append("\n").append(getClass().getSimpleName()).append(".connectToSrvInetstat").toString();
-        }
-        return sshAns;
-    }
-
     @GetMapping("/getsshlists")
     public String sshRest() {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        PfListsSrv pfService = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
-        PfLists pfLists = (PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS);
-        SSHFactory.Builder sshB = new SSHFactory.Builder("srv-nat.eatmeat.ru", getCommand(), this.getClass().getSimpleName());
-        return AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 10);
+        StringBuilder sshAns = new StringBuilder();
+        JsonArray resultArr = getSSHListsResult();
+        sshAns.append("\n\n\n");
+        sshAns.append(resultArr.size()).append(" size of ").append(JsonArray.class.getCanonicalName()).append("\n");
+        for (JsonValue jsonValue : resultArr.values()) {
+            Object[] objNames = jsonValue.asObject().names().toArray();
+            for (Object name : objNames) {
+                sshAns.append(name.toString()).append(":");
+                sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
+            }
+        }
+        sshAns.append("\n\n\n");
+        FileSystemWorker.writeFile(FileNames.SSH_LISTS, sshAns.toString());
+        MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
+        return resultArr.toString();
     }
 
-    private String getCommand() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;sudo cat /etc/pf/squid;sudo cat /etc/pf/squidlimited;exit");
-        return stringBuilder.toString();
+    private JsonArray getSSHListsResult() {
+        JsonArray retArr = new JsonArray();
+        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
+            JsonObject jsonElements = new JsonObject();
+            SSHFactory.Builder sshB = new SSHFactory.Builder(OtherKnownDevices.SRV_NAT, sshCommand, this.getClass().getSimpleName());
+            String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
+            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
+            retArr.add(jsonElements);
+        }
+        AppConfigurationLocal.getInstance().execute(()->{
+            PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
+            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
+        });
+        return retArr;
+    }
+
+    @PostMapping("/sshcommandexec")
+    public String sshCommandExecute(HttpServletRequest request) {
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        String result;
+        SshActs sshActs = (SshActs) context.getBean(ModelAttributeNames.ATT_SSH_ACTS);
+        try (ServletInputStream stream = request.getInputStream()) {
+            JsonObject jsonO = getJSON(readRequestBytes(request));
+            if (!jsonO.names().contains(ConstantsFor.AUTHORIZATION)) {
+                jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+            }
+            result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
+        }
+        catch (IOException e) {
+            result = AbstractForms.networkerTrace(e.getStackTrace());
+        }
+        return result;
     }
 
     @GetMapping(GETOLDFILES)
@@ -302,20 +327,10 @@ public class RestCTRL {
         return oldBigFilesInfoCollector.getFromDatabase();
     }
 
-    @PostMapping("/sshcommandexec")
-    public String sshCommandExecute(HttpServletRequest request) {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        String result;
-        SshActs sshActs = (SshActs) context.getBean(ModelAttributeNames.ATT_SSH_ACTS);
-        try (ServletInputStream stream = request.getInputStream()) {
-            JsonObject jsonO = getJSON(readRequestBytes(request));
-            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-            result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
-        }
-        catch (IOException e) {
-            result = AbstractForms.networkerTrace(e.getStackTrace());
-        }
-        return result;
+    private String connectToSrvInetstat() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
+            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
     }
 
     @PostMapping("/sshdel")

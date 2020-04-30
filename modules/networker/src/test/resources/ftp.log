@@ -24094,3 +24094,43 @@ get "/usr/home/ITDept/vpn/keys/keys/a.s.cedilin210428.key" "f:\OneDrive\Доку
 ls "/usr/home/ITDept/vpn/keys/keys/"
 ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/IKudryashov/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0106.pem" "f:\OneDrive\Документы\Велком\keys\0106.pem"
+get "/usr/home/ITDept/vpn/keys/keys/saprykin200730.crt" "f:\OneDrive\Документы\Велком\keys\saprykin200730.crt"
+get "/usr/home/ITDept/vpn/keys/keys/saprykin200730.csr" "f:\OneDrive\Документы\Велком\keys\saprykin200730.csr"
+get "/usr/home/ITDept/vpn/keys/keys/saprykin200730.key" "f:\OneDrive\Документы\Велком\keys\saprykin200730.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0107.pem" "f:\OneDrive\Документы\Велком\keys\0107.pem"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov200808.crt" "f:\OneDrive\Документы\Велком\keys\agalimov200808.crt"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov200808.csr" "f:\OneDrive\Документы\Велком\keys\agalimov200808.csr"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov200808.key" "f:\OneDrive\Документы\Велком\keys\agalimov200808.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
