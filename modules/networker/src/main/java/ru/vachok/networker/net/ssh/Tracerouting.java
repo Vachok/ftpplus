@@ -3,14 +3,13 @@
 package ru.vachok.networker.net.ssh;
 
 
-import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -111,6 +110,7 @@ public class Tracerouting implements Callable<String> {
 
     private class ComplListener implements DatabaseReference.CompletionListener {
 
+
         private final String prName;
 
         ComplListener(String prName) {
@@ -119,17 +119,23 @@ public class Tracerouting implements Callable<String> {
 
         @Override
         public void onComplete(DatabaseError error, DatabaseReference ref) {
-            messageToUser.info(this.getClass().getSimpleName(), prName, new Date().toString());
-            try (Firestore fireStore = FirestoreClient.getFirestore()) {
-                Map<String, Object> upMap = new ConcurrentHashMap<>();
-                upMap.put(prName, new Date().toString());
-                ApiFuture<WriteResult> stats = fireStore.collection("stats").document(DB_REFERENCE).update(upMap);
-                WriteResult result = stats.get();
-                messageToUser.info(String.valueOf(result.getUpdateTime()));
+            Firestore fireStore = FirestoreClient.getFirestore();
+            Map<String, Object> upMap = new ConcurrentHashMap<>();
+            upMap.put(prName, new Date().toString());
+            fireStore.collection("stats").document(DB_REFERENCE).update(upMap);
+            if (error != null) {
+                messageToUser.error("ComplListener.onComplete", error.getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
             }
-            catch (Exception e) {
-                messageToUser.warn(Tracerouting.ComplListener.class.getSimpleName(), e.getMessage(), " see line: 131 ***");
+            else if (ref != null) {
+                messageToUser.info(getClass().getSimpleName(), "onComplete", ref.toString());
             }
+        }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(",\n", Tracerouting.ComplListener.class.getSimpleName() + "[\n", "\n]")
+                .add("prName = '" + prName + "'")
+                .toString();
         }
     }
 
