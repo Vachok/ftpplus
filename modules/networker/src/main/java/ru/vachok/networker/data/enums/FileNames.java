@@ -104,5 +104,5 @@ public enum FileNames {
 
     public static final String SSH_ERR = "ssh.err.log";
 
-    public static final String SSH_LISTS = "ssh.lists";
+    public static final String SSH_LISTS = "getsshlists.txt";
 }

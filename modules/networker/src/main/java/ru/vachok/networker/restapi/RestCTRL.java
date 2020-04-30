@@ -269,6 +269,7 @@ public class RestCTRL {
     public String sshRest() {
         StringBuilder sshAns = new StringBuilder();
         JsonArray resultArr = getSSHListsResult();
+        JsonObject sshParamNames = new JsonObject();
         sshAns.append("\n\n\n");
         sshAns.append(resultArr.size()).append(" size of ").append(JsonArray.class.getCanonicalName()).append("\n");
         for (JsonValue jsonValue : resultArr.values()) {
@@ -276,16 +277,22 @@ public class RestCTRL {
             for (Object name : objNames) {
                 sshAns.append(name.toString()).append(":");
                 sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
+                sshParamNames.add(name.toString(), "toString:getString");
             }
         }
         sshAns.append("\n\n\n");
-        FileSystemWorker.writeFile(FileNames.SSH_LISTS, sshAns.toString());
+        FileSystemWorker.writeFile(FileNames.SSH_LISTS, MessageFormat.format("Json objects names in array: {0}\n\n{1}", sshParamNames, sshAns.toString()));
         MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
         return resultArr.toString();
     }
 
     private JsonArray getSSHListsResult() {
         JsonArray retArr = new JsonArray();
+        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
+        AppConfigurationLocal.getInstance().execute(()->{
+            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
+        });
+
         for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
             JsonObject jsonElements = new JsonObject();
             SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
@@ -305,10 +312,16 @@ public class RestCTRL {
             jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
             retArr.add(jsonElements);
         }
-        AppConfigurationLocal.getInstance().execute(()->{
-            PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
-            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
-        });
+        if (pfLists.getPfRules() != null && !pfLists.getPfRules().isEmpty()) {
+            JsonObject pfRules = new JsonObject();
+            pfRules.add("pfRules", pfLists.getPfRules());
+            if (pfLists.getPfNat() != null && !pfLists.getPfNat().isEmpty()) {
+                JsonObject pfNat = new JsonObject();
+                pfNat.add("pfNat", pfLists.getPfNat());
+                retArr.add(pfNat);
+                retArr.add(pfRules);
+            }
+        }
         return retArr;
     }
 
