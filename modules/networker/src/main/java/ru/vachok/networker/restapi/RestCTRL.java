@@ -288,8 +288,20 @@ public class RestCTRL {
         JsonArray retArr = new JsonArray();
         for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
             JsonObject jsonElements = new JsonObject();
-            SSHFactory.Builder sshB = new SSHFactory.Builder(OtherKnownDevices.SRV_NAT, sshCommand, this.getClass().getSimpleName());
+            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
             String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
+            if (objName.toLowerCase().contains("full")) {
+                objName = "fullSquid";
+            }
+            else if (objName.contentEquals("squid")) {
+                objName = "stdSquid";
+            }
+            else if (objName.toLowerCase().contains("lim")) {
+                objName = "limitSquid";
+            }
+            else if (objName.contains("24")) {
+                objName = "24hrs";
+            }
             jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
             retArr.add(jsonElements);
         }

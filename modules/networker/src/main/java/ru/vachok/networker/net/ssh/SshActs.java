@@ -305,7 +305,7 @@ public class SshActs {
         }
     }
 
-    public String whatSrvNeed() {
+    public static String whatSrvNeed() {
         InitProperties.getTheProps().setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
