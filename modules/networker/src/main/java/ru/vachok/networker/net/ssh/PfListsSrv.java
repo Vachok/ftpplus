@@ -86,8 +86,8 @@ public class PfListsSrv {
     }
 
     public String runCom() {
-        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
-
+        return AppConfigurationLocal.getInstance()
+            .submitAsString(new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build(), 10);
     }
 
     /**
@@ -125,6 +125,7 @@ public class PfListsSrv {
     private void buildFactory() throws FileNotFoundException, ExecutionException, InterruptedException, TimeoutException {
         SSHFactory.Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
+        int timeOusSec = 5;
         if (!new File(builderInst.getPem()).exists()) {
             throw new FileNotFoundException("NO CERTIFICATE a161.getPem...");
         }
@@ -134,28 +135,29 @@ public class PfListsSrv {
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs && exit");
-        pfListsInstAW.setVipNet(AppConfigurationLocal.getInstance().submitAsString(build, 3));
+
+        pfListsInstAW.setVipNet(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PFSQUID);
-        pfListsInstAW.setStdSquid(AppConfigurationLocal.getInstance().submitAsString(build, 3));
+        pfListsInstAW.setStdSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PROXYFULL);
-        pfListsInstAW.setFullSquid(AppConfigurationLocal.getInstance().submitAsString(build, 3));
+        pfListsInstAW.setFullSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_SQUIDLIMITED);
-        pfListsInstAW.setLimitSquid(AppConfigurationLocal.getInstance().submitAsString(build, 3));
+        pfListsInstAW.setLimitSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH("pfctl -s nat && exit");
-        pfListsInstAW.setPfNat(AppConfigurationLocal.getInstance().submitAsString(build, 3));
+        pfListsInstAW.setPfNat(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH("pfctl -s rules && exit");
-        pfListsInstAW.setPfRules(AppConfigurationLocal.getInstance().submitAsString(build, 3));
+        pfListsInstAW.setPfRules(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH("sudo cat /home/kudr/inet.log && exit");
-        String inetLog = AppConfigurationLocal.getInstance().submitAsString(build, 3);
+        String inetLog = AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec);
         pfListsInstAW.setInetLog(inetLog);
         Future<String> checkUniqueInListsFuture = AppComponents.threadConfig().getTaskExecutor().submit(new AccessListsCheckUniq());
-        String inetUniqStr = checkUniqueInListsFuture.get(3, TimeUnit.SECONDS);
+        String inetUniqStr = checkUniqueInListsFuture.get(timeOusSec, TimeUnit.SECONDS);
         pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
     }
 

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
@@ -45,13 +46,14 @@ public interface AppConfigurationLocal extends Runnable {
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
 
-    default void execute(Callable callable) {
+    default void execute(Callable<?> callable) {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         AppComponents.threadConfig().cleanQueue(callable);
         executor.submit(callable);
     }
 
     default Object executeGet(Callable<?> callable, int timeOutSeconds) {
+        ThreadConfig.cleanQueue(callable);
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         Future<?> submit = executor.submit(callable);
         Object o;
@@ -74,8 +76,8 @@ public interface AppConfigurationLocal extends Runnable {
 
     default void execute(Runnable runnable, long timeOutSeconds) {
         ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        ThreadConfig.cleanQueue(runnable);
         Future<?> submit = poolExecutor.submit(runnable);
-        AppComponents.threadConfig().cleanQueue(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new ThreadTimeout(submit, timeOutSeconds));
     }
 
@@ -85,6 +87,7 @@ public interface AppConfigurationLocal extends Runnable {
 
     default void schedule(Runnable runnable, long timeFirstRun, long period) {
         ScheduledThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        ThreadConfig.cleanQueue(runnable);
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         executorQueue.removeIf(runnable1->runnable1.equals(runnable));
         long initialDelay = timeFirstRun - System.currentTimeMillis();
@@ -95,6 +98,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
+        ThreadConfig.cleanQueue(callableQuestion);
         String result;
         ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
         try {
@@ -110,6 +114,9 @@ public interface AppConfigurationLocal extends Runnable {
         }
         catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
             result = AbstractForms.networkerTrace(e);
+        }
+        finally {
+            System.out.println("executor = " + executor.toString());
         }
         return result;
     }

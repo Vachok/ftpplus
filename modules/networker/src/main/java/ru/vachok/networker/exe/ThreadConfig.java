@@ -6,7 +6,6 @@ package ru.vachok.networker.exe;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Scope;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
@@ -23,7 +22,6 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -42,7 +40,6 @@ import java.util.concurrent.*;
 @SuppressWarnings("MagicNumber")
 @EnableAsync
 @Service("ThreadConfig")
-@Scope(ConstantsFor.SINGLETON)
 public class ThreadConfig implements AppConfigurationLocal {
 
 
@@ -79,14 +76,12 @@ public class ThreadConfig implements AppConfigurationLocal {
         return TASK_EXECUTOR;
     }
 
-    private void setExecutor() {
-        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
-        TASK_EXECUTOR.setQueueCapacity(500);
-        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
-        TASK_EXECUTOR.setThreadPriority(7);
-        TASK_EXECUTOR.setThreadNamePrefix("E-");
+    public static void cleanQueue(Runnable runnable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+        boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
+        if (isRemove) {
+            messageToUser.warn(ThreadConfig.class.getSimpleName(), "TASK_EXECUTOR removed:", runnable.getClass().getSimpleName());
+        }
     }
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
@@ -164,22 +159,24 @@ public class ThreadConfig implements AppConfigurationLocal {
         return thrName;
     }
 
-    public void cleanQueue(Runnable runnable) {
-        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
-        boolean isRemove = executorQueue.removeIf(r->r.equals(runnable) || r instanceof DBMessenger);
-        if (isRemove) {
-            messageToUser.warn(getClass().getSimpleName(), "TASK_EXECUTOR removed:", runnable.getClass().getSimpleName());
-        }
-    }
-
-    public void cleanQueue(Callable callable) {
+    public static void cleanQueue(Callable callable) {
         BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         for (Runnable r : executorQueue) {
-            if (r.equals(callable) || r instanceof DBMessenger) {
-                messageToUser.warn(this.getClass().getSimpleName(), "execute", r.toString());
+            if (r.equals(callable)) {
+                messageToUser.warn(ThreadConfig.class.getClass().getSimpleName(), "TASK_SCHEDULER removed:", r.toString());
                 executorQueue.remove(r);
             }
         }
+    }
+
+    private void setExecutor() {
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
+        TASK_EXECUTOR.setQueueCapacity(500);
+        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
+        TASK_EXECUTOR.setThreadPriority(7);
+        TASK_EXECUTOR.setThreadNamePrefix("E-");
     }
 
     /**
