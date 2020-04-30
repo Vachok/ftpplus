@@ -565,7 +565,7 @@ public enum ConstantsFor {
 
     public static final String VPN_LIST = "OpenVPN CLIENT LIST";
 
-    public static final int SSH_TIMEOUT = 2500;
+    public static final int SSH_TIMEOUT = 863990;
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {

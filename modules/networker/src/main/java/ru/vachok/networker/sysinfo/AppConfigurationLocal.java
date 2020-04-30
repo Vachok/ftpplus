@@ -3,6 +3,7 @@ package ru.vachok.networker.sysinfo;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.ThreadTimeout;
@@ -93,14 +94,23 @@ public interface AppConfigurationLocal extends Runnable {
         poolExecutor.scheduleWithFixedDelay(runnable, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
-    default String submitAsString(Callable<?> callableQuestion, int timeOutInSec) {
-        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+    default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
+        String result;
+        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
         try {
-            Future<?> submit = executor.submit(callableQuestion);
-            return (String) submit.get(timeOutInSec, TimeUnit.SECONDS);
+            Future<String> submit = executor.submit(callableQuestion);
+            String s = submit.get(timeOutInSec, TimeUnit.SECONDS);
+            if (submit.isDone()) {
+                result = s;
+            }
+            else {
+                result = MessageFormat
+                    .format("{0} submit is {1}\n\n{2}", getClass().getSimpleName(), false, AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
+            }
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            return AbstractForms.networkerTrace(e);
+        catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
+            result = AbstractForms.networkerTrace(e);
         }
+        return result;
     }
 }

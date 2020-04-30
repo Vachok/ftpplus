@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  Фабрика, для sshactions-комманд.
 
  @see ru.vachok.networker.SSHFactoryTest */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "ClassWithTooManyFields"})
 public class SSHFactory implements Callable<String> {
 
 
@@ -49,7 +49,7 @@ public class SSHFactory implements Callable<String> {
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, SSHFactory.class.getSimpleName());
 
-    private final InitProperties initProperties = InitProperties.getInstance(DBTABLE_GENERALJSCH);
+    private final InitProperties jschProperties = InitProperties.getInstance(DBTABLE_GENERALJSCH);
 
     private final String classCaller;
 
@@ -133,6 +133,9 @@ public class SSHFactory implements Callable<String> {
 
     @Override
     public String call() {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setName(classCaller + "SSH");
+        chkTempFile();
         StringBuilder stringBuilder = new StringBuilder();
         Queue<String> recQueue = new LinkedList<>();
         byte[] bytes = new byte[ConstantsFor.KBYTE];
@@ -140,8 +143,6 @@ public class SSHFactory implements Callable<String> {
         try (InputStream connect = connect()) {
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connect))) {
                 bufferedReader.lines().forEach(recQueue::add);
-                this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
-                this.tempFile.toFile().deleteOnExit();
             }
             this.session.disconnect();
         }
@@ -162,6 +163,22 @@ public class SSHFactory implements Callable<String> {
             FileSystemWorker.writeFile(tempFile.toAbsolutePath().normalize().toString(), stringBuilder.toString());
         }
         return stringBuilder.toString();
+    }
+
+    private void chkTempFile() {
+        if (this.tempFile == null) {
+            try {
+                this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
+            }
+            catch (IOException e) {
+                messageToUser.error("SSHFactory.call", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
+            finally {
+                if (this.tempFile != null) {
+                    this.tempFile.toFile().deleteOnExit();
+                }
+            }
+        }
     }
 
     private InputStream connect() throws IOException {
