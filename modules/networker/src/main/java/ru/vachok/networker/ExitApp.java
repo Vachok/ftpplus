@@ -146,6 +146,9 @@ public class ExitApp extends Thread implements Externalizable {
         catch (InvokeIllegalException e) {
             messageToUser.error("ExitApp.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
+        finally {
+            writeObj();
+        }
     }
 
     @Override
@@ -166,14 +169,16 @@ public class ExitApp extends Thread implements Externalizable {
     private void copyAvail() throws InvokeIllegalException {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(FileNames.PING_TV);
-        FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
-            .append(".")
-            .append(ConstantsFor.FILESYSTEM_SEPARATOR)
-            .append("lan")
-            .append(ConstantsFor.FILESYSTEM_SEPARATOR)
-            .append("ptv_")
-            .append(System.currentTimeMillis() / 1000).append(".txt")
-            .toString()).toAbsolutePath().normalize(), true);
+        if (filePingTv.exists()) {
+            FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
+                .append(".")
+                .append(ConstantsFor.FILESYSTEM_SEPARATOR)
+                .append("lan")
+                .append(ConstantsFor.FILESYSTEM_SEPARATOR)
+                .append("ptv_")
+                .append(System.currentTimeMillis() / 1000).append(".txt")
+                .toString()).toAbsolutePath().normalize(), true);
+        }
 
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
@@ -182,7 +187,6 @@ public class ExitApp extends Thread implements Externalizable {
             miniLoggerLast.add("No app.log");
             messageToUser.info("No app.log");
         }
-        writeObj();
     }
 
     /**

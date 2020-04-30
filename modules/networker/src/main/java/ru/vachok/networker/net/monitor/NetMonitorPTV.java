@@ -37,6 +37,8 @@ public class NetMonitorPTV implements NetScanService {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
 
+    private static final boolean IS_RUN = InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PTV).contentEquals("true");
+
     private String pingResultLast = "No pings yet.";
 
     private final File pingTv = new File(FileNames.PING_TV);
@@ -93,7 +95,7 @@ public class NetMonitorPTV implements NetScanService {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
-            if (InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PTV).contentEquals("true")) {
+            if (IS_RUN) {
                 pingIPTV();
             }
             else {
