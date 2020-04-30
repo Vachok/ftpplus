@@ -388,7 +388,7 @@ public class SshActs {
     }
 
     String execSSHCommand(String sshCommand) {
-        return new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build().call();
+        return AppConfigurationLocal.getInstance().submitAsString(new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build(), 10);
     }
 
     /**
@@ -399,6 +399,6 @@ public class SshActs {
      @see VpnHelper
      */
     String execSSHCommand(String server, String command) {
-        return new SSHFactory.Builder(server, command, getClass().getSimpleName()).build().call();
+        return AppConfigurationLocal.getInstance().submitAsString(new SSHFactory.Builder(server, command, getClass().getSimpleName()).build(), 10);
     }
 }

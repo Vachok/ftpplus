@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -37,8 +36,6 @@ public class NetMonitorPTV implements NetScanService {
 
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
-
-    private final Preferences preferences = InitProperties.getUserPref();
 
     private String pingResultLast = "No pings yet.";
 
@@ -96,9 +93,14 @@ public class NetMonitorPTV implements NetScanService {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
-            pingIPTV();
+            if (InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PTV).contentEquals("true")) {
+                pingIPTV();
+            }
+            else {
+                messageToUser.warn(getClass().getSimpleName(), PTV, "Is false in " + InitProperties.getInstance(InitProperties.DB_MEMTABLE).toString());
+            }
         }
-        catch (IOException | IllegalAccessException e) {
+        catch (IOException e) {
             messageToUser.warn(NetMonitorPTV.class.getSimpleName(), "run", e.getMessage() + Thread.currentThread().getState().name());
         }
     }
@@ -107,7 +109,8 @@ public class NetMonitorPTV implements NetScanService {
         return pingResultLast;
     }
 
-    private void pingIPTV() throws IllegalAccessException, IOException {
+    @SuppressWarnings("OverlyLongMethod")
+    private void pingIPTV() throws IOException {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setPriority(1);
         createFile();
