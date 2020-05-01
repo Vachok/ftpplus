@@ -242,26 +242,28 @@ public class DataSynchronizer extends SyncData {
         stringBuilder.append(sql).append("\n");
         int uploadedCount;
         Queue<JsonObject> jsonObjects = new LinkedList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(7));
-                String[] columns = getColumns(preparedStatement);
-                this.columnsNum = columns.length;
-                stringBuilder.append(Arrays.toString(columns)).append("\n");
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    Files.deleteIfExists(dbObj.toPath());
-                    while (resultSet.next()) {
-                        JsonObject jsonObject = new JsonObject();
-                        for (int i = 0; i < columns.length; i++) {
-                            jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
+        if (!dbToSync.contains(".inetstats") && !dbToSync.contains(ConstantsFor.DB_PCUSERAUTO_FULL)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(7));
+                    String[] columns = getColumns(preparedStatement);
+                    this.columnsNum = columns.length;
+                    stringBuilder.append(Arrays.toString(columns)).append("\n");
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        Files.deleteIfExists(dbObj.toPath());
+                        while (resultSet.next()) {
+                            JsonObject jsonObject = new JsonObject();
+                            for (int i = 0; i < columns.length; i++) {
+                                jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
+                            }
+                            jsonObjects.add(jsonObject);
                         }
-                        jsonObjects.add(jsonObject);
                     }
                 }
             }
-        }
-        catch (SQLException | IOException e) {
-            messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 264 ***");
+            catch (SQLException | IOException e) {
+                messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 264 ***");
+            }
         }
         uploadedCount = uploadCollection(jsonObjects, dbToSync);
         if (uploadedCount != -666) {
