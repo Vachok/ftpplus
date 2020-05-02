@@ -18,7 +18,6 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfLists;
@@ -336,9 +335,7 @@ public class RestCTRL {
 
     @PostMapping("/sshcommandexec")
     public String sshCommandExecute(HttpServletRequest request) {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
         String result;
-        SshActs sshActs = (SshActs) context.getBean(ModelAttributeNames.ATT_SSH_ACTS);
         try (ServletInputStream stream = request.getInputStream()) {
             JsonObject jsonO = getJSON(readRequestBytes(request));
             if (!jsonO.names().contains(ConstantsFor.AUTHORIZATION)) {

@@ -9,6 +9,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.RestApiHelper;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 
@@ -20,11 +21,19 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 public class JSONSSHCommandExecutor implements RestApiHelper {
 
 
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, JSONSSHCommandExecutor.class.getSimpleName());
+
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
         String result = jsonObject.toString();
-        System.out.println("result = " + result);
-        int codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
+        int codeVer;
+        try {
+            codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "-1"));
+        }
+        catch (UnsupportedOperationException e) {
+            messageToUser.error("JSONSSHCommandExecutor.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
+        }
         String authorizationHeader = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
         boolean isValid = false;
         try {
@@ -50,7 +59,7 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
     private String makeActions(JsonObject jsonObject) {
         String serverName = SshActs.whatSrvNeed();
         if (jsonObject.names().contains(ConstantsFor.PARAM_NAME_SERVER)) {
-            JsonValue value = jsonObject.get(ConstantsFor.PARM_NAME_COMMAND);
+            JsonValue value = jsonObject.get(ConstantsFor.PARAM_NAME_SERVER);
             serverName = value.asString();
         }
         String commandForSH = ConstantsFor.SSH_UNAMEA + ";uptime;sudo pgrep -f -v -l -u root;exit";
