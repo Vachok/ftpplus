@@ -63,6 +63,8 @@ public class RestCTRL {
 
     private static final String GETOLDFILES = "/getoldfiles";
 
+    private static final String SUDO_CAT_ETC_PF = "sudo cat /etc/pf/";
+
     /**
      @return no formatting pc name
 
@@ -168,6 +170,9 @@ public class RestCTRL {
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
+    /**
+     @see RestCTRLTest
+     */
     @GetMapping("/getsshlists")
     public String sshRest() {
         StringBuilder sshAns = new StringBuilder();
@@ -179,7 +184,7 @@ public class RestCTRL {
             Object[] objNames = jsonValue.asObject().names().toArray();
             for (Object name : objNames) {
                 sshAns.append(name.toString()).append(":");
-                sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
+                sshAns.append(jsonValue.asObject().get(name.toString()));
                 sshParamNames.add(name.toString(), "toString:getString");
             }
         }
@@ -247,12 +252,30 @@ public class RestCTRL {
         for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
             JsonObject jsonElements = new JsonObject();
             SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
-            String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
+            String objName = sshCommand.split(";")[0].replace(SUDO_CAT_ETC_PF, "");
             objName = findObjName(objName);
-            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5));
+            jsonElements.add(objName, genJSON(sshB));
             retArr.add(jsonElements);
         }
         return retArr;
+    }
+
+    private JsonObject genJSON(SSHFactory.Builder sshB) {
+        String srvAnswer = AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5);
+        JsonObject jsonObject = new JsonObject();
+        if (srvAnswer.contains("<br>")) {
+            String[] split = srvAnswer.split("<br>");
+            for (String s : split) {
+                if (s.contains(" #")) {
+                    String name = s.split(" #")[0];
+                    jsonObject.add(name.replace("\n", "").replace(";exit", "").trim(), s.replace(name, "").replace("#", " ").trim());
+                }
+            }
+        }
+        if (jsonObject.names().size() <= 0) {
+            jsonObject.add(sshB.getCommandSSH().replace(SUDO_CAT_ETC_PF, ""), srvAnswer.replace("<br>\n", "\n"));
+        }
+        return jsonObject;
     }
 
     /**

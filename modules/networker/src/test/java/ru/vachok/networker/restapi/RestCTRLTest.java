@@ -234,6 +234,8 @@ public class RestCTRLTest {
 
     @Test
     public void testSshRest() {
+        String s = restCTRL.sshRest();
+        System.out.println("s = " + s);
     }
 
     @Test

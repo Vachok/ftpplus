@@ -527,7 +527,7 @@ public enum ConstantsFor {
 
     public static final String PARAM_NAME_CODE = "code";
 
-    public static final String[] SSH_LIST_COMMANDS = {"sudo cat /etc/pf/vipnet;exit", "sudo cat /etc/pf/tempfull;exit", "sudo cat /etc/pf/24hrs;exit", "sudo cat /etc/pf/squid;exit", "sudo cat /etc/pf/squidlimited;exit", "sudo ps ax;exit", "uname -a;exit"};
+    public static final String[] SSH_LIST_COMMANDS = {"sudo ps ax;exit", "sudo cat /etc/pf/vipnet;exit", "sudo cat /etc/pf/tempfull;exit", "sudo cat /etc/pf/24hrs;exit", "sudo cat /etc/pf/squid;exit", "sudo cat /etc/pf/squidlimited;exit"};
 
     ;
 
