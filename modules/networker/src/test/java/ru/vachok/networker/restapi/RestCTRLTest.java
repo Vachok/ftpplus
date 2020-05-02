@@ -160,6 +160,22 @@ public class RestCTRLTest {
     }
 
     @Test
+    public void testSshRest() {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        Request.Builder builder = new Request.Builder().url("http://10.10.111.65:8880/getsshlists");
+        Call call = okHttpClient.newCall(builder.get().build());
+        builder.addHeader(ConstantsFor.AUTHORIZATION, "1900");
+        String string;
+        try (Response execute = call.execute()) {
+            string = execute.body().string();
+            System.out.println("string = " + string);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+
+    @Test
     public void getNetworkerPOSTResponse() {
         OkHttpClient okHttpClient = new OkHttpClient();
         JsonObject jsonObject = new JsonObject();
@@ -232,10 +248,21 @@ public class RestCTRLTest {
         }
     }
 
-    @Test
-    public void testSshRest() {
-        String s = restCTRL.sshRest();
-        System.out.println("s = " + s);
+    @NotNull
+    private static Request.@NotNull Builder getBuilder(String urlPart) {
+        try {
+            String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        OkHttpClient okHttpClient = new OkHttpClient();
+        Request.Builder builder = new Request.Builder();
+        builder.url(SRV_GIT + urlPart);
+//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
+        builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
+        builder.addHeader("Content-Type", ConstantsFor.JSON);
+        return builder;
     }
 
     @Test
@@ -284,23 +311,6 @@ public class RestCTRLTest {
         request.setContent(jsonObject.toString().getBytes());
         String respStr = restCTRL.helpDomain(request, new MockHttpServletResponse());
         Assert.assertFalse(respStr.contains("www.eatmeat.ru<br>"), respStr);
-    }
-
-    @NotNull
-    private static Request.@NotNull Builder getBuilder(String urlPart) {
-        try {
-            String local = new SshActs("delete", "http://www.velkomfood.ru").allowDomainAdd();
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request.Builder builder = new Request.Builder();
-        builder.url(SRV_GIT + urlPart);
-//        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
-        builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
-        builder.addHeader("Content-Type", ConstantsFor.JSON);
-        return builder;
     }
 
     @Test

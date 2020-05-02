@@ -174,7 +174,14 @@ public class RestCTRL {
      @see RestCTRLTest
      */
     @GetMapping("/getsshlists")
-    public String sshRest() {
+    public String sshRest(HttpServletRequest request) {
+        int verCode;
+        try {
+            verCode = Integer.parseInt(request.getHeader(ConstantsFor.AUTHORIZATION));
+        }
+        catch (RuntimeException e) {
+            return sshRest0();
+        }
         StringBuilder sshAns = new StringBuilder();
         JsonArray resultArr = getSSHListsResult();
         JsonObject sshParamNames = new JsonObject();
@@ -192,6 +199,100 @@ public class RestCTRL {
         FileSystemWorker.writeFile(FileNames.SSH_LISTS_LOG, MessageFormat.format("Json objects names in array: {0}\n\n{1}", sshParamNames, sshAns.toString()));
         MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
         return resultArr.toString();
+    }
+
+    private String sshRest0() {
+        StringBuilder sshAns = new StringBuilder();
+        JsonArray resultArr = oldCreateArr();
+        JsonObject sshParamNames = new JsonObject();
+        sshAns.append("\n\n\n");
+        sshAns.append(resultArr.size()).append(" size of ").append(JsonArray.class.getCanonicalName()).append("\n");
+        for (JsonValue jsonValue : resultArr.values()) {
+            Object[] objNames = jsonValue.asObject().names().toArray();
+            for (Object name : objNames) {
+                sshAns.append(name.toString()).append(":");
+                sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
+                sshParamNames.add(name.toString(), "toString:getString");
+            }
+        }
+        sshAns.append("\n\n\n");
+        MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
+        return resultArr.toString();
+    }
+
+    private JsonArray getSSHListsResult() {
+        JsonArray retArr = new JsonArray();
+        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
+        AppConfigurationLocal.getInstance().execute(()->{
+            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
+        });
+
+        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
+            JsonObject jsonElements = new JsonObject();
+            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
+            String objName = sshCommand.split(";")[0].replace(SUDO_CAT_ETC_PF, "");
+            objName = findObjName(objName);
+            jsonElements.add(objName, genJSON(sshB));
+            retArr.add(jsonElements);
+        }
+        return retArr;
+    }
+
+    private JsonArray oldCreateArr() {
+        JsonArray retArr = new JsonArray();
+        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
+        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
+            JsonObject jsonElements = new JsonObject();
+            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
+            String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
+            if (objName.toLowerCase().contains("full")) {
+                objName = "fullSquid";
+            }
+            else if (objName.contentEquals("squid")) {
+                objName = "stdSquid";
+            }
+            else if (objName.toLowerCase().contains("lim")) {
+                objName = "limitSquid";
+            }
+            else if (objName.contains("24")) {
+                objName = "24hrs";
+            }
+            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
+            retArr.add(jsonElements);
+        }
+        if (pfLists.getPfRules() != null && !pfLists.getPfRules().isEmpty()) {
+            JsonObject pfRules = new JsonObject();
+            pfRules.add("pfRules", pfLists.getPfRules());
+            if (pfLists.getPfNat() != null && !pfLists.getPfNat().isEmpty()) {
+                JsonObject pfNat = new JsonObject();
+                pfNat.add("pfNat", pfLists.getPfNat());
+                retArr.add(pfNat);
+                retArr.add(pfRules);
+            }
+        }
+        return retArr;
+    }
+
+    private String findObjName(String objName) {
+        if (objName.toLowerCase().contains("full")) {
+            objName = ConstantsFor.JSON_OBJECT_FULL_SQUID;
+        }
+        else if (objName.contentEquals(ConstantsFor.JSON_OBJECT_SQUID)) {
+            objName = ConstantsFor.JSON_OBJECT_STD_SQUID;
+        }
+        else if (objName.toLowerCase().contains("lim")) {
+            objName = JSON_OBJECT_LIMIT_SQUID;
+        }
+        else if (objName.contains("24")) {
+            objName = "24hrs";
+        }
+        else if (objName.contains("ps ax")) {
+            objName = ConstantsFor.JSON_OBJECT_RULES;
+        }
+        else if (objName.contains("uname")) {
+            objName = ConstantsFor.JSON_OBJECT_NAT;
+        }
+        return objName;
     }
 
     @PostMapping(GETOLDFILES)
@@ -242,24 +343,6 @@ public class RestCTRL {
         return contentBytes;
     }
 
-    private JsonArray getSSHListsResult() {
-        JsonArray retArr = new JsonArray();
-        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
-        AppConfigurationLocal.getInstance().execute(()->{
-            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
-        });
-
-        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
-            JsonObject jsonElements = new JsonObject();
-            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
-            String objName = sshCommand.split(";")[0].replace(SUDO_CAT_ETC_PF, "");
-            objName = findObjName(objName);
-            jsonElements.add(objName, genJSON(sshB));
-            retArr.add(jsonElements);
-        }
-        return retArr;
-    }
-
     private JsonObject genJSON(SSHFactory.Builder sshB) {
         String srvAnswer = AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5);
         JsonObject jsonObject = new JsonObject();
@@ -293,67 +376,6 @@ public class RestCTRL {
         JsonObject jsonObject = getJSON(readRequestBytes(request));
         jsonObject.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
         return tempInetRestControllerHelper.getResult(jsonObject);
-    }
-
-    private String findObjName(String objName) {
-        if (objName.toLowerCase().contains("full")) {
-            objName = ConstantsFor.JSON_OBJECT_FULL_SQUID;
-        }
-        else if (objName.contentEquals(ConstantsFor.JSON_OBJECT_SQUID)) {
-            objName = ConstantsFor.JSON_OBJECT_STD_SQUID;
-        }
-        else if (objName.toLowerCase().contains("lim")) {
-            objName = JSON_OBJECT_LIMIT_SQUID;
-        }
-        else if (objName.contains("24")) {
-            objName = "24hrs";
-        }
-        else if (objName.contains("ps ax")) {
-            objName = ConstantsFor.JSON_OBJECT_RULES;
-        }
-        else if (objName.contains("uname")) {
-            objName = ConstantsFor.JSON_OBJECT_NAT;
-        }
-        return objName;
-    }
-
-    @NotNull
-    private String getFileShow(String userAgent) {
-        StringBuilder stringBuilder = new StringBuilder();
-        long totalSize = 0;
-        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
-        if (file.listFiles() == null) {
-            throw new IllegalArgumentException(file.getAbsolutePath());
-        }
-        else {
-            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
-            for (File listFile : Objects.requireNonNull(file.listFiles())) {
-                long fileSizeKB = listFile.length() / 1024;
-                totalSize = totalSize + fileSizeKB;
-                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
-                String uAgent;
-                try {
-                    uAgent = userAgent.toLowerCase();
-                }
-                catch (RuntimeException e) {
-                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
-                }
-                if (uAgent.contains(OKHTTP)) {
-                    stringBuilder.append("\n");
-                }
-                else {
-                    stringBuilder.append("<br>");
-                }
-            }
-            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
-        }
-        return stringBuilder.toString();
-    }
-
-    private String connectToSrvInetstat() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
-            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
     }
 
     @PostMapping("/sshcommandexec")
@@ -401,6 +423,45 @@ public class RestCTRL {
             VpnHelper vpnHelper = new VpnHelper();
             return vpnHelper.getConfig(request.getQueryString());
         }
+    }
+
+    @NotNull
+    private String getFileShow(String userAgent) {
+        StringBuilder stringBuilder = new StringBuilder();
+        long totalSize = 0;
+        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
+        if (file.listFiles() == null) {
+            throw new IllegalArgumentException(file.getAbsolutePath());
+        }
+        else {
+            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
+            for (File listFile : Objects.requireNonNull(file.listFiles())) {
+                long fileSizeKB = listFile.length() / 1024;
+                totalSize = totalSize + fileSizeKB;
+                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
+                String uAgent;
+                try {
+                    uAgent = userAgent.toLowerCase();
+                }
+                catch (RuntimeException e) {
+                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
+                }
+                if (uAgent.contains(OKHTTP)) {
+                    stringBuilder.append("\n");
+                }
+                else {
+                    stringBuilder.append("<br>");
+                }
+            }
+            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
+        }
+        return stringBuilder.toString();
+    }
+
+    private String connectToSrvInetstat() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
+            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
     }
 
     @Override
