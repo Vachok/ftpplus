@@ -309,7 +309,7 @@ public class RestCTRL {
             else if (objName.contains("24")) {
                 objName = "24hrs";
             }
-            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
+            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5));
             retArr.add(jsonElements);
         }
         if (pfLists.getPfRules() != null && !pfLists.getPfRules().isEmpty()) {

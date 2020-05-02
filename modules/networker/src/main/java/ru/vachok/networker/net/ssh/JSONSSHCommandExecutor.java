@@ -8,7 +8,6 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -49,7 +48,7 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
     }
 
     private String makeActions(JsonObject jsonObject) {
-        String serverName = OtherKnownDevices.SRV_INETSTAT;
+        String serverName = SshActs.whatSrvNeed();
         if (jsonObject.names().contains(ConstantsFor.PARAM_NAME_SERVER)) {
             JsonValue value = jsonObject.get(ConstantsFor.PARM_NAME_COMMAND);
             serverName = value.asString();
