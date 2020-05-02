@@ -19,6 +19,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -310,8 +311,11 @@ public class SshActs {
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }
+        else if (NetScanService.isReach(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU)) {
+            return SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU;
+        }
         else {
-            return SwitchesWiFi.IPADDR_SRVGIT;
+            return "10.10.111.65";
         }
     }
 

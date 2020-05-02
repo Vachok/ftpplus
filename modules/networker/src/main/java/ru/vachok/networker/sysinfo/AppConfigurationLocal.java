@@ -3,7 +3,6 @@ package ru.vachok.networker.sysinfo;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.ThreadTimeout;
@@ -107,17 +106,15 @@ public interface AppConfigurationLocal extends Runnable {
                 result = s;
             }
             else {
-                result = MessageFormat
-                    .format("{0} submit is {1}\n\n{2}", getClass().getSimpleName(), false, AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
+                result = MessageFormat.format("{0} submit is {1}", getClass().getSimpleName(), false);
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
             result = MessageFormat
-                .format("\n\n{0}\n{1}", "***stack***".toUpperCase(), AbstractForms.fromArray(e));
+                .format("{0} try to run: {1} ({2})", AppConfigurationLocal.class.getSimpleName(), e.getMessage(), callableQuestion.getClass().getSimpleName());
         }
         finally {
-            System.out.println("executor = " + callableQuestion.getClass().getName());
-            System.out.println("executor = " + submit.isDone());
+            System.out.println(MessageFormat.format("executor = {0} is done: {1}", callableQuestion.getClass().getName(), submit.isDone()));
         }
         return result;
     }

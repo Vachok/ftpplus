@@ -7,10 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -36,6 +33,8 @@ public class RestCTRLTest {
     private static final String SRV_RUPS = "http://rups00.eatmeat.ru:8880/";
 
     private static final String SRV_LOCAL = "http://10.10.111.65:8880/";
+
+    private static final String SRV_GIT = "http://srv-git.eatmeat.ru:8880/";
 
     private InformationFactory instance;
 
@@ -105,24 +104,18 @@ public class RestCTRLTest {
         request.setContent(jsonObject.toString().getBytes());
         MockHttpServletResponse response = new MockHttpServletResponse();
         String s = restCTRL.inetTemporary(request, response);
-        Assert.assertTrue(s.contains("INVALID"));
+        Assert.assertTrue(s.contains("INVALID"), s);
     }
 
-    @Test
-    public void okTest() {
-        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET);
-        RequestBody requestBody = RequestBody.create(getJSONObject().toString().getBytes());
-        builder.post(requestBody);
-        Call newCall = new OkHttpClient().newCall(builder.build());
-        try (Response execute = newCall.execute();
-             ResponseBody body = execute.body()) {
-            String string = body != null ? body.string() : "null";
-            boolean contains = Stream.of("INVALID", ConstantsFor.RULES, "ikudryashov@velkomfood.ru").anyMatch(string::contains);
-            Assert.assertTrue(contains, string);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
+    @NotNull
+    private static JsonObject getJSONObject() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("ip", "10.200.213.233");
+        jsonObject.add("hour", "1");
+        jsonObject.add(ConstantsFor.PARAM_NAME_CODE, "1800");
+        jsonObject.add(ConstantsFor.OPTION, "add");
+        jsonObject.add(ConstantsFor.WHOCALLS, "ikudryashov@velkomfood.ru");
+        return jsonObject;
     }
 
     @Test
@@ -148,14 +141,22 @@ public class RestCTRLTest {
         }
     }
 
-    @NotNull
-    private static JsonObject getJSONObject() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add("ip", "10.200.213.233");
-        jsonObject.add("hour", "1");
-        jsonObject.add(ConstantsFor.OPTION, "add");
-        jsonObject.add(ConstantsFor.WHOCALLS, "ikudryashov@velkomfood.ru");
-        return jsonObject;
+    @Test
+    @Ignore
+    public void okTest() {
+        Request.Builder builder = getBuilder(ConstantsFor.TEMPNET);
+        RequestBody requestBody = RequestBody.create(getJSONObject().toString().getBytes());
+        builder.post(requestBody);
+        Call newCall = new OkHttpClient().newCall(builder.build());
+        try (Response execute = newCall.execute();
+             ResponseBody body = execute.body()) {
+            String string = body != null ? body.string() : "null";
+            boolean contains = Stream.of("INVALID", ConstantsFor.RULES, "ikudryashov@velkomfood.ru").anyMatch(string::contains);
+            Assert.assertTrue(contains, string);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
 
     @Test
@@ -293,7 +294,7 @@ public class RestCTRLTest {
         }
         OkHttpClient okHttpClient = new OkHttpClient();
         Request.Builder builder = new Request.Builder();
-        builder.url(RestCTRLTest.SRV_LOCAL + urlPart);
+        builder.url(SRV_GIT + urlPart);
 //        builder.url("http://rups00.eatmeat.ru:8880/tempnet");
         builder.addHeader(ConstantsFor.AUTHORIZATION, "j3n38xrqKNUgcCeFiILvvLSpSuw1");
         builder.addHeader("Content-Type", ConstantsFor.JSON);

@@ -56,6 +56,8 @@ import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
 public class RestCTRL {
 
 
+    public static final String JSON_OBJECT_LIMIT_SQUID = "limitSquid";
+
     private static final String OKHTTP = "okhttp";
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRL.class.getSimpleName());
@@ -167,6 +169,27 @@ public class RestCTRL {
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
+    @GetMapping("/getsshlists")
+    public String sshRest() {
+        StringBuilder sshAns = new StringBuilder();
+        JsonArray resultArr = getSSHListsResult();
+        JsonObject sshParamNames = new JsonObject();
+        sshAns.append("\n\n\n");
+        sshAns.append(resultArr.size()).append(" size of ").append(JsonArray.class.getCanonicalName()).append("\n");
+        for (JsonValue jsonValue : resultArr.values()) {
+            Object[] objNames = jsonValue.asObject().names().toArray();
+            for (Object name : objNames) {
+                sshAns.append(name.toString()).append(":");
+                sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
+                sshParamNames.add(name.toString(), "toString:getString");
+            }
+        }
+        sshAns.append("\n\n\n");
+        FileSystemWorker.writeFile(FileNames.SSH_LISTS_LOG, MessageFormat.format("Json objects names in array: {0}\n\n{1}", sshParamNames, sshAns.toString()));
+        MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
+        return resultArr.toString();
+    }
+
     @PostMapping(GETOLDFILES)
     public String delOldFiles(HttpServletRequest request) {
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
@@ -215,6 +238,63 @@ public class RestCTRL {
         return contentBytes;
     }
 
+    private JsonArray getSSHListsResult() {
+        JsonArray retArr = new JsonArray();
+        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
+        AppConfigurationLocal.getInstance().execute(()->{
+            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
+        });
+
+        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
+            JsonObject jsonElements = new JsonObject();
+            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
+            String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
+            objName = findObjName(objName);
+            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5));
+            retArr.add(jsonElements);
+        }
+        return retArr;
+    }
+
+    /**
+     @param request {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @return json
+
+     @see RestCTRLTest#okTest()
+     */
+    @PostMapping("/tempnet")
+    public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
+        RestApiHelper tempInetRestControllerHelper = RestApiHelper.getInstance(TempInetRestControllerHelper.class.getSimpleName());
+        String contentType = request.getContentType(); //application/json
+        response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
+        JsonObject jsonObject = getJSON(readRequestBytes(request));
+        jsonObject.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
+        return tempInetRestControllerHelper.getResult(jsonObject);
+    }
+
+    private String findObjName(String objName) {
+        if (objName.toLowerCase().contains("full")) {
+            objName = ConstantsFor.JSON_OBJECT_FULL_SQUID;
+        }
+        else if (objName.contentEquals(ConstantsFor.JSON_OBJECT_SQUID)) {
+            objName = ConstantsFor.JSON_OBJECT_STD_SQUID;
+        }
+        else if (objName.toLowerCase().contains("lim")) {
+            objName = JSON_OBJECT_LIMIT_SQUID;
+        }
+        else if (objName.contains("24")) {
+            objName = "24hrs";
+        }
+        else if (objName.contains("ps ax")) {
+            objName = ConstantsFor.JSON_OBJECT_RULES;
+        }
+        else if (objName.contains("uname")) {
+            objName = ConstantsFor.JSON_OBJECT_NAT;
+        }
+        return objName;
+    }
+
     @NotNull
     private String getFileShow(String userAgent) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -248,81 +328,10 @@ public class RestCTRL {
         return stringBuilder.toString();
     }
 
-    /**
-     @param request {@link HttpServletRequest}
-     @param response {@link HttpServletResponse}
-     @return json
-
-     @see RestCTRLTest#okTest()
-     */
-    @PostMapping("/tempnet")
-    public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
-        RestApiHelper tempInetRestControllerHelper = RestApiHelper.getInstance(TempInetRestControllerHelper.class.getSimpleName());
-        String contentType = request.getContentType(); //application/json
-        response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
-        JsonObject jsonObject = getJSON(readRequestBytes(request));
-        jsonObject.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-        return tempInetRestControllerHelper.getResult(jsonObject);
-    }
-
-    @GetMapping("/getsshlists")
-    public String sshRest() {
-        StringBuilder sshAns = new StringBuilder();
-        JsonArray resultArr = getSSHListsResult();
-        JsonObject sshParamNames = new JsonObject();
-        sshAns.append("\n\n\n");
-        sshAns.append(resultArr.size()).append(" size of ").append(JsonArray.class.getCanonicalName()).append("\n");
-        for (JsonValue jsonValue : resultArr.values()) {
-            Object[] objNames = jsonValue.asObject().names().toArray();
-            for (Object name : objNames) {
-                sshAns.append(name.toString()).append(":");
-                sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
-                sshParamNames.add(name.toString(), "toString:getString");
-            }
-        }
-        sshAns.append("\n\n\n");
-        FileSystemWorker.writeFile(FileNames.SSH_LISTS, MessageFormat.format("Json objects names in array: {0}\n\n{1}", sshParamNames, sshAns.toString()));
-        MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
-        return resultArr.toString();
-    }
-
-    private JsonArray getSSHListsResult() {
-        JsonArray retArr = new JsonArray();
-        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
-        AppConfigurationLocal.getInstance().execute(()->{
-            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
-        });
-
-        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
-            JsonObject jsonElements = new JsonObject();
-            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
-            String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
-            if (objName.toLowerCase().contains("full")) {
-                objName = "fullSquid";
-            }
-            else if (objName.contentEquals("squid")) {
-                objName = "stdSquid";
-            }
-            else if (objName.toLowerCase().contains("lim")) {
-                objName = "limitSquid";
-            }
-            else if (objName.contains("24")) {
-                objName = "24hrs";
-            }
-            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5));
-            retArr.add(jsonElements);
-        }
-        if (pfLists.getPfRules() != null && !pfLists.getPfRules().isEmpty()) {
-            JsonObject pfRules = new JsonObject();
-            pfRules.add("pfRules", pfLists.getPfRules());
-            if (pfLists.getPfNat() != null && !pfLists.getPfNat().isEmpty()) {
-                JsonObject pfNat = new JsonObject();
-                pfNat.add("pfNat", pfLists.getPfNat());
-                retArr.add(pfNat);
-                retArr.add(pfRules);
-            }
-        }
-        return retArr;
+    private String connectToSrvInetstat() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
+            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
     }
 
     @PostMapping("/sshcommandexec")
@@ -350,12 +359,6 @@ public class RestCTRL {
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
         return oldBigFilesInfoCollector.getFromDatabase();
-    }
-
-    private String connectToSrvInetstat() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
-            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
     }
 
     @PostMapping("/sshdel")

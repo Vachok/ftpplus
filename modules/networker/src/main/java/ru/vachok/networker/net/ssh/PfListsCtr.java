@@ -74,7 +74,7 @@ public class PfListsCtr {
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
 
     @SuppressWarnings("CanBeFinal")
-    private PfLists pfListsInstAW;
+    private final PfLists pfListsInstAW;
 
     private PfListsSrv pfListsSrvInstAW;
 
@@ -188,7 +188,7 @@ public class PfListsCtr {
         model.addAttribute(ATT_VIPNET, pfListsInstAW.getVipNet());
         model.addAttribute("tempfull", pfListsInstAW.getFullSquid());
         model.addAttribute("squidlimited", pfListsInstAW.getLimitSquid());
-        model.addAttribute("squid", pfListsInstAW.getStdSquid());
+        model.addAttribute(ConstantsFor.JSON_OBJECT_SQUID, pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute(ConstantsFor.RULES, pfListsInstAW.getPfRules());
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));

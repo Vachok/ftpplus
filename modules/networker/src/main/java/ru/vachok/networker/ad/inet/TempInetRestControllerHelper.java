@@ -22,7 +22,13 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
         @NotNull String result = INVALID_USER;
-        int codeVer = jsonObject.getInt("code", -1);
+        int codeVer;
+        try {
+            codeVer = Integer.parseInt(jsonObject.getString("code", "-1"));
+        }
+        catch (UnsupportedOperationException e) {
+            codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
+        }
         try {
             if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
                 result = makeActions(jsonObject);
