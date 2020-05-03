@@ -6,7 +6,6 @@ import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -35,13 +34,7 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
             codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
         }
         String authorizationHeader = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
-        boolean isValid = false;
-        try {
-            isValid = checkValidUID(authorizationHeader, codeVer);
-        }
-        catch (InvokeIllegalException e) {
-            result = AbstractForms.networkerTrace(e.getStackTrace());
-        }
+        boolean isValid = checkValidUID(authorizationHeader, codeVer);
         if (isValid) {
             try {
                 result = makeActions(jsonObject);

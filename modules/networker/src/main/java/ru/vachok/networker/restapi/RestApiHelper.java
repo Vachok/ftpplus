@@ -5,7 +5,6 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ad.inet.AllowDomainHelper;
 import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.net.ssh.JSONSSHCommandExecutor;
@@ -44,7 +43,7 @@ public interface RestApiHelper {
         return new RestError();
     }
 
-    default boolean checkValidUID(String headerAuthorization, int minCodeVer) throws InvokeIllegalException {
+    default boolean checkValidUID(String headerAuthorization, int minCodeVer) {
         boolean isValid = false;
         List<String> validUIDs = getFromDB();
         if (validUIDs.size() == 0) {
@@ -57,7 +56,7 @@ public interface RestApiHelper {
             }
         }
         if (minCodeVer < (Integer.parseInt(InitProperties.getTheProps().getProperty("minMobAppVersion")))) {
-            throw new InvokeIllegalException(minCodeVer + " " + getClass().getSimpleName());
+            isValid = false;
         }
         return isValid;
     }

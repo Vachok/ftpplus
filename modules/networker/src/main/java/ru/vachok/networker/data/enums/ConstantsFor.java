@@ -515,7 +515,7 @@ public enum ConstantsFor {
 
     public static final String WHOCALLS = "whocalls";
 
-    public static final String JSON = "application/json";
+    public static final String APPLICATION_JSON = "application/json";
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
@@ -528,6 +528,8 @@ public enum ConstantsFor {
     public static final String PARAM_NAME_CODE = "code";
 
     public static final String[] SSH_LIST_COMMANDS = {"sudo ps ax;exit", "sudo cat /etc/pf/vipnet;exit", "sudo cat /etc/pf/tempfull;exit", "sudo cat /etc/pf/24hrs;exit", "sudo cat /etc/pf/squid;exit", "sudo cat /etc/pf/squidlimited;exit"};
+
+    public static final String JSON_LIST_LIMITSQUID = "limitSquid";
 
     ;
 
@@ -582,6 +584,8 @@ public enum ConstantsFor {
     public static final String JSON_OBJECT_VIPNET = "vipNet";
 
     public static final String JSON_OBJECT_SQUID = "squid";
+
+    public static final String JSON_LIST_24HRS = "24hrs";
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {

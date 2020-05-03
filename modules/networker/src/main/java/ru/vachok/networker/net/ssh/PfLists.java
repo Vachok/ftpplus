@@ -7,7 +7,6 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.RestCTRL;
 
 
 /**
@@ -121,7 +120,7 @@ public class PfLists {
     @Override
     public String toString() {
         JsonArray jsonArray = new JsonArray();
-        JsonObject[] jsonObjects = {new JsonObject().add(ConstantsFor.JSON_OBJECT_VIPNET, this.vipNet), new JsonObject().add(ConstantsFor.JSON_OBJECT_STD_SQUID, stdSquid), new JsonObject().add(RestCTRL.JSON_OBJECT_LIMIT_SQUID, limitSquid),
+        JsonObject[] jsonObjects = {new JsonObject().add(ConstantsFor.JSON_OBJECT_VIPNET, this.vipNet), new JsonObject().add(ConstantsFor.JSON_OBJECT_STD_SQUID, stdSquid), new JsonObject().add(ConstantsFor.JSON_LIST_LIMITSQUID, limitSquid),
             new JsonObject().add(ConstantsFor.JSON_OBJECT_FULL_SQUID, fullSquid), new JsonObject().add(ConstantsFor.JSON_OBJECT_RULES, pfRules), new JsonObject().add(ConstantsFor.JSON_OBJECT_NAT, pfNat), new JsonObject().add("inetLog", inetLog)};
         for (JsonObject jsonObject : jsonObjects) {
             jsonArray.add(jsonObject);

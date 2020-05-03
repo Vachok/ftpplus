@@ -3,7 +3,6 @@ package ru.vachok.networker.ad.inet;
 
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -29,13 +28,8 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
         catch (UnsupportedOperationException e) {
             codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
         }
-        try {
-            if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
-                result = makeActions(jsonObject);
-            }
-        }
-        catch (InvokeIllegalException e) {
-            result = e.getMessage() + " " + getClass().getSimpleName() + ".getResult";
+        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
+            result = makeActions(jsonObject);
         }
         return result;
     }

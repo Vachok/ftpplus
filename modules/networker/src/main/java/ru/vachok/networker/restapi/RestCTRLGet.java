@@ -1,18 +1,16 @@
 package ru.vachok.networker.restapi;
 
 
-import com.eclipsesource.json.*;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.ad.common.Cleaner;
-import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
-import ru.vachok.networker.ad.inet.TempInetRestControllerHelper;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -28,11 +26,8 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,28 +43,24 @@ import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
 
 
 /**
- @see RestCTRLTest
- @since 15.12.2019 (19:42) */
-@SuppressWarnings("unused")
-@RestController("RestCTRL")
-public class RestCTRL {
+ @see RestCTRLGetTest
+ @since 03.05.2020 (10:20) */
+@RestController("RestCTRLGet")
+public class RestCTRLGet {
 
-
-    public static final String JSON_OBJECT_LIMIT_SQUID = "limitSquid";
 
     private static final String OKHTTP = "okhttp";
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRL.class.getSimpleName());
-
-    private static final String GETOLDFILES = "/getoldfiles";
-
     private static final String SUDO_CAT_ETC_PF = "sudo cat /etc/pf/";
 
-    /**
-     @return no formatting pc name
+    @GetMapping("/sshgetdomains")
+    public String getAllowDomains() {
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        PfListsSrv bean = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
+        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
+        return bean.runCom();
+    }
 
-     @see RestCTRLTest#testUniqPC()
-     */
     @GetMapping("/pc")
     public String uniqPC(@NotNull HttpServletRequest request) {
         String result;
@@ -102,6 +93,20 @@ public class RestCTRL {
         catch (IndexOutOfBoundsException e) {
             return about;
         }
+    }
+
+    @GetMapping("/status")
+    public String appStatus() {
+        String statusVpn = new VpnHelper().getStatus();
+        String informationSys = UsefulUtilities.getRunningInformation();
+        String sshAns = connectToSrvInetstat();
+        return String.join("\n\n\n", statusVpn, informationSys, sshAns);
+    }
+
+    private String connectToSrvInetstat() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
+            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
     }
 
     @GetMapping("/db")
@@ -149,30 +154,39 @@ public class RestCTRL {
         return filesShow;
     }
 
-    @GetMapping("/sshgetdomains")
-    public String getAllowDomains() {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        PfListsSrv bean = (PfListsSrv) context.getBean(ConstantsFor.BEANNAME_PFLISTSSRV);
-        bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
-        return bean.runCom();
+    @NotNull
+    private String getFileShow(String userAgent) {
+        StringBuilder stringBuilder = new StringBuilder();
+        long totalSize = 0;
+        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
+        if (file.listFiles() == null) {
+            throw new IllegalArgumentException(file.getAbsolutePath());
+        }
+        else {
+            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
+            for (File listFile : Objects.requireNonNull(file.listFiles())) {
+                long fileSizeKB = listFile.length() / 1024;
+                totalSize = totalSize + fileSizeKB;
+                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
+                String uAgent;
+                try {
+                    uAgent = userAgent.toLowerCase();
+                }
+                catch (RuntimeException e) {
+                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
+                }
+                if (uAgent.contains(OKHTTP)) {
+                    stringBuilder.append("\n");
+                }
+                else {
+                    stringBuilder.append("<br>");
+                }
+            }
+            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
+        }
+        return stringBuilder.toString();
     }
 
-    /**
-     @return статус приложения
-
-     @see RestCTRLTest#testAppStatus()
-     */
-    @GetMapping("/status")
-    public String appStatus() {
-        String statusVpn = new VpnHelper().getStatus();
-        String informationSys = UsefulUtilities.getRunningInformation();
-        String sshAns = connectToSrvInetstat();
-        return String.join("\n\n\n", statusVpn, informationSys, sshAns);
-    }
-
-    /**
-     @see RestCTRLTest
-     */
     @GetMapping("/getsshlists")
     public String sshRest(HttpServletRequest request) {
         int verCode;
@@ -252,10 +266,10 @@ public class RestCTRL {
                 objName = "stdSquid";
             }
             else if (objName.toLowerCase().contains("lim")) {
-                objName = "limitSquid";
+                objName = ConstantsFor.JSON_LIST_LIMITSQUID;
             }
             else if (objName.contains("24")) {
-                objName = "24hrs";
+                objName = ConstantsFor.JSON_LIST_24HRS;
             }
             jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
             retArr.add(jsonElements);
@@ -281,10 +295,10 @@ public class RestCTRL {
             objName = ConstantsFor.JSON_OBJECT_STD_SQUID;
         }
         else if (objName.toLowerCase().contains("lim")) {
-            objName = JSON_OBJECT_LIMIT_SQUID;
+            objName = ConstantsFor.JSON_LIST_LIMITSQUID;
         }
         else if (objName.contains("24")) {
-            objName = "24hrs";
+            objName = ConstantsFor.JSON_LIST_24HRS;
         }
         else if (objName.contains("ps ax")) {
             objName = ConstantsFor.JSON_OBJECT_RULES;
@@ -293,54 +307,6 @@ public class RestCTRL {
             objName = ConstantsFor.JSON_OBJECT_NAT;
         }
         return objName;
-    }
-
-    @PostMapping(GETOLDFILES)
-    public String delOldFiles(HttpServletRequest request) {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        Cleaner cleaner = (Cleaner) context.getBean(Cleaner.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(cleaner);
-        return ((OldBigFilesInfoCollector) context.getBean(OldBigFilesInfoCollector.class.getSimpleName())).getFromDatabase();
-    }
-
-    /**
-     @see RestCTRLTest#addDomainRESTTest()
-     */
-    @PostMapping(ConstantsFor.SSHADD)
-    public String helpDomain(@NotNull HttpServletRequest request, HttpServletResponse response) {
-        String retStr = "";
-        if (request.getContentType().equals(ConstantsFor.JSON)) {
-            JsonObject jsonO = getJSON(readRequestBytes(request));
-            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-            retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
-        }
-        return retStr + "\n" + getAllowDomains();
-    }
-
-    private JsonObject getJSON(byte[] contentBytes) {
-        try {
-            return Json.parse(new String(contentBytes)).asObject();
-        }
-        catch (ParseException e) {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.add(ConstantsFor.STR_ERROR, AbstractForms.fromArray(e));
-            return jsonObject;
-        }
-    }
-
-    @NotNull
-    private byte[] readRequestBytes(@NotNull HttpServletRequest request) {
-        byte[] contentBytes = new byte[request.getContentLength()];
-        try (ServletInputStream inputStream = request.getInputStream()) {
-            int iRead = inputStream.available();
-            while (iRead > 0) {
-                iRead = inputStream.read(contentBytes);
-            }
-        }
-        catch (IOException e) {
-            messageToUser.error("RestCTRL.readRequestBytes", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        return contentBytes;
     }
 
     private JsonObject genJSON(SSHFactory.Builder sshB) {
@@ -361,112 +327,9 @@ public class RestCTRL {
         return jsonObject;
     }
 
-    /**
-     @param request {@link HttpServletRequest}
-     @param response {@link HttpServletResponse}
-     @return json
-
-     @see RestCTRLTest#okTest()
-     */
-    @PostMapping("/tempnet")
-    public String inetTemporary(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
-        RestApiHelper tempInetRestControllerHelper = RestApiHelper.getInstance(TempInetRestControllerHelper.class.getSimpleName());
-        String contentType = request.getContentType(); //application/json
-        response.setHeader(ConstantsFor.AUTHORIZATION, request.getRemoteHost());
-        JsonObject jsonObject = getJSON(readRequestBytes(request));
-        jsonObject.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-        return tempInetRestControllerHelper.getResult(jsonObject);
-    }
-
-    @PostMapping("/sshcommandexec")
-    public String sshCommandExecute(HttpServletRequest request) {
-        String result;
-        try (ServletInputStream stream = request.getInputStream()) {
-            JsonObject jsonO = getJSON(readRequestBytes(request));
-            if (!jsonO.names().contains(ConstantsFor.AUTHORIZATION)) {
-                jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-            }
-            result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
-        }
-        catch (IOException e) {
-            result = AbstractForms.networkerTrace(e.getStackTrace());
-        }
-        return result;
-    }
-
-    @GetMapping(GETOLDFILES)
-    public String collectOldFiles() {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
-            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
-        return oldBigFilesInfoCollector.getFromDatabase();
-    }
-
-    @PostMapping("/sshdel")
-    public String delDomain(HttpServletRequest request) {
-        String retStr = "";
-        if (request.getContentType().equals(ConstantsFor.JSON)) {
-            JsonObject jsonO = getJSON(readRequestBytes(request));
-            jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-            retStr = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonO);
-        }
-        return retStr + "\n" + getAllowDomains();
-    }
-
-    @GetMapping("/getvpnkey")
-    public String getVPNKey(HttpServletRequest request) {
-        if (request.getQueryString() == null && request.getQueryString().isEmpty()) {
-            return "getvpnkey error: No argument!";
-        }
-        else {
-            VpnHelper vpnHelper = new VpnHelper();
-            return vpnHelper.getConfig(request.getQueryString());
-        }
-    }
-
-    @NotNull
-    private String getFileShow(String userAgent) {
-        StringBuilder stringBuilder = new StringBuilder();
-        long totalSize = 0;
-        File file = Paths.get(".").toAbsolutePath().normalize().toFile();
-        if (file.listFiles() == null) {
-            throw new IllegalArgumentException(file.getAbsolutePath());
-        }
-        else {
-            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
-            for (File listFile : Objects.requireNonNull(file.listFiles())) {
-                long fileSizeKB = listFile.length() / 1024;
-                totalSize = totalSize + fileSizeKB;
-                stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
-                String uAgent;
-                try {
-                    uAgent = userAgent.toLowerCase();
-                }
-                catch (RuntimeException e) {
-                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
-                }
-                if (uAgent.contains(OKHTTP)) {
-                    stringBuilder.append("\n");
-                }
-                else {
-                    stringBuilder.append("<br>");
-                }
-            }
-            stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
-        }
-        return stringBuilder.toString();
-    }
-
-    private String connectToSrvInetstat() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
-            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
-    }
-
     @Override
     public String toString() {
-        return new StringJoiner(",\n", RestCTRL.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", RestCTRLGet.class.getSimpleName() + "[\n", "\n]")
             .toString();
     }
 }
