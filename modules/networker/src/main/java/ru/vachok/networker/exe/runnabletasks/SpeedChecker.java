@@ -38,7 +38,7 @@ public class SpeedChecker implements Callable<Long> {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SpeedChecker.class.getTypeName());
 
-    private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
+    private static final boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
 
     private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.LASTWORKSTART, "2"));
 
@@ -81,12 +81,12 @@ public class SpeedChecker implements Callable<Long> {
                 getFromDB();
             }
         }
-        catch (MessagingException | MalformedURLException e) {
+        catch (MessagingException | MalformedURLException | InvokeIllegalException e) {
             messageToUser.error("SpeedChecker.getFromMail", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
     }
 
-    private void getFromMail() throws MalformedURLException, MessagingException {
+    private void getFromMail() throws MalformedURLException, MessagingException, InvokeIllegalException {
         Properties mailPr = InitProperties.getMAilPr();
         Session session = Session.getInstance(mailPr);
         Transport sessionTransport = session.getTransport();

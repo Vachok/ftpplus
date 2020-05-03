@@ -93,4 +93,16 @@ public enum FileNames {
     public static final String USERLOGINCOUNTER_TXT = "user_login_counter.txt";
 
     public static final String CLEANSTOP_TXT = "cleanstop.txt";
+
+    public static final String WALKER_LCK = "walker.lck";
+
+    public static final String WEEKLY_LCK = "weekly.lck";
+
+    public static final String _STACK_TXT = "-stack.txt";
+
+    public static final String OLDFILES_LOG = "old_files.log";
+
+    public static final String SSH_ERR = "ssh.err.log";
+
+    public static final String SSH_LISTS_LOG = "getsshlists.log";
 }

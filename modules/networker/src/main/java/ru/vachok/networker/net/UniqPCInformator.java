@@ -5,7 +5,6 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -57,7 +56,7 @@ public class UniqPCInformator implements InformationFactory {
             this.isJson = (boolean) option;
         }
         else {
-            throw new InvokeIllegalException("Only boolean accepted");
+            throw new IllegalArgumentException("Only boolean accepted");
         }
     }
 
@@ -90,11 +89,14 @@ public class UniqPCInformator implements InformationFactory {
     @NotNull
     private Map<String, String> getPcs() {
         Map<String, String> uniqPCs = new TreeMap<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE);
-             PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                uniqPCs.put(resultSet.getString(SQL_PCNAME), resultSet.getString("ip"));
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANONLINE)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_ONLINE)) {
+                preparedStatement.setQueryTimeout(17);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        uniqPCs.put(resultSet.getString(SQL_PCNAME), resultSet.getString("ip"));
+                    }
+                }
             }
         }
         catch (SQLException e) {

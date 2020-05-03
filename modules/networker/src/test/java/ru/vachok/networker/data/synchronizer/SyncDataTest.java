@@ -10,7 +10,6 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -64,7 +63,8 @@ public class SyncDataTest {
     @Test
     public void testGetInstance() {
         String toString = syncData.toString();
-        Assert.assertEquals(toString, "InternetSync{ipAddr='velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=}");
+        Assert.assertEquals(toString, "InternetSync{ipAddr='velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=\n" +
+            "}");
     }
 
     @Test
@@ -156,12 +156,7 @@ public class SyncDataTest {
 
     @Test
     public void testSuperRun() {
-        try {
-            syncData.superRun();
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        syncData.superRun();
     }
 
     @Test

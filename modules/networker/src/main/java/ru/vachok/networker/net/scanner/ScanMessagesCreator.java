@@ -28,7 +28,7 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 public class ScanMessagesCreator implements Keeper {
 
 
-    public static final String TRAINS = "trains";
+    private static final String TRAINS = "trains";
 
     private int numOfTrains = 8;
 

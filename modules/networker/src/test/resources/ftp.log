@@ -1,4 +1,4 @@
-﻿----------
+﻿﻿----------
 Connect to: (08.08.2019 22:29:17)
 hostname=10.10.111.52:50021
 username=kudr
@@ -23269,3 +23269,868 @@ ls "/"
 ls "/tmp/"
 ls "/"
 connection to 194.67.86.51 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/F8.pem" "f:\OneDrive\Документы\Велком\keys\F8.pem"
+get "/usr/home/ITDept/vpn/keys/keys/vitohin200630.crt" "f:\OneDrive\Документы\Велком\keys\vitohin200630.crt"
+get "/usr/home/ITDept/vpn/keys/keys/vitohin200630.csr" "f:\OneDrive\Документы\Велком\keys\vitohin200630.csr"
+get "/usr/home/ITDept/vpn/keys/keys/vitohin200630.key" "f:\OneDrive\Документы\Велком\keys\vitohin200630.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/F9.pem" "f:\OneDrive\Документы\Велком\keys\F9.pem"
+get "/usr/home/ITDept/vpn/keys/keys/fedorova200630.crt" "f:\OneDrive\Документы\Велком\keys\fedorova200630.crt"
+get "/usr/home/ITDept/vpn/keys/keys/fedorova200630.csr" "f:\OneDrive\Документы\Велком\keys\fedorova200630.csr"
+get "/usr/home/ITDept/vpn/keys/keys/fedorova200630.key" "f:\OneDrive\Документы\Велком\keys\fedorova200630.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/davidov200630.crt" "f:\OneDrive\Документы\Велком\keys\davidov200630.crt"
+get "/usr/home/ITDept/vpn/keys/keys/davidov200630.csr" "f:\OneDrive\Документы\Велком\keys\davidov200630.csr"
+get "/usr/home/ITDept/vpn/keys/keys/davidov200630.key" "f:\OneDrive\Документы\Велком\keys\davidov200630.key"
+get "/usr/home/ITDept/vpn/keys/keys/FA.pem" "f:\OneDrive\Документы\Велком\keys\FA.pem"
+get "/usr/home/ITDept/vpn/keys/keys/FB.pem" "f:\OneDrive\Документы\Велком\keys\FB.pem"
+get "/usr/home/ITDept/vpn/keys/keys/tebenkov200630.crt" "f:\OneDrive\Документы\Велком\keys\tebenkov200630.crt"
+get "/usr/home/ITDept/vpn/keys/keys/tebenkov200630.csr" "f:\OneDrive\Документы\Велком\keys\tebenkov200630.csr"
+get "/usr/home/ITDept/vpn/keys/keys/tebenkov200630.key" "f:\OneDrive\Документы\Велком\keys\tebenkov200630.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/src/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov.crt" "f:\OneDrive\Документы\Велком\keys\agalimov.crt"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov.csr" "f:\OneDrive\Документы\Велком\keys\agalimov.csr"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov.key" "f:\OneDrive\Документы\Велком\keys\agalimov.key"
+get "/usr/home/ITDept/vpn/keys/keys/FC.pem" "f:\OneDrive\Документы\Велком\keys\FC.pem"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/FD.pem" "f:\OneDrive\Документы\Велком\keys\FD.pem"
+get "/usr/home/ITDept/vpn/keys/keys/n.n.poloshevec210331.crt" "f:\OneDrive\Документы\Велком\keys\n.n.poloshevec210331.crt"
+get "/usr/home/ITDept/vpn/keys/keys/n.n.poloshevec210331.csr" "f:\OneDrive\Документы\Велком\keys\n.n.poloshevec210331.csr"
+get "/usr/home/ITDept/vpn/keys/keys/n.n.poloshevec210331.key" "f:\OneDrive\Документы\Велком\keys\n.n.poloshevec210331.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+----------
+Connect to: (03.04.2020 9:21:45)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,137,40).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,137,167).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,139,221).
+STOR AA_v3.exe
+150 Opening BINARY mode data connection for AA_v3.exe
+Закачка
+226 Transfer complete
+MFMT 20200403061111 AA_v3.exe
+213 Modify=20200403061111; AA_v3.exe
+SIZE AA_v3.exe
+213 800888
+Copied (03.04.2020 9:21:56): F:\OneDrive\Загрузки\AA_v3.exe -> ftp://31.31.196.85:21/lib/AA_v3.exe 800 888 байт, 10 027 Кбайт/с
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,140,31).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/FE.pem" "f:\OneDrive\Документы\Велком\keys\FE.pem"
+get "/usr/home/ITDept/vpn/keys/keys/harlamov200706.crt" "f:\OneDrive\Документы\Велком\keys\harlamov200706.crt"
+get "/usr/home/ITDept/vpn/keys/keys/harlamov200706.csr" "f:\OneDrive\Документы\Велком\keys\harlamov200706.csr"
+get "/usr/home/ITDept/vpn/keys/keys/harlamov200706.key" "f:\OneDrive\Документы\Велком\keys\harlamov200706.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/"
+ls "/"
+ls "/etc/"
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/antonov200616.crt" "d:\Temp\_tc\antonov200616.crt"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/FF.pem" "f:\OneDrive\Документы\Велком\keys\FF.pem"
+get "/usr/home/ITDept/vpn/keys/keys/shvab200709.crt" "f:\OneDrive\Документы\Велком\keys\shvab200709.crt"
+get "/usr/home/ITDept/vpn/keys/keys/shvab200709.csr" "f:\OneDrive\Документы\Велком\keys\shvab200709.csr"
+get "/usr/home/ITDept/vpn/keys/keys/shvab200709.key" "f:\OneDrive\Документы\Велком\keys\shvab200709.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0100.pem" "f:\OneDrive\Документы\Велком\keys\0100.pem"
+get "/usr/home/ITDept/vpn/keys/keys/tsasura200710.crt" "f:\OneDrive\Документы\Велком\keys\tsasura200710.crt"
+get "/usr/home/ITDept/vpn/keys/keys/tsasura200710.csr" "f:\OneDrive\Документы\Велком\keys\tsasura200710.csr"
+get "/usr/home/ITDept/vpn/keys/keys/tsasura200710.key" "f:\OneDrive\Документы\Велком\keys\tsasura200710.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+----------
+Connect to: (11.04.2020 9:57:17)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,254).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD test
+250 CWD command successful
+PWD
+257 "/test" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,140,100).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,137,172).
+STOR speedtest.100
+150 Opening BINARY mode data connection for speedtest.100
+Закачка
+226 Transfer complete
+MFMT 20200411065617 speedtest.100
+213 Modify=20200411065617; speedtest.100
+SIZE speedtest.100
+213 104857600
+Copied (11.04.2020 9:57:52): G:\My_Proj\pchelper\speedtest.100 -> ftp://31.31.196.85:21/test/speedtest.100 104 857 600 байт, 11 358 Кбайт/с
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,140,80).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (12.04.2020 10:18:30)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,137,181).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CDUP
+250 CDUP command successful
+PWD
+257 "/" is the current directory
+QUIT
+221 Goodbye.
+----------
+Connect to: (12.04.2020 18:24:28)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,138,205).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,137,16).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/var/"
+ls "/var/db/"
+ls "/var/db/mysql_tmpdir/"
+ls "/var/db/mysql/"
+ls "/var/db/mysql/velkom/"
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/properties.csv" "d:\Temp\_tc\properties.csv"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+rm "/usr/home/kudr/java0.log"
+rm "/usr/home/kudr/java0.log.lck"
+rm "/usr/home/kudr/java1.log"
+rm "/usr/home/kudr/java1.log.lck"
+rm "/usr/home/kudr/java2.log"
+rm "/usr/home/kudr/java2.log.lck"
+rm "/usr/home/kudr/java3.log"
+rm "/usr/home/kudr/java3.log.lck"
+rm "/usr/home/kudr/java4.log"
+rm "/usr/home/kudr/java4.log.lck"
+rm "/usr/home/kudr/java5.log"
+rm "/usr/home/kudr/java5.log.lck"
+rm "/usr/home/kudr/java6.log"
+rm "/usr/home/kudr/java6.log.lck"
+rm "/usr/home/kudr/java7.log"
+rm "/usr/home/kudr/java7.log.lck"
+rm "/usr/home/kudr/java8.log"
+rm "/usr/home/kudr/java8.log.lck"
+rm "/usr/home/kudr/java9.log"
+rm "/usr/home/kudr/java9.log.lck"
+rm "/usr/home/kudr/java10.log"
+rm "/usr/home/kudr/java10.log.lck"
+rm "/usr/home/kudr/java11.log"
+rm "/usr/home/kudr/java11.log.lck"
+rm "/usr/home/kudr/java12.log"
+rm "/usr/home/kudr/java12.log.lck"
+rm "/usr/home/kudr/java13.log"
+rm "/usr/home/kudr/java13.log.lck"
+rm "/usr/home/kudr/java14.log"
+rm "/usr/home/kudr/java14.log.lck"
+rm "/usr/home/kudr/java15.log"
+rm "/usr/home/kudr/java15.log.lck"
+rm "/usr/home/kudr/java16.log"
+rm "/usr/home/kudr/java16.log.lck"
+rm "/usr/home/kudr/java17.log"
+rm "/usr/home/kudr/java17.log.lck"
+rm "/usr/home/kudr/java18.log"
+rm "/usr/home/kudr/java18.log.lck"
+rm "/usr/home/kudr/java19.log"
+rm "/usr/home/kudr/java19.log.lck"
+rm "/usr/home/kudr/java20.log"
+rm "/usr/home/kudr/java20.log.lck"
+rm "/usr/home/kudr/java21.log"
+rm "/usr/home/kudr/java21.log.lck"
+rm "/usr/home/kudr/java22.log"
+rm "/usr/home/kudr/java22.log.lck"
+rm "/usr/home/kudr/java23.log"
+rm "/usr/home/kudr/java23.log.lck"
+rm "/usr/home/kudr/java24.log"
+rm "/usr/home/kudr/java24.log.lck"
+rm "/usr/home/kudr/java25.log"
+rm "/usr/home/kudr/java25.log.lck"
+rm "/usr/home/kudr/java26.log"
+rm "/usr/home/kudr/java26.log.lck"
+rm "/usr/home/kudr/java27.log"
+rm "/usr/home/kudr/java27.log.lck"
+rm "/usr/home/kudr/java28.log"
+rm "/usr/home/kudr/java28.log.lck"
+rm "/usr/home/kudr/java29.log"
+rm "/usr/home/kudr/java29.log.lck"
+rm "/usr/home/kudr/java30.log"
+rm "/usr/home/kudr/java30.log.lck"
+rm "/usr/home/kudr/java31.log"
+rm "/usr/home/kudr/java31.log.lck"
+rm "/usr/home/kudr/java32.log"
+rm "/usr/home/kudr/java32.log.lck"
+rm "/usr/home/kudr/java33.log"
+rm "/usr/home/kudr/java33.log.lck"
+rm "/usr/home/kudr/java34.log"
+rm "/usr/home/kudr/java34.log.lck"
+rm "/usr/home/kudr/java35.log"
+rm "/usr/home/kudr/java35.log.lck"
+rm "/usr/home/kudr/java36.log"
+rm "/usr/home/kudr/java36.log.lck"
+rm "/usr/home/kudr/java37.log"
+rm "/usr/home/kudr/java37.log.lck"
+rm "/usr/home/kudr/java38.log"
+rm "/usr/home/kudr/java38.log.lck"
+rm "/usr/home/kudr/java39.log"
+rm "/usr/home/kudr/java39.log.lck"
+rm "/usr/home/kudr/java40.log"
+rm "/usr/home/kudr/java40.log.lck"
+rm "/usr/home/kudr/java41.log"
+rm "/usr/home/kudr/java41.log.lck"
+rm "/usr/home/kudr/java42.log"
+rm "/usr/home/kudr/java42.log.lck"
+rm "/usr/home/kudr/java43.log"
+rm "/usr/home/kudr/java43.log.lck"
+rm "/usr/home/kudr/java44.log"
+rm "/usr/home/kudr/java44.log.lck"
+rm "/usr/home/kudr/java45.log"
+rm "/usr/home/kudr/java45.log.lck"
+rm "/usr/home/kudr/java46.log"
+rm "/usr/home/kudr/java46.log.lck"
+rm "/usr/home/kudr/java47.log"
+rm "/usr/home/kudr/java47.log.lck"
+rm "/usr/home/kudr/java48.log"
+rm "/usr/home/kudr/java49.log"
+rm "/usr/home/kudr/java50.log"
+rm "/usr/home/kudr/java51.log"
+rm "/usr/home/kudr/java52.log"
+rm "/usr/home/kudr/java53.log"
+rm "/usr/home/kudr/java54.log"
+rm "/usr/home/kudr/java54.log.lck"
+rm "/usr/home/kudr/java55.log"
+rm "/usr/home/kudr/java55.log.lck"
+rm "/usr/home/kudr/java56.log"
+rm "/usr/home/kudr/java56.log.lck"
+rm "/usr/home/kudr/java57.log"
+rm "/usr/home/kudr/java57.log.lck"
+rm "/usr/home/kudr/java58.log"
+rm "/usr/home/kudr/java58.log.lck"
+rm "/usr/home/kudr/java59.log"
+rm "/usr/home/kudr/java59.log.lck"
+rm "/usr/home/kudr/java60.log"
+rm "/usr/home/kudr/java60.log.lck"
+rm "/usr/home/kudr/java61.log"
+rm "/usr/home/kudr/java61.log.lck"
+rm "/usr/home/kudr/java62.log"
+rm "/usr/home/kudr/java62.log.lck"
+rm "/usr/home/kudr/java63.log"
+rm "/usr/home/kudr/java63.log.lck"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/du" "d:\Temp\_tc\du"
+get "/usr/home/kudr/du" "D:\du"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0101.pem" "f:\OneDrive\Документы\Велком\keys\0101.pem"
+get "/usr/home/ITDept/vpn/keys/keys/0102.pem" "f:\OneDrive\Документы\Велком\keys\0102.pem"
+get "/usr/home/ITDept/vpn/keys/keys/abdulmanova200714.crt" "f:\OneDrive\Документы\Велком\keys\abdulmanova200714.crt"
+get "/usr/home/ITDept/vpn/keys/keys/abdulmanova200714.csr" "f:\OneDrive\Документы\Велком\keys\abdulmanova200714.csr"
+get "/usr/home/ITDept/vpn/keys/keys/abdulmanova200714.key" "f:\OneDrive\Документы\Велком\keys\abdulmanova200714.key"
+get "/usr/home/ITDept/vpn/keys/keys/evstigneeva200714.crt" "f:\OneDrive\Документы\Велком\keys\evstigneeva200714.crt"
+get "/usr/home/ITDept/vpn/keys/keys/evstigneeva200714.csr" "f:\OneDrive\Документы\Велком\keys\evstigneeva200714.csr"
+get "/usr/home/ITDept/vpn/keys/keys/evstigneeva200714.key" "f:\OneDrive\Документы\Велком\keys\evstigneeva200714.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/ports/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/src/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0103.pem" "f:\OneDrive\Документы\Велком\keys\0103.pem"
+get "/usr/home/ITDept/vpn/keys/keys/ruzieva200717.crt" "f:\OneDrive\Документы\Велком\keys\ruzieva200717.crt"
+get "/usr/home/ITDept/vpn/keys/keys/ruzieva200717.csr" "f:\OneDrive\Документы\Велком\keys\ruzieva200717.csr"
+get "/usr/home/ITDept/vpn/keys/keys/ruzieva200717.key" "f:\OneDrive\Документы\Велком\keys\ruzieva200717.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0104.pem" "f:\OneDrive\Документы\Велком\keys\0104.pem"
+get "/usr/home/ITDept/vpn/keys/keys/levchenko200720.crt" "f:\OneDrive\Документы\Велком\keys\levchenko200720.crt"
+get "/usr/home/ITDept/vpn/keys/keys/levchenko200720.csr" "f:\OneDrive\Документы\Велком\keys\levchenko200720.csr"
+get "/usr/home/ITDept/vpn/keys/keys/levchenko200720.key" "f:\OneDrive\Документы\Велком\keys\levchenko200720.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "d:\Temp\_tc\pftop"
+get "/usr/home/kudr/pftop" "D:\pftop"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "D:\pftop"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/config" "D:\config"
+get "/usr/home/kudr/pftop" "D:\pftop"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+rm "/usr/home/kudr/pftop"
+ls "/usr/home/kudr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "D:\pftop"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/pftop" "D:\pftop"
+get "/usr/home/kudr/pftop" "D:\pftop"
+get "/usr/home/kudr/pftop" "D:\pftop"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/du" "D:\du"
+rm "/usr/home/kudr/du"
+ls "/usr/home/kudr/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!
+no connection to disconnect: '192.168.13.30'
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/IntoApplication.106374177"
+rm "/usr/home/kudr/networker/IntoApplication.232307208"
+rm "/usr/home/kudr/networker/IntoApplication.306612792"
+rm "/usr/home/kudr/networker/IntoApplication.371800738"
+rm "/usr/home/kudr/networker/IntoApplication.447212746"
+rm "/usr/home/kudr/networker/IntoApplication.609962972"
+rm "/usr/home/kudr/networker/IntoApplication.692331943"
+rm "/usr/home/kudr/networker/IntoApplication.915416632"
+rm "/usr/home/kudr/networker/IntoApplication.934275857"
+rm "/usr/home/kudr/networker/IntoApplication.1484171695"
+rm "/usr/home/kudr/networker/IntoApplication.1529060733"
+rm "/usr/home/kudr/networker/IntoApplication.1549725679"
+rm "/usr/home/kudr/networker/IntoApplication.1803669141"
+rm "/usr/home/kudr/networker/IntoApplication.1818544933"
+rm "/usr/home/kudr/networker/IntoApplication.1836463382"
+rm "/usr/home/kudr/networker/IntoApplication.2044903525"
+rm "/usr/home/kudr/networker/IntoApplication.2127036371"
+ls "/usr/home/kudr/networker/"
+rm "/usr/home/kudr/networker/lastnetscan"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/ping.tv" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\ping.tv"
+get "/usr/home/kudr/networker/ConstantsFor.properties" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\ConstantsFor.properties"
+rm "/usr/home/kudr/networker/app.json"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/firebase" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\firebase"
+connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents/inetstats/" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\inetstats\"
+get "/usr/home/kudr/networker/n.jar.1" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\n.jar.1"
+get "/usr/home/kudr/networker/no.csv" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\no.csv"
+get "/usr/home/kudr/networker/nw.sh" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\nw.sh"
+get "/usr/home/kudr/networker/parsedLog.log" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\parsedLog.log"
+get "/usr/home/kudr/networker/pc.jar" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\pc.jar"
+get "/usr/home/kudr/networker/PcNamesScanner" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\PcNamesScanner"
+get "/usr/home/kudr/networker/scanonline.last" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\scanonline.last"
+get "/usr/home/kudr/networker/u0466446_velkom.matrix" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\u0466446_velkom.matrix"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker///rups00.eatmeat.ru/c$/Users/ikudryashov/Documents/inetstats/" "\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\\\rups00.eatmeat.ru\c$\Users\ikudryashov\Documents\inetstats\"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+CONNECT \192.168.13.155
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/"
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0105.pem" "f:\OneDrive\Документы\Велком\keys\0105.pem"
+get "/usr/home/ITDept/vpn/keys/keys/a.s.cedilin210428.crt" "f:\OneDrive\Документы\Велком\keys\a.s.cedilin210428.crt"
+get "/usr/home/ITDept/vpn/keys/keys/a.s.cedilin210428.csr" "f:\OneDrive\Документы\Велком\keys\a.s.cedilin210428.csr"
+get "/usr/home/ITDept/vpn/keys/keys/a.s.cedilin210428.key" "f:\OneDrive\Документы\Велком\keys\a.s.cedilin210428.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/IKudryashov/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0106.pem" "f:\OneDrive\Документы\Велком\keys\0106.pem"
+get "/usr/home/ITDept/vpn/keys/keys/saprykin200730.crt" "f:\OneDrive\Документы\Велком\keys\saprykin200730.crt"
+get "/usr/home/ITDept/vpn/keys/keys/saprykin200730.csr" "f:\OneDrive\Документы\Велком\keys\saprykin200730.csr"
+get "/usr/home/ITDept/vpn/keys/keys/saprykin200730.key" "f:\OneDrive\Документы\Велком\keys\saprykin200730.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/ITDept/"
+ls "/usr/home/ITDept/vpn/"
+ls "/usr/home/ITDept/vpn/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+get "/usr/home/ITDept/vpn/keys/keys/0107.pem" "f:\OneDrive\Документы\Велком\keys\0107.pem"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov200808.crt" "f:\OneDrive\Документы\Велком\keys\agalimov200808.crt"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov200808.csr" "f:\OneDrive\Документы\Велком\keys\agalimov200808.csr"
+get "/usr/home/ITDept/vpn/keys/keys/agalimov200808.key" "f:\OneDrive\Документы\Велком\keys\agalimov200808.key"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+ls "/usr/home/ITDept/vpn/keys/keys/"
+connection to 192.168.13.155 closed - bye bye!

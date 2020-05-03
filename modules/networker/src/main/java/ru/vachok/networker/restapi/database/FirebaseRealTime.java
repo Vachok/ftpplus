@@ -21,7 +21,7 @@ import java.util.StringJoiner;
 public class FirebaseRealTime implements DataConnectTo {
 
 
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, FirebaseRealTime.class.getSimpleName());
 
     @Override
     public MysqlDataSource getDataSource() {

@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 /**
  @see MySqlLocalSRVInetStatTest
  @since 04.09.2019 (16:42) */
-@SuppressWarnings("JDBCResourceOpenedButNotSafelyClosed")
 class MySqlLocalSRVInetStat implements DataConnectTo {
 
 
@@ -36,6 +35,43 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     private String dbName = ConstantsFor.STR_VELKOM;
 
     private String tableName = ConstantsFor.STR_VELKOM;
+
+    public Connection getDefaultConnection(@NotNull String dbName) {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
+            this.dbName = dbName.split("\\Q.\\E")[0];
+            this.tableName = dbName.split("\\Q.\\E")[1];
+        }
+        else {
+            throw new IllegalArgumentException(dbName);
+        }
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        defDataSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
+        defDataSource.setPort(3306);
+        defDataSource.setPassword("1qaz@WSX");
+        defDataSource.setUser("it");
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(this.dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setAutoClosePStmtStreams(true);
+        defDataSource.setAutoReconnect(true);
+        defDataSource.setCreateDatabaseIfNotExist(true);
+        Connection connection = null;
+        try {
+            connection = defDataSource.getConnection();
+        }
+        catch (SQLException throwables) {
+            messageToUser.error(throwables.getMessage());
+        }
+        if (connection != null) {
+            return connection;
+        }
+        else {
+            throw new IllegalStateException(MessageFormat.format("No connection! {0}, {1}", getClass().getSimpleName(), dbName));
+        }
+    }
 
     @Override
     public MysqlDataSource getDataSource() {
@@ -63,6 +99,15 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return retSource;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
+        sb.append("\"tableName\":\"").append(tableName).append("\",");
+        sb.append("\"dbName\":\"").append(dbName).append("\"");
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
@@ -113,53 +158,10 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             }
             else {
                 messageToUser
-                        .error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+                    .error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             }
         }
         return resultsUpload;
-    }
-
-    @Override
-    public Connection getDefaultConnection(@NotNull String dbName) {
-        Thread.currentThread().setName(this.getClass().getSimpleName());
-        Connection connection = null;
-        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
-            this.dbName = dbName.split("\\Q.\\E")[0];
-            this.tableName = dbName.split("\\Q.\\E")[1];
-        }
-        else {
-            throw new IllegalArgumentException(dbName);
-        }
-        MysqlDataSource defDataSource = new MysqlDataSource();
-
-        defDataSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
-        defDataSource.setPort(3306);
-        defDataSource.setPassword("1qaz@WSX");
-        defDataSource.setUser("it");
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(this.dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setAutoClosePStmtStreams(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCreateDatabaseIfNotExist(true);
-        try {
-            connection = defDataSource.getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.warn("MySqlLocalSRVInetStat", "getDefaultConnection", e.getMessage() + " see line: 189");
-        }
-        return connection;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
-        sb.append("\"tableName\":\"").append(tableName).append("\",");
-        sb.append("\"dbName\":\"").append(dbName).append("\"");
-        sb.append('}');
-        return sb.toString();
     }
 
     @Contract("_, _ -> new")
@@ -181,19 +183,19 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-                .append(dbTable[0])
-                .append(".")
-                .append(dbTable[1])
-                .append("(\n")
-                .append("\t`idrec` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,\n")
-                .append("\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n")
-                .append("\t`upstring` VARCHAR(190) NOT NULL DEFAULT 'not set',\n")
-                .append("\t`json` TEXT NULL,\n");
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("(\n")
+            .append("\t`idrec` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,\n")
+            .append("\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n")
+            .append("\t`upstring` VARCHAR(190) NOT NULL DEFAULT 'not set',\n")
+            .append("\t`json` TEXT NULL,\n");
         if (!additionalColumns.isEmpty()) {
             additionalColumns.forEach(stringBuilder::append);
         }
         stringBuilder.append("\tPRIMARY KEY (`idrec`),\n" +
-                "\tUNIQUE INDEX `upstring` (`upstring`)");
+            "\tUNIQUE INDEX `upstring` (`upstring`)");
         stringBuilder.append(") ENGINE=").append(engine).append(" MAX_ROWS=100000;\n");
         return stringBuilder.toString();
     }

@@ -93,7 +93,7 @@ public interface NetScanService extends Runnable {
     String getPingResultStr();
 
     static boolean isReach(String inetAddrStr) {
-        return isReach(inetAddrStr, 100);
+        return isReach(inetAddrStr, 500);
     }
 
     static InetAddress getByName(String inetAddrStr) {
@@ -125,7 +125,7 @@ public interface NetScanService extends Runnable {
             case PINGER_FILE:
                 return new PingerFromFile();
             case PCNAMESSCANNER:
-                return new PcNamesScanner();
+                return PcNamesScanner.getI();
             default:
                 return new ScanOnline();
         }

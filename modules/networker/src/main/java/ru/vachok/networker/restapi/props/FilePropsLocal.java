@@ -16,16 +16,16 @@ import java.util.Properties;
 /**
  @see ru.vachok.networker.restapi.props.FilePropsLocalTest */
 public class FilePropsLocal implements InitProperties {
-    
-    
-    private String propertiesName;
-    
+
+
+    private final String propertiesName;
+
     private File propFile;
-    
+
     public void setPropFile(File propFile) {
         this.propFile = propFile;
     }
-    
+
     private @NotNull Properties getFromStream() {
         Properties retProps = new Properties();
         try (InputStream inputStream = getClass().getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {
@@ -37,7 +37,7 @@ public class FilePropsLocal implements InitProperties {
             return retProps;
         }
     }
-    
+
     @Override
     public Properties getProps() {
         Properties retPr = new Properties();
@@ -49,7 +49,7 @@ public class FilePropsLocal implements InitProperties {
             return getFromStream();
         }
     }
-    
+
     public FilePropsLocal(@NotNull String propertiesName) {
         if (!propertiesName.contains(ConstantsFor.PATTERN_POINT)) {
             this.propertiesName = propertiesName + FileNames.EXT_PROPERTIES;
@@ -59,7 +59,7 @@ public class FilePropsLocal implements InitProperties {
         }
         this.propFile = new File(this.propertiesName);
     }
-    
+
     @Override
     public boolean setProps(@NotNull Properties properties) {
         try (OutputStream outputStream = new FileOutputStream(propFile)) {
@@ -72,7 +72,7 @@ public class FilePropsLocal implements InitProperties {
             return false;
         }
     }
-    
+
     @Override
     public boolean delProps() {
         try {
@@ -83,9 +83,9 @@ public class FilePropsLocal implements InitProperties {
             propFile.deleteOnExit();
             return isDel;
         }
-    
+
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("FilePropsLocal{");

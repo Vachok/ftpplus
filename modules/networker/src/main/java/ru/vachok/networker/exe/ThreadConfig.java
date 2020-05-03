@@ -13,23 +13,25 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
+import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
-import ru.vachok.networker.restapi.message.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
-import java.io.*;
-import java.lang.management.*;
-import java.text.MessageFormat;
-import java.util.Date;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -37,6 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
+@Service("ThreadConfig")
 public class ThreadConfig implements AppConfigurationLocal {
 
 
@@ -60,8 +63,8 @@ public class ThreadConfig implements AppConfigurationLocal {
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
 
     private Runnable r = new Thread();
 
@@ -73,36 +76,12 @@ public class ThreadConfig implements AppConfigurationLocal {
         return TASK_EXECUTOR;
     }
 
-    public static @NotNull String thrNameSet(String className) {
-
-        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
-        String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
-        String upStr = String.format("%.01f", localUptime);
-
-        upStr += "m";
-        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
-            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
-            upStr = String.format("%.02f", localUptime);
-            upStr += "h";
+    public static void cleanQueue(Runnable runnable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+        boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
+        if (isRemove) {
+            messageToUser.warn(ThreadConfig.class.getSimpleName(), "TASK_EXECUTOR removed:", runnable.getClass().getSimpleName());
         }
-        String thrName = className + ";" + upStr + ";" + delaysCount;
-        Thread.currentThread().setName(thrName);
-        return thrName;
-    }
-
-    @Override
-    public void run() {
-        throw new TODOException("just do it!");
-    }
-
-    private void setExecutor() {
-        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
-        TASK_EXECUTOR.setQueueCapacity(500);
-        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
-        TASK_EXECUTOR.setThreadPriority(7);
-        TASK_EXECUTOR.setThreadNamePrefix("E-");
     }
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
@@ -115,7 +94,7 @@ public class ThreadConfig implements AppConfigurationLocal {
         scThreadPoolExecutor.setCorePoolSize(PROCESSORS);
         scThreadPoolExecutor.setMaximumPoolSize(20);
         scThreadPoolExecutor.setRemoveOnCancelPolicy(true);
-        scThreadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        scThreadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER);
         TASK_SCHEDULER.prefersShortLivedTasks();
         TASK_SCHEDULER.setThreadNamePrefix("S");
@@ -139,7 +118,7 @@ public class ThreadConfig implements AppConfigurationLocal {
             for (long id : bean.getAllThreadIds()) {
                 ThreadInfo info = bean.getThreadInfo(id);
                 String timeThr = new PageGenerationHelper()
-                        .setColor(ConstantsFor.YELLOW, " time: " + TimeUnit.NANOSECONDS.toMillis(bean.getThreadCpuTime(id)) + " millis.\n<br>");
+                    .setColor(ConstantsFor.YELLOW, " time: " + TimeUnit.NANOSECONDS.toMillis(bean.getThreadCpuTime(id)) + " millis.\n<br>");
                 stringBuilder.append(info.toString()).append(timeThr);
             }
         }
@@ -147,32 +126,12 @@ public class ThreadConfig implements AppConfigurationLocal {
             messageToUser.error(e.getMessage() + " see line: 387 ***");
         }
         FileSystemWorker
-                .appendObjectToFile(new File(this.getClass().getSimpleName() + ".time"), UsefulUtilities.getRunningInformation() + "\n" + stringBuilder.toString());
+            .appendObjectToFile(new File(this.getClass().getSimpleName() + ".time"), UsefulUtilities.getRunningInformation() + "\n" + stringBuilder.toString());
         return stringBuilder.toString();
     }
 
     private ThreadConfig() {
-        dumpToFile("ThreadConfig");
-    }
 
-    public static @NotNull String dumpToFile(String fileName) {
-        String fromArray = new TForms().fromArray(Thread.currentThread().getStackTrace());
-        ReentrantLock reentrantLock = new ReentrantLock();
-        fileName = "thr_" + fileName + "-stack.txt";
-        reentrantLock.lock();
-        try (OutputStream outputStream = new FileOutputStream(fileName, true);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println();
-            printStream.println(new Date());
-            printStream.println(fromArray);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("ThreadConfig.dumpToFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        finally {
-            reentrantLock.unlock();
-        }
-        return "DUMPED: " + fileName;
     }
 
     static {
@@ -181,30 +140,45 @@ public class ThreadConfig implements AppConfigurationLocal {
         TASK_SCHEDULER.initialize();
         TASK_EXECUTOR.initialize();
     }
-    
-    
-    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Runnable runnable) {
-        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
+
+
+    public static @NotNull String thrNameSet(String className) {
+
+        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
+        String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
+        String upStr = String.format("%.01f", localUptime);
+
+        upStr += "m";
+        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
+            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
+            upStr = String.format("%.02f", localUptime);
+            upStr += "h";
+        }
+        String thrName = className + ";" + upStr + ";" + delaysCount;
+        Thread.currentThread().setName(thrName);
+        return thrName;
+    }
+
+    public static void cleanQueue(Callable callable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         for (Runnable r : executorQueue) {
-            if (r.equals(runnable) || r instanceof DBMessenger) {
-                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
+            if (r.equals(callable)) {
+                messageToUser.warn(ThreadConfig.class.getClass().getSimpleName(), "TASK_SCHEDULER removed:", r.toString());
                 executorQueue.remove(r);
             }
         }
     }
-    
-    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Callable callable) {
-        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
-        for (Runnable r : executorQueue) {
-            if (r.equals(callable) || r instanceof DBMessenger) {
-                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
-                executorQueue.remove(r);
-            }
-        }
+
+    private void setExecutor() {
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
+        TASK_EXECUTOR.setQueueCapacity(500);
+        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
+        TASK_EXECUTOR.setThreadPriority(7);
+        TASK_EXECUTOR.setThreadNamePrefix("E-");
     }
-    
+
     /**
      Killer
      */
@@ -221,12 +195,12 @@ public class ThreadConfig implements AppConfigurationLocal {
 
         try {
             if (!TASK_EXECUTOR.getThreadPoolExecutor().awaitTermination(10, TimeUnit.SECONDS) && !TASK_SCHEDULER.getScheduledThreadPoolExecutor()
-                    .awaitTermination(10, TimeUnit.SECONDS)) {
+                .awaitTermination(10, TimeUnit.SECONDS)) {
                 TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow();
                 TASK_EXECUTOR.getThreadPoolExecutor().shutdownNow();
             }
             if (!TASK_EXECUTOR.getThreadPoolExecutor().awaitTermination(10, TimeUnit.SECONDS) && !TASK_SCHEDULER.getScheduledThreadPoolExecutor()
-                    .awaitTermination(10, TimeUnit.SECONDS)) {
+                .awaitTermination(10, TimeUnit.SECONDS)) {
                 System.exit(Math.toIntExact(minRun));
             }
         }
@@ -299,6 +273,11 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
     @Override
+    public void run() {
+        throw new TODOException("just do it!");
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
         sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
@@ -317,7 +296,7 @@ public class ThreadConfig implements AppConfigurationLocal {
     private class ASExec extends AsyncConfigurerSupport {
 
 
-        private SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor("A");
+        private final SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor("A");
 
         @Contract(pure = true)
         private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {
@@ -329,9 +308,6 @@ public class ThreadConfig implements AppConfigurationLocal {
             simpleAsyncExecutor.setConcurrencyLimit(Runtime.getRuntime().availableProcessors() - 2);
             simpleAsyncExecutor.setThreadPriority(1);
             return new ExecutorServiceAdapter(simpleAsyncExecutor);
-        }
-
-        ASExec() {
         }
 
         @Override

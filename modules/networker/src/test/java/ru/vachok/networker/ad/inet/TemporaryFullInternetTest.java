@@ -14,7 +14,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -85,7 +84,7 @@ public class TemporaryFullInternetTest {
         MINI_LOGGER.add(tempFile);
 
         if (tempFile.isEmpty()) {
-            throw new InvokeIllegalException("File is empty");
+            throw new IllegalStateException("File is empty");
         }
         else {
             String[] strings = PAT_BR_N.split(tempFile);
@@ -115,7 +114,7 @@ public class TemporaryFullInternetTest {
         Assert.assertTrue(mapStr.contains("8.8.8.8"), mapStr);
     }
 
-    private void chkWithList(String[] x, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
+    private static void chkWithList(String[] x, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
         long delStamp = Long.parseLong(x[1]);
         if (delStamp < UsefulUtilities.getAtomicTime()) {
             doDelete(x[0], SSH_CHECKER_MAP, MINI_LOGGER);
@@ -123,7 +122,7 @@ public class TemporaryFullInternetTest {
         }
     }
 
-    private void mapEntryParse(String x, Long y, long atomicTimeLong, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
+    private static void mapEntryParse(String x, Long y, long atomicTimeLong, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
         String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(y / 1000, 0, ZoneOffset.ofHours(3));
         MINI_LOGGER.add(willBeDel);
         if (y < atomicTimeLong) {

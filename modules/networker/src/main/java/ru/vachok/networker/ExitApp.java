@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -38,27 +39,29 @@ public class ExitApp extends Thread implements Externalizable {
 
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, ExitApp.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ExitApp.class.getSimpleName());
 
     /**
      new {@link ArrayList}, записываемый в "exit.last"
 
      @see #exitAppDO()
      */
-    private static Collection<String> miniLoggerLast = new ArrayList<>();
+    private static final Collection<String> miniLoggerLast = new ArrayList<>();
+
+    /**
+     Имя файлв для {@link ObjectOutput}
+     */
+    private final String fileName = ExitApp.class.getSimpleName();
+
+    /**
+     Uptime в минутах. Как статус {@link System#exit(int)}
+     */
+    private final long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
     /**
      Причина выхода
      */
     private String reasonExit = "Give me a reason to hold on to what we've got ... ";
-
-    /**
-     Имя файлв для {@link ObjectOutput}
-     */
-    private String fileName = ExitApp.class.getSimpleName();
-
-    public ExitApp(FileInputStream inFileStream) {
-    }
 
     /**
      Объект для записи, {@link Externalizable}
@@ -71,28 +74,6 @@ public class ExitApp extends Thread implements Externalizable {
      @see #writeObj()
      */
     private OutputStream outFileStream;
-
-    /**
-     Uptime в минутах. Как статус {@link System#exit(int)}
-     */
-    private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-
-    /**
-     @param reasonExit {@link #reasonExit}
-     */
-    public ExitApp(String reasonExit) {
-        this.reasonExit = reasonExit;
-    }
-
-    public ExitApp(Object toWriteObj) {
-        this.toWriteObj = toWriteObj;
-    }
-
-    public ExitApp(String reason, FileOutputStream stream, Object keeperClass) {
-        this.reasonExit = reason;
-        this.outFileStream = stream;
-        this.toWriteObj = keeperClass;
-    }
 
     public Object getToWriteObj() {
         return toWriteObj;
@@ -109,6 +90,31 @@ public class ExitApp extends Thread implements Externalizable {
         catch (IOException e) {
             return false;
         }
+    }
+
+    @Contract(pure = true)
+    static Map<Long, Visitor> getVisitsMap() {
+        return VISITS_MAP;
+    }
+
+    public ExitApp(FileInputStream inFileStream) {
+    }
+
+    /**
+     @param reasonExit {@link #reasonExit}
+     */
+    public ExitApp(String reasonExit) {
+        this.reasonExit = reasonExit;
+    }
+
+    public ExitApp(Object toWriteObj) {
+        this.toWriteObj = toWriteObj;
+    }
+
+    public ExitApp(String reason, FileOutputStream stream, Object keeperClass) {
+        this.reasonExit = reason;
+        this.outFileStream = stream;
+        this.toWriteObj = keeperClass;
     }
 
     public ExitApp() {
@@ -134,7 +140,15 @@ public class ExitApp extends Thread implements Externalizable {
             .error("ExitApp.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
         VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         miniLoggerLast.add(reasonExit);
-        copyAvail();
+        try {
+            copyAvail();
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error("ExitApp.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        finally {
+            writeObj();
+        }
     }
 
     @Override
@@ -152,10 +166,11 @@ public class ExitApp extends Thread implements Externalizable {
 
      @see FileSystemWorker
      */
-    private void copyAvail() {
+    private void copyAvail() throws InvokeIllegalException {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(FileNames.PING_TV);
-        FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
+        if (filePingTv.exists()) {
+            FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
                 .append(".")
                 .append(ConstantsFor.FILESYSTEM_SEPARATOR)
                 .append("lan")
@@ -163,6 +178,7 @@ public class ExitApp extends Thread implements Externalizable {
                 .append("ptv_")
                 .append(System.currentTimeMillis() / 1000).append(".txt")
                 .toString()).toAbsolutePath().normalize(), true);
+        }
 
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
@@ -171,7 +187,6 @@ public class ExitApp extends Thread implements Externalizable {
             miniLoggerLast.add("No app.log");
             messageToUser.info("No app.log");
         }
-        writeObj();
     }
 
     /**
@@ -217,30 +232,20 @@ public class ExitApp extends Thread implements Externalizable {
     private void exitAppDO() {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            initProperties.setProps(InitProperties.getTheProps());
-            if (devices.size() > 0) {
-                miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
-                miniLoggerLast.add("Last" + " = " + devices.getLast());
-                miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
-                        .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
-            }
-            miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
-            FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
-            miniLoggerLast.add(FileSystemWorker.delTemp());
-            context.stop();
-            MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
-                .warn(getClass().getSimpleName(), "runtime: " + toMinutes, AbstractForms.fromArray(miniLoggerLast));
-            System.exit(Math.toIntExact(toMinutes));
+        ConfigurableApplicationContext context = IntoApplication.getContext();
+        initProperties.setProps(InitProperties.getTheProps());
+        if (devices.size() > 0) {
+            miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
+            miniLoggerLast.add("Last" + " = " + devices.getLast());
+            miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
+                .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         }
-        catch (RuntimeException e) {
-            AppComponents.threadConfig().killAll();
-            Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
-        }
-    }
-
-    @Contract(pure = true)
-    static Map<Long, Visitor> getVisitsMap() {
-        return VISITS_MAP;
+        miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
+        FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
+        miniLoggerLast.add(FileSystemWorker.delTemp());
+        context.stop();
+        MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
+            .warn(getClass().getSimpleName(), "runtime: " + toMinutes, AbstractForms.fromArray(miniLoggerLast));
+        System.exit(Math.toIntExact(toMinutes));
     }
 }

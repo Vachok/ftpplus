@@ -11,24 +11,20 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ad.common.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.services.LocalDBLibsUploader;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,7 +39,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Objects;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
@@ -58,16 +54,12 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
 
     private static final String DBNAME_LOG_DBMESSENGER = "log.dbmessenger";
 
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OnStartTasksLoader.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OnStartTasksLoader.class.getSimpleName());
 
     @Override
     public void run() {
         delFilePatterns();
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home") && UsefulUtilities.thisPC().toLowerCase()
-            .contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, ""))) {
-            uploadLibs();
-        }
-        execute(new PcNamesScanner());
+        execute(NetScanService.getInstance(NetScanService.PCNAMESSCANNER));
         schedule(this::dbSendAppJson, 30);
         execute(this::getWeekPCStats);
     }
@@ -78,16 +70,6 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         sb.append("messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
-    }
-
-    private void uploadLibs() {
-        File[] libFiles = new File(Paths.get(".").normalize().toAbsolutePath().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "lib").listFiles();
-        for (File libFile : Objects.requireNonNull(libFiles, "NO LIBS")) {
-            String libName = libFile.getName().split("-")[0];
-            String libVersion = libFile.getName().split("-")[1].split("\\Q.\\E")[0];
-            Runnable jarUp = new LocalDBLibsUploader(libName, libVersion, "jar", libFile.toPath());
-            execute(jarUp);
-        }
     }
 
     private void delFilePatterns() {
@@ -153,7 +135,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
             Files.deleteIfExists(Paths.get(FileNames.COMMON_OWN));
         }
         catch (IOException e) {
-            messageToUser.warn(OnStartTasksLoader.class.getSimpleName(), "runCommonScan", e.getMessage() + Thread.currentThread().getState().name());
+            messageToUser.error("OnStartTasksLoader.runCommonScan", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
             Date day2030 = MyCalen.getThisDay(20, 30);
@@ -170,12 +152,12 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         final String sql = "INSERT INTO log.dbmessenger (`tstamp`, `upstring`, `json`) VALUES (?, ?, ?)";
         try (Connection connection = dataConnectTo.getDefaultConnection(DBNAME_LOG_DBMESSENGER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                Queue<String> logJson;
+                Queue<String> logJson = new LinkedList<>();
                 if (path.toFile().exists()) {
                     logJson = FileSystemWorker.readFileToQueue(path);
                 }
                 else {
-                    throw new InvokeIllegalException(this.getClass().getSimpleName() + "dbSendAppJson");
+                    logJson.add(this.getClass().getSimpleName() + "dbSendAppJson");
                 }
                 while (!logJson.isEmpty()) {
                     executeStatement(preparedStatement, logJson);
@@ -185,7 +167,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         }
         catch (SQLException | IOException e) {
             if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE)) {
-                messageToUser.error("OnStartTasksLoader.dbSendAppJson", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                messageToUser.warn(OnStartTasksLoader.class.getSimpleName(), e.getMessage(), " see line: 170 ***");
             }
         }
     }

@@ -74,19 +74,11 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         Connection connection;
         //noinspection OverlyBroadCatchBlock
         try {
-            messageToUser.info(sourceT.getServerName());
             connection = sourceT.getConnection();
         }
         catch (Exception e) {
             messageToUser.warn(TesterDB65SQL.class.getSimpleName(), "getDefaultConnection", e.getMessage() + Thread.currentThread().getState().name());
             connection = alternateConnection();
-        }
-        try {
-            String url = connection.getMetaData().getURL();
-            messageToUser.info(this.getClass().getSimpleName(), "return connect to: ", url);
-        }
-        catch (SQLException e) {
-            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 43 ***");
         }
         return connection;
     }

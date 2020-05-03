@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
@@ -31,11 +30,11 @@ import java.util.concurrent.Callable;
 public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactory, InformationFactory, Callable<String> {
 
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SaveLogsToDB.class.getSimpleName());
 
     private static final int START_ID = new SaveLogsToDB().getLastRecordID();
 
-    private ru.vachok.stats.SaveLogsToDB logsToDB = new ru.vachok.stats.SaveLogsToDB();
+    private final ru.vachok.stats.SaveLogsToDB logsToDB = new ru.vachok.stats.SaveLogsToDB();
 
     private int extTimeOut = 100;
 
@@ -172,7 +171,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
             this.extTimeOut = (int) option;
         }
         else {
-            throw new InvokeIllegalException("Must be Integer");
+            throw new IllegalArgumentException("Must be Integer");
         }
     }
 

@@ -4,8 +4,13 @@ package ru.vachok.networker.net.monitor;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -14,7 +19,9 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -23,32 +30,31 @@ import java.util.prefs.Preferences;
 /**
  @see NetMonitorPTV */
 @SuppressWarnings("ALL") public class NetMonitorPTVTests {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
-    
+
     private String pingResultLast = "No pings yet.";
-    
+
     private File pingTv = new File(FileNames.PING_TV);
-    
+
     private OutputStream outputStream;
-    
+
     private PrintStream printStream;
-    
+
     private Preferences preferences = InitProperties.getUserPref();
-    
+
     /**
      @see NetMonitorPTV#run()
      */
@@ -66,7 +72,7 @@ import java.util.prefs.Preferences;
         Assert.assertTrue(ptvFilePath.toFile().exists() && ptvFilePath.toFile().isFile());
         Assert.assertTrue(FileSystemWorker.readFile(ptvFilePath.toAbsolutePath().normalize().toString()).contains("ptv1."), ptvFilePath.toString());
     }
-    
+
     /**
      * @see NetMonitorPTV#toString()
      */
@@ -80,7 +86,7 @@ import java.util.prefs.Preferences;
         sb.append('}');
         Assert.assertTrue(sb.toString().contains("ptv1."));
     }
-    
+
     @BeforeMethod
     public void createTestPTVFile() {
         File testPTV = new File(FileNames.PING_TV);
@@ -97,9 +103,16 @@ import java.util.prefs.Preferences;
      */
     @Test
     public void ptvIfBigTest() {
-        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
+        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System
+            .currentTimeMillis() / 1000 + ".ping";
         Path pathToCopy = Paths.get(fileCopyPathString).toAbsolutePath().normalize();
-        boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, pathToCopy, true);
+        boolean isPingTvCopied = false;
+        try {
+            isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, pathToCopy, true);
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
         if (isPingTvCopied) {
             try {
                 this.outputStream = new FileOutputStream(pingTv);

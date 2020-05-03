@@ -3,15 +3,22 @@ package ru.vachok.networker.ad.common;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.nio.file.*;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.Queue;
@@ -22,23 +29,23 @@ import java.util.concurrent.*;
  @see RestoreByListTo
  @since 12.09.2019 (13:30) */
 public class RestoreByListToTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(RestoreByListTo.class.getSimpleName(), System.nanoTime());
-    
+
     private Path folderToCopy = Paths.get(".");
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @Test
     public void testRestoreList() {
         this.folderToCopy = Paths.get(folderToCopy.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "copiedtest");
@@ -59,7 +66,7 @@ public class RestoreByListToTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     @Ignore("For try only")
     public void logicCopy() {
@@ -81,11 +88,16 @@ public class RestoreByListToTest {
         this.folderToCopy = Paths.get(folderToCopy.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "copied");
         while (!pathDeque.isEmpty()) {
             Path fileToCopy = pathDeque.removeFirst();
-            cpToDirs(fileToCopy);
+            try {
+                cpToDirs(fileToCopy);
+            }
+            catch (InvokeIllegalException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            }
         }
     }
-    
-    private void cpToDirs(@NotNull Path fileForCopy) {
+
+    private void cpToDirs(@NotNull Path fileForCopy) throws InvokeIllegalException {
         String parent = fileForCopy.getParent().getFileName().toString();
         parent = folderToCopy + ConstantsFor.FILESYSTEM_SEPARATOR + parent + ConstantsFor.FILESYSTEM_SEPARATOR + fileForCopy.getFileName().toString();
         FileSystemWorker.copyOrDelFile(fileForCopy.toFile(), Paths.get(parent), false);

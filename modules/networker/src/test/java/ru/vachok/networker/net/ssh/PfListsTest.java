@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 
 /**
@@ -32,6 +33,6 @@ public class PfListsTest {
     @Test
     public void testTestToString() {
         String toStr = new PfLists().toString();
-        Assert.assertTrue(toStr.contains("vipNet"), toStr);
+        Assert.assertTrue(toStr.contains(ConstantsFor.JSON_OBJECT_VIPNET), toStr);
     }
 }

@@ -21,23 +21,23 @@ import java.util.concurrent.TimeUnit;
  @see AppInfoOnLoad
  @since 09.06.2019 (20:49) */
 public class AppInfoOnLoadTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
-    private AppInfoOnLoad appInfoOnLoad = new AppInfoOnLoad();
-    
+
+    private final AppInfoOnLoad appInfoOnLoad = (AppInfoOnLoad) AppInfoOnLoad.getI();
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testRun() {
         appInfoOnLoad.run();
@@ -45,13 +45,13 @@ public class AppInfoOnLoadTest {
         Assert.assertTrue(miniLog.exists());
         Assert.assertTrue(miniLog.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)), new Date(miniLog.lastModified()).toString());
     }
-    
+
     @Test
     public void testGetMiniLogger() {
         List<String> miniLogger = AppInfoOnLoad.getMiniLogger();
         Assert.assertTrue(miniLogger.isEmpty(), new TForms().fromArray(miniLogger));
     }
-    
+
     @Test
     public void testTestToString() {
         String toStr = appInfoOnLoad.toString();

@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -15,7 +17,9 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
@@ -31,8 +35,12 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -83,7 +91,7 @@ public class ServiceInfoCtrl {
      @throws AccessDeniedException если не {@link ErrCtr#getPcAuth(HttpServletRequest)}
      */
     @GetMapping("/serviceinfo")
-    public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
+    public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExceptionInInitializerError {
         model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getTotalCPUTimeInformation() + " total CPU");
         String[] values = FileSystemWorker.readFileArray(new File("serviceinfo.allow"));
         this.authReq = Stream.of(values).anyMatch(sP->request.getRemoteAddr().contains(sP));
@@ -98,79 +106,47 @@ public class ServiceInfoCtrl {
         }
     }
 
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
+            .add("pageFooter = " + pageFooter)
+            .add("visitor = " + visitor)
+            .add("authReq = " + authReq)
+            .add(new AppComponents().getFirebaseApp().getName())
+            .toString();
+    }
+
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
         NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
         String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
-
-        model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
+        Path pathWorkDir = Paths.get(".").normalize().toAbsolutePath();
+        model.addAttribute(ModelAttributeNames.HEAD, MessageFormat
+            .format("{0} working dir ({1} MB usable)", pathWorkDir, (pathWorkDir.toFile().getUsableSpace() / ConstantsFor.MBYTE)));
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-    
+
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
-                .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+            .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/status\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(getDateWhenCome()));
         model.addAttribute("ping", getClassPath());
         model.addAttribute("urls", makeRunningInfo());
         model.addAttribute("res", makeResValue());
         model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
     }
-    
-    @NotNull
-    private String getClassPath() {
-        StringBuilder stringBuilder = new StringBuilder();
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        stringBuilder.append(AbstractForms.fromArray(InitProperties.getTheProps()).replace("\n", "<br>"));
-        stringBuilder.append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"));
-        stringBuilder.append("ClassPath {<br>");
-        stringBuilder.append(runtimeMXBean.getClassPath().replace(";", "<br>")).append(" }<p>");
-        stringBuilder.append("BootClassPath {<br>");
-        try {
-            stringBuilder.append(runtimeMXBean.getBootClassPath().replace("\n", "<br>")).append("}<p>");
-        }
-        catch (UnsupportedOperationException e) {
-            stringBuilder.append(e.getMessage().replace("\n", "<br>")).append(" }<p>");
-        }
-        stringBuilder.append("LibraryPath {<br>");
-        stringBuilder.append(runtimeMXBean.getLibraryPath().replace(";", "<br>")).append(" }<p>");
-        
-        return stringBuilder.toString();
-    }
-    
-    private String getJREVers() {
-        return System.getProperty("java.version");
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
-                .add("pageFooter = " + pageFooter)
-                .add("visitor = " + visitor)
-                .add("authReq = " + authReq)
-                .add(new AppComponents().getFirebaseApp().getName())
-                .toString();
-    }
-    
-    private Date getDateWhenCome() {
-        if (Stats.isSunday()) {
-            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            AppConfigurationLocal.getInstance().execute((Runnable) stats, 150);
-        }
-        return new Date(new SpeedChecker().call());
-    }
-    
+
     @NotNull
     private String prepareRequest(@NotNull HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
         String bBr = "</b><br>";
         stringBuilder
-                .append("HOST: ")
-                .append("<b>").append(request.getHeader("host")).append(bBr);
+            .append("HOST: ")
+            .append("<b>").append(request.getHeader("host")).append(bBr);
         stringBuilder
-                .append("upgrade-insecure-requests: ".toUpperCase())
-                .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
+            .append("upgrade-insecure-requests: ".toUpperCase())
+            .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
         stringBuilder
             .append("user-agent: ".toUpperCase())
             .append("<b>").append(request.getHeader("user-agent")).append(bBr);
@@ -194,11 +170,15 @@ public class ServiceInfoCtrl {
         stringBuilder.append(AbstractForms.fromEnum(request.getAttributeNames()).replace("<br>", "\n"));
         return stringBuilder.toString();
     }
-    
+
+    private String getJREVers() {
+        return System.getProperty("java.version");
+    }
+
     /**
      Считает время до конца дня.
      <p>
-     
+
      @param dateWhenCome - время старта
      @return время до 17:30 в процентах от 8:30
      */
@@ -208,7 +188,7 @@ public class ServiceInfoCtrl {
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(dateWhenCome.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
         LocalTime endDay = startDay.plus(9, HOURS);
-        
+
         LocalTime toEnd = endDay.minusHours(LocalTime.now().getHour());
         toEnd = toEnd.minusMinutes(LocalTime.now().getMinute());
         toEnd = toEnd.minusSeconds(LocalTime.now().getSecond());
@@ -222,44 +202,63 @@ public class ServiceInfoCtrl {
         stringBuilder.append(toEnd);
         return stringBuilder.toString();
     }
-    
+
+    private Date getDateWhenCome() {
+        if (Stats.isSunday()) {
+            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+            AppConfigurationLocal.getInstance().execute((Runnable) stats, 150);
+        }
+        return new Date(new SpeedChecker().call());
+    }
+
     @NotNull
-    private static String parseWorkHours(LocalTime startDay, LocalTime toEnd) {
-        LocalTime endDay = startDay.plus(9, HOURS);
-        final int secDayEnd = endDay.toSecondOfDay();
-        final int startSec = startDay.toSecondOfDay();
+    private String getClassPath() {
         StringBuilder stringBuilder = new StringBuilder();
-        final int allDaySec = secDayEnd - startSec;
-        
-        int toEndDaySec = toEnd.toSecondOfDay();
-        int diffSec = allDaySec - toEndDaySec;
-        float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
-        stringBuilder
-                .append("Работаем ")
-                .append(TimeUnit.SECONDS.toMinutes(diffSec));
-        stringBuilder
-                .append("(мин.). Ещё ")
-                .append(String.format("%.02f", percDay))
-                .append(" % или ");
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getTheProps()).replace("\n", "<br>"));
+        stringBuilder.append(AbstractForms.fromArray(InitProperties.getUserPref()).replace("\n", "<br>"));
+        stringBuilder.append("ClassPath {<br>");
+        stringBuilder.append(runtimeMXBean.getClassPath().replace(";", "<br>")).append(" }<p>");
+        stringBuilder.append("BootClassPath {<br>");
+        try {
+            stringBuilder.append(runtimeMXBean.getBootClassPath().replace("\n", "<br>")).append("}<p>");
+        }
+        catch (UnsupportedOperationException e) {
+            stringBuilder.append(e.getMessage().replace("\n", "<br>")).append(" }<p>");
+        }
+        stringBuilder.append("LibraryPath {<br>");
+        stringBuilder.append(runtimeMXBean.getLibraryPath().replace(";", "<br>")).append(" }<p>");
+
         return stringBuilder.toString();
     }
-    
+
     @NotNull
     private static String makeRunningInfo() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Запущено - ")
-                .append(new Date(ConstantsFor.START_STAMP))
-                .append(UsefulUtilities.getUpTime())
-                .append(" (<i>rnd delay is ")
-                .append(ConstantsFor.DELAY)
-                .append(" : ")
-                .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
-                .append(" delays)</i>")
-                .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(new Date(ConstantsFor.START_STAMP))
+            .append(UsefulUtilities.getUpTime())
+            .append(" (<i>rnd delay is ")
+            .append(ConstantsFor.DELAY)
+            .append(" : ")
+            .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
+            .append(" delays)</i>")
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(UsefulUtilities.getRunningInformation())
             .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
             .append("<p>").append("</details></font><br>");
         return stringBuilder.toString().replace("***", "<br>");
+    }
+
+    @NotNull
+    private String makeResValue() {
+        return new StringBuilder()
+            .append(MyCalen.toStringS()).append("<br><br>")
+            .append("<b><i>").append("</i></b><p><font color=\"orange\">")
+            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
+            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
+            .append("<p>")
+            .toString();
     }
 
     @GetMapping("/pcoff")
@@ -296,15 +295,25 @@ public class ServiceInfoCtrl {
         }
         return "ok";
     }
-    
+
     @NotNull
-    private String makeResValue() {
-        return new StringBuilder()
-                .append(MyCalen.toStringS()).append("<br><br>")
-                .append("<b><i>").append("</i></b><p><font color=\"orange\">")
-                .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-                .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
-                .append("<p>")
-                .toString();
+    private static String parseWorkHours(LocalTime startDay, LocalTime toEnd) {
+        LocalTime endDay = startDay.plus(9, HOURS);
+        final int secDayEnd = endDay.toSecondOfDay();
+        final int startSec = startDay.toSecondOfDay();
+        StringBuilder stringBuilder = new StringBuilder();
+        final int allDaySec = secDayEnd - startSec;
+
+        int toEndDaySec = toEnd.toSecondOfDay();
+        int diffSec = allDaySec - toEndDaySec;
+        float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
+        stringBuilder
+            .append("Работаем ")
+            .append(TimeUnit.SECONDS.toMinutes(diffSec));
+        stringBuilder
+            .append("(мин.). Ещё ")
+            .append(String.format("%.02f", percDay))
+            .append(" % или ");
+        return stringBuilder.toString();
     }
 }

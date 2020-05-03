@@ -6,6 +6,7 @@ package ru.vachok.networker;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -47,19 +48,16 @@ public class IntoApplication {
 
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
 
-    private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+    private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
 
     @Contract(pure = true)
-    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
-        FileSystemWorker.writeFile(IntoApplication.class.getSimpleName() + "." + configurableApplicationContext.hashCode(), AbstractForms
-            .networkerTrace(Thread.currentThread().getStackTrace()));
-        if (configurableApplicationContext != null) {
-            return configurableApplicationContext;
-        }
-        else {
-            configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
-            return configurableApplicationContext;
-        }
+    static ConfigurableApplicationContext getContext() {
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
+        return configurableApplicationContext;
+    }
+
+    public static ConfigurableListableBeanFactory getBeansFactory() {
+        return configurableApplicationContext.getBeanFactory();
     }
 
     public static void main(@NotNull String[] args) {
@@ -118,7 +116,7 @@ public class IntoApplication {
     }
 
     static void appInfoStarter() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        @NotNull Runnable infoAndSched = AppInfoOnLoad.getI();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
     }
 }

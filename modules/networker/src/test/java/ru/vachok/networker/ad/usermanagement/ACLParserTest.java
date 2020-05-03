@@ -4,49 +4,61 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.UserPrincipal;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
  @see ACLParser
  @since 04.07.2019 (9:47) */
 public class ACLParserTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ACLParserTest.class.getSimpleName(), System.nanoTime());
-    
-    private long linesLimit = Integer.MAX_VALUE;
-    
+
+    private final long linesLimit = Integer.MAX_VALUE;
+
     private UserACLManager rightsParsing;
-    
+
     private int countDirectories;
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @BeforeMethod
     public void initRightsParsing() {
-        this.rightsParsing = new ACLParser();
+        this.rightsParsing = new ACLParser(Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\"));
     }
-    
+
     @Test
     public void realRunTest() {
         List<String> searchPatterns = new ArrayList<>();
@@ -67,7 +79,7 @@ public class ACLParserTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
-    
+
     @Test
     public void readUserACL() {
         try {
@@ -96,7 +108,7 @@ public class ACLParserTest {
         Assert.assertTrue(foldersFile.toFile().exists());
         int inFile = FileSystemWorker.countStringsInFile(foldersFile);
     }
-    
+
     @Test
     public void testTestToString() {
         String toStr = rightsParsing.toString();

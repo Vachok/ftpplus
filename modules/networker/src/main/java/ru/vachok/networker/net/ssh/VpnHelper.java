@@ -14,6 +14,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +37,7 @@ public class VpnHelper extends SshActs {
         String result;
         try {
             InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_VPN);
-            if (byName.isReachable(200)) {
+            if (byName.isReachable(300)) {
                 result = execSSHCommand(byName.getHostAddress(), GET_STATUS_COMMAND);
             }
             else {
@@ -46,8 +47,8 @@ public class VpnHelper extends SshActs {
         catch (IOException e) {
             result = e.getMessage();
         }
-        if (result.isEmpty() || !result.contains("OpenVPN CLIENT LIST")) {
-            result = result + "\n" + whatSrvNeed() + " openvpn-status: \n" + execSSHCommand(GET_STATUS_COMMAND);
+        if (result.isEmpty() || !result.contains(ConstantsFor.VPN_LIST)) {
+            result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", result, whatSrvNeed(), execSSHCommand(GET_STATUS_COMMAND));
         }
         return result;
     }
@@ -74,9 +75,7 @@ public class VpnHelper extends SshActs {
     @NotNull
     private OkHttpClient buildClient() {
         OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
-        okBuild.connectTimeout(5, TimeUnit.SECONDS);
-        okBuild.readTimeout(30, TimeUnit.SECONDS);
-        okBuild.callTimeout(40, TimeUnit.SECONDS);
+        okBuild.callTimeout(20, TimeUnit.SECONDS);
         return okBuild.build();
     }
 

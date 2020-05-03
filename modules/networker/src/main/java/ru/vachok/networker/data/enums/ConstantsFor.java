@@ -515,7 +515,7 @@ public enum ConstantsFor {
 
     public static final String WHOCALLS = "whocalls";
 
-    public static final String JSON = "application/json";
+    public static final String APPLICATION_JSON = "application/json";
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
@@ -524,6 +524,14 @@ public enum ConstantsFor {
     public static final String GIT_SERVER = "http://srv-inetstat.eatmeat.ru:1234";
 
     public static final String ADD = "add";
+
+    public static final String PARAM_NAME_CODE = "code";
+
+    public static final String[] SSH_LIST_COMMANDS = {"sudo ps ax;exit", "sudo cat /etc/pf/vipnet;exit", "sudo cat /etc/pf/tempfull;exit", "sudo cat /etc/pf/24hrs;exit", "sudo cat /etc/pf/squid;exit", "sudo cat /etc/pf/squidlimited;exit"};
+
+    public static final String JSON_LIST_LIMITSQUID = "limitSquid";
+
+    ;
 
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
@@ -554,6 +562,30 @@ public enum ConstantsFor {
     public static final String PARAM_NAME_SERVER = "server";
 
     public static final String PARM_NAME_COMMAND = "command";
+
+    public static final String RUNNING = "Walker_running";
+
+    public static final String ISTRANET = "Istranet";
+
+    public static final String FORTEX = "Fortex";
+
+    public static final String VPN_LIST = "OpenVPN CLIENT LIST";
+
+    public static final int SSH_TIMEOUT = 863990;
+
+    public static final String JSON_OBJECT_FULL_SQUID = "fullSquid";
+
+    public static final String JSON_OBJECT_RULES = "pfRules";
+
+    public static final String JSON_OBJECT_NAT = "pfNat";
+
+    public static final String JSON_OBJECT_STD_SQUID = "stdSquid";
+
+    public static final String JSON_OBJECT_VIPNET = "vipNet";
+
+    public static final String JSON_OBJECT_SQUID = "squid";
+
+    public static final String JSON_LIST_24HRS = "24hrs";
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {

@@ -49,6 +49,9 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
+    /**
+     IMPORTANT FOR FIREBASE SYNC
+     */
     private static final FBAdmin fbAdmin = new FBAdmin();
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());

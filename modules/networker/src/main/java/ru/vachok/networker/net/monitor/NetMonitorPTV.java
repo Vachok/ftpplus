@@ -4,6 +4,7 @@ package ru.vachok.networker.net.monitor;
 
 
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -20,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -37,11 +37,11 @@ public class NetMonitorPTV implements NetScanService {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
 
-    private Preferences preferences = InitProperties.getUserPref();
+    private static final boolean IS_RUN = InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PTV).contentEquals("true");
 
     private String pingResultLast = "No pings yet.";
 
-    private File pingTv = new File(FileNames.PING_TV);
+    private final File pingTv = new File(FileNames.PING_TV);
 
     @Override
     public String getExecution() {
@@ -56,7 +56,12 @@ public class NetMonitorPTV implements NetScanService {
     @Override
     public String writeLog() {
         if (pingTv.length() > ConstantsFor.MBYTE) {
-            ifPingTVIsBig();
+            try {
+                ifPingTVIsBig();
+            }
+            catch (InvokeIllegalException e) {
+                messageToUser.error("NetMonitorPTV.writeLog", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
         }
         else {
             this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
@@ -74,8 +79,9 @@ public class NetMonitorPTV implements NetScanService {
         return FileSystemWorker.readFile(pingTv);
     }
 
-    private void ifPingTVIsBig() {
-        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
+    private void ifPingTVIsBig() throws InvokeIllegalException {
+        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System
+            .currentTimeMillis() / 1000 + ".ping";
         boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, Paths.get(fileCopyPathString).toAbsolutePath().normalize(), true);
         if (isPingTvCopied) {
             InitProperties.setPreference(FileNames.PING_TV, new Date() + "_renewed");
@@ -89,9 +95,11 @@ public class NetMonitorPTV implements NetScanService {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
-            pingIPTV();
+            if (IS_RUN) {
+                pingIPTV();
+            }
         }
-        catch (IOException | IllegalAccessException e) {
+        catch (IOException e) {
             messageToUser.warn(NetMonitorPTV.class.getSimpleName(), "run", e.getMessage() + Thread.currentThread().getState().name());
         }
     }
@@ -100,7 +108,8 @@ public class NetMonitorPTV implements NetScanService {
         return pingResultLast;
     }
 
-    private void pingIPTV() throws IllegalAccessException, IOException {
+    @SuppressWarnings("OverlyLongMethod")
+    private void pingIPTV() throws IOException {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setPriority(1);
         createFile();

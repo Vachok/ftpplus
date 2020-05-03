@@ -8,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.text.MessageFormat;
 import java.util.Objects;
@@ -113,11 +111,12 @@ public class MessageLocal implements MessageToUser {
         log("warn");
     }
 
+    @Deprecated
     private void writeToFile(@NotNull String typeLog) {
         String[] messages = {bodyMsg, titleMsg, headerMsg};
-        for (String s : messages) {
-            if (s == null) {
-                throw new InvokeIllegalException(MessageFormat.format("{0} writeToFile", getClass().getSimpleName()));
+        for (int i = 0; i < messages.length; i++) {
+            if (messages[i] == null) {
+                messages[i] = "null";
             }
         }
         try {
@@ -176,7 +175,7 @@ public class MessageLocal implements MessageToUser {
             logger.error(msg);
 
         }
-        AppConfigurationLocal.getInstance().execute(()->writeToFile(typeLog), 10);
+//        AppConfigurationLocal.getInstance().execute(()->writeToFile(typeLog), 10);
     }
 
     @Override

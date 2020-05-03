@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -25,7 +26,14 @@ public class SshActsTest {
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
         sshActs.setAllowDomain("http://www.velkomfood.ru");
-        Future<String> domainAddStringFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(sshActs::allowDomainAdd);
+        Future<String> domainAddStringFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->{
+            try {
+                return sshActs.allowDomainAdd();
+            }
+            catch (InvokeIllegalException e) {
+                return e.getMessage();
+            }
+        });
         try {
             String domainAddString = domainAddStringFuture.get(30, TimeUnit.SECONDS);
             Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);

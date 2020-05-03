@@ -4,14 +4,17 @@ package ru.vachok.networker.ad.inet;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.restapi.message.MessageToUser;
+
+import java.text.MessageFormat;
 
 
 /**
@@ -22,14 +25,36 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AllowDomainHelper.class.getSimpleName());
 
+    private JsonObject jsonObject;
+
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        String result;
+        this.jsonObject = jsonObject;
+        int codeVer = this.jsonObject.getInt("code", -1);
+        String authStr = this.jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
+        try {
+            if (checkValidUID(authStr, codeVer)) {
+                result = makeActions();
+            }
+            else {
+                result = MessageFormat.format("Bad AUTH for {0}, code: {1}", authStr, codeVer);
+            }
+        }
+        catch (InvokeIllegalException e) {
+            result = e.getMessage();
+        }
+        return result;
+    }
+
+    private String makeActions() throws InvokeIllegalException {
         String result = "Domain is exists";
         boolean finished = false;
         JsonValue ipValue = jsonObject.get(ConstantsFor.DOMAIN);
         JsonValue optValue = jsonObject.get(ConstantsFor.OPTION);
         boolean isAdd = optValue.toString().contains("add");
-        PfListsSrv bean = new PfListsSrv((PfLists) IntoApplication.getConfigurableApplicationContext().getBean(ConstantsFor.BEANNAME_PFLISTS));
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        PfListsSrv bean = new PfListsSrv((PfLists) context.getBean(ConstantsFor.BEANNAME_PFLISTS));
         bean.setCommandForNatStr(ConstantsFor.SSHCOM_GETALLOWDOMAINS);
         String allowDomains = bean.runCom();
         try {
@@ -39,7 +64,7 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
             }
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            messageToUser.error("AllowDomainHelper.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            result = e.getMessage() + " " + getClass().getSimpleName() + ".makeActions";
         }
         if (optValue.toString().contains(ConstantsFor.DELETE)) {
             setDelDomain(ipValue.asString());
@@ -55,5 +80,6 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
             }
         }
         return result;
+
     }
 }

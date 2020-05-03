@@ -120,8 +120,8 @@ public class PfLists {
     @Override
     public String toString() {
         JsonArray jsonArray = new JsonArray();
-        JsonObject[] jsonObjects = {new JsonObject().add("vipNet", this.vipNet), new JsonObject().add("stdSquid", stdSquid), new JsonObject().add("limitSquid", limitSquid),
-                new JsonObject().add("fullSquid", fullSquid), new JsonObject().add("pfRules", pfRules), new JsonObject().add("pfNat", pfNat), new JsonObject().add("inetLog", inetLog)};
+        JsonObject[] jsonObjects = {new JsonObject().add(ConstantsFor.JSON_OBJECT_VIPNET, this.vipNet), new JsonObject().add(ConstantsFor.JSON_OBJECT_STD_SQUID, stdSquid), new JsonObject().add(ConstantsFor.JSON_LIST_LIMITSQUID, limitSquid),
+            new JsonObject().add(ConstantsFor.JSON_OBJECT_FULL_SQUID, fullSquid), new JsonObject().add(ConstantsFor.JSON_OBJECT_RULES, pfRules), new JsonObject().add(ConstantsFor.JSON_OBJECT_NAT, pfNat), new JsonObject().add("inetLog", inetLog)};
         for (JsonObject jsonObject : jsonObjects) {
             jsonArray.add(jsonObject);
         }

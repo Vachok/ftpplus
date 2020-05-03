@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -36,11 +37,11 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
 
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private String fileName = FileNames.VELKOMPCUSERAUTO_TXT;
+    private final String fileName = FileNames.VELKOMPCUSERAUTO_TXT;
 
-    private List<String> pcAndUser = new ArrayList<>();
+    private final List<String> pcAndUser = new ArrayList<>();
 
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+    private final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.TRAY, getClass().getSimpleName());
 
     private String countPCs;
@@ -59,8 +60,13 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
     @Override
     public String call() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-        this.countPCs = countPC();
-        this.countUni = makeStatFiles();
+        try {
+            this.countPCs = countPC();
+            this.countUni = makeStatFiles();
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error("ComputerUserResolvedStats.call", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
         messageToUser.info("PC Stats", countPCs, countUni);
         return countPCs;
     }
@@ -76,11 +82,42 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
     }
 
     @NotNull
-    private String countPC() {
+    private String countPC() throws InvokeIllegalException {
         int selectFrom = selectFrom();
         String retStr = "total pc: " + selectFrom;
         messageToUser.info(getClass().getSimpleName(), "pc stats: ", retStr);
         return retStr;
+    }
+
+    /**
+     Writes file: {@link ComputerUserResolvedStats#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOMPCUSERAUTO_TXT}
+     <p>
+
+     @return {@link #countFreqOfUsers()}
+     */
+    @NotNull
+    private String makeStatFiles() throws InvokeIllegalException {
+        List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.VELKOMPCUSERAUTO_TXT);
+        FileSystemWorker.writeFile(PCUSERAUTO_UNIQ, readFileAsList.parallelStream().distinct());
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + PCUSERAUTO_UNIQ;
+            FileSystemWorker.copyOrDelFile(new File(PCUSERAUTO_UNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
+        }
+        return countFreqOfUsers();
+    }
+
+    private void printResultsToFile(File file, @NotNull ResultSet r) throws IOException, SQLException {
+        try (OutputStream outputStream = new FileOutputStream(file)) {
+            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                while (r.next()) {
+                    if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
+                        String toPrint = r.getString(2) + " " + r.getString(3);
+                        PC_NAMES_IN_TABLE.add(toPrint);
+                        printStream.println(toPrint);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -91,7 +128,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
 
      @return кол-во срязок ПК-Пользователь в таблице <b>pcuserauto</b>
      */
-    protected int selectFrom() {
+    protected int selectFrom() throws InvokeIllegalException {
         this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
         File file = new File(fileName);
         try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
@@ -110,37 +147,6 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
         }
         FileSystemWorker.copyOrDelFile(file, Paths.get(toCopy).toAbsolutePath().normalize(), false);
         return PC_NAMES_IN_TABLE.size();
-    }
-
-    private void printResultsToFile(File file, @NotNull ResultSet r) throws IOException, SQLException {
-        try (OutputStream outputStream = new FileOutputStream(file)) {
-            try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                while (r.next()) {
-                    if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
-                        String toPrint = r.getString(2) + " " + r.getString(3);
-                        PC_NAMES_IN_TABLE.add(toPrint);
-                        printStream.println(toPrint);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     Writes file: {@link ComputerUserResolvedStats#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOMPCUSERAUTO_TXT}
-     <p>
-
-     @return {@link #countFreqOfUsers()}
-     */
-    @NotNull
-    private String makeStatFiles() {
-        List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.VELKOMPCUSERAUTO_TXT);
-        FileSystemWorker.writeFile(PCUSERAUTO_UNIQ, readFileAsList.parallelStream().distinct());
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + PCUSERAUTO_UNIQ;
-            FileSystemWorker.copyOrDelFile(new File(PCUSERAUTO_UNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
-        }
-        return countFreqOfUsers();
     }
 
     @Override

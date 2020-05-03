@@ -6,8 +6,10 @@ package ru.vachok.networker.ad.common;
 import org.testng.Assert;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -26,20 +28,20 @@ import java.util.concurrent.*;
  @see FileRestorer
  @since 05.07.2019 (10:16) */
 public class FileRestorerTest extends SimpleFileVisitor<Path> {
-    
-    
+
+
     private static final TForms forms = new TForms();
-    
+
     private @NotNull Path restoreFilePattern;
-    
-    private int restorePeriodDays = 365;
-    
-    private List<String> restoredFiles = new ArrayList<>();
-    
+
+    private final int restorePeriodDays = 365;
+
+    private final List<String> restoredFiles = new ArrayList<>();
+
     private int dirLevel;
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
+
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+
     @Test(enabled = false)
     public void realCall() {
         String restoreFilePattern = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\owner_users.txt";
@@ -59,12 +61,12 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
             Assert.assertFalse(fromSet.isEmpty());
         }
     }
-    
+
     @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         System.out.println("dir = " + dir);
         return FileVisitResult.CONTINUE;
     }
-    
+
     @Test
     @Ignore
     public void call() {
@@ -102,23 +104,28 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
             Assert.assertNotNull(e, e.getMessage() + "\n" + forms.fromArray(e));
         }
     }
-    
+
     @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         String restoreFileName = restoreFilePattern.getFileName().toString();
         if (attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays)) & file.getFileName().toString().contains(restoreFileName)) {
-            fileIsMached(file);
+            try {
+                fileIsMached(file);
+            }
+            catch (InvokeIllegalException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            }
         }
         return FileVisitResult.CONTINUE;
     }
-    
+
     @Override public FileVisitResult visitFileFailed(Path file, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
-    
+
     @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
-    
+
     private void removeTestsFiles(String fileAbsPath) {
         File fileFromTest = new File(fileAbsPath);
         try {
@@ -134,7 +141,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
             }
         }
     }
-    
+
     private Set<String> parseElement(Object listElement) {
         Set<String> resSet = new TreeSet<>();
         if (listElement instanceof Path) {
@@ -145,26 +152,26 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         }
         return resSet;
     }
-    
-    private String elementIsPath(Object listElement) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("00 ").append(listElement).append("\n");
-        
-        if (((Path) listElement).toFile().isDirectory()) {
-            dirLevel++;
-            sb.append(showDir(((Path) listElement).toFile().listFiles()));
-        }
-        return sb.toString();
-    }
-    
-    private void fileIsMached(Path file) {
+
+    private void fileIsMached(Path file) throws InvokeIllegalException {
         Path pathToCopy = Paths.get(restoreFilePattern.toAbsolutePath().normalize().getParent() + "\\" + file.getFileName());
         boolean isCopy = FileSystemWorker.copyOrDelFile(file.toFile(), pathToCopy, false);
         String toShowAndAdd = isCopy + " is copy " + pathToCopy;
         restoredFiles.add(toShowAndAdd);
         System.out.println(toShowAndAdd);
     }
-    
+
+    private String elementIsPath(Object listElement) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("00 ").append(listElement).append("\n");
+
+        if (((Path) listElement).toFile().isDirectory()) {
+            dirLevel++;
+            sb.append(showDir(((Path) listElement).toFile().listFiles()));
+        }
+        return sb.toString();
+    }
+
     private @org.jetbrains.annotations.NotNull String showDir(@org.jetbrains.annotations.NotNull File[] listElement) {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : listElement) {
@@ -179,7 +186,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         dirLevel--;
         return stringBuilder.toString();
     }
-    
+
     private String dirLevelGetVisual() {
         StringBuilder stringBuilder = new StringBuilder();
         String format = String.format("%02d", dirLevel);

@@ -4,7 +4,7 @@ package ru.vachok.networker.ad.common;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -31,25 +31,24 @@ import java.util.List;
  @see ConcreteFolderACLWriterTest
  @since 22.07.2019 (11:20) */
 class ConcreteFolderACLWriter implements Runnable {
-    
-    
+
+
     private final String fileName;
-    
-    private Path currentPath;
-    
+
+    private final Path currentPath;
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ConcreteFolderACLWriter.class.getSimpleName());
-    
+
     public ConcreteFolderACLWriter(Path currentPath) {
         this.currentPath = currentPath;
         this.fileName = FileNames.FILENAME_OWNER;
     }
-    
+
     ConcreteFolderACLWriter(Path dir, String fileName) {
         this.currentPath = dir;
         this.fileName = fileName;
     }
-    
-    
+
     @Override
     public void run() {
         try {
@@ -61,7 +60,7 @@ class ConcreteFolderACLWriter implements Runnable {
             messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.run: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CommonACLWriter{");
@@ -69,7 +68,7 @@ class ConcreteFolderACLWriter implements Runnable {
         sb.append('}');
         return sb.toString();
     }
-    
+
     private void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(currentPath);
@@ -77,10 +76,10 @@ class ConcreteFolderACLWriter implements Runnable {
         stringBuilder.append(fileName);
         String fileName = stringBuilder.toString();
         String filePathStr = currentPath.toAbsolutePath().normalize().toString();
-        
+
         try {
             filePathStr = FileSystemWorker.writeFile(fileName, MessageFormat.format("Checked at: {2}.\nOWNER: {0}\nUsers:\n{1}",
-                owner.toString(), new TForms().fromArray(users.getAcl().toArray()), LocalDateTime.now()));
+                owner.toString(), AbstractForms.fromArray(users.getAcl().toArray()), LocalDateTime.now()));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -94,9 +93,9 @@ class ConcreteFolderACLWriter implements Runnable {
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        
+
     }
-    
+
     private void setAdminOnly(@NotNull File fileOwnerFile) throws IOException {
         UserPrincipal domainAdmin = Files.getOwner(currentPath.getRoot());
         AclFileAttributeView attributeView = Files.getFileAttributeView(fileOwnerFile.toPath().getRoot().toAbsolutePath().normalize(), AclFileAttributeView.class);
@@ -109,7 +108,7 @@ class ConcreteFolderACLWriter implements Runnable {
         Files.setOwner(fileOwnerFile.toPath().toAbsolutePath().normalize(), domainAdmin);
         Files.getFileAttributeView(fileOwnerFile.toPath().toAbsolutePath().normalize(), AclFileAttributeView.class).setAcl(listACL);
     }
-    
+
     private @NotNull String isDelete() throws IOException {
         boolean isOWNFileDeleted = Files.deleteIfExists(new File(FileNames.COMMON_OWN).toPath().toAbsolutePath().normalize());
         boolean isRGHFileDeleted = Files.deleteIfExists(new File(FileNames.COMMON_RGH).toPath().toAbsolutePath().normalize());

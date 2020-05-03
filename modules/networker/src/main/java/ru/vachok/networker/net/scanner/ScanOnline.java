@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -57,11 +58,11 @@ public class ScanOnline implements NetScanService {
 
     private File onlinesFile = new File(FileNames.ONSCAN);
 
-    private InformationFactory tvInfo = InformationFactory.getInstance(InformationFactory.TV);
+    private final InformationFactory tvInfo = InformationFactory.getInstance(InformationFactory.TV);
 
     private String replaceFileNamePattern;
 
-    @SuppressWarnings("InstanceVariableOfConcreteClass") private TForms tForms = AbstractForms.getI();
+    @SuppressWarnings("InstanceVariableOfConcreteClass") private final TForms tForms = AbstractForms.getI();
 
     @NotNull
     protected File getFileMAXOnlines() {
@@ -93,7 +94,12 @@ public class ScanOnline implements NetScanService {
         setMaxOnlineListFromFile();
 
         if (onlinesFile.exists()) {
-            onListFileCopyToLastAndMax();
+            try {
+                onListFileCopyToLastAndMax();
+            }
+            catch (InvokeIllegalException e) {
+                messageToUser.error("ScanOnline.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
         }
         messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
     }
@@ -107,7 +113,7 @@ public class ScanOnline implements NetScanService {
         }
     }
 
-    private void onListFileCopyToLastAndMax() {
+    private void onListFileCopyToLastAndMax() throws InvokeIllegalException {
         File scanOnlineLast = new File(replaceFileNamePattern);
         if (!scanOnlineLast.exists()) {
             FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);

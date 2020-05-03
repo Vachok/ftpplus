@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
@@ -53,7 +52,7 @@ public class MatrixCtr {
 
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
 
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TV);
+    private final InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TV);
 
     private static String mailIsOk = ConstantsFor.STR_FALSE;
 
@@ -208,7 +207,7 @@ public class MatrixCtr {
         }
         catch (RuntimeException e) {
             response.sendError(139, "");
-            throw new InvokeIllegalException(MessageFormat.format("<br>Строка ввода должности не инициализирована!<br>{0}<br>", this.getClass().getName()));
+            workPos = MessageFormat.format("<br>Строка ввода должности не инициализирована!<br>{0}<br>", this.getClass().getName());
         }
         model.addAttribute(ModelAttributeNames.WORKPOS, workPos);
         model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));

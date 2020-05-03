@@ -1,0 +1,8 @@
+{
+  "Authorization": "ph0D5RVs7xT8M6BAUYW8D6sZltG3",
+  "Content-Type": "application/json",
+  "restRequest": "sshcommandexec",
+  "server": "10.10.111.57",
+  "command": "cat dfinetstat && exit",
+  "Authorization": "ph0D5RVs7xT8M6BAUYW8D6sZltG3"
+}

@@ -1,0 +1,1 @@
+select distinct `lan`.`online`.`pcName` AS `pcName`,`lan`.`online`.`ip` AS `ip` from `lan`.`online` order by `lan`.`online`.`pcName`;

@@ -14,7 +14,6 @@ buildscript {
 }
 
 plugins {
-    id "com.gradle.build-scan" version "2.1"
     id 'java'
     id 'idea'
     id "org.springframework.boot" version "2.0.4.RELEASE"
@@ -23,7 +22,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '8.0.2013'
+version = '8.0.2018'
 sourceCompatibility = 1.8
 
 repositories {
@@ -69,11 +68,6 @@ sourceSets {
             includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png","**/*.jpg", "**/*.jar", "**/*.json", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
         }
     }
-}
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
 }
 
 githubRelease {

@@ -43,15 +43,13 @@ public class NetScanCtrTest {
 
     private static final File FILE = new File(FileNames.SCAN_TMP);
 
-    private NetScanService pcNamesScannerOld = new PcNamesScannerWorks();
-
     private NetScanCtr netScanCtr;
 
-    private HttpServletRequest request = new MockHttpServletRequest();
+    private final HttpServletRequest request = new MockHttpServletRequest();
 
-    private HttpServletResponse response = new MockHttpServletResponse();
+    private final HttpServletResponse response = new MockHttpServletResponse();
 
-    private Model model = new ExtendedModelMap();
+    private final Model model = new ExtendedModelMap();
 
     private PcNamesScanner pcNamesScanner;
 
@@ -68,7 +66,7 @@ public class NetScanCtrTest {
 
     @BeforeMethod
     public void initScan() {
-        this.pcNamesScanner = new PcNamesScanner();
+        this.pcNamesScanner = (PcNamesScanner) NetScanService.getInstance(NetScanService.PCNAMESSCANNER);
         this.netScanCtr = new NetScanCtr(pcNamesScanner);
         netScanCtr.setModel(model);
         netScanCtr.setRequest(request);

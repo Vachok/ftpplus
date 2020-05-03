@@ -6,8 +6,9 @@ package ru.vachok.networker.net.monitor;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
@@ -24,28 +25,26 @@ import java.util.Map;
 
 
 /**
- @since 19.06.2019 (16:30)
  @see PingerFromFile
- */
+ @since 19.06.2019 (16:30) */
 public class PingerFromFileTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
+
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
-    
+
     /**
      @see NetScanService#pingDevices(java.util.Map)
      */
@@ -71,16 +70,11 @@ public class PingerFromFileTest {
         }
         Assert.assertFalse(testMap.isEmpty());
     }
-    
+
     @Test
     public void testRun() {
         NetScanService npFactory = new PingerFromFile();
-        try {
-            npFactory.run();
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e);
-        }
+        npFactory.run();
         MultipartFile multipartFile = null;
         try {
             multipartFile = new MockMultipartFile("ping2ping.txt", getClass().getResourceAsStream("/ping2ping.txt"));

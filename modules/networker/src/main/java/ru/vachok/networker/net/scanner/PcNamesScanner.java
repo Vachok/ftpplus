@@ -6,13 +6,11 @@ package ru.vachok.networker.net.scanner;
 import com.eclipsesource.json.JsonObject;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
@@ -38,7 +36,6 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.net.scanner.PcNamesScannerTest
  @since 21.08.2018 (14:40) */
 @Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
-@Scope(ConstantsFor.SINGLETON)
 @EnableAsync(proxyTargetClass = true)
 public class PcNamesScanner implements NetScanService {
 
@@ -49,9 +46,17 @@ public class PcNamesScanner implements NetScanService {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
-    private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
+    private static final PcNamesScanner pcNamesScanner = new PcNamesScanner();
 
-    private static List<String> logMini = new ArrayList<>();
+    private final File lastNetScan = new File(FileNames.LASTNETSCAN_TXT);
+
+    public static PcNamesScanner getI() {
+        return pcNamesScanner;
+    }
+
+    private static final List<String> logMini = new ArrayList<>();
+
+    private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
 
     private String thePc = "";
 
@@ -63,30 +68,43 @@ public class PcNamesScanner implements NetScanService {
         this.thePc = thePc;
     }
 
-    @Override
-    public String getExecution() {
-        return new ScanMessagesCreator().fillUserPCForWEBModel();
+    private PcNamesScanner() {
+        if (!lastNetScan.exists()) {
+            try {
+                lastNetScan.createNewFile();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+        }
     }
 
     @Override
-    public String getPingResultStr() {
-        return new ScanMessagesCreator().fillUserPCForWEBModel();
+    public int hashCode() {
+        int result = (int) (startClassTime ^ (startClassTime >>> 32));
+        result = 31 * result + (int) (lastScanStamp ^ (lastScanStamp >>> 32));
+        result = 31 * result + thePc.hashCode();
+        return result;
     }
 
     @Override
-    public String writeLog() {
-        return FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
-    }
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PcNamesScanner)) {
+            return false;
+        }
 
-    @Override
-    public Runnable getMonitoringRunnable() {
-        return this;
-    }
+        PcNamesScanner scanner = (PcNamesScanner) o;
 
-    @Override
-    public String getStatistics() {
-        Date lastScanDate = new Date(lastScanStamp);
-        return MessageFormat.format("{0} lastScanDate.", lastScanDate);
+        if (startClassTime != scanner.startClassTime) {
+            return false;
+        }
+        if (lastScanStamp != scanner.lastScanStamp) {
+            return false;
+        }
+        return thePc.equals(scanner.thePc);
     }
 
     @SuppressWarnings("DuplicateStringLiteralInspection")
@@ -102,6 +120,32 @@ public class PcNamesScanner implements NetScanService {
             messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 195 ***");
         }
         return jsonObject.toString();
+    }
+
+    @Override
+    public String getExecution() {
+        return new ScanMessagesCreator().fillUserPCForWEBModel();
+    }
+
+    @Override
+    public String getPingResultStr() {
+        return new ScanMessagesCreator().fillUserPCForWEBModel();
+    }
+
+    @Override
+    public String writeLog() {
+        return FileSystemWorker.writeFile(lastNetScan.getAbsolutePath(), AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
+    }
+
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+
+    @Override
+    public String getStatistics() {
+        Date lastScanDate = new Date(lastScanStamp);
+        return MessageFormat.format("{0} lastScanDate.", lastScanDate);
     }
 
     /**
@@ -191,10 +235,6 @@ public class PcNamesScanner implements NetScanService {
         try {
             closePrefix();
         }
-        catch (InvokeIllegalException e) {
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute((NetScanService::writeUsersToDBFromSET));
-            messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 408 ***");
-        }
         finally {
             if (NetKeeper.getPcNamesForSendToDatabase().size() > 0) {
                 NetScanService.writeUsersToDBFromSET();
@@ -254,9 +294,6 @@ public class PcNamesScanner implements NetScanService {
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(stringBuilder.toString(), true);
     }
 
-    /**
-     @throws InvokeIllegalException если БД не записана
-     */
     private void closePrefix() {
         boolean isSmallDBWritten = NetScanService.writeUsersToDBFromSET();
         NetKeeper.getPcNamesForSendToDatabase().clear();
@@ -334,7 +371,7 @@ public class PcNamesScanner implements NetScanService {
     private class ScannerUSR implements NetScanService {
 
 
-        @NotNull private Properties props = InitProperties.getTheProps();
+        @NotNull private final Properties props = InitProperties.getTheProps();
 
         @Override
         public void run() {
@@ -374,11 +411,6 @@ public class PcNamesScanner implements NetScanService {
             return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }
 
-        /**
-         @return {@link #toString()}
-
-         @throws InvokeIllegalException {@link #scanPCPrefixes()} , set not written to DB
-         */
         @Override
         public String getExecution() {
             scanPCPrefixes();
@@ -394,9 +426,6 @@ public class PcNamesScanner implements NetScanService {
             return new ScanMessagesCreator().fillUserPCForWEBModel();
         }
 
-        /**
-         @throws InvokeIllegalException {@link #onePrefixSET(String)}, not written
-         */
         private void scanPCPrefixes() {
             Set<String> setToDB = NetKeeper.getPcNamesForSendToDatabase();
             for (String pcNamePREFIX : ConstantsNet.getPcPrefixes()) {
@@ -449,6 +478,4 @@ public class PcNamesScanner implements NetScanService {
 
         }
     }
-
-
 }

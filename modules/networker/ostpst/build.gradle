@@ -7,9 +7,9 @@ plugins {
 }
 
 group 'ru.vachok.ostpst'
-version '8.0.2013'
+version '8.0.2018'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.11
 
 repositories {
     maven {
@@ -31,11 +31,6 @@ sourceSets {
             includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.txt", "**/*.jar"]
         }
     }
-}
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
 }
 
 dependencies {

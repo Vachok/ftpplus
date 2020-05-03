@@ -19,7 +19,9 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,7 +35,7 @@ import java.util.regex.Pattern;
 
 
 /**
-@see SshActsTest
+ @see SshActsTest
  @since 29.11.2018 (13:01) */
 @Service(ModelAttributeNames.ATT_SSH_ACTS)
 @Scope(ConstantsFor.PROTOTYPE)
@@ -157,7 +159,7 @@ public class SshActs {
     /**
      @see SshActsTest#testAllowDomainAdd()
      */
-    public String allowDomainAdd() {
+    public String allowDomainAdd() throws InvokeIllegalException {
         String result;
         if (ipAddrOnly != null && ipAddrOnly.equalsIgnoreCase(ConstantsFor.DELETE)) {
             this.delDomain = allowDomain;
@@ -241,7 +243,7 @@ public class SshActs {
         return stringBuilder.toString();
     }
 
-    private String checkDName() {
+    private String checkDName() throws InvokeIllegalException {
         try {
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
         }
@@ -304,13 +306,16 @@ public class SshActs {
         }
     }
 
-    public String whatSrvNeed() {
+    public static String whatSrvNeed() {
         InitProperties.getTheProps().setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }
+        else if (NetScanService.isReach(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU)) {
+            return SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU;
+        }
         else {
-            return SwitchesWiFi.IPADDR_SRVGIT;
+            return "10.10.111.65";
         }
     }
 
@@ -343,17 +348,7 @@ public class SshActs {
     private String getServerListDomains() {
         SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         Callable<String> factory = delDomBuilder.build();
-        Future<String> future = Executors.newSingleThreadExecutor().submit(factory);
-        String call;
-        try {
-            call = future.get(60, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            call = MessageFormat.format("SshActs.getServerListDomains:<br>\n {0}, ({1})", e.getMessage(), e.getClass().getName());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        return call;
+        return AppConfigurationLocal.getInstance().submitAsString(factory, 15);
     }
 
     public void setAllFalse() {
@@ -382,21 +377,6 @@ public class SshActs {
         this.squid = false;
     }
 
-    String execSSHCommand(String sshCommand) {
-        return new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build().call();
-    }
-
-    /**
-     @param server сервер, для подклчения
-     @param command команда
-     @return результат выполнения
-
-     @see VpnHelper
-     */
-    String execSSHCommand(String server, String command) {
-        return new SSHFactory.Builder(server, command, getClass().getSimpleName()).build().call();
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SshActs{");
@@ -409,5 +389,20 @@ public class SshActs {
         sb.append(", pcName='").append(pcName).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    String execSSHCommand(String sshCommand) {
+        return AppConfigurationLocal.getInstance().submitAsString(new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build(), 3);
+    }
+
+    /**
+     @param server сервер, для подклчения
+     @param command команда
+     @return результат выполнения
+
+     @see VpnHelper
+     */
+    String execSSHCommand(String server, String command) {
+        return AppConfigurationLocal.getInstance().submitAsString(new SSHFactory.Builder(server, command, getClass().getSimpleName()).build(), 3);
     }
 }

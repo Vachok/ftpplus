@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,7 +34,7 @@ public class PfListsSrv {
 
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
 
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PfListsSrv.class.getSimpleName());
 
     /**
@@ -85,8 +86,8 @@ public class PfListsSrv {
     }
 
     public String runCom() {
-        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
-
+        return AppConfigurationLocal.getInstance()
+            .submitAsString(new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build(), 10);
     }
 
     /**
@@ -124,6 +125,7 @@ public class PfListsSrv {
     private void buildFactory() throws FileNotFoundException, ExecutionException, InterruptedException, TimeoutException {
         SSHFactory.Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
+        int timeOusSec = 3;
         if (!new File(builderInst.getPem()).exists()) {
             throw new FileNotFoundException("NO CERTIFICATE a161.getPem...");
         }
@@ -133,29 +135,29 @@ public class PfListsSrv {
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs && exit");
-        pfListsInstAW.setVipNet(build.call());
+
+        pfListsInstAW.setVipNet(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PFSQUID);
-        pfListsInstAW.setStdSquid(build.call());
+        pfListsInstAW.setStdSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PROXYFULL);
-        pfListsInstAW.setFullSquid(build.call());
+        pfListsInstAW.setFullSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_SQUIDLIMITED);
-        pfListsInstAW.setLimitSquid(build.call());
+        pfListsInstAW.setLimitSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH("pfctl -s nat && exit");
-        pfListsInstAW.setPfNat(build.call());
+        pfListsInstAW.setPfNat(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH("pfctl -s rules && exit");
-        pfListsInstAW.setPfRules(build.call());
+        pfListsInstAW.setPfRules(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH("sudo cat /home/kudr/inet.log && exit");
-        String inetLog = build.call();
+        String inetLog = AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec);
         pfListsInstAW.setInetLog(inetLog);
-
         Future<String> checkUniqueInListsFuture = AppComponents.threadConfig().getTaskExecutor().submit(new AccessListsCheckUniq());
-        String inetUniqStr = checkUniqueInListsFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+        String inetUniqStr = checkUniqueInListsFuture.get(timeOusSec, TimeUnit.SECONDS);
         pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
     }
 

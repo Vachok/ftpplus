@@ -2,7 +2,6 @@ package ru.vachok.networker.configuretests;
 
 
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
@@ -17,11 +16,10 @@ public class MakeReport implements TestConfigure {
 
     private MessageToUser messageToUser;
 
-    private String testName;
+    private final String testName;
 
     public MakeReport(String testName) {
         this.testName = testName;
-        throw new InvokeIllegalException("17.07.2019 (10:00)");
 
     }
 

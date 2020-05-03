@@ -27,71 +27,49 @@ import java.util.stream.Collectors;
  @see ru.vachok.networker.ad.usermanagement.ACLParserTest
  @since 04.07.2019 (9:48) */
 class ACLParser implements UserACLManager {
-    
-    
-    private Map<Path, List<String>> mapRights = new ConcurrentSkipListMap<>();
-    
-    private List<String> rightsListFromFile = new ArrayList<>();
-    
-    private int countTotalLines;
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ACLParser.class.getSimpleName());
-    
+
+    private final Map<Path, List<String>> mapRights = new ConcurrentSkipListMap<>();
+
+    private final List<String> rightsListFromFile = new ArrayList<>();
+
+    private final Path startPath;
+
     private String searchPattern;
-    
+
     private List<String> searchPatterns;
-    
+
     private int linesLimit = Integer.MAX_VALUE;
-    
+
+    private int countTotalLines;
+
     List<String> getRightsListFromFile() {
         return rightsListFromFile;
     }
-    
+
     @Contract(pure = true)
     Map<Path, List<String>> getMapRights() {
         return mapRights;
     }
-    
-    public ACLParser() {
-    
+
+    public ACLParser(Path startPath) {
+        this.startPath = startPath;
     }
-    
+
     @Override
     public String addAccess(UserPrincipal newUser) {
-        throw new UnsupportedOperationException("27.11.2019 (21:54) TRY: " + UserACLManagerImpl.class.getTypeName());
-        
+        return UserACLManagerImpl.addAccess(newUser, startPath);
+
     }
-    
+
     @Override
     public String removeAccess(UserPrincipal oldUser) {
-        throw new UnsupportedOperationException("27.11.2019 (21:54) TRY: " + UserACLManagerImpl.class.getTypeName());
-        
+        return UserACLManagerImpl.removeAccess(oldUser, startPath);
+
     }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        if (classOption instanceof Integer) {
-            this.linesLimit = (int) classOption;
-        }
-        else if (classOption instanceof String) {
-            this.searchPattern = (String) classOption;
-        }
-        else {
-            this.searchPatterns = (List<String>) classOption;
-        }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ACLParser{");
-        sb.append("searchPattern='").append(searchPattern).append('\'');
-        sb.append(", messageToUser=").append(messageToUser);
-        sb.append(", linesLimit=").append(linesLimit);
-        sb.append(", countTotalLines=").append(countTotalLines);
-        sb.append('}');
-        return sb.toString();
-    }
-    
+
     @Override
     public String getResult() {
         ACLDatabaseSearcher searcher = new ACLDatabaseSearcher();
@@ -104,7 +82,7 @@ class ACLParser implements UserACLManager {
             return localRead();
         }
     }
-    
+
     private String localRead() {
         for (String pat : searchPatterns) {
             this.searchPattern = pat;
@@ -112,7 +90,29 @@ class ACLParser implements UserACLManager {
         }
         return AbstractForms.fromArray(mapRights.keySet());
     }
-    
+
+    @Override
+    public String replaceUsers(UserPrincipal oldUser, UserPrincipal newUser) {
+        throw new UnsupportedOperationException("27.11.2019 (21:54) TRY: " + UserACLManagerImpl.class.getTypeName());
+
+    }
+
+    @Override
+    public void setClassOption(Object classOption) {
+        if (classOption instanceof Integer) {
+            this.linesLimit = (int) classOption;
+        }
+        else if (classOption instanceof String) {
+            this.searchPattern = (String) classOption;
+        }
+        else if (classOption instanceof List) {
+            this.searchPatterns = (List<String>) classOption;
+        }
+        else {
+            throw new UnsupportedOperationException(getClass().getSimpleName());
+        }
+    }
+
     void readAllACLWithSearchPatternFromFile() {
         try (InputStream inputStream = new FileInputStream(new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh"));
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
@@ -139,11 +139,11 @@ class ACLParser implements UserACLManager {
             messageToUser.error(e.getMessage());
         }
     }
-    
+
     private void mapFoldersRights() {
         getRightsListFromFile().forEach(this::parseLine);
     }
-    
+
     private void searchInQueue(@NotNull Queue<String> queue) {
         queue.parallelStream().forEach(acl->{
             if (acl.toLowerCase().contains(searchPattern.toLowerCase())) {
@@ -151,7 +151,28 @@ class ACLParser implements UserACLManager {
             }
         });
     }
-    
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ACLParser{");
+        sb.append("searchPattern='").append(searchPattern).append('\'');
+        sb.append(", messageToUser=").append(messageToUser);
+        sb.append(", linesLimit=").append(linesLimit);
+        sb.append(", countTotalLines=").append(countTotalLines);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    private void parseLine(@NotNull String line) {
+        try {
+            String[] splitRights = line.split("\\Q | ACL: \\E");
+            getMapRights().put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        }
+        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
+            alterParsing(line);
+        }
+    }
+
     void readRightsFromConcreteFolder() {
         messageToUser.info(this.getClass().getSimpleName(), "readRightsFromConcreteFolder", searchPattern);
         Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
@@ -165,23 +186,7 @@ class ACLParser implements UserACLManager {
             messageToUser.error(MessageFormat.format("ACLParser.readRightsFromConcreteFolder", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
     }
-    
-    private void parseLine(@NotNull String line) {
-        try {
-            String[] splitRights = line.split("\\Q | ACL: \\E");
-            getMapRights().put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        }
-        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
-            alterParsing(line);
-        }
-    }
-    
-    @Override
-    public String replaceUsers(UserPrincipal oldUser, UserPrincipal newUser) {
-        throw new UnsupportedOperationException("27.11.2019 (21:54) TRY: " + UserACLManagerImpl.class.getTypeName());
-        
-    }
-    
+
     private void alterParsing(@NotNull String line) {
         try {
             String[] splitRights = line.split("\\Q\\\\E");

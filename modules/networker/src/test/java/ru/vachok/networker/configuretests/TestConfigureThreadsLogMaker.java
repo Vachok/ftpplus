@@ -32,7 +32,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
 
     private static final String fileSeparator = System.getProperty(PropertiesNames.SYS_SEPARATOR);
 
-    private long startTime;
+    private final long startTime;
 
     private transient PrintStream printStream;
 
@@ -40,7 +40,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
 
     private transient ThreadInfo threadInfo;
 
-    private transient Runtime runtime = Runtime.getRuntime();
+    private final transient Runtime runtime = Runtime.getRuntime();
 
     @Override
     public PrintStream getPrintStream() {
@@ -95,7 +95,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.println(startInfo);
             printStream.println();
             rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",
-                    TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime), LocalTime.now());
+                TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime), LocalTime.now());
             printStream.println(rtInfo);
             printStream.println("cpuTime in nanos = " + cpuTime);
             printStream.println("End ***");
@@ -104,14 +104,16 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.close();
             maxMemory = runtime.totalMemory();
             freeM = runtime.freeMemory();
-
+            FirebaseDatabase.getInstance().getReference("test").setValue(rtInfo, new Compl());
+        }
+        catch (IllegalStateException ignore) {
+            //03.05.2020 (10:37)
         }
         catch (RuntimeException e) {
             messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
             messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
-            FirebaseDatabase.getInstance().getReference("test").setValue(rtInfo, new Compl());
             Runtime.getRuntime().runFinalization();
         }
 

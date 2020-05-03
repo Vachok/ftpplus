@@ -29,8 +29,8 @@ import java.io.*;
 import java.lang.management.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.FileSystem;
+import java.nio.file.*;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,7 +52,7 @@ import java.util.concurrent.*;
 public abstract class UsefulUtilities {
 
 
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh"};
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh", ".lck", "IntoApplication."};
 
     private static final Properties APP_PROPS = InitProperties.getTheProps();
 
@@ -98,12 +98,27 @@ public abstract class UsefulUtilities {
         return delay;
     }
 
+    private static String getStorageInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (FileSystem fileSystem = FileSystems.getDefault()) {
+            for (FileStore storeSys : fileSystem.getFileStores()) {
+                stringBuilder.append(storeSys.getUsableSpace() / ConstantsFor.MBYTE).append("/").append(storeSys.getTotalSpace() / ConstantsFor.MBYTE)
+                    .append(" on ").append(storeSys.name()).append(" type: ").append(storeSys.type()).append("\n");
+            }
+        }
+        catch (IOException | RuntimeException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(UsefulUtilities.class.getSimpleName()).append(".getStorageInfo");
+        }
+        return stringBuilder.toString();
+    }
+
     @NotNull
     public static String getRunningInformation() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("CPU information:").append("\n").append(getOS()).append("***\n\n");
         stringBuilder.append("Memory information:").append("\n").append(getMemory()).append("***\n\n");
         stringBuilder.append("Runtime information:").append("\n").append(getRuntime()).append("***\n\n");
+        stringBuilder.append("Disks: ").append("\n").append(getStorageInfo()).append("***\n\n");
         return stringBuilder.toString();
 
     }
@@ -129,33 +144,6 @@ public abstract class UsefulUtilities {
         stringBuilder.append(getTotalCPUTimeInformation()).append("\n");
 
         return stringBuilder.toString();
-    }
-
-    /**
-     @return точное время как {@code long}
-
-     @see UsefulUtilitiesTest#testGetAtomicTime()
-     */
-    public static long getAtomicTime() {
-        long result;
-        TimeChecker t = new TimeChecker();
-        Future<TimeInfo> infoFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(t);
-        try {
-            TimeInfo call = infoFuture.get(20, TimeUnit.SECONDS);
-            call.computeDetails();
-            result = call.getReturnTime();
-        }
-        catch (InterruptedException | RuntimeException e) {
-            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 180 ***");
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            result = System.currentTimeMillis();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 185 ***");
-            result = System.currentTimeMillis();
-        }
-        return result;
     }
 
     @NotNull
@@ -192,6 +180,33 @@ public abstract class UsefulUtilities {
         stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
         stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
         return stringBuilder.toString();
+    }
+
+    /**
+     @return точное время как {@code long}
+
+     @see UsefulUtilitiesTest#testGetAtomicTime()
+     */
+    public static long getAtomicTime() {
+        long result;
+        TimeChecker t = new TimeChecker();
+        Future<TimeInfo> infoFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(t);
+        try {
+            TimeInfo call = infoFuture.get(20, TimeUnit.SECONDS);
+            call.computeDetails();
+            result = call.getReturnTime();
+        }
+        catch (InterruptedException | RuntimeException e) {
+            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 180 ***");
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            result = System.currentTimeMillis();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.warn(UsefulUtilities.class.getSimpleName(), e.getMessage(), " see line: 185 ***");
+            result = System.currentTimeMillis();
+        }
+        return result;
     }
 
     @NotNull

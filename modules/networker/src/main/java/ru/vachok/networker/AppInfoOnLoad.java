@@ -9,9 +9,10 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.synchronizer.SyncData;
-import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.firebase.RealTimeChildListener;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
@@ -22,7 +23,10 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -32,7 +36,9 @@ import java.util.*;
 public class AppInfoOnLoad implements Runnable {
 
 
-    public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
+    private static final AppInfoOnLoad INST = new AppInfoOnLoad();
+
+    private static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
 
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
@@ -40,22 +46,35 @@ public class AppInfoOnLoad implements Runnable {
 
     private final AppConfigurationLocal scheduleDefiner = AppConfigurationLocal.getInstance(AppConfigurationLocal.SCHEDULE_DEFINER);
 
-    private final AppConfigurationLocal onStartTasksLoader = new OnStartTasksLoader();
+    private final AppConfigurationLocal onStartTasksLoader = AppConfigurationLocal.getInstance(AppConfigurationLocal.ON_START_LOADER);
 
-    private static int thisDelay = UsefulUtilities.getScansDelay();
+    private static final int THIS_DELAY = UsefulUtilities.getScansDelay();
+
+    public static Runnable getI() {
+        return INST;
+    }
+
+    private AppInfoOnLoad() {
+    }
+
+    @Contract(pure = true)
+    public static List<String> getMiniLogger() {
+        return MINI_LOGGER;
+    }
 
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
         FileSystemWorker.writeFile(AVAILABLECHARSETS_TXT, avCharsetsStr);
-        SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
+        if (NetScanService.isReach("10.10.111.65")) {
+            SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
+            AppConfigurationLocal.getInstance().execute(syncData::superRun);
+        }
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
 
-        AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, (int) ConstantsFor.DELAY);
-
-        AppConfigurationLocal.getInstance().execute(syncData::superRun);
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setCurrentProvider, 0, 2, TimeUnit.MINUTES);
 
         try {
             infoForU();
@@ -64,8 +83,9 @@ public class AppInfoOnLoad implements Runnable {
             messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 61 ***");
         }
         finally {
-            checkFileExitLastAndWriteMiniLog();
-            if (Runtime.getRuntime().freeMemory() > (350 * ConstantsFor.MBYTE) && NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
+            boolean isMemOk = Runtime.getRuntime().freeMemory() > (350 * ConstantsFor.MBYTE);
+            messageToUser.info(getClass().getSimpleName(), "isMemOk", isMemOk + ": " + Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE);
+            if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
                 SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
                 AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 3600);
             }
@@ -74,30 +94,19 @@ public class AppInfoOnLoad implements Runnable {
                     .error(this.getClass().getSimpleName(), "Sync not running", UsefulUtilities.getRunningInformation());
             }
             toFirebase();
-        }
-    }
-
-    private void setCurrentProvider() {
-        try {
-            NetKeeper.setCurrentProvider(new Tracerouting().call());
-        }
-        catch (Exception e) {
-            NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");
-            Thread.currentThread().interrupt();
+            checkFileExitLastAndWriteMiniLog();
         }
     }
 
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(UsefulUtilities.getBuildStamp());
-        String name = "AppInfoOnLoad.infoForU";
-        messageToUser.info(name, ConstantsFor.STR_FINISH, " = " + stringBuilder);
         getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
             Runnable runInfoForU = ()->FileSystemWorker
                 .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
             messageToUser.info(UsefulUtilities.getIISLogSize());
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runInfoForU);
+            AppConfigurationLocal.getInstance().execute(runInfoForU);
         }
         catch (RuntimeException e) {
             messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 100 ***");
@@ -106,6 +115,23 @@ public class AppInfoOnLoad implements Runnable {
             AppConfigurationLocal.getInstance().execute(onStartTasksLoader);
         }
 
+    }
+
+    private void toFirebase() {
+        FirebaseApp app = AppComponents.getFirebaseApp();
+        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC().replace(".", "_"))
+            .setValue(MessageFormat.format("{0} : {1}", new Date().toString(), app.toString()), (error, ref)->{
+                String s = ref.toString();
+                System.out.println("s = " + s);
+            });
+
+        FirebaseDatabase.getInstance().getReference().addChildEventListener(new RealTimeChildListener());
+
+        if (!UsefulUtilities.thisPC().contains("rups")) {
+            FirebaseDatabase.getInstance().getReference("test")
+                .removeValue((error, ref)->messageToUser
+                    .error("AppInfoOnLoad.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+        }
     }
 
     private void checkFileExitLastAndWriteMiniLog() {
@@ -117,32 +143,24 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
 
-    @Contract(pure = true)
-    public static List<String> getMiniLogger() {
-        return MINI_LOGGER;
-    }
-
-    private void toFirebase() {
-        FirebaseApp app = AppComponents.getFirebaseApp();
-        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC().replace(".", "_"))
-                .setValue(MessageFormat.format("{0} : {1}", new Date().toString(), app.toString()), (error, ref)->{
-                    String s = ref.toString();
-                    System.out.println("s = " + s);
-                });
-    
-        FirebaseDatabase.getInstance().getReference().addChildEventListener(new RealTimeChildListener());
-    
-        if (!UsefulUtilities.thisPC().contains("rups")) {
-            FirebaseDatabase.getInstance().getReference("test")
-                    .removeValue((error, ref)->messageToUser
-                            .error("AppInfoOnLoad.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+    private void setCurrentProvider() {
+        String currentProviderName = "setCurrentProvider failed";
+        try {
+            currentProviderName = (String) AppConfigurationLocal.getInstance().executeGet(new Tracerouting(), 10);
+            NetKeeper.setCurrentProvider(currentProviderName);
+        }
+        catch (RuntimeException e) {
+            NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");
+        }
+        finally {
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName()).info(currentProviderName);
         }
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
-        sb.append(", thisDelay=").append(thisDelay);
+        sb.append(", thisDelay=").append(THIS_DELAY);
         sb.append(", thisPC=").append(UsefulUtilities.thisPC());
         sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
         sb.append('}');

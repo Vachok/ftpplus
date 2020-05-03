@@ -6,6 +6,7 @@ package ru.vachok.networker.ad;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -40,13 +41,13 @@ public class PhotoConverterSRV {
 
     private File adFotoFile;
 
-    private Properties properties = InitProperties.getTheProps();
+    private final Properties properties = InitProperties.getTheProps();
 
     private File rawPhotoFile;
 
     private String adPhotosPath;
 
-    @NotNull private Map<String, BufferedImage> filesList = new ConcurrentHashMap<>();
+    @NotNull private final Map<String, BufferedImage> filesList = new ConcurrentHashMap<>();
 
     public File getAdFotoFile() {
         return adFotoFile;
@@ -70,8 +71,8 @@ public class PhotoConverterSRV {
         try {
             convertFoto();
         }
-        catch (@NotNull IOException | NullPointerException e) {
-            stringBuilder.append(e.getMessage()).append("<p>").append(new TForms().fromArray(e, true));
+        catch (IOException | NullPointerException | InvokeIllegalException e) {
+            stringBuilder.append(e.getMessage()).append("<p>").append(AbstractForms.fromArray((Exception) e));
         }
         stringBuilder.append(ConstantsFor.PS_IMPORTSYSMODULES).append("<br>");
         for (String s : psCommands) {
@@ -89,7 +90,7 @@ public class PhotoConverterSRV {
             .toString();
     }
 
-    private void convertFoto() throws IOException {
+    private void convertFoto() throws IOException, InvokeIllegalException {
         this.adPhotosPath = properties.getProperty(PropertiesNames.ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         BiConsumer<String, BufferedImage> imageBiConsumer = this::imgWorker;
         @Nullable File[] fotoFiles = new File(adPhotosPath).listFiles();
@@ -110,7 +111,7 @@ public class PhotoConverterSRV {
         }
     }
 
-    private void resizeRawFoto() throws IOException {
+    private void resizeRawFoto() throws IOException, InvokeIllegalException {
         for (@NotNull String format : ImageIO.getWriterFormatNames()) {
             @NotNull String key = rawPhotoFile.getName();
             if (key.contains(format)) {

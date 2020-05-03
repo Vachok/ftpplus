@@ -47,7 +47,7 @@ public class DataSynchronizerTest {
 
     @Test
     public void testSyncData() {
-        dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.FIREBASE));
+        dataSynchronizer.setOption(DataConnectTo.getInstance(DataConnectTo.TESTING));
         Future<String> syncFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->dataSynchronizer.syncData());
         try {
             String syncDataResult = syncFuture.get(15, TimeUnit.SECONDS);

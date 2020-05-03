@@ -4,15 +4,25 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Savepoint;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 
@@ -20,16 +30,16 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.restapi.database.RegRuMysqlLocTest
  @since 14.07.2019 (12:16) */
 class RegRuMysqlLoc implements DataConnectTo {
-    
-    
+
+
     private static final Properties APP_PROPS = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuMysqlLoc.class.getSimpleName());
-    
+
     private String dbName;
-    
+
     private MysqlDataSource mysqlDataSource;
-    
+
     @Contract(pure = true)
     RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
@@ -37,7 +47,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         mysqlDataSource.setUser("it");
         mysqlDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
     }
-    
+
     private @NotNull MysqlDataSource getDataSourceLoc() {
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(OtherKnownDevices.REG_RU_SERVER);
@@ -60,26 +70,26 @@ class RegRuMysqlLoc implements DataConnectTo {
             return DataConnectToAdapter.getLibDataSource();
         }
     }
-    
+
     @Contract(pure = true)
     RegRuMysqlLoc() {
         this.dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
     }
-    
+
     private @Nullable Connection conAlt(@NotNull String dbName) {
         return new TesterDB65SQL().getDefaultConnection(dbName);
     }
-    
+
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.dropTable( boolean ) at 20.09.2019 - (20:37)");
     }
-    
+
     @Override
     public int createTable(String dbPointTable, List<String> additionalColumns) {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.createTable( int ) at 04.11.2019 - (13:50)");
     }
-    
+
     @Override
     public MysqlDataSource getDataSource() {
         MysqlDataSource defDataSource = getDataSourceLoc();
@@ -87,7 +97,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         this.mysqlDataSource = defDataSource;
         return defDataSource;
     }
-    
+
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
         this.dbName = dbName;
@@ -112,26 +122,26 @@ class RegRuMysqlLoc implements DataConnectTo {
             return defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error("RegRuMysqlLoc.getDefaultConnection", e.getMessage(), TForms.networkerTrace(e.getStackTrace()));
+            messageToUser.error("RegRuMysqlLoc.getDefaultConnection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             return conAlt(dbName);
         }
     }
-    
+
     @Override
     public int uploadCollection(Collection stringsCollection, String tableName) {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadCollection created 13.09.2019 (16:35)");
     }
-    
+
     @Override
     public Savepoint getSavepoint(Connection connection) {
         throw new UnsupportedOperationException("14.07.2019 (16:17)");
     }
-    
+
     @Override
     public void setSavepoint(Connection connection) {
         throw new UnsupportedOperationException("14.07.2019 (16:17)");
     }
-    
+
     @Override
     public String toString() {
         return new StringJoiner(",\n", RegRuMysqlLoc.class.getSimpleName() + "[\n", "\n]")
@@ -139,5 +149,5 @@ class RegRuMysqlLoc implements DataConnectTo {
             .add("dbURL = '" + mysqlDataSource.getURL() + "'")
             .toString();
     }
-    
+
 }

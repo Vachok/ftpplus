@@ -28,8 +28,10 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 
@@ -95,9 +97,7 @@ public abstract class UserInfo implements InformationFactory {
      @see UserInfoTest#testRenewOffCounter()
      */
     public static void renewOffCounter(String pcName, boolean isOffline) {
-        String methName = "UserInfo.renewOffCounter";
-        String updateResults = DATABASE_WRITER.updTime(pcName, isOffline);
-        messageToUser.info(UserInfo.class.getSimpleName(), methName, updateResults);
+        DATABASE_WRITER.updTime(pcName, isOffline);
     }
 
     @NotNull
@@ -193,32 +193,24 @@ public abstract class UserInfo implements InformationFactory {
             }
         }
 
-        @NotNull
-        private String updTime(String pcName, boolean isOffline) {
+        private void updTime(String pcName, boolean isOffline) {
             this.pcName = pcName;
             AppConfigurationLocal.getInstance().execute(this::countWorkTime, 10);
-            StringBuilder stringBuilder = new StringBuilder();
             String sql;
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                 .valueOf(LocalDateTime.now()));
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
             if (isOffline) {
                 sql = sqlOff;
-                stringBuilder.append("ISOFFLINE\n");
             }
             else {
-                stringBuilder.append("ONLINE (ELSE)\n");
                 long nowMinusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
-                System.out.println("new Date(nowMinusDelay) = " + new Date(nowMinusDelay));
-                System.out.println("START_STAMP = " + new Date(ConstantsFor.START_STAMP));
                 boolean startSmallerDelay = ConstantsFor.START_STAMP >= nowMinusDelay;
-
                 if (startSmallerDelay) {
                     AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName));
                     sql = sqlOn;
                 }
                 else if (wasOffline()) {
-                    stringBuilder.append("*WAS OFFLINE*: ");
                     sql = String
                             .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                                     .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
@@ -231,14 +223,12 @@ public abstract class UserInfo implements InformationFactory {
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.setString(1, String.format("%s%%", pcName));
-                    stringBuilder.append(preparedStatement.toString()).append(" : ");
-                    stringBuilder.append(preparedStatement.executeUpdate()).append("\n");
+                    preparedStatement.executeUpdate();
                 }
             }
             catch (SQLException | RuntimeException e) {
-                stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+                messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 231 ***");
             }
-            return stringBuilder.toString();
         }
 
         private void countWorkTime() {

@@ -9,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -37,93 +36,93 @@ import java.util.concurrent.TimeUnit;
  Пингует заданные адреса.
  <p>
  Список адресов загружается как текстовый файл, который читаем построчно.
- 
+
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ModelAttributeNames.ATT_NETPINGER)
 public class PingerFromFile implements NetScanService {
-    
-    
+
+
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
-    
+
     /**
      Лист {@link InetAddress}.
      <p>
      Адреса, для пингера из {@link #multipartFile}
      */
     private final List<InetAddress> ipAsList = new ArrayList<>();
-    
+
     /**
      Лист результатов.
      <p>
      {@link String} - 1 результат.
      */
     private final List<String> resultsList = new ArrayList<>();
-    
-    /**
-     Таймаут метода {@link #pingSW()}.
-     <p>
-     Берётся из {@link InitProperties#getTheProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
- 
-     @see PropertiesNames#PINGSLEEP
-     */
-    private long pingSleepMsec = Long.parseLong(InitProperties.getTheProps().getProperty(PropertiesNames.PINGSLEEP, "20"));
-    
+
+    private final long timeStartLong = System.currentTimeMillis();
+
     /**
      {@link MessageLocal}. Вывод сообщений
      */
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PingerFromFile.class.getSimpleName());
-    
+
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
-    
+
     /**
      Результат работы, как {@link String}
      */
     private String pingResultStr = "No result yet";
-    
+
     /**
      Время до конца работы.
      */
     private String timeToEndStr = "0";
-    
-    private long timeStartLong = System.currentTimeMillis();
-    
+
+    /**
+     Таймаут метода {@link #pingSW()}.
+     <p>
+     Берётся из {@link InitProperties#getTheProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
+
+     @see PropertiesNames#PINGSLEEP
+     */
+    private long pingSleepMsec = Long.parseLong(InitProperties.getTheProps().getProperty(PropertiesNames.PINGSLEEP, "20"));
+
     private MultipartFile multipartFile;
-    
+
     public String getTimeForScanStr() {
         return timeForScanStr;
     }
-    
+
     /**
      @param timeForScanStr {@link #timeForScanStr}
      */
     public void setTimeForScanStr(String timeForScanStr) {
         this.timeForScanStr = timeForScanStr;
     }
-    
+
     public List<String> getResultsList() {
         return Collections.unmodifiableList(resultsList);
     }
-    
+
     /**
      @return {@link #multipartFile}
      */
     public MultipartFile getMultipartFile() {
         return multipartFile;
     }
-    
+
     /**
      @param multipartFile {@link #multipartFile}
      */
     public void setMultipartFile(MultipartFile multipartFile) {
         this.multipartFile = multipartFile;
     }
-    
+
     @Override
     public Runnable getMonitoringRunnable() {
         return this;
     }
-    
+
     @Override
     public String getStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -132,12 +131,12 @@ public class PingerFromFile implements NetScanService {
         stringBuilder.append(UsefulUtilities.getRunningInformation().replace("\n", "<br>")).append("<p>");
         return stringBuilder.toString();
     }
-    
+
     @Override
     public String writeLog() {
         throw new TODOException("Make NetPingerServiceFactory.writeLogToFile 21.07.2019 (13:30)");
     }
-    
+
     /**
      @return {@link #timeToEndStr}
      */
@@ -145,7 +144,7 @@ public class PingerFromFile implements NetScanService {
     public String getExecution() {
         return timeToEndStr;
     }
-    
+
     /**
      @return {@link #pingResultStr}
      */
@@ -153,7 +152,7 @@ public class PingerFromFile implements NetScanService {
     public String getPingResultStr() {
         return pingResultStr;
     }
-    
+
     @Override
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
         ipAddressAndDeviceNameToPing.forEach((key, value)->{
@@ -164,7 +163,7 @@ public class PingerFromFile implements NetScanService {
         });
         return resultsList;
     }
-    
+
     @Override
     public void run() {
         final long startSt = System.currentTimeMillis();
@@ -172,7 +171,7 @@ public class PingerFromFile implements NetScanService {
             parseFile();
         }
         else {
-            throw new InvokeIllegalException(MessageFormat.format("{0} - multipartFile is not set", this.getClass().getSimpleName()));
+            throw new IllegalArgumentException(MessageFormat.format("{0} - multipartFile is not set", this.getClass().getSimpleName()));
         }
         long userIn;
         try {
@@ -192,7 +191,7 @@ public class PingerFromFile implements NetScanService {
         messageToUser.infoNoTitles(pingResultStr);
         parseResult(userIn);
     }
-    
+
     private void parseFile() {
         try (InputStream inputStream = multipartFile.getInputStream();
              InputStreamReader reader = new InputStreamReader(inputStream);
@@ -209,7 +208,7 @@ public class PingerFromFile implements NetScanService {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseFile", e));
         }
     }
-    
+
     private void pingSW() {
         Properties properties = InitProperties.getTheProps();
         this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PINGSLEEP, String.valueOf(pingSleepMsec)));
@@ -224,7 +223,7 @@ public class PingerFromFile implements NetScanService {
             }
         }
     }
-    
+
     private void parseResult(long userIn) {
         Set<String> pingsList = new HashSet<>();
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
@@ -236,7 +235,7 @@ public class PingerFromFile implements NetScanService {
         FileSystemWorker.writeFile(FileNames.PINGRESULT, pingsList.stream());
         MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).info(AbstractForms.fromArray(pingsList));
     }
-    
+
     private void parseAddr(String readLine) {
         try {
             ipAsList.add(InetAddress.getByName(readLine));
@@ -245,9 +244,9 @@ public class PingerFromFile implements NetScanService {
             ipAsList.add(ipIsIP(readLine));
         }
     }
-    
+
     private InetAddress ipIsIP(String readLine) {
-        
+
         InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
         try {
             byte[] addressBytes = InetAddress.getByName(readLine).getAddress();
@@ -258,7 +257,7 @@ public class PingerFromFile implements NetScanService {
         }
         return resolvedAddress;
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetPinger{");
