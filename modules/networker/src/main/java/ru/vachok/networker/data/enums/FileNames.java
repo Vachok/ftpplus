@@ -105,4 +105,8 @@ public enum FileNames {
     public static final String SSH_ERR = "ssh.err.log";
 
     public static final String SSH_LISTS_LOG = "getsshlists.log";
+
+    public static final String DFINETSTAT = "dfinetstat";
+
+    public static final String OPENVPN_STATUS = "openvpn-status";
 }

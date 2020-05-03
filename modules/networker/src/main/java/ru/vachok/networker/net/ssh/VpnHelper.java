@@ -9,11 +9,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -25,32 +26,31 @@ import java.util.concurrent.TimeUnit;
 public class VpnHelper extends SshActs {
 
 
-    private static final String GET_STATUS_COMMAND = "cat openvpn-status && exit";
+    private static final String GET_STATUS_COMMAND = "cat openvpn-status;exit";
 
     private static final String URL_WITH_KEYS = ConstantsFor.GIT_SERVER + "/?p=.git;a=tree;f=vpn/keys/keys;h=e2ff30b915f6277e541cc9415b7ce025fc0b11f4;hb=HEAD";
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, VpnHelper.class.getSimpleName());
 
+    int connectCounter = 0;
+
     private String keyName;
 
-    public String getStatus() {
-        String result;
-        try {
-            InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_VPN);
-            if (byName.isReachable(300)) {
-                result = execSSHCommand(byName.getHostAddress(), GET_STATUS_COMMAND);
+    public void getStatus() {
+        String result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", "result", whatSrvNeed(), execSSHCommand(GET_STATUS_COMMAND));
+        if (result.contains("AppConfigurationLocal")) {
+            result = MessageFormat
+                .format("Error loading. Next trying to connect... {0} times tried\n{1}: {2}", connectCounter, whatSrvNeed(), GET_STATUS_COMMAND);
+            messageToUser.warn(getClass().getSimpleName(), "getStatus", result);
+            this.connectCounter += 1;
+            if (this.connectCounter < 10) {
+                getStatus();
             }
-            else {
-                result = byName + " is not Reachable".toUpperCase();
-            }
         }
-        catch (IOException e) {
-            result = e.getMessage();
+        else {
+            this.connectCounter = 0;
+            messageToUser.info(getClass().getSimpleName(), "file written", FileSystemWorker.writeFile(FileNames.OPENVPN_STATUS, result));
         }
-        if (result.isEmpty() || !result.contains(ConstantsFor.VPN_LIST)) {
-            result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", result, whatSrvNeed(), execSSHCommand(GET_STATUS_COMMAND));
-        }
-        return result;
     }
 
     public String getConfig(String keyName) {

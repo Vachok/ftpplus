@@ -12,6 +12,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
+import ru.vachok.networker.net.ssh.VpnHelper;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.util.Date;
@@ -32,13 +33,14 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         NetScanService scanOnlineRun = NetScanService.getInstance(NetScanService.SCAN_ONLINE);
         NetScanService diapazonScanRun = NetScanService.getInstance(NetScanService.DIAPAZON);
         Runnable popSmtpTest = new MailPOPTester();
+        Runnable openvpnStatusFileMaker = ()->new VpnHelper().getStatus();
         ThreadConfig thrConfig = AppComponents.threadConfig();
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         schedule(scanOnlineRun, 3);
         schedule(popSmtpTest, (int) (ConstantsFor.DELAY * 2));
         schedule(new TemporaryFullInternet(), (int) ConstantsFor.DELAY);
-        schedule((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4);
-
+        schedule((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 5);
+        schedule(openvpnStatusFileMaker, 1);
         AppInfoOnLoad.getMiniLogger().add(thrConfig.toString());
     }
 

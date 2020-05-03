@@ -469,7 +469,6 @@ public class SSHFactory implements Callable<String> {
          @return the sshactions factory
          */
         public SSHFactory build() {
-            System.out.println("getPem() = " + getPem());
             return sshFactory;
         }
 

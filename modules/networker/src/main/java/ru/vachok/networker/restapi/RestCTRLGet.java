@@ -21,7 +21,6 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.net.ssh.SshActs;
-import ru.vachok.networker.net.ssh.VpnHelper;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -34,10 +33,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.concurrent.Executors;
 
 import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
 
@@ -97,16 +94,20 @@ public class RestCTRLGet {
 
     @GetMapping("/status")
     public String appStatus() {
-        String statusVpn = new VpnHelper().getStatus();
+        Executors.newSingleThreadExecutor().execute(this::printDiskInfoToFile);
+        String statusVpn = FileSystemWorker.readFile(FileNames.OPENVPN_STATUS);
         String informationSys = UsefulUtilities.getRunningInformation();
-        String sshAns = connectToSrvInetstat();
+        File fileDFInetstat = new File(FileNames.DFINETSTAT);
+        String sshAns = fileDFInetstat.getAbsolutePath();
+        if (fileDFInetstat.exists()) {
+            sshAns = new Date(fileDFInetstat.lastModified()).toString() + "\n" + FileSystemWorker.readFile(fileDFInetstat);
+        }
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
-    private String connectToSrvInetstat() {
+    private void printDiskInfoToFile() {
         SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
-            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
+        FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10));
     }
 
     @GetMapping("/db")

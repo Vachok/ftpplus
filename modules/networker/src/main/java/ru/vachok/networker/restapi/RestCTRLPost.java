@@ -19,7 +19,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.net.ssh.VpnHelper;
-import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.servlet.ServletInputStream;
@@ -38,11 +37,9 @@ public class RestCTRLPost {
     private final Callable<String> domainGetter = new SSHFactory.Builder(SshActs.whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, this.getClass().getSimpleName())
         .build();
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRLPost.class.getSimpleName());
-
     private static final String GETOLDFILES = "/getoldfiles";
 
-    private static final String INCORRECT_REQUEST = "Incorrect request";
+    static final String INCORRECT_REQUEST = "Incorrect request";
 
     @PostMapping(GETOLDFILES)
     public String delOldFiles(HttpServletRequest request) {
