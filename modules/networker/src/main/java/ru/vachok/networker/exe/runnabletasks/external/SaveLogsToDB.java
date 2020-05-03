@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
 public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactory, InformationFactory, Callable<String> {
 
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SaveLogsToDB.class.getSimpleName());
 
     private static final int START_ID = new SaveLogsToDB().getLastRecordID();
 

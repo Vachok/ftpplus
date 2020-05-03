@@ -91,7 +91,7 @@ public class ServiceInfoCtrl {
      @throws AccessDeniedException если не {@link ErrCtr#getPcAuth(HttpServletRequest)}
      */
     @GetMapping("/serviceinfo")
-    public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
+    public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExceptionInInitializerError {
         model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getTotalCPUTimeInformation() + " total CPU");
         String[] values = FileSystemWorker.readFileArray(new File("serviceinfo.allow"));
         this.authReq = Stream.of(values).anyMatch(sP->request.getRemoteAddr().contains(sP));

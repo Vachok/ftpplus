@@ -67,13 +67,14 @@ public class AppInfoOnLoad implements Runnable {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
         FileSystemWorker.writeFile(AVAILABLECHARSETS_TXT, avCharsetsStr);
-        SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
+        if (NetScanService.isReach("10.10.111.65")) {
+            SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
+            AppConfigurationLocal.getInstance().execute(syncData::superRun);
+        }
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
 
         AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setCurrentProvider, 0, 2, TimeUnit.MINUTES);
-
-        AppConfigurationLocal.getInstance().execute(syncData::superRun);
 
         try {
             infoForU();

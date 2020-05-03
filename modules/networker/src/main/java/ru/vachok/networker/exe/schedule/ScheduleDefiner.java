@@ -29,14 +29,10 @@ public class ScheduleDefiner implements AppConfigurationLocal {
     }
 
     private void startPeriodicTasks() {
-        NetScanService netScanService = NetScanService.getInstance(NetScanService.PTV);
         NetScanService scanOnlineRun = NetScanService.getInstance(NetScanService.SCAN_ONLINE);
         NetScanService diapazonScanRun = NetScanService.getInstance(NetScanService.DIAPAZON);
         Runnable popSmtpTest = new MailPOPTester();
-
         ThreadConfig thrConfig = AppComponents.threadConfig();
-
-        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(netScanService, 10, 10, TimeUnit.SECONDS);
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         schedule(scanOnlineRun, 3);
         schedule(popSmtpTest, (int) (ConstantsFor.DELAY * 2));

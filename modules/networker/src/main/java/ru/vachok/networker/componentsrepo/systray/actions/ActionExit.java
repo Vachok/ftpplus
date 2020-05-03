@@ -13,8 +13,11 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -29,9 +32,9 @@ public class ActionExit extends AbstractAction {
 
     public static final String ALLDEV_MAP = "alldev.map";
 
-    private String reason;
+    private final String reason;
 
-    private transient MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+    private final transient MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ActionExit.class.getSimpleName());
 
     public ActionExit(String reason) {
@@ -45,7 +48,7 @@ public class ActionExit extends AbstractAction {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, NetKeeper.class));
             submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         }
-        catch (Exception ex) {
+        catch (Error | IOException | InterruptedException | TimeoutException | ExecutionException ex) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
             System.exit(ConstantsFor.EXIT_STATUSBAD);

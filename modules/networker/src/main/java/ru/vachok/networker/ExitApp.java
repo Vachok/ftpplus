@@ -39,7 +39,7 @@ public class ExitApp extends Thread implements Externalizable {
 
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, ExitApp.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ExitApp.class.getSimpleName());
 
     /**
      new {@link ArrayList}, записываемый в "exit.last"
