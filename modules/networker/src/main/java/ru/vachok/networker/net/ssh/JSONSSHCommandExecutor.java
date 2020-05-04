@@ -3,6 +3,7 @@ package ru.vachok.networker.net.ssh;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
+import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.SSHFactory;
@@ -24,17 +25,38 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
-        String result = jsonObject.toString();
-        int codeVer;
+        String result;
+        int codeVer = -666;
         try {
-            codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "-1"));
-        }
-        catch (UnsupportedOperationException e) {
-            messageToUser.error("JSONSSHCommandExecutor.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
         }
-        String authorizationHeader = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
-        boolean isValid = checkValidUID(authorizationHeader, codeVer);
+        catch (ParseException | UnsupportedOperationException e) {
+            codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "-1"));
+        }
+        catch (RuntimeException e) {
+            codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "-1"));
+            messageToUser.error("JSONSSHCommandExecutor.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        finally {
+            result = connectToSrv(jsonObject, codeVer);
+            messageToUser.info(getClass().getSimpleName(), jsonObject.toString(), result);
+        }
+        return result;
+    }
+
+    private String connectToSrv(@NotNull JsonObject jsonObject, int codeVer) {
+        String result = getClass().getSimpleName();
+        String authorizationHeader = "null";
+        boolean isValid;
+        try {
+            authorizationHeader = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
+        }
+        catch (Exception e) {
+            authorizationHeader = e.getMessage();
+        }
+        finally {
+            isValid = checkValidUID(authorizationHeader, codeVer);
+        }
         if (isValid) {
             try {
                 result = makeActions(jsonObject);
@@ -46,7 +68,6 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
         else {
             result = result + "\n" + authorizationHeader + ":" + codeVer + " BAD AUTH!";
         }
-        messageToUser.info(getClass().getSimpleName(), jsonObject.toString(), result);
         return result;
     }
 
