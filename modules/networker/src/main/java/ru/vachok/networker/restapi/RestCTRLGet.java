@@ -113,6 +113,12 @@ public class RestCTRLGet {
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
+    private void printDiskInfoToFile() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        String path = FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 30));
+        messageToUser.info(path);
+    }
+
     @GetMapping(GETOLDFILES)
     public String collectOldFiles() {
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
@@ -198,11 +204,6 @@ public class RestCTRLGet {
             stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
         }
         return stringBuilder.toString();
-    }
-
-    private void printDiskInfoToFile() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 30));
     }
 
     @GetMapping("/getsshlists")

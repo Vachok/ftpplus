@@ -44,7 +44,11 @@ public class VpnHelper extends SshActs {
             messageToUser.warn(getClass().getSimpleName(), "getStatus", result);
             this.connectCounter += 1;
             if (this.connectCounter < 10) {
-                getStatus();
+                this.getStatus();
+            }
+            else {
+                result = MessageFormat.format("No connection to {0}. Tried {1} times.\nCommand: {2}", whatSrvNeed(), connectCounter, GET_STATUS_COMMAND);
+                messageToUser.warn(getClass().getSimpleName(), "No connection ", FileSystemWorker.writeFile(FileNames.OPENVPN_STATUS, result));
             }
         }
         else {
