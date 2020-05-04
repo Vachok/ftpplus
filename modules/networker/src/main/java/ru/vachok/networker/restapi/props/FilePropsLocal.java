@@ -42,6 +42,7 @@ public class FilePropsLocal implements InitProperties {
 
     public void reloadPropsFromDB() {
         this.propFile = new File(FileNames.CONSTANTSFOR_PROPERTIES);
+        Properties appPr = InitProperties.getTheProps();
         InitProperties instance = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         Properties props = instance.getProps();
         if (!propFile.exists() || propFile.canWrite()) {
@@ -59,6 +60,9 @@ public class FilePropsLocal implements InitProperties {
                 MessageFormat.format("{0} is unreadable", propFile.getAbsolutePath()),
                 MessageFormat.format("Delete: {0}", propFile.delete()));
         }
+        appPr.clear();
+        appPr.putAll(props);
+        appPr.forEach((k, v)->InitProperties.getUserPref().put(k.toString(), v.toString()));
     }
 
     @Override

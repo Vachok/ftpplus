@@ -27,6 +27,7 @@ import java.util.concurrent.*;
 /**
  @see NetMonitorPTV
  @since 01.11.2019 (8:49) */
+@Ignore
 public class NetMonitorPTVTest {
 
 

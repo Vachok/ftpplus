@@ -4,10 +4,7 @@ package ru.vachok.networker.net.monitor;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -29,6 +26,7 @@ import java.util.prefs.Preferences;
 
 /**
  @see NetMonitorPTV */
+@Ignore
 @SuppressWarnings("ALL") public class NetMonitorPTVTests {
 
 

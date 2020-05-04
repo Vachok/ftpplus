@@ -79,7 +79,6 @@ class PropsHelper {
         Properties propsFromFile = InitProperties.getInstance(InitProperties.FILE).getProps();
         fromApp.clear();
         fromApp.putAll(propsFromFile);
-
     }
 
     private void loadPropsFromDB() {
