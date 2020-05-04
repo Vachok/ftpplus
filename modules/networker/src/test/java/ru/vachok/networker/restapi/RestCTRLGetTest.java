@@ -86,4 +86,11 @@ public class RestCTRLGetTest {
         String s = restCTRLGet.toString();
         Assert.assertTrue(s.contains("RestCTRLGet["), s);
     }
+
+    @Test
+    public void testShowAppProps() {
+        String s = restCTRLGet.showAppProps();
+        Assert.assertTrue(s.contains("props_"));
+        Assert.assertTrue(s.contains("pref_"));
+    }
 }

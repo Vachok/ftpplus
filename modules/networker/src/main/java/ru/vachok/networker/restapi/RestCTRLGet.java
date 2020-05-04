@@ -38,6 +38,8 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
 import static ru.vachok.networker.restapi.RestCTRLPost.GETOLDFILES;
@@ -53,6 +55,8 @@ public class RestCTRLGet {
     private static final String OKHTTP = "okhttp";
 
     private static final String SUDO_CAT_ETC_PF = "sudo cat /etc/pf/";
+
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRLGet.class.getSimpleName());
 
     @GetMapping("/sshgetdomains")
     public String getAllowDomains() {
@@ -341,6 +345,25 @@ public class RestCTRLGet {
             jsonObject.add(sshB.getCommandSSH().replace(SUDO_CAT_ETC_PF, ""), srvAnswer.replace("<br>\n", "\n"));
         }
         return jsonObject;
+    }
+
+    @GetMapping("/props")
+    public String showAppProps() {
+        ((FilePropsLocal) InitProperties.getInstance(InitProperties.FILE)).reloadPropsFromDB();
+        Properties props = InitProperties.getTheProps();
+        Preferences pref = InitProperties.getUserPref();
+        List<String> propsPref = new ArrayList<>();
+        props.forEach((k, v)->propsPref.add("1_props_" + k + ":" + v));
+        try {
+            for (String key : pref.keys()) {
+                propsPref.add("2_pref_" + key + ":" + pref.get(key, "no value"));
+            }
+        }
+        catch (BackingStoreException e) {
+            messageToUser.warn(RestCTRLGet.class.getSimpleName(), e.getMessage(), " see line: 359 ***");
+        }
+        Collections.sort(propsPref);
+        return AbstractForms.fromArray(propsPref);
     }
 
     @Override
