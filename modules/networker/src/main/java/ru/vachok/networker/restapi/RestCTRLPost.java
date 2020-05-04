@@ -37,7 +37,7 @@ public class RestCTRLPost {
     private final Callable<String> domainGetter = new SSHFactory.Builder(SshActs.whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, this.getClass().getSimpleName())
         .build();
 
-    private static final String GETOLDFILES = "/getoldfiles";
+    static final String GETOLDFILES = "/getoldfiles";
 
     static final String INCORRECT_REQUEST = "Incorrect request";
 
@@ -129,15 +129,6 @@ public class RestCTRLPost {
                     .networkerTrace(e.getStackTrace()));
         }
         return result;
-    }
-
-    @GetMapping(GETOLDFILES)
-    public String collectOldFiles() {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
-            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
-        return oldBigFilesInfoCollector.getFromDatabase();
     }
 
     @PostMapping("/sshdel")

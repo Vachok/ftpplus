@@ -96,8 +96,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
-        ThreadConfig.cleanQueue(callableQuestion);
-        String result;
+        String result = "null";
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> submit = executor.submit(callableQuestion);
         try {
@@ -114,7 +113,7 @@ public interface AppConfigurationLocal extends Runnable {
                 .format("{0} try to run: {1} ({2})", AppConfigurationLocal.class.getSimpleName(), e.getMessage(), callableQuestion.getClass().getSimpleName());
         }
         finally {
-            System.out.println(MessageFormat.format("executor = {0} is done: {1}", callableQuestion.getClass().getName(), submit.isDone()));
+            System.out.println(MessageFormat.format("{0} = {1} is done: {2}", result, callableQuestion.getClass().getName(), submit.isDone()));
         }
         return result;
     }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -23,6 +24,8 @@ import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +40,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 
 import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
+import static ru.vachok.networker.restapi.RestCTRLPost.GETOLDFILES;
 
 
 /**
@@ -105,9 +109,15 @@ public class RestCTRLGet {
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
-    private void printDiskInfoToFile() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10));
+    @GetMapping(GETOLDFILES)
+    public String collectOldFiles() {
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.FILE);
+        ((FilePropsLocal) initProperties).reloadPropsFromDB();
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
+            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
+        return oldBigFilesInfoCollector.getFromDatabase();
     }
 
     @GetMapping("/db")
@@ -186,6 +196,11 @@ public class RestCTRLGet {
             stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
         }
         return stringBuilder.toString();
+    }
+
+    private void printDiskInfoToFile() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 30));
     }
 
     @GetMapping("/getsshlists")
