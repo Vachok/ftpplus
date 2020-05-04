@@ -114,16 +114,16 @@ public class RestCTRLPost {
 
     @PostMapping("/sshcommandexec")
     public String sshCommandExecute(HttpServletRequest request) {
-        String result = getClass().getSimpleName();
+        String result;
         JsonObject jsonO;
         try {
             jsonO = getJSON(readRequestBytes(request));
             if (!jsonO.names().contains(ConstantsFor.AUTHORIZATION)) {
                 jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-                result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
             }
+            result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
         }
-        catch (UnsupportedOperationException | NegativeArraySizeException e) {
+        catch (RuntimeException e) {
             result = MessageFormat
                 .format("RestCTRLPost.sshCommandExecute\n{0}: {1}\n{2}", e.getClass().getSimpleName(), e.getMessage(), AbstractForms
                     .networkerTrace(e.getStackTrace()));

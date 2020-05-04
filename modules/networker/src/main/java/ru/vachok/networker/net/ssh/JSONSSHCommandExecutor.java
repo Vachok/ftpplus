@@ -46,6 +46,7 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
         else {
             result = result + "\n" + authorizationHeader + ":" + codeVer + " BAD AUTH!";
         }
+        messageToUser.info(getClass().getSimpleName(), jsonObject.toString(), result);
         return result;
     }
 
