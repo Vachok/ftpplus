@@ -45,6 +45,12 @@ public class RestCTRLGetTest {
     }
 
     @Test
+    public void testCollectOldFiles() {
+        String oldFilesStr = restCTRLGet.collectOldFiles();
+        Assert.assertTrue(oldFilesStr.contains("Total file size in DB now"), oldFilesStr);
+    }
+
+    @Test
     public void testUniqPC() {
         HttpServletRequest request = new MockHttpServletRequest();
         String uPc = restCTRLGet.uniqPC(request);
