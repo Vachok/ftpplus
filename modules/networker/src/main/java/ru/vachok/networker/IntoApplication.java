@@ -15,17 +15,21 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.awt.*;
 import java.io.File;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.*;
 
@@ -50,6 +54,9 @@ public class IntoApplication {
 
     private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
 
+    private static final String APP_ID = MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), LocalTime
+        .now().toSecondOfDay());
+
     @Contract(pure = true)
     static ConfigurableApplicationContext getContext() {
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
@@ -62,7 +69,12 @@ public class IntoApplication {
 
     public static void main(@NotNull String[] args) {
         Thread.currentThread().setName(IntoApplication.class.getSimpleName());
+        File fileLogJson = new File(FileNames.APP_JSON);
+        if (new File(FileNames.APP_JSON).exists() && fileLogJson.length() > ConstantsFor.MBYTE) {
+            fileLogJson.delete();
+        }
         JsonObject appStart = new JsonObject();
+        configurableApplicationContext.setId(APP_ID);
         appStart.add(PropertiesNames.TIMESTAMP, ConstantsFor.START_STAMP);
         appStart.add("hdate", new Date(ConstantsFor.START_STAMP).toString());
         appStart.add("configurableApplicationContext", configurableApplicationContext.hashCode());
@@ -77,6 +89,39 @@ public class IntoApplication {
         }
         else {
             checkTray();
+        }
+        String appID = configurableApplicationContext.getId();
+        if (appID != null && !appID.isEmpty()) {
+            setID();
+        }
+    }
+
+    protected static void setUTF8Enc() {
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("\n\nSystem time: ").append(new Date(System.currentTimeMillis())).append(" atom time: ")
+            .append(new Date(UsefulUtilities.getAtomicTime())).append("\n\n");
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
+        System.setProperty(PropertiesNames.ENCODING, "UTF8");
+        stringBuilder.append(AbstractForms.fromArray(System.getProperties()));
+        stringBuilder.append("http://").append(new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress().getHostAddress()).append(":8880/");
+        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName())
+            .info(UsefulUtilities.thisPC(), "appInfoStarter", stringBuilder.toString());
+    }
+
+    private static void setID() {
+        if (!UsefulUtilities.thisPC().contains("rups")) {
+            Properties appPr = InitProperties.getTheProps();
+            appPr.setProperty(PropertiesNames.APPVERSION, configurableApplicationContext.getId());
+            InitProperties fileInst = InitProperties.getInstance(InitProperties.FILE);
+            fileInst.setProps(appPr);
+            InitProperties.getInstance(InitProperties.DB_LOCAL).setProps(appPr);
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
+            new File(FileNames.CONSTANTSFOR_PROPERTIES).setWritable(false);
+            ((FilePropsLocal) fileInst).reloadPropsFromDB();
+
+        }
+        else {
+            MessageToUser.getInstance(MessageToUser.FILE, IntoApplication.class.getSimpleName()).info(APP_ID);
         }
     }
 
@@ -99,20 +144,8 @@ public class IntoApplication {
     @Override
     public String toString() {
         return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
-                .add(new AppComponents().getFirebaseApp().getName())
+            .add(new AppComponents().getFirebaseApp().getName())
             .toString();
-    }
-
-    protected static void setUTF8Enc() {
-        @NotNull StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("\n\nSystem time: ").append(new Date(System.currentTimeMillis())).append(" atom time: ")
-            .append(new Date(UsefulUtilities.getAtomicTime())).append("\n\n");
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
-        System.setProperty(PropertiesNames.ENCODING, "UTF8");
-        stringBuilder.append(AbstractForms.fromArray(System.getProperties()));
-        stringBuilder.append("http://").append(new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress().getHostAddress()).append(":8880/");
-        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName())
-            .info(UsefulUtilities.thisPC(), "appInfoStarter", stringBuilder.toString());
     }
 
     static void appInfoStarter() {

@@ -115,6 +115,8 @@ public abstract class UsefulUtilities {
     @NotNull
     public static String getRunningInformation() {
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Version: ").append(MessageFormat
+            .format("{0} on {1}\n", InitProperties.getTheProps().getProperty(PropertiesNames.APPVERSION), System.getProperty(PropertiesNames.JAVA_VERSION)));
         stringBuilder.append("CPU information:").append("\n").append(getOS()).append("***\n\n");
         stringBuilder.append("Memory information:").append("\n").append(getMemory()).append("***\n\n");
         stringBuilder.append("Runtime information:").append("\n").append(getRuntime()).append("***\n\n");

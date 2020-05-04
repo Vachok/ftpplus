@@ -99,7 +99,12 @@ public class FirebaseMessage implements MessageToUser {
 
         @Override
         public void onComplete(DatabaseError error, DatabaseReference ref) {
-            AbstractForms.networkerTrace(error.toException().getStackTrace());
+            if (error != null) {
+                AbstractForms.networkerTrace(error.toException().getStackTrace());
+            }
+            else {
+                System.out.println(MessageFormat.format("{0} = {1}", FirebaseMessage.class.getSimpleName(), ref.toString()));
+            }
         }
     }
 }

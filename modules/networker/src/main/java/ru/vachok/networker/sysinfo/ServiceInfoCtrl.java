@@ -20,6 +20,7 @@ import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
@@ -172,7 +173,8 @@ public class ServiceInfoCtrl {
     }
 
     private String getJREVers() {
-        return System.getProperty("java.version");
+        return MessageFormat
+            .format("{0} on {1}", InitProperties.getTheProps().getProperty(PropertiesNames.APPVERSION), System.getProperty(PropertiesNames.JAVA_VERSION));
     }
 
     /**
