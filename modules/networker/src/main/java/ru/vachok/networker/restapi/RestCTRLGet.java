@@ -115,8 +115,6 @@ public class RestCTRLGet {
 
     @GetMapping(GETOLDFILES)
     public String collectOldFiles() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.FILE);
-        ((FilePropsLocal) initProperties).reloadPropsFromDB();
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
         OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
