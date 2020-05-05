@@ -64,14 +64,15 @@ public class IntoApplication {
         if (new File(FileNames.APP_JSON).exists() && fileLogJson.length() > ConstantsFor.MBYTE) {
             fileLogJson.delete();
         }
+        setUTF8Enc();
         JsonObject appStart = new JsonObject();
         configurableApplicationContext.setId(getAppID());
         appStart.add(PropertiesNames.TIMESTAMP, ConstantsFor.START_STAMP);
         appStart.add("hdate", new Date(ConstantsFor.START_STAMP).toString());
         appStart.add("configurableApplicationContext", configurableApplicationContext.hashCode());
         appStart.add("scheduleTrunkPcUserAuto", UsefulUtilities.scheduleTrunkPcUserAuto());
-        FileSystemWorker.appendObjectToFile(new File(FileNames.APP_JSON), appStart);
-        setUTF8Enc();
+        FileSystemWorker.appendObjectToFile(new File(FileNames.APP_START), appStart);
+
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
         }

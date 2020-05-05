@@ -3,22 +3,25 @@ package ru.vachok.networker.restapi.message;
 
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.time.LocalTime;
+import java.util.Date;
 
 
 class MessageFileLocal implements MessageToUser {
 
 
-    private File appLog = new File(FileNames.APP_JSON);
-
     private static final String WARN = "warn";
 
     private static final String INFO = "info";
+
+    private File appLog = new File(FileNames.APP_JSON);
 
     private String headerMsg;
 
@@ -26,13 +29,13 @@ class MessageFileLocal implements MessageToUser {
 
     private String titleMsg;
 
-    @Override
-    public void setHeaderMsg(String headerMsg) {
+    @Contract(pure = true)
+    MessageFileLocal(String headerMsg) {
         this.headerMsg = headerMsg;
     }
 
-    @Contract(pure = true)
-    MessageFileLocal(String headerMsg) {
+    @Override
+    public void setHeaderMsg(String headerMsg) {
         this.headerMsg = headerMsg;
     }
 
@@ -42,7 +45,7 @@ class MessageFileLocal implements MessageToUser {
         this.bodyMsg = bodyMsg;
         this.titleMsg = titleMsg;
         try {
-            pringAppLog(ConstantsFor.STR_ERROR);
+            printAppLog(ConstantsFor.STR_ERROR);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -54,25 +57,25 @@ class MessageFileLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        pringAppLog(INFO);
+        printAppLog(INFO);
     }
 
     @Override
     public void infoNoTitles(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        pringAppLog(INFO);
+        printAppLog(INFO);
     }
 
     @Override
     public void info(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        pringAppLog(INFO);
+        printAppLog(INFO);
     }
 
     @Override
     public void error(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        pringAppLog(ConstantsFor.STR_ERROR);
+        printAppLog(ConstantsFor.STR_ERROR);
     }
 
     @Override
@@ -80,7 +83,7 @@ class MessageFileLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        pringAppLog(ConstantsFor.STR_ERROR);
+        printAppLog(ConstantsFor.STR_ERROR);
     }
 
     @Override
@@ -88,13 +91,13 @@ class MessageFileLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        pringAppLog(WARN);
+        printAppLog(WARN);
     }
 
     @Override
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        pringAppLog(WARN);
+        printAppLog(WARN);
     }
 
     @Override
@@ -102,16 +105,16 @@ class MessageFileLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        pringAppLog(WARN);
+        printAppLog(WARN);
     }
 
     @Override
     public void warning(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        pringAppLog(WARN);
+        printAppLog(WARN);
     }
 
-    private void pringAppLog(String logType) {
+    private void printAppLog(String logType) {
         chkAppLogFile();
         JsonObject jsonObject = new JsonObject();
         try (OutputStream outputStream = new FileOutputStream(appLog, true);
@@ -127,17 +130,21 @@ class MessageFileLocal implements MessageToUser {
     }
 
     private void chkAppLogFile() {
-        System.out.println(this.headerMsg);
-        System.out.println(this.bodyMsg);
-        System.out.println(this.titleMsg);
-        if (appLog.exists() && appLog.length() > ConstantsFor.MBYTE) {
-            boolean isDelete = this.appLog.delete();
-            if (isDelete) {
-                appLog = new File(FileNames.APP_JSON);
+        if (appLog.exists()) {
+            System.out.println("appLog = " + appLog.length() / ConstantsFor.KBYTE);
+            if ((appLog.length() > ConstantsFor.MBYTE)) {
+                MessageToUser.getInstance(MessageToUser.EMAIL, getClass().getSimpleName()).info(FileSystemWorker.readFile(appLog));
+                boolean isDelete = this.appLog.delete();
+                if (isDelete) {
+                    appLog = new File(FileNames.APP_JSON);
+                }
+                else {
+                    appLog = new File(FileNames.APP_JSON + "." + LocalTime.now().toSecondOfDay());
+                }
             }
-            else {
-                appLog = new File(FileNames.APP_JSON + "." + LocalTime.now().toSecondOfDay());
-            }
+        }
+        else {
+            FileSystemWorker.writeFile(appLog.getAbsolutePath(), MessageFormat.format("New log at {0} starting...\n", new Date()));
         }
     }
 

@@ -109,4 +109,6 @@ public enum FileNames {
     public static final String DFINETSTAT = "dfinetstat";
 
     public static final String OPENVPN_STATUS = "openvpn-status";
+
+    public static final String APP_START = "app.start";
 }
