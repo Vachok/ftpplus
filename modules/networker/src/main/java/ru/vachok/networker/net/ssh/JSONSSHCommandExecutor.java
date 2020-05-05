@@ -81,7 +81,11 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
         if (jsonObject.names().contains(ConstantsFor.PARM_NAME_COMMAND)) {
             commandForSH = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
         }
-        SSHFactory.Builder sshFB = new SSHFactory.Builder(serverName, commandForSH, jsonObject.get(ConstantsFor.AUTHORIZATION).asString());
+        SSHFactory.Builder sshFB = new SSHFactory.Builder(serverName, commandForSH, getClass().getSimpleName());
+        MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName()).info(serverName, commandForSH, getClass().getSimpleName());
+        String finalServerName = serverName;
+        AppConfigurationLocal.getInstance()
+            .execute(()->messageToUser.info(new SSHFactory.Builder(finalServerName, "uname -a;uptime;exit", getClass().getSimpleName()).build().call()));
         return serverAnswer(sshFB);
     }
 

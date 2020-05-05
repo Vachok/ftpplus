@@ -54,19 +54,6 @@ public class IntoApplication {
 
     private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
 
-    private static final String APP_ID = MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), LocalTime
-        .now().toSecondOfDay());
-
-    @Contract(pure = true)
-    static ConfigurableApplicationContext getContext() {
-        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
-        return configurableApplicationContext;
-    }
-
-    public static ConfigurableListableBeanFactory getBeansFactory() {
-        return configurableApplicationContext.getBeanFactory();
-    }
-
     public static void main(@NotNull String[] args) {
         Thread.currentThread().setName(IntoApplication.class.getSimpleName());
         File fileLogJson = new File(FileNames.APP_JSON);
@@ -74,7 +61,7 @@ public class IntoApplication {
             fileLogJson.delete();
         }
         JsonObject appStart = new JsonObject();
-        configurableApplicationContext.setId(APP_ID);
+        configurableApplicationContext.setId(getAppID());
         appStart.add(PropertiesNames.TIMESTAMP, ConstantsFor.START_STAMP);
         appStart.add("hdate", new Date(ConstantsFor.START_STAMP).toString());
         appStart.add("configurableApplicationContext", configurableApplicationContext.hashCode());
@@ -93,6 +80,26 @@ public class IntoApplication {
         String appID = configurableApplicationContext.getId();
         if (appID != null && !appID.isEmpty()) {
             setID();
+        }
+    }
+
+    @Contract(pure = true)
+    static ConfigurableApplicationContext getContext() {
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
+        return configurableApplicationContext;
+    }
+
+    public static ConfigurableListableBeanFactory getBeansFactory() {
+        return configurableApplicationContext.getBeanFactory();
+    }
+
+    private static String getAppID() {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
+            return MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), LocalTime
+                .now().toSecondOfDay());
+        }
+        else {
+            return InitProperties.getTheProps().getProperty(PropertiesNames.APPVERSION);
         }
     }
 
@@ -121,7 +128,7 @@ public class IntoApplication {
 
         }
         else {
-            MessageToUser.getInstance(MessageToUser.FILE, IntoApplication.class.getSimpleName()).info(APP_ID);
+            MessageToUser.getInstance(MessageToUser.FILE, IntoApplication.class.getSimpleName()).info(getAppID());
         }
     }
 
