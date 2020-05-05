@@ -54,6 +54,10 @@ public class IntoApplication {
 
     private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
 
+    public static String getAppIDFromContext() {
+        return configurableApplicationContext.getId();
+    }
+
     public static void main(@NotNull String[] args) {
         Thread.currentThread().setName(IntoApplication.class.getSimpleName());
         File fileLogJson = new File(FileNames.APP_JSON);
@@ -116,7 +120,7 @@ public class IntoApplication {
     }
 
     private static void setID() {
-        if (!UsefulUtilities.thisPC().contains("rups")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
             Properties appPr = InitProperties.getTheProps();
             appPr.setProperty(PropertiesNames.APPVERSION, configurableApplicationContext.getId());
             InitProperties fileInst = InitProperties.getInstance(InitProperties.FILE);

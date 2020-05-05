@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -174,7 +175,7 @@ public class ServiceInfoCtrl {
 
     private String getJREVers() {
         return MessageFormat
-            .format("{0} on {1}", InitProperties.getTheProps().getProperty(PropertiesNames.APPVERSION), System.getProperty(PropertiesNames.JAVA_VERSION));
+            .format("{0} on {1}", IntoApplication.getAppIDFromContext(), System.getProperty(PropertiesNames.JAVA_VERSION));
     }
 
     /**
