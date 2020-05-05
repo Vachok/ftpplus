@@ -22,7 +22,6 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.restapi.props.FilePropsLocal;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.awt.*;
@@ -58,18 +57,28 @@ public class IntoApplication {
         return configurableApplicationContext.getId();
     }
 
+    @Contract(pure = true)
+    static ConfigurableApplicationContext getContext() {
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
+        return configurableApplicationContext;
+    }
+
+    public static ConfigurableListableBeanFactory getBeansFactory() {
+        return configurableApplicationContext.getBeanFactory();
+    }
+
     public static void main(@NotNull String[] args) {
         Thread.currentThread().setName(IntoApplication.class.getSimpleName());
         File fileLogJson = new File(FileNames.APP_JSON);
+        configurableApplicationContext.setId(getAppID());
         if (new File(FileNames.APP_JSON).exists() && fileLogJson.length() > ConstantsFor.MBYTE) {
             fileLogJson.delete();
         }
         setUTF8Enc();
         JsonObject appStart = new JsonObject();
-        configurableApplicationContext.setId(getAppID());
         appStart.add(PropertiesNames.TIMESTAMP, ConstantsFor.START_STAMP);
         appStart.add("hdate", new Date(ConstantsFor.START_STAMP).toString());
-        appStart.add("configurableApplicationContext", configurableApplicationContext.hashCode());
+        appStart.add("configurableApplicationContext", configurableApplicationContext.getId());
         appStart.add("scheduleTrunkPcUserAuto", UsefulUtilities.scheduleTrunkPcUserAuto());
         FileSystemWorker.appendObjectToFile(new File(FileNames.APP_START), appStart);
 
@@ -82,29 +91,14 @@ public class IntoApplication {
         else {
             checkTray();
         }
-        String appID = configurableApplicationContext.getId();
-        if (appID != null && !appID.isEmpty()) {
-            setID();
-        }
-    }
-
-    @Contract(pure = true)
-    static ConfigurableApplicationContext getContext() {
-        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
-        return configurableApplicationContext;
-    }
-
-    public static ConfigurableListableBeanFactory getBeansFactory() {
-        return configurableApplicationContext.getBeanFactory();
     }
 
     private static String getAppID() {
         if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            return MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), LocalTime
-                .now().toSecondOfDay());
+            return setID();
         }
         else {
-            return InitProperties.getTheProps().getProperty(PropertiesNames.APPVERSION);
+            return InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.APPVERSION);
         }
     }
 
@@ -118,23 +112,6 @@ public class IntoApplication {
         stringBuilder.append("http://").append(new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress().getHostAddress()).append(":8880/");
         MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName())
             .info(UsefulUtilities.thisPC(), "appInfoStarter", stringBuilder.toString());
-    }
-
-    private static void setID() {
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            Properties appPr = InitProperties.getTheProps();
-            appPr.setProperty(PropertiesNames.APPVERSION, configurableApplicationContext.getId());
-            InitProperties fileInst = InitProperties.getInstance(InitProperties.FILE);
-            fileInst.setProps(appPr);
-            InitProperties.getInstance(InitProperties.DB_LOCAL).setProps(appPr);
-            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
-            new File(FileNames.CONSTANTSFOR_PROPERTIES).setWritable(false);
-            ((FilePropsLocal) fileInst).reloadPropsFromDB();
-
-        }
-        else {
-            MessageToUser.getInstance(MessageToUser.FILE, IntoApplication.class.getSimpleName()).info(getAppID());
-        }
     }
 
     static void checkTray() {
@@ -153,15 +130,30 @@ public class IntoApplication {
         }
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
-            .add(new AppComponents().getFirebaseApp().getName())
-            .toString();
+    private static String setID() {
+        Properties appPr = InitProperties.getTheProps();
+        String appIdNew = MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), (int) (LocalTime.now()
+            .toSecondOfDay() / ConstantsFor.ONE_HOUR_IN_MIN));
+        appPr.setProperty(PropertiesNames.APPVERSION, appIdNew);
+        InitProperties fileInst = InitProperties.getInstance(InitProperties.FILE);
+        fileInst.setProps(appPr);
+        boolean isDBLocWrite = InitProperties.getInstance(InitProperties.DB_LOCAL).setProps(appPr);
+        boolean isDBMemWrite = InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
+        boolean isFileSet = InitProperties.getInstance(InitProperties.FILE).setProps(appPr);
+        MESSAGE_LOCAL.warn(configurableApplicationContext.getClass().getSimpleName(), MessageFormat
+            .format("{0} isDBLocWrite, {1} isDBMemWrite, {2} isFileSet", isDBLocWrite, isDBMemWrite, isFileSet), appIdNew);
+        return appIdNew;
     }
 
     static void appInfoStarter() {
         @NotNull Runnable infoAndSched = AppInfoOnLoad.getI();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+            .add(new AppComponents().getFirebaseApp().getName())
+            .toString();
     }
 }
