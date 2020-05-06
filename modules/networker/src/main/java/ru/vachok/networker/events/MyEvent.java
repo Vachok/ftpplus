@@ -1,9 +1,9 @@
 package ru.vachok.networker.events;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.springframework.context.ApplicationEvent;
-
-import java.util.StringJoiner;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 
 /**
@@ -28,8 +28,9 @@ public class MyEvent extends ApplicationEvent {
 
     @Override
     public String toString() {
-        return new StringJoiner(",\n", MyEvent.class.getSimpleName() + "[\n", "\n]")
-            .add("source = " + source)
-            .toString();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.JSONNAME_CLASS, getClass().getSimpleName());
+        jsonObject.add("source", source.toString());
+        return jsonObject.toString();
     }
 }

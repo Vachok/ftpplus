@@ -98,4 +98,6 @@ public enum PropertiesNames {
     public static final String ID = "id";
 
     public static final String COMPUTERNAME = "COMPUTERNAME";
+
+    public static final String JSONNAME_CLASS = "Class";
 }

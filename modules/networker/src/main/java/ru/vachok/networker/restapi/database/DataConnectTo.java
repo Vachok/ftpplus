@@ -6,7 +6,6 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
@@ -64,7 +63,6 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @NotNull
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
-        IntoApplication.makeEvent(type);
         switch (type) {
             case REGRUCONNECTION:
                 return new RegRuMysqlLoc();

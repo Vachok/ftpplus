@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import com.eclipsesource.json.JsonObject;
 import com.jcraft.jsch.*;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
@@ -12,6 +13,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
@@ -120,18 +122,6 @@ public class SSHFactory implements Callable<String> {
     }
 
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SSHFactory{");
-        sb.append("classCaller='").append(classCaller).append('\'');
-        sb.append(", commandSSH='").append(commandSSH).append('\'');
-        sb.append(", connectToSrv='").append(connectToSrv).append('\'');
-        sb.append(", sessionType='").append(sessionType).append('\'');
-        sb.append(", userName='").append(userName).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public String call() {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setName(classCaller + "SSH");
@@ -162,9 +152,19 @@ public class SSHFactory implements Callable<String> {
                 stringBuilder.append(recQueue.poll()).append("<br>\n");
             }
             FileSystemWorker.writeFile(tempFile.toAbsolutePath().normalize().toString(), stringBuilder.toString());
-            IntoApplication.makeEvent(this);
+            IntoApplication.makeEvent(this.toString());
         }
         return stringBuilder.toString();
+    }
+
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.JSONNAME_CLASS, getClass().getSimpleName());
+        jsonObject.add("connectToSrv", connectToSrv);
+        jsonObject.add("classCaller", classCaller);
+        jsonObject.add("commandSSH", commandSSH);
+        return jsonObject.toString();
     }
 
     private void chkTempFile() {
