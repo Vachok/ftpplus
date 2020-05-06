@@ -98,7 +98,7 @@ public class IntoApplication {
             return setID();
         }
         else {
-            return InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.APPVERSION, "No ver");
+            return InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.ID, "No ver");
         }
     }
 
@@ -134,12 +134,12 @@ public class IntoApplication {
         Properties appPr = InitProperties.getTheProps();
         String appIdNew = MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), (int) (LocalTime.now()
             .toSecondOfDay() / ConstantsFor.ONE_HOUR_IN_MIN));
-        appPr.setProperty(PropertiesNames.APPVERSION, appIdNew);
+        appPr.setProperty(PropertiesNames.ID, appIdNew);
         Properties valueWithJSON = getJSONProp(appIdNew);
-        boolean isFB = InitProperties.getInstance(InitProperties.FIREBASE).setProps(getJSONProp(appIdNew));
+        boolean isMem = InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
         InitProperties.setPreference(PropertiesNames.APPVERSION, appIdNew);
         MessageToUser.getInstance(MessageToUser.TRAY, IntoApplication.class.getSimpleName())
-            .warn(IntoApplication.class.getSimpleName(), String.valueOf(isFB), valueWithJSON.getProperty(PropertiesNames.APPVERSION));
+            .warn(IntoApplication.class.getSimpleName(), String.valueOf(isMem), valueWithJSON.getProperty(PropertiesNames.APPVERSION));
         return appIdNew;
     }
 

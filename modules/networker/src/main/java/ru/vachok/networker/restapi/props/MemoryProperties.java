@@ -27,11 +27,10 @@ public class MemoryProperties extends DBPropsCallable {
 
     @Override
     public boolean setProps(@NotNull Properties properties) {
+        delProps();
         final String sql = "INSERT INTO mem.properties (property, valueofproperty) VALUES (?, ?);";
         int update = 0;
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
-            connection.setAutoCommit(false);
-            connection.setSavepoint();
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 for (Map.Entry<Object, Object> entry : properties.entrySet()) {
@@ -39,17 +38,15 @@ public class MemoryProperties extends DBPropsCallable {
                     preparedStatement.setString(2, entry.getValue().toString());
                     update += preparedStatement.executeUpdate();
                 }
-                connection.commit();
             }
             catch (SQLException e) {
-                connection.rollback();
+                messageToUser.warn(MemoryProperties.class.getSimpleName(), e.getMessage(), " see line: 46 ***");
                 return updateTable(properties);
             }
         }
         catch (SQLException e) {
             if (!e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 messageToUser.error("MemoryProperties.setProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-                update = -666;
             }
         }
         return update > 0;
@@ -67,8 +64,9 @@ public class MemoryProperties extends DBPropsCallable {
 
     @Override
     public boolean delProps() {
-        if (InitProperties.getInstance(InitProperties.FILE).getProps().size() < 17) {
-            throw new IllegalStateException("SET FILE PROPS FIRST!");
+        InitProperties fileInst = InitProperties.getInstance(InitProperties.FILE);
+        if (fileInst.getProps().size() < 17) {
+            fileInst.setProps(getProps());
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {
@@ -106,7 +104,6 @@ public class MemoryProperties extends DBPropsCallable {
         final String sql = "UPDATE properties SET property=?, valueofproperty=? WHERE property=?";
 
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
-            connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             connection.setSavepoint();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -115,11 +112,11 @@ public class MemoryProperties extends DBPropsCallable {
                     preparedStatement.setString(2, entry.getValue().toString());
                     preparedStatement.setString(3, entry.getKey().toString());
                     preparedStatement.executeUpdate();
-                    connection.commit();
                 }
             }
             catch (SQLException e) {
                 connection.rollback();
+                messageToUser.warn(MemoryProperties.class.getSimpleName(), e.getMessage(), " see line: 123 ***");
                 finished = true;
             }
             if (!finished) {

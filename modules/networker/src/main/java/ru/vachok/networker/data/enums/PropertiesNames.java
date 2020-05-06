@@ -94,4 +94,6 @@ public enum PropertiesNames {
     public static final String CLASS = "class";
 
     public static final String JAVA_VERSION = "java.version";
+
+    public static final String ID = "id";
 }

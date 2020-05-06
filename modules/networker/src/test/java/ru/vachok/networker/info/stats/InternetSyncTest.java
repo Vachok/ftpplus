@@ -19,6 +19,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,7 +87,7 @@ public class InternetSyncTest {
             }
         }
 
-        String syncResult = syncData.syncData();
+        String syncResult = AppConfigurationLocal.getInstance().submitAsString(()->syncData.syncData(), 15);
 
         Assert.assertTrue(syncResult.contains("No original FILE! 10.200.213.85.csv"), syncResult);
 
