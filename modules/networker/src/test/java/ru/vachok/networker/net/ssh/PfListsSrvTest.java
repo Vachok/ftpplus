@@ -48,7 +48,7 @@ public class PfListsSrvTest {
     @Test
     public void testRunCom() {
         String s = pfListsSrv.runCom();
-        Assert.assertTrue(s.contains(".networker.vachok.ru<br>"));
+        Assert.assertTrue(s.contains(".networker.vachok.ru<br>"), s);
     }
 
     @Test

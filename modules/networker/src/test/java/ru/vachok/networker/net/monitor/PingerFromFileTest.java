@@ -9,6 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
@@ -74,7 +75,12 @@ public class PingerFromFileTest {
     @Test
     public void testRun() {
         NetScanService npFactory = new PingerFromFile();
-        npFactory.run();
+        try {
+            npFactory.run();
+        }
+        catch (IllegalArgumentException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
         MultipartFile multipartFile = null;
         try {
             multipartFile = new MockMultipartFile("ping2ping.txt", getClass().getResourceAsStream("/ping2ping.txt"));

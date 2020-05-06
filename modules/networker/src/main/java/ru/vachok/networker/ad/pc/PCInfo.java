@@ -36,32 +36,24 @@ public abstract class PCInfo implements InformationFactory {
     @Contract("_ -> new")
     @NotNull
     public static PCInfo getInstance(@NotNull String aboutWhat) {
-        final PCInfo tvPcInformation = new TvPcInformation();
-        if (aboutWhat.equals(InformationFactory.TV)) {
-            return tvPcInformation;
+        PCInfo.pcName = aboutWhat;
+        if (NetScanService.isReach(pcName) && new NameOrIPChecker(pcName).isLocalAddress()) {
+            AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, false));
+            return new PCOn(pcName);
+        }
+        else if (new NameOrIPChecker(pcName).isLocalAddress()) {
+            AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true));
+            return new PCOff(pcName);
+        }
+        else if (pcName.equals(PCOff.class.getSimpleName())) {
+            AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true));
+            return new PCOff();
         }
         else {
-            PCInfo.pcName = aboutWhat;
-            if (NetScanService.isReach(pcName) && new NameOrIPChecker(pcName).isLocalAddress()) {
-                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, false));
-                return new PCOn(pcName);
-            }
-            else if (new NameOrIPChecker(pcName).isLocalAddress()) {
-                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true));
-                return new PCOff(pcName);
-            }
-            else if (pcName.equals(PCOff.class.getSimpleName())) {
-                AppConfigurationLocal.getInstance().execute(()->UserInfo.renewOffCounter(pcName, true));
-                return new PCOff();
-            }
-            else {
-                return new UnknownPc(pcName);
-            }
+            return new UnknownPc(pcName);
         }
-    }
 
-    @Override
-    public abstract String getInfoAbout(String aboutWhat);
+    }
 
     @NotNull
     public static String checkValidNameWithoutEatmeat(@NotNull String pcName) {
@@ -114,13 +106,16 @@ public abstract class PCInfo implements InformationFactory {
     public abstract String getInfo();
 
     @Override
+    public abstract void setClassOption(Object option);
+
+    @Override
+    public abstract String getInfoAbout(String aboutWhat);
+
+    @Override
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]").add(defaultInformation(pcName, NetScanService.isReach(pcName)))
             .toString();
     }
-
-    @Override
-    public abstract void setClassOption(Object option);
 
     @NotNull
     static String defaultInformation(String pcName, boolean isOnline) {
@@ -134,6 +129,11 @@ public abstract class PCInfo implements InformationFactory {
         return retStr;
     }
 
+    @NotNull
+    protected static String addToMap(String pcName, String ipAddr) {
+        return addToMap(pcName, ipAddr, false, ConstantsFor.OFFLINE);
+    }
+
     static String addToMap(String pcName, String ipAddr, boolean isOnline, String userName) {
         String stringToAdd = pcName + ":" + ipAddr + " online " + isOnline + "<" + userName;
         try {
@@ -143,10 +143,5 @@ public abstract class PCInfo implements InformationFactory {
             stringToAdd = MessageFormat.format(PCInfo.class.getSimpleName(), e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return stringToAdd;
-    }
-
-    @NotNull
-    protected static String addToMap(String pcName, String ipAddr) {
-        return addToMap(pcName, ipAddr, false, ConstantsFor.OFFLINE);
     }
 }
