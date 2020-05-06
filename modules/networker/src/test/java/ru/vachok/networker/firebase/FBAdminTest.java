@@ -6,7 +6,9 @@ import com.google.firebase.database.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.restapi.props.InitProperties;
+
+import java.io.File;
+import java.nio.file.Paths;
 
 
 /**
@@ -52,8 +54,12 @@ public class FBAdminTest {
     @Test
     public void appVerInFB() {
         try {
-            String filePath = InitProperties.getInstance(InitProperties.FIREBASE).getProps().getProperty("file");
-            System.out.println("filePath = " + filePath);
+            File[] rootFiles = Paths.get(".").toFile().listFiles();
+            for (File file : rootFiles) {
+                if (file.getName().contains("jar")) {
+                    System.out.println("file = " + file);
+                }
+            }
         }
         catch (RuntimeException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));

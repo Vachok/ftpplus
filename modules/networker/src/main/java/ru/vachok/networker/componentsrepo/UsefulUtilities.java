@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
@@ -272,9 +272,7 @@ public abstract class UsefulUtilities {
             return InetAddress.getLocalHost().getHostName();
         }
         catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
-            String retStr = AbstractForms.fromArray((List<?>) e);
-            FileSystemWorker.writeFile("this_pc.err", Collections.singletonList(retStr));
-            return "pc";
+            return IntoApplication.getCTXEnvironment().getProperty(PropertiesNames.COMPUTERNAME);
         }
     }
 

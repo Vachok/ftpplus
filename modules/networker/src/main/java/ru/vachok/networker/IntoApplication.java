@@ -10,7 +10,9 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -20,6 +22,7 @@ import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.events.MyEvent;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -58,7 +61,7 @@ public class IntoApplication {
     }
 
     @Contract(pure = true)
-    static ConfigurableApplicationContext getContext() {
+    protected static ConfigurableApplicationContext getContext() {
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
         return configurableApplicationContext;
     }
@@ -100,6 +103,17 @@ public class IntoApplication {
         else {
             return InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.ID, "No ver");
         }
+    }
+
+    public static ConfigurableEnvironment getCTXEnvironment() {
+        makeEvent("getCTXEnvironment");
+        configurableApplicationContext.addApplicationListener(IntoApplication::onMyApplicationEvent);
+        return configurableApplicationContext.getEnvironment();
+    }
+
+    public static void makeEvent(Object event) {
+        ApplicationEvent myEvent = new MyEvent(event);
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), myEvent.toString(), event.toString());
     }
 
     protected static void setUTF8Enc() {
@@ -161,5 +175,13 @@ public class IntoApplication {
         return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
             .add(new AppComponents().getFirebaseApp().getName())
             .toString();
+    }
+
+    private static void onMyApplicationEvent(ApplicationEvent event) {
+        File file = new File(event.getSource().getClass().getSimpleName() + ".stamp");
+        if (file.exists() && file.length() > ConstantsFor.MBYTE) {
+            file.delete();
+        }
+        FileSystemWorker.appendObjectToFile(file, new Date(event.getTimestamp()));
     }
 }

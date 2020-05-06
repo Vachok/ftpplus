@@ -162,6 +162,7 @@ public class SSHFactory implements Callable<String> {
                 stringBuilder.append(recQueue.poll()).append("<br>\n");
             }
             FileSystemWorker.writeFile(tempFile.toAbsolutePath().normalize().toString(), stringBuilder.toString());
+            IntoApplication.makeEvent(this);
         }
         return stringBuilder.toString();
     }
