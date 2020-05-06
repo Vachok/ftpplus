@@ -36,6 +36,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.prefs.BackingStoreException;
@@ -156,10 +157,8 @@ public class RestCTRLGet {
             }
         }
         else {
-
             filesShow = getFileShow(userAgent);
         }
-
         String uAgent;
         try {
             uAgent = userAgent.toLowerCase();
@@ -175,6 +174,8 @@ public class RestCTRLGet {
 
     @NotNull
     private String getFileShow(String userAgent) {
+        @NotNull String result;
+        JsonObject jsonObject = new JsonObject();
         StringBuilder stringBuilder = new StringBuilder();
         long totalSize = 0;
         File file = Paths.get(".").toAbsolutePath().normalize().toFile();
@@ -182,28 +183,36 @@ public class RestCTRLGet {
             throw new IllegalArgumentException(file.getAbsolutePath());
         }
         else {
-            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
+            String uAgent = checkAgent(userAgent);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd-kkmm");
+            jsonObject.add("Total_files", Objects.requireNonNull(file.listFiles()).length);
             for (File listFile : Objects.requireNonNull(file.listFiles())) {
                 long fileSizeKB = listFile.length() / 1024;
                 totalSize = totalSize + fileSizeKB;
                 stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
-                String uAgent;
-                try {
-                    uAgent = userAgent.toLowerCase();
-                }
-                catch (RuntimeException e) {
-                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
-                }
-                if (uAgent.contains(OKHTTP)) {
-                    stringBuilder.append("\n");
-                }
-                else {
-                    stringBuilder.append("<br>");
-                }
+                jsonObject.add(listFile.getName(), MessageFormat.format("{0} kbytes {1}", totalSize, simpleDateFormat.format(new Date(listFile.lastModified()))));
+                stringBuilder.append("<br>");
             }
             stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
+            if (uAgent.contains(OKHTTP) || uAgent.toLowerCase().contains("android")) {
+                result = jsonObject.toString();
+            }
+            else {
+                result = stringBuilder.toString();
+            }
         }
-        return stringBuilder.toString();
+        return result;
+    }
+
+    private String checkAgent(String userAgent) {
+        String uAgent;
+        try {
+            uAgent = userAgent.toLowerCase();
+        }
+        catch (RuntimeException e) {
+            uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
+        }
+        return uAgent;
     }
 
     @GetMapping("/getsshlists")
