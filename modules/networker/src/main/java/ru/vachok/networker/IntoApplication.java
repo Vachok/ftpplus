@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -26,6 +27,7 @@ import ru.vachok.networker.events.MyEvent;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.awt.*;
 import java.io.File;
@@ -150,7 +152,16 @@ public class IntoApplication {
             .toSecondOfDay() / ConstantsFor.ONE_HOUR_IN_MIN));
         appPr.setProperty(PropertiesNames.ID, appIdNew);
         Properties valueWithJSON = getJSONProp(appIdNew);
-        boolean isMem = InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
+        boolean isMem = false;
+        try {
+            isMem = InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
+        }
+        catch (Exception e) {
+            MESSAGE_LOCAL.error("IntoApplication.setID", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            AppConfigurationLocal.getInstance().execute(new RegRuFTPLibsUploader());
+            MessageToUser.getInstance(MessageToUser.TRAY, IntoApplication.class.getSimpleName())
+                .info(IntoApplication.class.getSimpleName(), "exec", "RegRuFTPLibsUploader");
+        }
         InitProperties.setPreference(PropertiesNames.APPVERSION, appIdNew);
         MessageToUser.getInstance(MessageToUser.TRAY, IntoApplication.class.getSimpleName())
             .warn(IntoApplication.class.getSimpleName(), String.valueOf(isMem), valueWithJSON.getProperty(PropertiesNames.APPVERSION));

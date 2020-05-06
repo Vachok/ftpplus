@@ -6,6 +6,7 @@ package ru.vachok.networker.exe;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
@@ -22,6 +23,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.events.MyEvent;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -31,6 +33,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Date;
 import java.util.concurrent.*;
 
 
@@ -80,7 +83,8 @@ public class ThreadConfig implements AppConfigurationLocal {
         BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
         if (isRemove) {
-            messageToUser.warn(ThreadConfig.class.getSimpleName(), "TASK_EXECUTOR removed:", runnable.getClass().getSimpleName());
+            ApplicationEvent nameEvt = new MyEvent(runnable);
+            messageToUser.info(ThreadConfig.class.getSimpleName(), "cleanQueue", new Date(nameEvt.getTimestamp()).toString() + " : " + nameEvt.getSource());
         }
     }
 

@@ -98,8 +98,8 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     private String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
         try {
-            execute(regRuFTPLibsUploader);
-            return this.getClass().getSimpleName() + ".launchRegRuFTPLibsUploader: TRUE";
+            AppConfigurationLocal.getInstance().execute(regRuFTPLibsUploader, 60);
+            return AppConfigurationLocal.getInstance().toString();
         }
         catch (RuntimeException e) {
             return MessageFormat.format("{0}.launchRegRuFTPLibsUploader: FALSE {1} {2}",
