@@ -185,12 +185,12 @@ public class RestCTRLGet {
         else {
             String uAgent = checkAgent(userAgent);
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd-kkmm");
-            jsonObject.add("Total_files", Objects.requireNonNull(file.listFiles()).length);
+            jsonObject.add(file.getAbsolutePath(), Objects.requireNonNull(file.listFiles()).length);
             for (File listFile : Objects.requireNonNull(file.listFiles())) {
                 long fileSizeKB = listFile.length() / 1024;
                 totalSize = totalSize + fileSizeKB;
                 stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
-                jsonObject.add(listFile.getName(), MessageFormat.format("{0} kbytes {1}", totalSize, simpleDateFormat.format(new Date(listFile.lastModified()))));
+                jsonObject.add(listFile.getName(), MessageFormat.format("{0} kbytes {1}", fileSizeKB, simpleDateFormat.format(new Date(listFile.lastModified()))));
                 stringBuilder.append("<br>");
             }
             stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");

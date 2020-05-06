@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.props;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -27,8 +28,7 @@ public class MemoryProperties extends DBPropsCallable {
 
     @Override
     public boolean setProps(@NotNull Properties properties) {
-        delProps();
-        final String sql = "INSERT INTO mem.properties (property, valueofproperty) VALUES (?, ?);";
+        final String sql = "INSERT INTO mem.properties (property, valueofproperty, setter) VALUES (?, ?, ?);";
         int update = 0;
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -36,6 +36,7 @@ public class MemoryProperties extends DBPropsCallable {
                 for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                     preparedStatement.setString(1, entry.getKey().toString());
                     preparedStatement.setString(2, entry.getValue().toString());
+                    preparedStatement.setString(3, UsefulUtilities.thisPC());
                     update += preparedStatement.executeUpdate();
                 }
             }
@@ -102,7 +103,6 @@ public class MemoryProperties extends DBPropsCallable {
         boolean result = false;
         boolean finished = false;
         final String sql = "UPDATE properties SET property=?, valueofproperty=? WHERE property=?";
-
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             connection.setSavepoint();
@@ -111,8 +111,9 @@ public class MemoryProperties extends DBPropsCallable {
                     preparedStatement.setString(1, entry.getKey().toString());
                     preparedStatement.setString(2, entry.getValue().toString());
                     preparedStatement.setString(3, entry.getKey().toString());
-                    preparedStatement.executeUpdate();
+                    preparedStatement.addBatch();
                 }
+                preparedStatement.executeBatch();
             }
             catch (SQLException e) {
                 connection.rollback();

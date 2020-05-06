@@ -51,7 +51,7 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
         try {
             authorizationHeader = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             authorizationHeader = e.getMessage();
         }
         finally {
@@ -77,9 +77,15 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
             JsonValue value = jsonObject.get(ConstantsFor.PARAM_NAME_SERVER);
             serverName = value.asString();
         }
-        String commandForSH = ConstantsFor.SSH_UNAMEA + ";uptime;sudo pgrep -f -v -l -u root;exit";
+        String commandForSH = "uname -a;uptime;";
         if (jsonObject.names().contains(ConstantsFor.PARM_NAME_COMMAND)) {
-            commandForSH = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
+            String commandFromJSON = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
+            if (commandFromJSON.contains("ps ax")) {
+                commandForSH = commandForSH + ";sudo ps ax;exit";
+            }
+            else {
+                commandForSH = commandFromJSON;
+            }
         }
         SSHFactory.Builder sshFB = new SSHFactory.Builder(serverName, commandForSH, getClass().getSimpleName());
         MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName()).info(serverName, commandForSH, getClass().getSimpleName());

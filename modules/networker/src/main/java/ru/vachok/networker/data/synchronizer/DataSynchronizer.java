@@ -249,6 +249,7 @@ public class DataSynchronizer extends SyncData {
                     String[] columns = getColumns(preparedStatement);
                     this.columnsNum = columns.length;
                     stringBuilder.append(Arrays.toString(columns)).append("\n");
+                    FileSystemWorker.writeFile(dbToSync, AbstractForms.fromArray(preparedStatement.getMetaData()).toString());
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         Files.deleteIfExists(dbObj.toPath());
                         while (resultSet.next()) {

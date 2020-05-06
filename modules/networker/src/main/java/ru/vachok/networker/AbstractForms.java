@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -14,6 +16,11 @@ public abstract class AbstractForms {
 
 
     private static final TForms T_FORMS = new TForms();
+
+    @Contract(pure = true)
+    public static TForms getI() {
+        return T_FORMS;
+    }
 
     @NotNull
     public static String networkerTrace(StackTraceElement[] trace) {
@@ -44,6 +51,10 @@ public abstract class AbstractForms {
         return jsonObject.toString();
     }
 
+    public static String fromArray(StackTraceElement[] trace) {
+        return T_FORMS.fromArray(trace);
+    }
+
     public static String fromArray(Properties props) {
         return T_FORMS.fromArray(props);
     }
@@ -56,28 +67,25 @@ public abstract class AbstractForms {
         return T_FORMS.fromArray(fromMap);
     }
 
-    @NotNull
-    private static String checkSu(@NotNull Throwable e) {
-        StringBuilder stringBuilder = new StringBuilder();
-        Throwable[] suppressedIfExists = e.getSuppressed();
-        if (suppressedIfExists.length > 0) {
-            for (Throwable throwable : suppressedIfExists) {
-                stringBuilder.append(throwable.getClass().getSimpleName()).append(": ").append(throwable.getMessage()).append("\n");
-                stringBuilder.append(T_FORMS.networkerTrace(throwable.getStackTrace())).append("\n");
-                if (throwable.getSuppressed() != null) {
-                    checkSu(throwable);
-                }
-                else {
-                    stringBuilder.append("End Suppressed").append("\n");
-                }
-            }
-
+    public static JsonObject fromArray(ResultSetMetaData resultSetMetaData) throws SQLException {
+        JsonObject jsonObject = new JsonObject();
+        int colCount = resultSetMetaData.getColumnCount();
+        jsonObject.add(" Columns", colCount);
+        for (int i = 1; i < colCount; i++) {
+            jsonObject.add("ColumnName", resultSetMetaData.getColumnName(i));
+            jsonObject.add("ColumnLabel", resultSetMetaData.getColumnLabel(i));
+            jsonObject.add("ColumnTypeName", resultSetMetaData.getColumnTypeName(i));
+            jsonObject.add("ColumnType", resultSetMetaData.getColumnType(i));
+            jsonObject.add("CatalogName", resultSetMetaData.getCatalogName(i));
+            jsonObject.add("ColumnClassName", resultSetMetaData.getColumnClassName(i));
+            jsonObject.add("ColumnDisplaySize", resultSetMetaData.getColumnDisplaySize(i));
+            jsonObject.add("Precision", resultSetMetaData.getPrecision(i));
+            jsonObject.add("Scale", resultSetMetaData.getScale(i));
+            jsonObject.add("SchemaName", resultSetMetaData.getSchemaName(i));
+            jsonObject.add("TableName", resultSetMetaData.getTableName(i));
+            jsonObject.add("Signed", resultSetMetaData.isSigned(i));
         }
-        return stringBuilder.toString();
-    }
-
-    public static String fromArray(StackTraceElement[] trace) {
-        return T_FORMS.fromArray(trace);
+        return jsonObject;
     }
 
     public static String fromArray(Deque<?> objDequeue) {
@@ -108,16 +116,31 @@ public abstract class AbstractForms {
         return T_FORMS.fromArray(pref);
     }
 
-    @Contract(pure = true)
-    public static TForms getI() {
-        return T_FORMS;
-    }
-
     public static String fromEnum(Enumeration<?> enumeration) {
         return T_FORMS.fromEnum(enumeration, true);
     }
 
     public static String sshCheckerMapWithDates(Map<String, Long> map, boolean b) {
         return T_FORMS.sshCheckerMapWithDates(map, b);
+    }
+
+    @NotNull
+    private static String checkSu(@NotNull Throwable e) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Throwable[] suppressedIfExists = e.getSuppressed();
+        if (suppressedIfExists.length > 0) {
+            for (Throwable throwable : suppressedIfExists) {
+                stringBuilder.append(throwable.getClass().getSimpleName()).append(": ").append(throwable.getMessage()).append("\n");
+                stringBuilder.append(T_FORMS.networkerTrace(throwable.getStackTrace())).append("\n");
+                if (throwable.getSuppressed() != null) {
+                    checkSu(throwable);
+                }
+                else {
+                    stringBuilder.append("End Suppressed").append("\n");
+                }
+            }
+
+        }
+        return stringBuilder.toString();
     }
 }
