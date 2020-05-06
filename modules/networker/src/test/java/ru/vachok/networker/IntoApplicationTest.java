@@ -4,7 +4,10 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -17,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 /**
  @see IntoApplication */
 public class IntoApplicationTest {
-    
-    
+
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
     @BeforeClass
@@ -31,7 +34,7 @@ public class IntoApplicationTest {
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     @Ignore
     public void testMain() {
@@ -42,12 +45,12 @@ public class IntoApplicationTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
+
     @Test
     @Ignore
     public void testBeforeSt() {
         IntoApplication.setUTF8Enc();
         Assert.assertTrue(new File(FileNames.SYSTEM).lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
-    
+
 }

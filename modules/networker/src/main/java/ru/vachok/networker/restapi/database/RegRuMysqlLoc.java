@@ -109,7 +109,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         if (dbName.contains(".")) {
-            dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
+            this.dbName = dbName.split("\\Q.\\E")[0];
         }
         defDataSource.setDatabaseName(dbName);
         defDataSource.setUseSSL(false);

@@ -53,7 +53,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
      */
     private Properties propsToSave = new Properties();
 
-    private AtomicBoolean retBool = new AtomicBoolean(false);
+    private final AtomicBoolean retBool = new AtomicBoolean(false);
 
     public DBPropsCallable() {
         this.propsDBID = ConstantsFor.class.getSimpleName();
@@ -171,7 +171,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     if (resultSet.getString("javaid").equalsIgnoreCase(propsId[1])) {
-                        properties.put(resultSet.getString("property"), resultSet.getString("valueofproperty"));
+                        properties.put(resultSet.getString("property"), resultSet.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY));
                     }
                 }
             }

@@ -531,7 +531,7 @@ public enum ConstantsFor {
 
     public static final String JSON_LIST_LIMITSQUID = "limitSquid";
 
-    ;
+    public static final String DB_REGRU_JSON_PROPS_TABLE = "`u0466446_properties`.`dev`";
 
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
@@ -586,6 +586,8 @@ public enum ConstantsFor {
     public static final String JSON_OBJECT_SQUID = "squid";
 
     public static final String JSON_LIST_24HRS = "24hrs";
+
+    public static final String DBCOL_VALUEOFPROPERTY = "valueofproperty";
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {

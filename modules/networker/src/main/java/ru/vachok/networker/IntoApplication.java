@@ -98,7 +98,7 @@ public class IntoApplication {
             return setID();
         }
         else {
-            return InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.APPVERSION);
+            return InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.APPVERSION, "No ver");
         }
     }
 
@@ -135,19 +135,25 @@ public class IntoApplication {
         String appIdNew = MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), (int) (LocalTime.now()
             .toSecondOfDay() / ConstantsFor.ONE_HOUR_IN_MIN));
         appPr.setProperty(PropertiesNames.APPVERSION, appIdNew);
-        InitProperties fileInst = InitProperties.getInstance(InitProperties.FILE);
-        fileInst.setProps(appPr);
-        boolean isDBLocWrite = InitProperties.getInstance(InitProperties.DB_LOCAL).setProps(appPr);
-        boolean isDBMemWrite = InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
-        boolean isFileSet = InitProperties.getInstance(InitProperties.FILE).setProps(appPr);
-        MESSAGE_LOCAL.warn(configurableApplicationContext.getClass().getSimpleName(), MessageFormat
-            .format("{0} isDBLocWrite, {1} isDBMemWrite, {2} isFileSet", isDBLocWrite, isDBMemWrite, isFileSet), appIdNew);
+        Properties valueWithJSON = getJSONProp(appIdNew);
+        boolean isFB = InitProperties.getInstance(InitProperties.FIREBASE).setProps(getJSONProp(appIdNew));
+        InitProperties.setPreference(PropertiesNames.APPVERSION, appIdNew);
+        MessageToUser.getInstance(MessageToUser.TRAY, IntoApplication.class.getSimpleName())
+            .warn(IntoApplication.class.getSimpleName(), String.valueOf(isFB), valueWithJSON.getProperty(PropertiesNames.APPVERSION));
         return appIdNew;
     }
 
     static void appInfoStarter() {
         @NotNull Runnable infoAndSched = AppInfoOnLoad.getI();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
+    }
+
+    private static Properties getJSONProp(String appIdNew) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.APPVERSION, appIdNew);
+        Properties properties = new Properties();
+        properties.setProperty(PropertiesNames.APPVERSION, jsonObject.toString());
+        return properties;
     }
 
     @Override

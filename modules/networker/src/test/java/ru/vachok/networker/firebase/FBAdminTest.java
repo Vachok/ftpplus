@@ -6,6 +6,7 @@ import com.google.firebase.database.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 
 /**
@@ -13,7 +14,7 @@ import ru.vachok.networker.AbstractForms;
 public class FBAdminTest {
 
 
-    private FBAdmin fbAdmin = new FBAdmin();
+    private final FBAdmin fbAdmin = new FBAdmin();
 
     @Test
     public void testInitSDK() {
@@ -46,5 +47,17 @@ public class FBAdminTest {
                 Assert.assertNull(error.toException(), error.toException().getMessage() + "\n" + AbstractForms.fromArray(error.toException()));
             }
         }));
+    }
+
+    @Test
+    public void appVerInFB() {
+        try {
+            String filePath = InitProperties.getInstance(InitProperties.FIREBASE).getProps().getProperty("file");
+            System.out.println("filePath = " + filePath);
+        }
+        catch (RuntimeException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+
     }
 }

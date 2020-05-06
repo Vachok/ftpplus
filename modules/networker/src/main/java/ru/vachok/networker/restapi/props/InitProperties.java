@@ -30,6 +30,10 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
 
     String TEST = "test";
 
+    String DB_REGRU = "regru";
+
+    String FIREBASE = "firebase";
+
     @Contract(pure = true)
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     @NotNull
@@ -51,6 +55,10 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
                 return new MemoryProperties();
             case DB_LOCAL:
                 return new DBPropsCallable(ConstantsFor.class.getSimpleName());
+            case DB_REGRU:
+                return new RegRuProperties();
+            case FIREBASE:
+                return new FBProps();
             default:
                 return new DBPropsCallable(type);
         }
