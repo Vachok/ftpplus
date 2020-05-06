@@ -194,6 +194,7 @@ public class RestCTRLGet {
                 stringBuilder.append("<br>");
             }
             stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
+            jsonObject.add(ConstantsFor.TOTALSIZE, totalSize);
             if (uAgent.contains(OKHTTP) || uAgent.toLowerCase().contains("android")) {
                 result = jsonObject.toString();
             }
