@@ -50,7 +50,7 @@ public class ResolveUserInDataBaseTest {
     @Test
     public void testGetInfoAbout() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("no0015.eatmeat.ru");
-        boolean strOk = Stream.of("msc", "d.yu.podbuckii", "mdc").anyMatch(infoAbout::contains);
+        boolean strOk = Stream.of("msc", "d.yu.podbuckii", "mdc", "a.s.cedilin").anyMatch(infoAbout::contains);
         Assert.assertTrue(strOk, infoAbout);
         testAbstract();
     }

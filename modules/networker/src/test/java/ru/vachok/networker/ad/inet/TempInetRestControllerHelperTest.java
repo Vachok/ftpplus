@@ -31,7 +31,7 @@ public class TempInetRestControllerHelperTest {
     @Test
     public void addInet() {
         String resultAdd = testGetInetResult(ConstantsFor.ADD);
-        Assert.assertTrue(resultAdd.contains("}"));
+        Assert.assertTrue(resultAdd.contains("}"), resultAdd);
         Assert.assertTrue(resultAdd.split("}")[1].contains("8.8.8.8"), resultAdd);
     }
 
@@ -48,7 +48,7 @@ public class TempInetRestControllerHelperTest {
     @Test
     public void delInet() {
         String resultAdd = testGetInetResult(ConstantsFor.DELETE);
-        Assert.assertTrue(resultAdd.contains("}"));
+        Assert.assertTrue(resultAdd.contains("}"), resultAdd);
         Assert.assertFalse(resultAdd.split("}")[1].contains("8.8.8.8"), resultAdd);
     }
 }

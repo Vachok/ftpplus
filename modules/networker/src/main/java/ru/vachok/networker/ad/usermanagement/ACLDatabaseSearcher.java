@@ -16,7 +16,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -59,14 +62,11 @@ class ACLDatabaseSearcher extends ACLParser {
 
     @Override
     public void setClassOption(Object classOption) {
-        if (classOption instanceof List) {
-            this.searchPatterns.addAll((Collection<String>) classOption);
-        }
-        else if (classOption instanceof Integer) {
+        if (classOption instanceof Integer) {
             this.linesLimit = Integer.parseInt(classOption.toString());
         }
         else {
-            throw new IllegalArgumentException(getClass().getSimpleName());
+            searchPatterns.add(classOption.toString());
         }
     }
 
