@@ -156,7 +156,12 @@ public class SyncDataTest {
 
     @Test
     public void testSuperRun() {
-        syncData.superRun();
+        try {
+            syncData.superRun();
+        }
+        catch (IllegalStateException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
 
     @Test
