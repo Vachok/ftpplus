@@ -53,6 +53,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
 
     private long filesScanned;
 
+    private long dirSize;
+
     private long dirsScanned;
 
     private Path startPath = ConstantsFor.COMMON_DIR;
@@ -105,25 +107,22 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         UserPrincipal owner = Files.getOwner(dir);
         if (attrs.isDirectory()) {
             this.dirsScanned++;
+            this.dirSize = 0;
             Files.setAttribute(dir, ConstantsFor.ATTRIB_HIDDEN, false);
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointOwn, dir.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + owner);
             //Изменение формата ломает: CommonRightsParsing.rightsWriterToFolderACL
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
 
-            new RightsWriter(dir.toAbsolutePath().normalize().toString(), owner.toString(), Arrays.toString(users.getAcl().toArray())).writeDBCommonTable();
+            new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), owner.toString(), Arrays.toString(users.getAcl().toArray()))
+                .writeDBCommonTable();
         }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        new RightsWriter(file.toAbsolutePath().normalize().toString(), ConstantsFor.STR_ERROR, exc.getMessage()).writeDBCommonTable();
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (file.toFile().exists() && attrs.isRegularFile()) {
+            this.dirSize += file.toFile().length();
             this.filesScanned++;
             if (file.toFile().getName().equals(FileNames.FILENAME_OWNER)) {
                 file.toFile().delete();
@@ -142,18 +141,25 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     }
 
     @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        messageToUser.warn(getClass().getSimpleName(), file.toString(), AbstractForms.fromArray(exc));
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         StringBuilder stringBuilder = new StringBuilder()
-                .append("Dir visited = ")
-                .append(dir).append("\n")
-                .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
+            .append("Dir visited = ")
+            .append(dir).append("\n")
+            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
         long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
         if (secondsScan == 0) {
             secondsScan = 1;
         }
         stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
         if (dir.toFile().isDirectory()) {
-            new ConcreteFolderACLWriter(dir).run();
+            new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), this.dirSize).writeDirSize();
+            new ConcreteFolderACLWriter(dir, this.dirSize).run();
             dir.toFile().setLastModified(lastModDir);
         }
         return FileVisitResult.CONTINUE;
@@ -209,14 +215,24 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
 
         private final String dir;
 
+        private final long size;
+
         private final String owner;
 
         private final String acl;
+
+        RightsWriter(String dir, long dirSize) {
+            this.dir = dir;
+            this.size = dirSize;
+            this.owner = "";
+            this.acl = "";
+        }
 
         RightsWriter(String dir, String owner, String acl) {
             this.dir = dir;
             this.owner = owner;
             this.acl = acl;
+            this.size = 0;
         }
 
         @Override
@@ -262,6 +278,20 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             }
             catch (SQLException ignore) {
                 //11.09.2019 (17:43)
+            }
+        }
+
+        void writeDirSize() {
+            final String sql = "UPDATE common SET size = ? WHERE dir = ?";
+            int sizeBytes = (int) (this.size / ConstantsFor.MBYTE);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(TABLE_FULL_NAME);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, sizeBytes);
+                preparedStatement.setString(2, dir);
+                preparedStatement.executeUpdate();
+            }
+            catch (SQLException e) {
+                messageToUser.warn(RightsChecker.RightsWriter.class.getSimpleName(), e.getMessage(), " see line: 293 ***");
             }
         }
     }
