@@ -71,7 +71,7 @@ public class ThreadConfig implements AppConfigurationLocal {
 
     private Runnable r = new Thread();
 
-    private int timeWait = 45;
+    private int timeWait = 15;
 
     /**
      @return {@link #TASK_EXECUTOR}
@@ -181,10 +181,10 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
     private void setExecutor() {
-        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
-        TASK_EXECUTOR.setCorePoolSize(50);
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        TASK_EXECUTOR.setCorePoolSize(30);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(4);
         TASK_EXECUTOR.setThreadPriority(7);
         TASK_EXECUTOR.setThreadNamePrefix("E_");
         TASK_EXECUTOR.setKeepAliveSeconds(this.timeWait);
