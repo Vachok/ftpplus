@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  @since 21.08.2018 (14:40) */
 @Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
 @EnableAsync(proxyTargetClass = true)
-public class PcNamesScanner implements NetScanService {
+public final class PcNamesScanner implements NetScanService {
 
 
     private final long startClassTime = System.currentTimeMillis();
@@ -50,15 +50,15 @@ public class PcNamesScanner implements NetScanService {
 
     private final File lastNetScan = new File(FileNames.LASTNETSCAN_TXT);
 
-    public static PcNamesScanner getI() {
-        return pcNamesScanner;
-    }
-
     private static final List<String> logMini = new ArrayList<>();
 
     private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
 
     private String thePc = "";
+
+    public static PcNamesScanner getI() {
+        return pcNamesScanner;
+    }
 
     public String getThePc() {
         return thePc;
@@ -71,10 +71,10 @@ public class PcNamesScanner implements NetScanService {
     private PcNamesScanner() {
         if (!lastNetScan.exists()) {
             try {
-                lastNetScan.createNewFile();
+                messageToUser.info(getClass().getSimpleName(), lastNetScan.createNewFile() + " lastNetScan", ".createNewFile");
             }
             catch (IOException e) {
-                messageToUser.error(e.getMessage());
+                messageToUser.warn(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 77 ***");
             }
         }
     }
@@ -111,6 +111,7 @@ public class PcNamesScanner implements NetScanService {
     @Override
     public String toString() {
         JsonObject jsonObject = new JsonObject();
+        jsonObject.add("class", PcNamesScanner.class.getSimpleName());
         try {
             jsonObject.add("startClassTime", startClassTime)
                 .add("lastScanStamp", new Date(lastScanStamp).toString())

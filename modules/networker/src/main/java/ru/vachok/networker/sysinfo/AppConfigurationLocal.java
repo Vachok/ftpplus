@@ -51,7 +51,7 @@ public interface AppConfigurationLocal extends Runnable {
 
     default Object executeGet(Callable<?> callable, int timeOutSeconds) {
         ThreadConfig.cleanQueue(callable);
-        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor(timeOutSeconds).getThreadPoolExecutor();
         Future<?> submit = executor.submit(callable);
         Object o;
         try {
