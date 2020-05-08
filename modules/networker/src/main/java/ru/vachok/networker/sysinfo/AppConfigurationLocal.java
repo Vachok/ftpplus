@@ -72,7 +72,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default void execute(Runnable runnable, long timeOutSeconds) {
-        ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor((int) timeOutSeconds).getThreadPoolExecutor();
         ThreadConfig.cleanQueue(runnable);
         Future<?> submit = poolExecutor.submit(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new ThreadTimeout(submit, timeOutSeconds));
@@ -115,5 +115,14 @@ public interface AppConfigurationLocal extends Runnable {
             System.out.println(MessageFormat.format("{0} = {1} is done: {2}", result, callableQuestion.getClass().getName(), submit.isDone()));
         }
         return result;
+    }
+
+    default void executeBlock(Runnable actualizer, int timeWait) throws TimeoutException {
+        try {
+            AppComponents.threadConfig().getTaskExecutor(timeWait).submit(actualizer).get(timeWait, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 }

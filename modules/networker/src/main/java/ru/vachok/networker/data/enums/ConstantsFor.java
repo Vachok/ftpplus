@@ -368,7 +368,7 @@ public enum ConstantsFor {
 
     public static final String DB_SEARCHS = "search.s";
 
-    public static final String DB_PCUSERAUTO_FULL = "velkom.pcuserauto";
+    public static final String DB_PCUSERAUTO_FULL = DataConnectTo.DBNAME_VELKOM_POINT + DB_PCUSERAUTO;
 
     public static final String RU_GLAVNAYA = "Главная";
 

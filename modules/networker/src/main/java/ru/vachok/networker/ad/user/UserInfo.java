@@ -207,7 +207,7 @@ public abstract class UserInfo implements InformationFactory {
                 long nowMinusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
                 boolean startSmallerDelay = ConstantsFor.START_STAMP >= nowMinusDelay;
                 if (startSmallerDelay) {
-                    AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName));
+                    AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName, true));
                     sql = sqlOn;
                 }
                 else if (wasOffline()) {

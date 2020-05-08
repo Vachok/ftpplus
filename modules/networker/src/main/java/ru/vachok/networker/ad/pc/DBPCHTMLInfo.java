@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 /**
  @see DBPCHTMLInfoTest
+ @see PCOffTest
  @since 18.08.2019 (17:41) */
 class DBPCHTMLInfo implements HTMLInfo {
 
@@ -43,11 +44,13 @@ class DBPCHTMLInfo implements HTMLInfo {
 
     private static final String NOT_FOUND = " not found";
 
+    private final List<String> userPCName = new ArrayList<>();
+
     private String pcName;
 
-    private List<String> userPCName = new ArrayList<>();
+    private final Map<Integer, String> freqName = new ConcurrentHashMap<>();
 
-    private Map<Integer, String> freqName = new ConcurrentHashMap<>();
+    protected static final String DATABASES_NOT_REGISTRED = "Not registered in both databases...";
 
     private StringBuilder stringBuilder;
 
@@ -257,7 +260,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     }
 
     private String searchInBigDB() {
-        String result = "Not registered in both databases...";
+        String result = DATABASES_NOT_REGISTRED;
         Thread.currentThread().setName(this.getClass().getSimpleName());
         final String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP + " AND AddressPP LIKE '%true' ORDER BY idRec DESC LIMIT 1";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO)) {

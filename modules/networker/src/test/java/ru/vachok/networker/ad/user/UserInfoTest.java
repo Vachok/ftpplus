@@ -162,7 +162,7 @@ public class UserInfoTest {
     }
 
     private void createTable() {
-        String dbName = "pcuser";
+        String dbName = ConstantsFor.DBFIELD_PCUSER;
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbName)) {
             boolean contains = connection.getMetaData().getURL().contains("jdbc:h2:mem:velkompc") || connection.getMetaData().getURL()
                 .contains("jdbc:mysql://10.10.111.65:3306/pcuser");

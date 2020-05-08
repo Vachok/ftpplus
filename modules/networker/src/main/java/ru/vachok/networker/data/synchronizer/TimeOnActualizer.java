@@ -21,8 +21,11 @@ public class TimeOnActualizer implements Runnable {
 
     private final String pcName;
 
-    public TimeOnActualizer(@NotNull String pcName) {
+    private final boolean isOnNow;
+
+    public TimeOnActualizer(@NotNull String pcName, boolean isOnNow) {
         this.pcName = pcName.replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        this.isOnNow = isOnNow;
     }
 
     @Override
@@ -114,11 +117,18 @@ public class TimeOnActualizer implements Runnable {
     }
 
     private void setInPcUserDB(String pcName, Timestamp actualTimeOn) {
+        final String newSql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`=?, `onNow`=? WHERE  `pcName` like '%s%%'", pcName);
         final String sql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`= ? WHERE `pcName` like '%s%%'", pcName);
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setQueryTimeout((int) ConstantsFor.DELAY);
                 preparedStatement.setTimestamp(1, actualTimeOn);
+                if (isOnNow) {
+                    preparedStatement.setInt(2, 1);
+                }
+                else {
+                    preparedStatement.setInt(2, 0);
+                }
                 preparedStatement.executeUpdate();
             }
         }

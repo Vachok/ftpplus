@@ -33,7 +33,7 @@ class ResolveUserInDataBase extends UserInfo {
 
     private Object aboutWhat;
 
-    private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+    private final DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
 
     @Override
     public String getInfo() {
