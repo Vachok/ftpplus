@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ @see TimeOnActualizerTest */
 public class TimeOnActualizer implements Runnable {
 
 
@@ -120,7 +122,7 @@ public class TimeOnActualizer implements Runnable {
         final String newSql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`=?, `onNow`=? WHERE  `pcName` like '%s%%'", pcName);
         final String sql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`= ? WHERE `pcName` like '%s%%'", pcName);
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(newSql)) {
                 preparedStatement.setQueryTimeout((int) ConstantsFor.DELAY);
                 preparedStatement.setTimestamp(1, actualTimeOn);
                 if (isOnNow) {

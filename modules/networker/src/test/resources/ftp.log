@@ -24171,3 +24171,5 @@ get "/usr/home/ITDept/vpn/keys/keys/shildyaev200808.key" "f:\OneDrive\Докум
 ls "/usr/home/ITDept/vpn/keys/keys/"
 ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!
+ls "/usr/home/kudr/networker/"
+connection to 10.10.111.65 closed - bye bye!
