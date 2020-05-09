@@ -12,6 +12,8 @@ import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
+import java.text.MessageFormat;
+
 
 /**
  Class ru.vachok.networker.net.ssh.SSHCommander
@@ -23,10 +25,12 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, JSONSSHCommandExecutor.class.getSimpleName());
 
+    private String serverName = SshActs.whatSrvNeed();
+
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
-        String result;
         int codeVer = -666;
+        String result;
         try {
             codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
         }
@@ -38,14 +42,16 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
             messageToUser.error("JSONSSHCommandExecutor.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         finally {
-            result = connectToSrv(jsonObject, codeVer);
-            messageToUser.info(getClass().getSimpleName(), jsonObject.toString(), result);
+            JsonObject jsonObjectResult = connectToSrv(jsonObject, codeVer);
+            jsonObjectResult.add(ConstantsFor.PARAM_NAME_SERVER, serverName);
+            result = jsonObjectResult.toString();
+            messageToUser.info(getClass().getSimpleName(), result, jsonObject.toString());
         }
         return result;
     }
 
-    private String connectToSrv(@NotNull JsonObject jsonObject, int codeVer) {
-        String result = getClass().getSimpleName();
+    private JsonObject connectToSrv(@NotNull JsonObject jsonObject, int codeVer) {
+        JsonObject result = new JsonObject();
         String authorizationHeader = "null";
         boolean isValid;
         try {
@@ -62,26 +68,25 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
                 result = makeActions(jsonObject);
             }
             catch (RuntimeException e) {
-                result = AbstractForms.networkerTrace(e);
+                result.add(e.getClass().getSimpleName(), AbstractForms.networkerTrace(e));
             }
         }
         else {
-            result = result + "\n" + authorizationHeader + ":" + codeVer + " BAD AUTH!";
+            result.add("BAD AUTH!", MessageFormat.format("{0}\n{1}:{2}", result, authorizationHeader, codeVer));
         }
         return result;
     }
 
-    private String makeActions(JsonObject jsonObject) {
-        String serverName = SshActs.whatSrvNeed();
+    private JsonObject makeActions(JsonObject jsonObject) {
         if (jsonObject.names().contains(ConstantsFor.PARAM_NAME_SERVER)) {
             JsonValue value = jsonObject.get(ConstantsFor.PARAM_NAME_SERVER);
-            serverName = value.asString();
+            this.serverName = value.asString();
         }
         String commandForSH = "uname -a;uptime;";
         if (jsonObject.names().contains(ConstantsFor.PARM_NAME_COMMAND)) {
             String commandFromJSON = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
             if (commandFromJSON.contains("ps ax")) {
-                commandForSH = commandForSH + ";sudo ps ax;exit";
+                commandForSH = commandForSH + ";exit";
             }
             else {
                 commandForSH = commandFromJSON;
@@ -95,10 +100,10 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
         return serverAnswer(sshFB);
     }
 
-    private String serverAnswer(SSHFactory.Builder fb) {
+    private JsonObject serverAnswer(SSHFactory.Builder fb) {
         String serverAnswerString = AppConfigurationLocal.getInstance().submitAsString(fb.build(), 10);
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(fb.getCommandSSH(), serverAnswerString);
-        return jsonObject.toString();
+        return jsonObject;
     }
 }
