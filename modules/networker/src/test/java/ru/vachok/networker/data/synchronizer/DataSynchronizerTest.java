@@ -7,11 +7,9 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,9 +57,6 @@ public class DataSynchronizerTest {
         }
         catch (ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        finally {
-            Assert.assertTrue(new File(ConstantsFor.DB_VELKOMVELKOMPC).exists());
         }
     }
 

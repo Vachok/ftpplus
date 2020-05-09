@@ -535,8 +535,6 @@ public enum ConstantsFor {
 
     public static final String DB_REGRU_JSON_PROPS_TABLE = "`u0466446_properties`.`dev`";
 
-    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
-
     public static final String DOMAIN = "domain";
 
     public static final String DELETE = "delete";
@@ -595,26 +593,7 @@ public enum ConstantsFor {
 
     public static final String APP_ARG_NOSCAN = "noscan";
 
-    public static boolean onRunOn(String... noRunOn) {
-        boolean retBool = false;
-        File file = new File(APP_ARG_NOSCAN + ".reason");
-        Map<String, String> appArgs = IntoApplication.getAppArgs();
-        for (String s : noRunOn) {
-            if (UsefulUtilities.thisPC().toLowerCase().contains(s)) {
-                retBool = true;
-                FileSystemWorker
-                    .writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
-            }
-        }
-        if (!appArgs.isEmpty()) {
-            if (appArgs.containsKey(APP_ARG_NOSCAN)) {
-                retBool = true;
-                FileSystemWorker.writeFile(file.getAbsolutePath(), "APP_ARG");
-            }
-        }
-        file.deleteOnExit();
-        return retBool;
-    }
+    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
@@ -644,5 +623,27 @@ public enum ConstantsFor {
             e.printStackTrace();
         }
         return retSet;
+    }
+
+    public static boolean onRunOn(String... noRunOn) {
+        boolean retBool = false;
+        File file = new File(APP_ARG_NOSCAN + ".reason");
+        Map<String, String> appArgs = IntoApplication.getAppArgs();
+        for (String s : noRunOn) {
+            if (UsefulUtilities.thisPC().toLowerCase().contains(s.toLowerCase())) {
+                retBool = true;
+                System.out.println(FileSystemWorker.writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms
+                    .fromArray(Thread.currentThread().getStackTrace())));
+            }
+        }
+        if (!appArgs.isEmpty()) {
+            if (appArgs.containsKey(APP_ARG_NOSCAN)) {
+                retBool = true;
+                System.out.println("appArgs = " + FileSystemWorker.writeFile(file.getAbsolutePath(), "APP_ARG"));
+                ;
+            }
+        }
+        file.deleteOnExit();
+        return retBool;
     }
 }
