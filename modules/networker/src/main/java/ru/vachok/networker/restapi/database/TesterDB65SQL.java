@@ -71,20 +71,29 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         else {
             sourceT.setDatabaseName(dbName);
         }
-        Connection connection;
-        //noinspection OverlyBroadCatchBlock
+        Connection connection = null;
         try {
             connection = sourceT.getConnection();
         }
-        catch (Exception e) {
+        catch (SQLException | RuntimeException e) {
             messageToUser.warn(TesterDB65SQL.class.getSimpleName(), "getDefaultConnection", e.getMessage() + Thread.currentThread().getState().name());
-            connection = alternateConnection();
         }
-        return connection;
+        if (connection != null) {
+            return connection;
+        }
+        else {
+            return alternateConnection();
+        }
     }
 
     private Connection alternateConnection() {
-        return DataConnectTo.getInstance(DataConnectTo.REGRUCONNECTION).getDefaultConnection(dbName.split("\\Q.\\E")[1]);
+        Connection connection = DataConnectTo.getInstance(DataConnectTo.REGRUCONNECTION).getDefaultConnection(dbName.split("\\Q.\\E")[1]);
+        if (connection != null) {
+            return connection;
+        }
+        else {
+            throw new IllegalStateException("connection is null");
+        }
     }
 
     @Override

@@ -632,7 +632,7 @@ public enum ConstantsFor {
         File file = new File(APP_ARG_NOSCAN + ".reason");
         Map<String, String> appArgs = IntoApplication.getAppArgs();
         for (String s : noRunOn) {
-            if (UsefulUtilities.thisPC().toLowerCase().contains(s.toLowerCase())) {
+            if (!s.isEmpty() && UsefulUtilities.thisPC().toLowerCase().contains(s.toLowerCase())) {
                 retBool = true;
                 System.out.println(FileSystemWorker.writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms
                     .fromArray(Thread.currentThread().getStackTrace())));
@@ -642,10 +642,10 @@ public enum ConstantsFor {
             if (appArgs.containsKey(APP_ARG_NOSCAN)) {
                 retBool = true;
                 System.out.println("appArgs = " + FileSystemWorker.writeFile(file.getAbsolutePath(), "APP_ARG"));
-                ;
             }
         }
         file.deleteOnExit();
+        System.out.println(retBool + " noRunOn");
         return retBool;
     }
 }

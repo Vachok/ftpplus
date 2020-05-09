@@ -242,7 +242,7 @@ public class DataSynchronizer extends SyncData {
         stringBuilder.append(sql).append("\n");
         int uploadedCount;
         Queue<JsonObject> jsonObjects = new LinkedList<>();
-        if (!ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC, "home") && (!dbToSync.contains(".inetstats") && !dbToSync
+        if (!ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC) && (!dbToSync.contains(".inetstats") && !dbToSync
             .contains(ConstantsFor.DB_PCUSERAUTO_FULL))) {
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

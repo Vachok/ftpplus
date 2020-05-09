@@ -40,7 +40,7 @@ public class Tracerouting implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        if (ConstantsFor.noRunOn()) {
+        if (!ConstantsFor.noRunOn()) {
             return getProviderTraceStr();
         }
         else {

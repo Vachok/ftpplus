@@ -126,7 +126,7 @@ class WeeklyInternetStats implements Runnable, Stats {
      */
     long readIPsWithInet(boolean isNoSquidNeedRead) throws InvokeIllegalException {
         Thread.currentThread().setName("readIPsWithInet");
-        if (ConstantsFor.noRunOn()) {
+        if (!ConstantsFor.noRunOn()) {
             throw new InvokeIllegalException(UsefulUtilities.thisPC());
         }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
@@ -156,7 +156,7 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
 
     private void execDo() throws InvokeIllegalException {
-        if (ConstantsFor.noRunOn()) {
+        if (!ConstantsFor.noRunOn()) {
             throw new InvokeIllegalException(UsefulUtilities.thisPC());
         }
         if (!new File(FileNames.WEEKLY_LCK).exists() && Stats.isSunday()) {
