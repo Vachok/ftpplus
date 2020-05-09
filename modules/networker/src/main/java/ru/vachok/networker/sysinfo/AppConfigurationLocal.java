@@ -41,7 +41,7 @@ public interface AppConfigurationLocal extends Runnable {
 
     default void execute(Runnable runnable) {
         ThreadConfig.cleanQueue(runnable);
-        AppComponents.threadConfig().getTaskExecutor().execute(runnable);
+        AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
 
     default void execute(Callable<?> callable) {
