@@ -5,6 +5,7 @@ package ru.vachok.networker.info.stats;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.info.InformationFactory;
 
@@ -29,7 +30,13 @@ public interface Stats extends InformationFactory {
         catch (IOException e) {
             System.err.println(e.getMessage());
         }
-        return WeeklyInternetStats.getInstance().readIPsWithInet(true);
+        try {
+            return WeeklyInternetStats.getInstance().readIPsWithInet(true);
+        }
+        catch (InvokeIllegalException e) {
+            System.err.println(MessageFormat.format("{0}\n{1} see line: 38 ***", Stats.class.getSimpleName(), e.getMessage()));
+            return Long.MIN_VALUE;
+        }
     }
 
     static boolean isSunday() {

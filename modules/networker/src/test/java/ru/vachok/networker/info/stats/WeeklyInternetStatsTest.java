@@ -10,6 +10,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -69,7 +70,13 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testReadIPsWithInet() {
-        long bytesSize = stats.readIPsWithInet(false);
+        long bytesSize = 0;
+        try {
+            bytesSize = stats.readIPsWithInet(false);
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
         Assert.assertTrue(bytesSize > 100, String.valueOf(bytesSize));
     }
 

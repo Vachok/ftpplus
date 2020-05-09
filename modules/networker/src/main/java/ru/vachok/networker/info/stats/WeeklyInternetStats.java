@@ -104,31 +104,19 @@ class WeeklyInternetStats implements Runnable, Stats {
         try {
             iPsWithInet = readIPsWithInet(false);
         }
-        catch (RuntimeException e) {
+        catch (RuntimeException | InvokeIllegalException e) {
             messageToUser.error("WeeklyInternetStats.run", e.getMessage(), AbstractForms.networkerTrace(e));
         }
         String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
         String titleMsg = new File(FileNames.INETSTATSIP_CSV).getAbsolutePath();
-        String bodyMsg = " = " + iPsWithInet + " size in kb";
+        String bodyMsg = MessageFormat.format(" = {0} size in kb", iPsWithInet);
         messageToUser.info(headerMsg, titleMsg, bodyMsg);
-        if (!new File(FileNames.WEEKLY_LCK).exists() && Stats.isSunday()) {
-            readStatsToCSVAndDeleteFromDB();
-            AppConfigurationLocal.getInstance().execute(new WeeklyInternetStats.InetStatSorter());
+        try {
+            execDo();
         }
-        else {
-            messageToUser.warn(MessageFormat.format("Not approved: \n{0} weekly.lck\n{1} isSunday", new File(FileNames.WEEKLY_LCK).exists(), Stats.isSunday()));
+        catch (InvokeIllegalException e) {
+            messageToUser.warn(WeeklyInternetStats.class.getSimpleName(), e.getMessage(), " see line: 118 ***");
         }
-    }
-
-    @Override
-    public String toString() {
-        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
-        stringJoiner.add("totalBytes = " + totalBytes);
-        if (!Stats.isSunday()) {
-            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
-            stringJoiner.add(daySunCounter());
-        }
-        return stringJoiner.toString();
     }
 
     /**
@@ -136,8 +124,11 @@ class WeeklyInternetStats implements Runnable, Stats {
 
      @see WeeklyInternetStatsTest#testReadIPsWithInet
      */
-    long readIPsWithInet(boolean isNoSquidNeedRead) {
+    long readIPsWithInet(boolean isNoSquidNeedRead) throws InvokeIllegalException {
         Thread.currentThread().setName("readIPsWithInet");
+        if (ConstantsFor.noRunOn()) {
+            throw new InvokeIllegalException(UsefulUtilities.thisPC());
+        }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {
@@ -151,6 +142,30 @@ class WeeklyInternetStats implements Runnable, Stats {
             messageToUser.error(e.getMessage() + " see line: 112 ***");
         }
         return new File(FileNames.INETSTATSIP_CSV).length();
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
+        stringJoiner.add("totalBytes = " + totalBytes);
+        if (!Stats.isSunday()) {
+            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+            stringJoiner.add(daySunCounter());
+        }
+        return stringJoiner.toString();
+    }
+
+    private void execDo() throws InvokeIllegalException {
+        if (ConstantsFor.noRunOn()) {
+            throw new InvokeIllegalException(UsefulUtilities.thisPC());
+        }
+        if (!new File(FileNames.WEEKLY_LCK).exists() && Stats.isSunday()) {
+            readStatsToCSVAndDeleteFromDB();
+            AppConfigurationLocal.getInstance().execute(new WeeklyInternetStats.InetStatSorter());
+        }
+        else {
+            messageToUser.warn(MessageFormat.format("Not approved: \n{0} weekly.lck\n{1} isSunday", new File(FileNames.WEEKLY_LCK).exists(), Stats.isSunday()));
+        }
     }
 
     @Contract(value = ConstantsFor.NULL_FALSE, pure = true)

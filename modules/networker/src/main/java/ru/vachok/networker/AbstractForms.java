@@ -124,6 +124,13 @@ public abstract class AbstractForms {
         return T_FORMS.sshCheckerMapWithDates(map, b);
     }
 
+    public static String networkerTrace(Throwable e) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append("\n");
+        stringBuilder.append(networkerTrace(e.getStackTrace()));
+        return stringBuilder.toString();
+    }
+
     @NotNull
     private static String checkSu(@NotNull Throwable e) {
         StringBuilder stringBuilder = new StringBuilder();
