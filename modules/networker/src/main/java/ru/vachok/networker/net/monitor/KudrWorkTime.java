@@ -230,7 +230,7 @@ public class KudrWorkTime implements NetScanService {
     }
 
     private void monitorAddress() throws InvokeIllegalException {
-        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC, "srv-mysql-h", "home")) {
+        if (ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC)) {
             throw new InvokeIllegalException();
         }
         this.startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay();
@@ -249,7 +249,7 @@ public class KudrWorkTime implements NetScanService {
     }
 
     private void doIsReach() throws InvokeIllegalException {
-        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+        if (ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC)) {
             throw new InvokeIllegalException();
         }
         int timeout = (int) TimeUnit.SECONDS.toMillis(150);

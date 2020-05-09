@@ -3,8 +3,6 @@
 package ru.vachok.networker.ad.common;
 
 
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
@@ -14,6 +12,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -27,6 +26,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
 
 
-    public static final String FOLDERACL_TXT = "folder_acl.txt";
+    @SuppressWarnings("SpellCheckingInspection") private static final String FOLDERACL_TXT = "folder_acl.txt";
 
     private final File fileLocalCommonPointOwn = new File(FileNames.COMMON_OWN);
 
@@ -50,6 +50,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     private static final String TABLE_FULL_NAME = ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON;
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RightsChecker.class.getSimpleName());
+
+    private static final String DELETE = "DELETE";
 
     private long filesScanned;
 
@@ -64,10 +66,11 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     public RightsChecker(@NotNull Path logsCopyStopPath) {
         this.logsCopyStopPath = logsCopyStopPath;
         if (fileLocalCommonPointOwn.exists()) {
-            fileLocalCommonPointOwn.delete();
+            messageToUser.info(DELETE, fileLocalCommonPointOwn.getAbsolutePath(), String.valueOf(fileLocalCommonPointOwn.delete()));
+
         }
         if (fileLocalCommonPointRgh.exists()) {
-            fileLocalCommonPointRgh.delete();
+            messageToUser.info(DELETE, fileLocalCommonPointRgh.getAbsolutePath(), String.valueOf(fileLocalCommonPointRgh.delete()));
         }
         startClass = System.currentTimeMillis();
     }
@@ -90,13 +93,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         }
         finally {
             FirebaseDatabase.getInstance().getReference(MessageFormat.format("{0}:{1}", UsefulUtilities.thisPC(), getClass().getSimpleName()))
-                .setValue(new Date(), new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError error, DatabaseReference ref) {
-                        messageToUser
-                            .error("RightsChecker.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
-                    }
-                });
+                .setValue(new Date(), (error, ref)->messageToUser
+                    .error("RightsChecker.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
         }
     }
 
@@ -119,70 +117,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         return FileVisitResult.CONTINUE;
     }
 
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if (file.toFile().exists() && attrs.isRegularFile()) {
-            this.dirSize += file.toFile().length();
-            this.filesScanned++;
-            if (file.toFile().getName().equals(FileNames.FILENAME_OWNER)) {
-                file.toFile().delete();
-            }
-            else if (file.toFile().getName().equals(FOLDERACL_TXT)) {
-                file.toFile().delete();
-            }
-            else if (file.toFile().getName().equals(FileNames.FILENAME_OWNER + ".replacer")) {
-                file.toFile().delete();
-            }
-            else if (file.toFile().getName().equals(ConstantsFor.OWNER)) {
-                file.toFile().delete();
-            }
-        }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        messageToUser.warn(getClass().getSimpleName(), file.toString(), AbstractForms.fromArray(exc));
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder()
-            .append("Dir visited = ")
-            .append(dir).append("\n")
-            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
-        long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
-        if (secondsScan == 0) {
-            secondsScan = 1;
-        }
-        stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
-        if (dir.toFile().isDirectory()) {
-            new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), this.dirSize).writeDirSize();
-            new ConcreteFolderACLWriter(dir, this.dirSize).run();
-            dir.toFile().setLastModified(lastModDir);
-        }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
-        sb.append("fileLocalCommonPointOwn=").append(fileLocalCommonPointOwn);
-        sb.append(", fileLocalCommonPointRgh=").append(fileLocalCommonPointRgh);
-
-        sb.append(", filesScanned=").append(filesScanned);
-        sb.append(", dirsScanned=").append(dirsScanned);
-
-        sb.append(", startPath=").append(startPath);
-        sb.append(", logsCopyStopPath=").append(logsCopyStopPath);
-
-        sb.append('}');
-        return sb.toString();
-    }
-
     private void copyExistsFiles(final long timeStart) throws InvokeIllegalException {
-        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+        if (ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC)) {
             throw new InvokeIllegalException("NO_NEED_TO_RUN");
         }
         if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
@@ -207,7 +143,70 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         File forAppend = new File(this.getClass().getSimpleName() + ".res");
 
         FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
-                this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
+            this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        messageToUser.warn(getClass().getSimpleName(), file.toString(), AbstractForms.fromArray(exc));
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        if (file.toFile().exists() && attrs.isRegularFile()) {
+            this.dirSize += file.toFile().length();
+            this.filesScanned++;
+            if (file.toFile().getName().equals(FileNames.FILENAME_OWNER)) {
+                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
+
+            }
+            else if (file.toFile().getName().equals(FOLDERACL_TXT)) {
+                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
+            }
+            else if (file.toFile().getName().equals(FileNames.FILENAME_OWNER + ".replacer")) {
+                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
+            }
+            else if (file.toFile().getName().equals(ConstantsFor.OWNER)) {
+                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
+            }
+        }
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd-kk:mm:ss");
+        StringBuilder stringBuilder = new StringBuilder()
+            .append("Dir visited = ")
+            .append(dir).append("\n")
+            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
+        long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
+        if (secondsScan == 0) {
+            secondsScan = 1;
+        }
+        stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
+        if (dir.toFile().isDirectory()) {
+            new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), this.dirSize).writeDirSize();
+            new ConcreteFolderACLWriter(dir, this.dirSize).run();
+            messageToUser.info(dir.toString(), simpleDateFormat.format(new Date(lastModDir).toString()), String.valueOf(dir.toFile().setLastModified(lastModDir)));
+        }
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public String toString() {
+        final com.eclipsesource.json.JsonObject jsonO = new com.eclipsesource.json.JsonObject();
+        jsonO.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonO.add("fileLocalCommonPointOwn", fileLocalCommonPointOwn.getAbsolutePath());
+        jsonO.add("fileLocalCommonPointRgh", fileLocalCommonPointRgh.getAbsolutePath());
+
+        jsonO.add("filesScanned", filesScanned);
+        jsonO.add("dirsScanned", dirsScanned);
+
+        jsonO.add(ConstantsFor.JSON_PARAM_NAME_STARTPATH, startPath.toString());
+        jsonO.add("logsCopyStopPath", logsCopyStopPath.toString());
+        return jsonO.toString();
     }
 
     /**

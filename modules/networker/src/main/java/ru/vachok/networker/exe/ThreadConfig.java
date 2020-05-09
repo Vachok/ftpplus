@@ -43,7 +43,7 @@ import java.util.concurrent.*;
 @SuppressWarnings("MagicNumber")
 @EnableAsync
 @Service("ThreadConfig")
-public class ThreadConfig implements AppConfigurationLocal {
+public final class ThreadConfig implements AppConfigurationLocal {
 
 
     /**
@@ -73,31 +73,9 @@ public class ThreadConfig implements AppConfigurationLocal {
 
     private int timeWait = 15;
 
-    /**
-     @return {@link #TASK_EXECUTOR}
-     */
-    public ThreadPoolTaskExecutor getTaskExecutor() {
-        setExecutor();
-        return TASK_EXECUTOR;
-    }
-
-    public static void cleanQueue(Runnable runnable) {
-        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
-        boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
-        if (isRemove) {
-            ApplicationEvent nameEvt = new MyEvent(runnable);
-            messageToUser.info(ThreadConfig.class.getSimpleName(), "cleanQueue", new Date(nameEvt.getTimestamp()).toString() + " : " + nameEvt.getSource());
-        }
-    }
-
     public ThreadPoolTaskScheduler getTaskScheduler() {
         setScheduler();
         return TASK_SCHEDULER;
-    }
-
-    public ThreadPoolTaskExecutor getTaskExecutor(int timeWait) {
-        this.timeWait = timeWait;
-        return getTaskExecutor();
     }
 
     private void setScheduler() {
@@ -153,6 +131,15 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
 
+    public static void cleanQueue(Runnable runnable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+        boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
+        if (isRemove) {
+            ApplicationEvent nameEvt = new MyEvent(runnable);
+            messageToUser.info(ThreadConfig.class.getSimpleName(), "cleanQueue", new Date(nameEvt.getTimestamp()).toString() + " : " + nameEvt.getSource());
+        }
+    }
+
     public static @NotNull String thrNameSet(String className) {
 
         float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
@@ -180,11 +167,25 @@ public class ThreadConfig implements AppConfigurationLocal {
         }
     }
 
+    public ThreadPoolTaskExecutor getTaskExecutor(int timeWait) {
+        this.timeWait = timeWait;
+        return getTaskExecutor();
+    }
+
+    /**
+     @return {@link #TASK_EXECUTOR}
+     */
+    public ThreadPoolTaskExecutor getTaskExecutor() {
+        setExecutor();
+        return TASK_EXECUTOR;
+    }
+
     private void setExecutor() {
         TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         TASK_EXECUTOR.setCorePoolSize(30);
+        TASK_EXECUTOR.setQueueCapacity(500);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(4);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(5);
         TASK_EXECUTOR.setThreadPriority(7);
         TASK_EXECUTOR.setThreadNamePrefix("E_");
         TASK_EXECUTOR.setKeepAliveSeconds(this.timeWait);

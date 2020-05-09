@@ -259,7 +259,7 @@ public class ScanOnline implements NetScanService {
     }
 
     private void initialMeth() throws InvokeIllegalException {
-        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+        if (ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC)) {
             throw new InvokeIllegalException(UsefulUtilities.thisPC());
         }
         this.onlinesFile = new File(FileNames.ONSCAN);

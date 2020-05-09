@@ -595,6 +595,8 @@ public enum ConstantsFor {
 
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
+    public static final String JSON_PARAM_NAME_STARTPATH = "startPath";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();
@@ -625,7 +627,7 @@ public enum ConstantsFor {
         return retSet;
     }
 
-    public static boolean onRunOn(String... noRunOn) {
+    public static boolean noRunOn(String... noRunOn) {
         boolean retBool = false;
         File file = new File(APP_ARG_NOSCAN + ".reason");
         Map<String, String> appArgs = IntoApplication.getAppArgs();
