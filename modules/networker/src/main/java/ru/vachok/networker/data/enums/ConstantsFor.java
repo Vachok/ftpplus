@@ -4,6 +4,8 @@ package ru.vachok.networker.data.enums;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -588,6 +590,31 @@ public enum ConstantsFor {
     public static final String JSON_LIST_24HRS = "24hrs";
 
     public static final String DBCOL_VALUEOFPROPERTY = "valueofproperty";
+
+    public static final String REGRUHOSTING_PC = "regruhosting.ru";
+
+    public static final String APP_ARG_NOSCAN = "noscan";
+
+    public static boolean onRunOn(String... noRunOn) {
+        boolean retBool = false;
+        File file = new File(APP_ARG_NOSCAN + ".reason");
+        Map<String, String> appArgs = IntoApplication.getAppArgs();
+        for (String s : noRunOn) {
+            if (UsefulUtilities.thisPC().toLowerCase().contains(s)) {
+                retBool = true;
+                FileSystemWorker
+                    .writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms.fromArray(Thread.currentThread().getStackTrace()));
+            }
+        }
+        if (!appArgs.isEmpty()) {
+            if (appArgs.containsKey(APP_ARG_NOSCAN)) {
+                retBool = true;
+                FileSystemWorker.writeFile(file.getAbsolutePath(), "APP_ARG");
+            }
+        }
+        file.deleteOnExit();
+        return retBool;
+    }
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {

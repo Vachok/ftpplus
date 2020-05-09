@@ -41,7 +41,7 @@ public class ActDirectoryCTRLTest {
 
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
 
     private ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
 
@@ -146,7 +146,7 @@ public class ActDirectoryCTRLTest {
         List<String> loginsRaw = UserInfo.getInstance(mockQuery).getLogins(mockQuery, 10);
         List<String> distinct = loginsRaw.stream().distinct().collect(Collectors.toList());
         String fromArray = AbstractForms.fromArray(distinct);
-        Assert.assertTrue(Stream.of("estrelyaeva", "deloproject", "efilistova").anyMatch(fromArray::contains), fromArray);
+        Assert.assertTrue(Stream.of("estrelyaeva", "deloproject", "efilistova", "d.yu.podbuckii").anyMatch(fromArray::contains), fromArray);
     }
 
     @Test

@@ -24173,3 +24173,27 @@ ls "/usr/home/ITDept/vpn/keys/keys/"
 connection to 192.168.13.155 closed - bye bye!
 ls "/usr/home/kudr/networker/"
 connection to 10.10.111.65 closed - bye bye!
+CONNECT \10.10.111.65
+connected to 10.10.111.65
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/noscan.reason" "d:\Temp\_tc\noscan.reason"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/noscan.reason" "d:\Temp\_tc\noscan.reason"
+ls "/usr/home/kudr/networker/parsed/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/networker/"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/noscan.reason" "d:\Temp\_tc\noscan.reason"
+ls "/usr/home/kudr/networker/"
+get "/usr/home/kudr/networker/noscan.reason" "d:\Temp\_tc\noscan.reason"
+connection to 10.10.111.65 closed - bye bye!

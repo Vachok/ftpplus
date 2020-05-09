@@ -18,23 +18,27 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  @since 19.07.2019 (9:51) */
 class ArgsReader implements Runnable {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ArgsReader.class.getSimpleName());
-    
+
     private static String[] appArgs;
-    
-    private static ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-    
+
+    private static final ConcurrentMap<String, String> APP_ARGS = new ConcurrentHashMap<>();
+
+    static ConcurrentMap<String, String> getAppArgs() {
+        return APP_ARGS;
+    }
+
     ArgsReader(String[] appArgs) {
         this.appArgs = appArgs;
     }
-    
+
     @Override
     public void run() {
         fillArgsMap();
     }
-    
+
     private static void fillArgsMap() {
         List<@NotNull String> argsList = Arrays.asList(appArgs);
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
@@ -49,18 +53,18 @@ class ArgsReader implements Runnable {
                 value = "true";
             }
             if (!value.contains("-")) {
-                argsMap.put(key, value);
+                APP_ARGS.put(key, value);
             }
             else {
                 if (!key.contains("-")) {
-                    argsMap.put("", "");
+                    APP_ARGS.put("", "");
                 }
                 else {
-                    argsMap.put(key, "true");
+                    APP_ARGS.put(key, "true");
                 }
             }
         }
-        for (Map.Entry<String, String> argValueEntry : argsMap.entrySet()) {
+        for (Map.Entry<String, String> argValueEntry : APP_ARGS.entrySet()) {
             isTray = parseMapEntry(argValueEntry, exitApp);
             if (argValueEntry.getValue().equals("test")) {
                 throw new RejectedExecutionException("TEST. VALUE");
@@ -74,7 +78,7 @@ class ArgsReader implements Runnable {
         }
         readArgs();
     }
-    
+
     private static boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
         Properties localCopyProperties = InitProperties.getTheProps();
         boolean isTray = true;
@@ -96,10 +100,10 @@ class ArgsReader implements Runnable {
         if (stringStringEntry.getKey().contains(TelnetServer.PR_LPORT)) {
             localCopyProperties.setProperty(TelnetServer.PR_LPORT, stringStringEntry.getValue());
         }
-        
+
         return isTray;
     }
-    
+
     private static void readArgs() {
         IntoApplication.setUTF8Enc();
         try {
@@ -112,7 +116,7 @@ class ArgsReader implements Runnable {
             IntoApplication.appInfoStarter();
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ArgsReader{");

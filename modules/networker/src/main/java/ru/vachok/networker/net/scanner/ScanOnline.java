@@ -84,7 +84,12 @@ public class ScanOnline implements NetScanService {
     }
 
     public ScanOnline() {
-        initialMeth();
+        try {
+            initialMeth();
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.warn(ScanOnline.class.getSimpleName(), e.getMessage(), " see line: 91 ***");
+        }
     }
 
     @Override
@@ -253,7 +258,10 @@ public class ScanOnline implements NetScanService {
         return tForms.fromArray(filesOnLineRead, true);
     }
 
-    private void initialMeth() {
+    private void initialMeth() throws InvokeIllegalException {
+        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+            throw new InvokeIllegalException(UsefulUtilities.thisPC());
+        }
         this.onlinesFile = new File(FileNames.ONSCAN);
         this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
         String fileMaxName = FileNames.ONLINES_MAX;

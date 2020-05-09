@@ -113,7 +113,11 @@ public class IntoApplication {
         return configurableApplicationContext.getEnvironment();
     }
 
-    public static void makeEvent(Object event) {
+    public static Map<String, String> getAppArgs() {
+        return ArgsReader.getAppArgs();
+    }
+
+    static void makeEvent(Object event) {
         ApplicationEvent myEvent = new MyEvent(event);
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), myEvent.toString(), event.toString());
     }

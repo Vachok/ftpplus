@@ -182,6 +182,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     }
 
     private void copyExistsFiles(final long timeStart) throws InvokeIllegalException {
+        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+            throw new InvokeIllegalException("NO_NEED_TO_RUN");
+        }
         if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
             try {
                 Files.createDirectories(logsCopyStopPath);

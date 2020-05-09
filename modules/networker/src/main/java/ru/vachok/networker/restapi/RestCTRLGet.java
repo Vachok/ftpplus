@@ -289,10 +289,10 @@ public class RestCTRLGet {
             SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
             String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
             if (objName.toLowerCase().contains("full")) {
-                objName = "fullSquid";
+                objName = ConstantsFor.JSON_OBJECT_FULL_SQUID;
             }
-            else if (objName.contentEquals("squid")) {
-                objName = "stdSquid";
+            else if (objName.contentEquals(ConstantsFor.JSON_OBJECT_SQUID)) {
+                objName = ConstantsFor.JSON_OBJECT_STD_SQUID;
             }
             else if (objName.toLowerCase().contains("lim")) {
                 objName = ConstantsFor.JSON_LIST_LIMITSQUID;
@@ -305,10 +305,10 @@ public class RestCTRLGet {
         }
         if (pfLists.getPfRules() != null && !pfLists.getPfRules().isEmpty()) {
             JsonObject pfRules = new JsonObject();
-            pfRules.add("pfRules", pfLists.getPfRules());
+            pfRules.add(ConstantsFor.JSON_OBJECT_RULES, pfLists.getPfRules());
             if (pfLists.getPfNat() != null && !pfLists.getPfNat().isEmpty()) {
                 JsonObject pfNat = new JsonObject();
-                pfNat.add("pfNat", pfLists.getPfNat());
+                pfNat.add(ConstantsFor.JSON_OBJECT_NAT, pfLists.getPfNat());
                 retArr.add(pfNat);
                 retArr.add(pfRules);
             }

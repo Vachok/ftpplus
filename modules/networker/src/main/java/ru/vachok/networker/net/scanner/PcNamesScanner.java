@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
@@ -112,6 +113,7 @@ public final class PcNamesScanner implements NetScanService {
     public String toString() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add("class", PcNamesScanner.class.getSimpleName());
+        jsonObject.add("thispc", UsefulUtilities.thisPC());
         try {
             jsonObject.add("startClassTime", startClassTime)
                 .add("lastScanStamp", new Date(lastScanStamp).toString())
@@ -125,7 +127,12 @@ public final class PcNamesScanner implements NetScanService {
 
     @Override
     public String getExecution() {
-        return new ScanMessagesCreator().fillUserPCForWEBModel();
+        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+            return "Not run on " + UsefulUtilities.thisPC();
+        }
+        else {
+            return new ScanMessagesCreator().fillUserPCForWEBModel();
+        }
     }
 
     @Override
@@ -155,7 +162,12 @@ public final class PcNamesScanner implements NetScanService {
     @Override
     public void run() {
         String fileName = this.getClass().getSimpleName() + "." + hashCode();
-        isMapSizeBigger(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TOTPC, "269")));
+        try {
+            isMapSizeBigger(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TOTPC, "322")));
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error("PcNamesScanner.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
         new File(fileName).deleteOnExit();
     }
 
@@ -301,7 +313,10 @@ public final class PcNamesScanner implements NetScanService {
         messageToUser.info(this.getClass().getSimpleName(), "NetKeeper.getPcNamesForSendToDatabase cleared", String.valueOf(isSmallDBWritten));
     }
 
-    private void isMapSizeBigger(int thisTotalPC) {
+    private void isMapSizeBigger(int thisTotalPC) throws InvokeIllegalException {
+        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+            throw new InvokeIllegalException(UsefulUtilities.thisPC());
+        }
         try {
             checkPC(thisTotalPC);
         }
@@ -380,7 +395,7 @@ public final class PcNamesScanner implements NetScanService {
                 messageToUser.warn(this.getClass().getSimpleName(), FileNames.INETSTATSIP_CSV, Stats.getIpsInet() + " kb");
                 scanIt();
             }
-            catch (RuntimeException e) {
+            catch (RuntimeException | InvokeIllegalException e) {
                 messageToUser.error("ScannerUSR.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             }
             finally {
@@ -447,7 +462,10 @@ public final class PcNamesScanner implements NetScanService {
                 .toString();
         }
 
-        private void scanIt() {
+        private void scanIt() throws InvokeIllegalException {
+            if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+                throw new InvokeIllegalException(UsefulUtilities.thisPC());
+            }
             ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
             linksMap.clear();
             InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));

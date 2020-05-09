@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -55,9 +57,9 @@ public class DiapazonScan implements NetScanService {
      Singleton inst
      */
     @SuppressWarnings("StaticVariableOfConcreteClass")
-    private static DiapazonScan thisInst = new DiapazonScan();
+    private static final DiapazonScan thisInst = new DiapazonScan();
 
-    private long stopClassStampLong = ru.vachok.networker.restapi.props.InitProperties.getUserPref()
+    private final long stopClassStampLong = ru.vachok.networker.restapi.props.InitProperties.getUserPref()
         .getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
 
     /**
@@ -154,7 +156,14 @@ public class DiapazonScan implements NetScanService {
 
     @Override
     public void run() {
-        AppConfigurationLocal.getInstance().execute(this::startDo, TimeUnit.MINUTES.toSeconds(61));
+        AppConfigurationLocal.getInstance().execute(()->{
+            try {
+                startDo();
+            }
+            catch (InvokeIllegalException e) {
+                messageToUser.warn(DiapazonScan.class.getSimpleName(), e.getMessage(), " see line: 164 ***");
+            }
+        }, TimeUnit.MINUTES.toSeconds(61));
     }
 
     @Override
@@ -213,7 +222,10 @@ public class DiapazonScan implements NetScanService {
         }
     }
 
-    private void startDo() {
+    private void startDo() throws InvokeIllegalException {
+        if (ConstantsFor.onRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+            throw new InvokeIllegalException(UsefulUtilities.thisPC());
+        }
         synchronized(inetUniqueCSV) {
             if (!inetUniqueCSV.exists()) {
                 Stats.getIpsInet();
@@ -224,11 +236,7 @@ public class DiapazonScan implements NetScanService {
         }
         AppConfigurationLocal threadExecutor = AppConfigurationLocal.getInstance();
         BlockingQueue<Runnable> queueExec = ((ThreadConfig) threadExecutor).getTaskExecutor().getThreadPoolExecutor().getQueue();
-        for (Runnable runnable : queueExec) {
-            if (runnable instanceof ExecScan) {
-                queueExec.remove(runnable);
-            }
-        }
+        queueExec.removeIf(runnable->runnable instanceof ExecScan);
 
         @NotNull ExecScan[] newRunnables = getRunnables();
         for (ExecScan execScan : newRunnables) {
