@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ad.common.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
@@ -79,10 +78,9 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     }
 
     private void ftpUploadTask() {
-        AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
         try {
             String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + launchRegRuFTPLibsUploader();
-            AppInfoOnLoad.getMiniLogger().add(ftpUpload);
+            messageToUser.warn(getClass().getSimpleName(), "ftpUploadTask", ftpUpload);
         }
         catch (RuntimeException e) {
             messageToUser.error("OnStartTasksLoader.ftpUploadTask", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));

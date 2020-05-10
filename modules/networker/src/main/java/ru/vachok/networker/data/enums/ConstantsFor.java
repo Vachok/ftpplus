@@ -593,9 +593,9 @@ public enum ConstantsFor {
 
     public static final String APP_ARG_NOSCAN = "noscan";
 
-    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
-
     public static final String JSON_PARAM_NAME_STARTPATH = "startPath";
+
+    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
@@ -627,25 +627,27 @@ public enum ConstantsFor {
         return retSet;
     }
 
-    public static boolean noRunOn(String... noRunOn) {
+    /**
+     @see ConstantsForTest
+     */
+    public static boolean argNORUNExist(String... noRunOn) {
         boolean retBool = false;
         File file = new File(APP_ARG_NOSCAN + ".reason");
         Map<String, String> appArgs = IntoApplication.getAppArgs();
         for (String s : noRunOn) {
             if (!s.isEmpty() && UsefulUtilities.thisPC().toLowerCase().contains(s.toLowerCase())) {
                 retBool = true;
-                System.out.println(FileSystemWorker.writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms
-                    .fromArray(Thread.currentThread().getStackTrace())));
+                FileSystemWorker.writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms
+                    .fromArray(Thread.currentThread().getStackTrace()));
             }
         }
         if (!appArgs.isEmpty()) {
             if (appArgs.containsKey(APP_ARG_NOSCAN)) {
                 retBool = true;
-                System.out.println("appArgs = " + FileSystemWorker.writeFile(file.getAbsolutePath(), "APP_ARG"));
+                FileSystemWorker.writeFile(file.getAbsolutePath(), "APP_ARG");
             }
         }
         file.deleteOnExit();
-        System.out.println(retBool + " noRunOn");
         return retBool;
     }
 }

@@ -297,10 +297,10 @@ public class InternetSync extends SyncData implements Runnable {
     private JsonObject parseAsObject(String str) {
         JsonObject jsonObject = new JsonObject();
         try {
-            jsonObject = (JsonObject) Json.parse(str);
+            jsonObject = Json.parse(str).asObject();
             return jsonObject;
         }
-        catch (com.eclipsesource.json.ParseException e) {
+        catch (RuntimeException e) {
             jsonObject.add(ConstantsFor.DBCOL_STAMP, "1");
             jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "");
             jsonObject.add(ConstantsFor.DBCOL_BYTES, "1");

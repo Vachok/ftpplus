@@ -223,7 +223,7 @@ public class DiapazonScan implements NetScanService {
     }
 
     private void startDo() throws InvokeIllegalException {
-        if (ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC)) {
+        if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
             throw new InvokeIllegalException(UsefulUtilities.thisPC());
         }
         synchronized(inetUniqueCSV) {

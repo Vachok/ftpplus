@@ -172,7 +172,9 @@ public class DataSynchronizer extends SyncData {
                 this.dbToSync = dbName + "." + tblName;
                 this.dbObj = new File(dbToSync);
                 try {
-                    syncData();
+                    if (!ConstantsFor.argNORUNExist()) {
+                        syncData();
+                    }
                 }
                 catch (RuntimeException ignore) {
                     //27.11.2019 (0:06)
@@ -242,8 +244,7 @@ public class DataSynchronizer extends SyncData {
         stringBuilder.append(sql).append("\n");
         int uploadedCount;
         Queue<JsonObject> jsonObjects = new LinkedList<>();
-        if (!ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC) && (!dbToSync.contains(".inetstats") && !dbToSync
-            .contains(ConstantsFor.DB_PCUSERAUTO_FULL))) {
+        if ((!dbToSync.contains(".inetstats") && !dbToSync.contains(ConstantsFor.DB_PCUSERAUTO_FULL))) {
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(7));

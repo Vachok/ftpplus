@@ -85,7 +85,7 @@ class ResolveUserInDataBase extends UserInfo {
     @NotNull
     private List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
-        if (ConstantsFor.noRunOn(ConstantsFor.REGRUHOSTING_PC, "srv-mysql-h")) {
+        if (!ConstantsFor.argNORUNExist()) {
             try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
