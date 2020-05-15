@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
@@ -89,6 +90,7 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testRun() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC));
         try {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(stats);
             submit.get(4, TimeUnit.SECONDS);

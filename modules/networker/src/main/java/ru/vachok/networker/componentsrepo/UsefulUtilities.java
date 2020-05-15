@@ -176,11 +176,7 @@ public abstract class UsefulUtilities {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
         stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getObjectName()).append(" object name, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getThreadCount()).append(" current threads live, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
+        stringBuilder.append(InformationFactory.getInstance(InformationFactory.MX_BEAN_THREAD).getInfo());
         return stringBuilder.toString();
     }
 

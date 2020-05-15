@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -172,7 +173,10 @@ public class DataSynchronizer extends SyncData {
                 this.dbToSync = dbName + "." + tblName;
                 this.dbObj = new File(dbToSync);
                 try {
-                    if (!ConstantsFor.argNORUNExist()) {
+                    if (ConstantsFor.argNORUNExist()) {
+                        messageToUser.error(FileSystemWorker.readFile(FileNames.ARG_NO_RUN));
+                    }
+                    else {
                         syncData();
                     }
                 }

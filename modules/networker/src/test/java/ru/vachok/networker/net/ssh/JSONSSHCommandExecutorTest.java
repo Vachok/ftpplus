@@ -40,7 +40,7 @@ public class JSONSSHCommandExecutorTest {
         RestApiHelper sshExec = RestApiHelper.getInstance(RestApiHelper.SSH);
         JsonObject jsonObject = Json.parse(FileSystemWorker.readRawFile(FILE_TEST_JSON.getAbsolutePath())).asObject();
         String result = sshExec.getResult(jsonObject);
-        Assert.assertTrue(result.contains("BAD AUTH!"), result);
+        Assert.assertTrue(result.contains("!_passwords.xlsx"), result);
         jsonObject.add("code", "1601");
         result = sshExec.getResult(jsonObject);
         Assert.assertTrue(result.contains("\"ls\""), result);

@@ -12,6 +12,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
@@ -32,12 +33,12 @@ public class VpnHelper extends SshActs {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, VpnHelper.class.getSimpleName());
 
-    int connectCounter = 0;
+    private int connectCounter = 0;
 
     private String keyName;
 
     public void getStatus() {
-        String result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", "result", whatSrvNeed(), execSSHCommand(GET_STATUS_COMMAND));
+        String result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", ModelAttributeNames.ATT_RESULT, whatSrvNeed(), execSSHCommand(GET_STATUS_COMMAND));
         if (result.contains("AppConfigurationLocal")) {
             result = MessageFormat
                 .format("Error loading. Next trying to connect... {0} times tried\n{1}: {2}", connectCounter, whatSrvNeed(), GET_STATUS_COMMAND);
@@ -79,7 +80,9 @@ public class VpnHelper extends SshActs {
     @NotNull
     private OkHttpClient buildClient() {
         OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
-        okBuild.callTimeout(20, TimeUnit.SECONDS);
+        okBuild.connectTimeout(3, TimeUnit.SECONDS);
+        okBuild.readTimeout(15, TimeUnit.SECONDS);
+        okBuild.eventListener(new VpnHelper.CallFAILListener());
         return okBuild.build();
     }
 
@@ -113,5 +116,14 @@ public class VpnHelper extends SshActs {
     public String toString() {
         return new StringJoiner(",\n", VpnHelper.class.getSimpleName() + "[\n", "\n]")
             .toString();
+    }
+
+    private static class CallFAILListener extends EventListener {
+
+
+        @Override
+        public void callFailed(@NotNull Call call, @NotNull IOException ioe) {
+            messageToUser.error("VpnHelper.callFailed", ioe.getMessage(), AbstractForms.networkerTrace(ioe.getStackTrace()));
+        }
     }
 }

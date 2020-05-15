@@ -117,35 +117,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         return FileVisitResult.CONTINUE;
     }
 
-    private void copyExistsFiles(final long timeStart) throws InvokeIllegalException {
-        if (!ConstantsFor.argNORUNExist()) {
-            throw new InvokeIllegalException("NO_NEED_TO_RUN");
-        }
-        if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
-            try {
-                Files.createDirectories(logsCopyStopPath);
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat.format("CommonRightsChecker.copyExistsFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-        }
-
-        Path cRGHCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointRgh.getName());
-        Path cOWNCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointOwn.getName());
-
-        if (fileLocalCommonPointOwn.exists()) {
-            FileSystemWorker.copyOrDelFile(fileLocalCommonPointOwn, cOWNCopyPath, true);
-        }
-        if (fileLocalCommonPointRgh.exists()) {
-            FileSystemWorker.copyOrDelFile(fileLocalCommonPointRgh, cRGHCopyPath, true);
-        }
-
-        File forAppend = new File(this.getClass().getSimpleName() + ".res");
-
-        FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
-            this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
-    }
-
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         messageToUser.warn(getClass().getSimpleName(), file.toString(), AbstractForms.fromArray(exc));
@@ -189,9 +160,39 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         if (dir.toFile().isDirectory()) {
             new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), this.dirSize).writeDirSize();
             new ConcreteFolderACLWriter(dir, this.dirSize).run();
-            messageToUser.info(dir.toString(), simpleDateFormat.format(new Date(lastModDir).toString()), String.valueOf(dir.toFile().setLastModified(lastModDir)));
+            dir.toFile().setLastModified(lastModDir);
         }
         return FileVisitResult.CONTINUE;
+    }
+
+    private void copyExistsFiles(final long timeStart) throws InvokeIllegalException {
+        /*А вот так было надо!!!!*/
+        if (ConstantsFor.argNORUNExist()) {
+            throw new InvokeIllegalException("NO_NEED_TO_RUN");
+        }
+        if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
+            try {
+                Files.createDirectories(logsCopyStopPath);
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat.format("CommonRightsChecker.copyExistsFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
+        }
+
+        Path cRGHCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointRgh.getName());
+        Path cOWNCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointOwn.getName());
+
+        if (fileLocalCommonPointOwn.exists()) {
+            FileSystemWorker.copyOrDelFile(fileLocalCommonPointOwn, cOWNCopyPath, true);
+        }
+        if (fileLocalCommonPointRgh.exists()) {
+            FileSystemWorker.copyOrDelFile(fileLocalCommonPointRgh, cRGHCopyPath, true);
+        }
+
+        File forAppend = new File(this.getClass().getSimpleName() + ".res");
+
+        FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
+            this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
     }
 
     @Override

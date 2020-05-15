@@ -47,7 +47,7 @@ public class DiapazonScanTest {
 
     private String testFilePathStr = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR;
 
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
 
     @BeforeClass
     public void setUp() {
@@ -96,6 +96,7 @@ public class DiapazonScanTest {
      */
     @Test
     public void testRun() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC));
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         try {
             AppConfigurationLocal.getInstance().execute(diapazonScanRun, 30);

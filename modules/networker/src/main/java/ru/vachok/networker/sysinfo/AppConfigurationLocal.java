@@ -4,6 +4,7 @@ package ru.vachok.networker.sysinfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
@@ -40,41 +41,35 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default void execute(Runnable runnable) {
-        ThreadConfig.cleanQueue(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
 
     default void execute(Callable<?> callable) {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
-        AppComponents.threadConfig().cleanQueue(callable);
         executor.submit(callable);
     }
 
-    default Object executeGet(Callable<?> callable, int timeOutSeconds) {
-        ThreadConfig.cleanQueue(callable);
-        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor(timeOutSeconds).getThreadPoolExecutor();
-        Future<?> submit = executor.submit(callable);
-        Object o;
-        try {
-            o = submit.get(timeOutSeconds, TimeUnit.SECONDS);
-            System.out.println(MessageFormat.format("submit.get() = {0}", o));
+    static Object executeOnExecutor(Object o, long timeOut) throws InvokeIllegalException {
+        ExecutorService service = Executors.newFixedThreadPool(7);
+        if (o instanceof Runnable) {
+            service.execute((Runnable) o);
         }
-        catch (InterruptedException e) {
-            o = e.getMessage();
-            System.err.println(e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+        else if (o instanceof Callable) {
+            try {
+                o = service.submit((Callable<?>) o).get(timeOut, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e) {
+                o = e;
+            }
         }
-        catch (ExecutionException | TimeoutException e) {
-            o = e.getMessage();
-            System.err.println(e.getMessage());
+        else {
+            throw new InvokeIllegalException("Bad object");
         }
         return o;
     }
 
     default void execute(Runnable runnable, long timeOutSeconds) {
         ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor((int) timeOutSeconds).getThreadPoolExecutor();
-        ThreadConfig.cleanQueue(runnable);
         Future<?> submit = poolExecutor.submit(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new ThreadTimeout(submit, timeOutSeconds));
     }
@@ -85,7 +80,6 @@ public interface AppConfigurationLocal extends Runnable {
 
     default void schedule(Runnable runnable, long timeFirstRun, long period) {
         ScheduledThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        ThreadConfig.cleanQueue(runnable);
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         executorQueue.removeIf(runnable1->runnable1.equals(runnable));
         long initialDelay = timeFirstRun - System.currentTimeMillis();
@@ -93,6 +87,30 @@ public interface AppConfigurationLocal extends Runnable {
             initialDelay = 0;
         }
         poolExecutor.scheduleWithFixedDelay(runnable, initialDelay, period, TimeUnit.MILLISECONDS);
+    }
+
+    default Object executeGet(Callable<?> callable, int timeOutSeconds) {
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor(timeOutSeconds).getThreadPoolExecutor();
+        Future<?> submit = executor.submit(callable);
+        Object o;
+        try {
+            o = submit.get(timeOutSeconds, TimeUnit.SECONDS);
+            System.out.println(MessageFormat.format("submit.get() = {0}", o));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            o = e.getMessage();
+            ThreadConfig.cleanQueue(callable);
+        }
+        return o;
+    }
+
+    default void executeBlock(Runnable actualizer, int timeWait) throws TimeoutException {
+        try {
+            AppComponents.threadConfig().getTaskExecutor(timeWait).submit(actualizer).get(timeWait, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
@@ -106,6 +124,7 @@ public interface AppConfigurationLocal extends Runnable {
             }
             else {
                 result = MessageFormat.format("{0} submit is {1}", getClass().getSimpleName(), false);
+                ThreadConfig.cleanQueue(callableQuestion);
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
@@ -115,15 +134,7 @@ public interface AppConfigurationLocal extends Runnable {
         finally {
             System.out.println(MessageFormat.format("{0} = {1} is done: {2}", result, callableQuestion.getClass().getName(), submit.isDone()));
         }
-        return result;
-    }
 
-    default void executeBlock(Runnable actualizer, int timeWait) throws TimeoutException {
-        try {
-            AppComponents.threadConfig().getTaskExecutor(timeWait).submit(actualizer).get(timeWait, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        return result;
     }
 }

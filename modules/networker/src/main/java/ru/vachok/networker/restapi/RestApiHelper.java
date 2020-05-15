@@ -43,7 +43,7 @@ public interface RestApiHelper {
         return new RestError();
     }
 
-    default boolean checkValidUID(String headerAuthorization, int minCodeVer) {
+    default boolean checkValidUID(String headerAuthorization) {
         boolean isValid = false;
         List<String> validUIDs = getFromDB();
         if (validUIDs.size() == 0) {
@@ -55,13 +55,8 @@ public interface RestApiHelper {
                 break;
             }
         }
-        if (minCodeVer < (Integer.parseInt(InitProperties.getTheProps().getProperty("minMobAppVersion")))) {
-            isValid = false;
-        }
         return isValid;
     }
-
-    String getResult(@NotNull JsonObject jsonObject);
 
     @NotNull
     default List<String> getFromDB() {
@@ -78,4 +73,19 @@ public interface RestApiHelper {
         }
         return validUIDs;
     }
+
+    default boolean checkCodeVersion(@NotNull JsonObject jsonObject) {
+        int codeVer = 1600;
+        if (jsonObject.names().contains(ConstantsFor.PARAM_NAME_CODE)) {
+            try {
+                codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, codeVer);
+            }
+            catch (RuntimeException e) {
+                codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "1600"));
+            }
+        }
+        return codeVer >= (Integer.parseInt(InitProperties.getTheProps().getProperty("minMobAppVersion")));
+    }
+
+    String getResult(@NotNull JsonObject jsonObject);
 }

@@ -3,16 +3,14 @@ package ru.vachok.networker.net.ssh;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
-import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
-
-import java.text.MessageFormat;
 
 
 /**
@@ -29,40 +27,17 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
-        int codeVer = -666;
-        String result;
-        try {
-            codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
-        }
-        catch (ParseException | UnsupportedOperationException e) {
-            codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "-1"));
-        }
-        catch (RuntimeException e) {
-            codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "-1"));
-            messageToUser.error("JSONSSHCommandExecutor.getResult", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        finally {
-            JsonObject jsonObjectResult = connectToSrv(jsonObject, codeVer);
-            jsonObjectResult.add(ConstantsFor.PARAM_NAME_SERVER, serverName);
-            result = jsonObjectResult.toString();
-            messageToUser.info(getClass().getSimpleName(), result, jsonObject.toString());
-        }
-        return result;
+        messageToUser.info(AbstractForms.fromArray(jsonObject));
+        JsonObject jsonObjectResult = connectToSrv(jsonObject);
+        jsonObjectResult.add(ConstantsFor.PARAM_NAME_SERVER, serverName);
+        return jsonObjectResult.toString();
     }
 
-    private JsonObject connectToSrv(@NotNull JsonObject jsonObject, int codeVer) {
+    private JsonObject connectToSrv(@NotNull JsonObject jsonObject) {
         JsonObject result = new JsonObject();
-        String authorizationHeader = "null";
-        boolean isValid;
-        try {
-            authorizationHeader = jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
-        }
-        catch (RuntimeException e) {
-            authorizationHeader = e.getMessage();
-        }
-        finally {
-            isValid = checkValidUID(authorizationHeader, codeVer);
-        }
+        boolean codeValid = checkCodeVersion(jsonObject);
+        boolean userValid = checkValidUID(String.valueOf(jsonObject.get(ConstantsFor.AUTHORIZATION).asString()));
+        boolean isValid = userValid & codeValid;
         if (isValid) {
             try {
                 result = makeActions(jsonObject);
@@ -72,7 +47,10 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
             }
         }
         else {
-            result.add("BAD AUTH!", MessageFormat.format("{0}\n{1}:{2}", result, authorizationHeader, codeVer));
+            result.add("BAD AUTH", getClass().getSimpleName());
+            result.add("user", userValid);
+            result.add("code", codeValid);
+            result.add("request_json", jsonObject.toString());
         }
         return result;
     }
@@ -105,5 +83,13 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(fb.getCommandSSH(), serverAnswerString);
         return jsonObject;
+    }
+
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, JSONSSHCommandExecutor.class.getSimpleName());
+        jsonObject.add("serverName", serverName);
+        return jsonObject.toString();
     }
 }

@@ -7,10 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -133,14 +135,7 @@ public class KudrWorkTime implements NetScanService {
         int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
         try {
             if (NetScanService.isReach(do0213IP.getHostAddress())) {
-                AppConfigurationLocal.getInstance().execute(()->{
-                    try {
-                        monitorAddress();
-                    }
-                    catch (InvokeIllegalException e) {
-                        messageToUser.warn(KudrWorkTime.class.getSimpleName(), e.getMessage(), " see line: 184 ***");
-                    }
-                }, timeout);
+                AppConfigurationLocal.getInstance().execute(this::run2, timeout);
             }
             else {
                 doIsReach();
@@ -230,7 +225,7 @@ public class KudrWorkTime implements NetScanService {
     }
 
     private void monitorAddress() throws InvokeIllegalException {
-        if (ConstantsFor.argNORUNExist()) {
+        if (ConstantsFor.argNORUNExist(OtherKnownDevices.HOSTNAME_HOME)) {
             throw new InvokeIllegalException();
         }
         this.startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay();
@@ -249,7 +244,7 @@ public class KudrWorkTime implements NetScanService {
     }
 
     private void doIsReach() throws InvokeIllegalException {
-        if (ConstantsFor.argNORUNExist()) {
+        if (ConstantsFor.argNORUNExist(OtherKnownDevices.HOSTNAME_HOME)) {
             throw new InvokeIllegalException();
         }
         int timeout = (int) TimeUnit.SECONDS.toMillis(150);
@@ -266,5 +261,19 @@ public class KudrWorkTime implements NetScanService {
                 break;
             }
         } while (true);
+    }
+
+    private void run2() {
+        try {
+            if (ConstantsFor.argNORUNExist(OtherKnownDevices.SRV_RUPS00)) {
+                messageToUser.warn(KudrWorkTime.class.getSimpleName(), UsefulUtilities.thisPC(), " see line: 269 ***");
+            }
+            else {
+                monitorAddress();
+            }
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.warn(KudrWorkTime.class.getSimpleName(), e.getMessage(), " see line: 184 ***");
+        }
     }
 }

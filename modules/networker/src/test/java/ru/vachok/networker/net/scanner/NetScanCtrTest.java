@@ -120,11 +120,11 @@ public class NetScanCtrTest {
             String info = infoF.get(30, TimeUnit.SECONDS);
             System.out.println("info = " + info);
         }
-        catch (InterruptedException e) {
+        catch (InterruptedException | TimeoutException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        catch (ExecutionException | TimeoutException e) {
+        catch (ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }

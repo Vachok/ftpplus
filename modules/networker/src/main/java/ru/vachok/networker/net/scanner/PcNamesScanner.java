@@ -314,7 +314,7 @@ public final class PcNamesScanner implements NetScanService {
     }
 
     private void isMapSizeBigger(int thisTotalPC) throws InvokeIllegalException {
-        if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
+        if (ConstantsFor.argNORUNExist()) {
             throw new InvokeIllegalException(UsefulUtilities.thisPC());
         }
         try {
@@ -463,7 +463,7 @@ public final class PcNamesScanner implements NetScanService {
         }
 
         private void scanIt() throws InvokeIllegalException {
-            if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
+            if (ConstantsFor.argNORUNExist()) {
                 throw new InvokeIllegalException(UsefulUtilities.thisPC());
             }
             ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();

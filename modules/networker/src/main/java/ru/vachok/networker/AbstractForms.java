@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.events.MyEvent;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -20,11 +21,6 @@ public abstract class AbstractForms {
     @Contract(pure = true)
     public static TForms getI() {
         return T_FORMS;
-    }
-
-    @NotNull
-    public static String networkerTrace(StackTraceElement[] trace) {
-        return T_FORMS.networkerTrace(trace);
     }
 
     @NotNull
@@ -60,6 +56,7 @@ public abstract class AbstractForms {
     }
 
     public static String fromArray(Throwable e) {
+        MyEvent event = new MyEvent(e);
         return T_FORMS.fromArray(e);
     }
 
@@ -128,6 +125,25 @@ public abstract class AbstractForms {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append("\n");
         stringBuilder.append(networkerTrace(e.getStackTrace()));
+        return stringBuilder.toString();
+    }
+
+    @NotNull
+    public static String networkerTrace(StackTraceElement[] trace) {
+        return T_FORMS.networkerTrace(trace);
+    }
+
+    public static String fromArray(JsonObject jsonObject) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (jsonObject == null || jsonObject.isEmpty()) {
+            stringBuilder.append("jsonObject is null of empty!");
+        }
+        else {
+            stringBuilder.append("jsonObject:").append("\n");
+            for (String name : jsonObject.names()) {
+                stringBuilder.append(name).append(":").append(jsonObject.get(name)).append("\n");
+            }
+        }
         return stringBuilder.toString();
     }
 

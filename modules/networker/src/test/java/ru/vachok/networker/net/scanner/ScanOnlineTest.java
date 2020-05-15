@@ -90,6 +90,7 @@ public class ScanOnlineTest {
 
     @Test
     public void testRun() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC));
         NetScanService scanOnline = new ScanOnline();
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());

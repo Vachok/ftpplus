@@ -630,11 +630,11 @@ public enum ConstantsFor {
     /**
      @see ConstantsForTest
      */
-    public static boolean argNORUNExist(String... noRunOn) {
+    public static boolean argNORUNExist(String... runOnlyOn) {
         boolean retBool = false;
         File file = new File(APP_ARG_NOSCAN + ".reason");
         Map<String, String> appArgs = IntoApplication.getAppArgs();
-        for (String s : noRunOn) {
+        for (String s : runOnlyOn) {
             if (!s.isEmpty() && UsefulUtilities.thisPC().toLowerCase().contains(s.toLowerCase())) {
                 retBool = true;
                 FileSystemWorker.writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms
@@ -644,7 +644,7 @@ public enum ConstantsFor {
         if (!appArgs.isEmpty()) {
             if (appArgs.containsKey(APP_ARG_NOSCAN)) {
                 retBool = true;
-                FileSystemWorker.writeFile(file.getAbsolutePath(), "APP_ARG");
+                FileSystemWorker.writeFile(file.getAbsolutePath(), FileNames.ARG_NO_RUN);
             }
         }
         file.deleteOnExit();

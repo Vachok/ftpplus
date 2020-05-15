@@ -2,11 +2,15 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -61,9 +65,9 @@ public class DataSynchronizerTest {
     }
 
     @Test
-    @Ignore
     public void testSuperRun() {
-        AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 30);
+        Assert.assertFalse(ConstantsFor.argNORUNExist());
+        AppConfigurationLocal.getInstance().execute(()->dataSynchronizer.superRun(), 15);
     }
 
     @Test

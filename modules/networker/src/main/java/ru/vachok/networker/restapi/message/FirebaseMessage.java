@@ -7,9 +7,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.data.enums.PropertiesNames;
-
-import java.text.MessageFormat;
 
 
 /**
@@ -21,7 +18,7 @@ public class FirebaseMessage implements MessageToUser {
 
 
     FirebaseMessage() {
-        new AppComponents().getFirebaseApp();
+        AppComponents.getFirebaseApp();
     }
 
     @Override
@@ -35,7 +32,7 @@ public class FirebaseMessage implements MessageToUser {
             FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            FirebaseDatabase.getInstance().getReference("info").setValue(MessageFormat.format("{0}_{1}\n{2}", s, s1, s2), new Compl());
+            e.printStackTrace();
         }
     }
 
@@ -65,7 +62,7 @@ public class FirebaseMessage implements MessageToUser {
             FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            FirebaseDatabase.getInstance().getReference(PropertiesNames.ERROR).setValue(s1 + "\n" + s2, new Compl());
+            e.printStackTrace();
         }
     }
 
@@ -99,11 +96,10 @@ public class FirebaseMessage implements MessageToUser {
 
         @Override
         public void onComplete(DatabaseError error, DatabaseReference ref) {
+            ref.push();
             if (error != null) {
-                AbstractForms.networkerTrace(error.toException().getStackTrace());
-            }
-            else {
-                System.out.println(MessageFormat.format("{0} = {1}", FirebaseMessage.class.getSimpleName(), ref.toString()));
+                String tra = AbstractForms.networkerTrace(error.toException().getStackTrace());
+                System.err.println(tra);
             }
         }
     }

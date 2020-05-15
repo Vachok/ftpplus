@@ -3,8 +3,10 @@ package ru.vachok.networker.ad.inet;
 
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.RestApiHelper;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.text.MessageFormat;
@@ -17,18 +19,14 @@ import java.util.concurrent.TimeUnit;
 public class TempInetRestControllerHelper extends TemporaryFullInternet implements RestApiHelper {
 
 
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TempInetRestControllerHelper.class.getSimpleName());
+
     @NotNull
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        messageToUser.info(AbstractForms.fromArray(jsonObject));
         @NotNull String result = INVALID_USER;
-        int codeVer;
-        try {
-            codeVer = Integer.parseInt(jsonObject.getString("code", "-1"));
-        }
-        catch (UnsupportedOperationException e) {
-            codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, -1);
-        }
-        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, ""), codeVer)) {
+        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, "")) & checkCodeVersion(jsonObject)) {
             result = makeActions(jsonObject);
         }
         return result;

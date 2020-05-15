@@ -48,7 +48,7 @@ public class PcNamesScannerTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System
         .nanoTime());
 
-    private static final PcNamesScanner PC_SCANNER = (PcNamesScanner) NetScanService.getInstance(NetScanService.PCNAMESSCANNER);
+    private static final NetScanService PC_SCANNER = NetScanService.getInstance(NetScanService.PCNAMESSCANNER);
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
@@ -58,7 +58,7 @@ public class PcNamesScannerTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        this.netScanCtr = new NetScanCtr(PC_SCANNER);
+        this.netScanCtr = new NetScanCtr((PcNamesScanner) PC_SCANNER);
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
         }
@@ -75,7 +75,7 @@ public class PcNamesScannerTest {
 
     @BeforeMethod
     public void initScan() {
-        this.netScanCtr = new NetScanCtr(PC_SCANNER);
+        this.netScanCtr = new NetScanCtr((PcNamesScanner) PC_SCANNER);
     }
 
     @Test
@@ -186,13 +186,13 @@ public class PcNamesScannerTest {
         Runnable runnable = PC_SCANNER.getMonitoringRunnable();
         Assert.assertEquals(runnable, PC_SCANNER);
         String runToStr = runnable.toString();
-        Assert.assertTrue(runToStr.contains("{\"startClassTime\":"), runToStr);
+        Assert.assertTrue(runToStr.contains("\"startClassTime\":"), runToStr);
     }
 
     @Test
     public void testOnePrefixSET() {
         NetKeeper.getPcNamesForSendToDatabase().clear();
-        Set<String> notdScanned = PC_SCANNER.onePrefixSET("dotd");
+        Set<String> notdScanned = ((PcNamesScanner) PC_SCANNER).onePrefixSET("dotd");
         Assert.assertTrue(notdScanned.size() > 3);
         String setStr = AbstractForms.fromArray(notdScanned);
         Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
@@ -203,7 +203,7 @@ public class PcNamesScannerTest {
     public void testRun() {
         try {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(PC_SCANNER);
-            Assert.assertNull(submit.get(20, TimeUnit.SECONDS));
+            Assert.assertNull(submit.get(7, TimeUnit.SECONDS));
         }
         catch (RuntimeException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
@@ -302,5 +302,11 @@ public class PcNamesScannerTest {
         ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
         String fromArray = AbstractForms.fromArray(htmlLinks);
         return fromArray.contains(" : true") & fromArray.contains(" : false");
+    }
+
+    @Test
+    public void testConditions() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist());
+        Assert.assertFalse(ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC));
     }
 }

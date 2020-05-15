@@ -119,7 +119,13 @@ public class IntoApplication {
 
     static void makeEvent(Object event) {
         ApplicationEvent myEvent = new MyEvent(event);
-        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), myEvent.toString(), event.toString());
+        File sshLog = new File(FileNames.SSH_LOG);
+        if (sshLog.exists() & sshLog.length() > ConstantsFor.MBYTE) {
+            sshLog.delete();
+        }
+        if (myEvent.getSource().toString().contains("SSH : ")) {
+            FileSystemWorker.appendObjectToFile(sshLog, myEvent.getSource());
+        }
     }
 
     protected static void setUTF8Enc() {

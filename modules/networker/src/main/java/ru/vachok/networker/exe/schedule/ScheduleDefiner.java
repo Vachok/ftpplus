@@ -13,6 +13,7 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.ssh.VpnHelper;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.util.Date;
@@ -41,6 +42,7 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         schedule(new TemporaryFullInternet(), (int) ConstantsFor.DELAY);
         schedule((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 5);
         schedule(openvpnStatusFileMaker, 1);
+        schedule(this::sendStats, 60);
         AppInfoOnLoad.getMiniLogger().add(thrConfig.toString());
     }
 
@@ -63,5 +65,11 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         Runnable iisCleaner = new MailIISLogsCleaner();
         AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         AppInfoOnLoad.getMiniLogger().add(nextStartDay + " MailIISLogsCleaner() start\n");
+    }
+
+    private void sendStats() {
+        InformationFactory dbInfo = InformationFactory.getInstance(InformationFactory.DATABASE_INFO);
+        InformationFactory threadInfo = InformationFactory.getInstance(InformationFactory.MX_BEAN_THREAD);
+        MessageToUser.getInstance(MessageToUser.EMAIL, getClass().getSimpleName()).info(UsefulUtilities.thisPC(), dbInfo.getInfo(), threadInfo.getInfo());
     }
 }

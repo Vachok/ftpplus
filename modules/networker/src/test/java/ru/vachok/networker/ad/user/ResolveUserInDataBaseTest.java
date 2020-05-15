@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 
 import java.util.List;
@@ -49,8 +50,9 @@ public class ResolveUserInDataBaseTest {
 
     @Test
     public void testGetInfoAbout() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist());
         String infoAbout = resolveUserInDataBase.getInfoAbout("no0015.eatmeat.ru");
-        boolean strOk = Stream.of("msc", "d.yu.podbuckii", "mdc", "a.s.cedilin").anyMatch(infoAbout::contains);
+        boolean strOk = Stream.of("msc", "d.yu.podbuckii", "mdc", "a.s.cedilin", "n.levitskaya").anyMatch(infoAbout::contains);
         Assert.assertTrue(strOk, infoAbout);
         testAbstract();
     }
@@ -82,6 +84,7 @@ public class ResolveUserInDataBaseTest {
 
     @Test
     public void testGetInfo() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist());
         this.resolveUserInDataBase.setClassOption("homya");
         String info = resolveUserInDataBase.getInfo();
         Assert.assertEquals(info, "10.200.217.83");

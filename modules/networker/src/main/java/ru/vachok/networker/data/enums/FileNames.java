@@ -111,4 +111,8 @@ public enum FileNames {
     public static final String OPENVPN_STATUS = "openvpn-status";
 
     public static final String APP_START = "app.start";
+
+    public static final String SSH_LOG = "ssh.log";
+
+    public static final String ARG_NO_RUN = "APP_ARG";
 }

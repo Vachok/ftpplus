@@ -392,7 +392,12 @@ public class SshActs {
     }
 
     String execSSHCommand(String sshCommand) {
-        return AppConfigurationLocal.getInstance().submitAsString(new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build(), 3);
+        try {
+            return (String) AppConfigurationLocal.executeOnExecutor(new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build(), 3);
+        }
+        catch (InvokeIllegalException e) {
+            return AbstractForms.fromArray(e);
+        }
     }
 
     /**

@@ -8,9 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -85,7 +86,10 @@ class ResolveUserInDataBase extends UserInfo {
     @NotNull
     private List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
-        if (!ConstantsFor.argNORUNExist()) {
+        if (ConstantsFor.argNORUNExist()) {
+            throw new IllegalStateException(FileSystemWorker.readFile(FileNames.ARG_NO_RUN));
+        }
+        else {
             try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
@@ -109,9 +113,6 @@ class ResolveUserInDataBase extends UserInfo {
                 retList.add(e.getMessage());
                 retList.add(AbstractForms.fromArray(e));
             }
-        }
-        else {
-            retList.add(MessageFormat.format("{0} ConstantsFor.noRunOn", UsefulUtilities.thisPC()));
         }
         return retList;
     }

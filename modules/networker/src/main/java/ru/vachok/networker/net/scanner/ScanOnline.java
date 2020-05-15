@@ -266,7 +266,6 @@ public class ScanOnline implements NetScanService {
         this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
         String fileMaxName = FileNames.ONLINES_MAX;
         this.fileMAXOnlines = new File(fileMaxName);
-
         maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
     }
 

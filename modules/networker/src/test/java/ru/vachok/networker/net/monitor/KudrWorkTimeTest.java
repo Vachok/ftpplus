@@ -14,6 +14,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -51,11 +52,11 @@ public class KudrWorkTimeTest {
 
     private InetAddress do0213IP;
 
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
 
-    private List<String> execList = NetKeeper.getKudrWorkTime();
+    private final List<String> execList = NetKeeper.getKudrWorkTime();
 
-    private NetScanService kudrService = new KudrWorkTime(true);
+    private final NetScanService kudrService = new KudrWorkTime(true);
 
     private int startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay();
 
@@ -171,6 +172,7 @@ public class KudrWorkTimeTest {
 
     @Test
     public void getExecution$$COPY() {
+        Assert.assertTrue(ConstantsFor.argNORUNExist(OtherKnownDevices.SRV_RUPS00));
         execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
         Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress$$COPY);
         try {
