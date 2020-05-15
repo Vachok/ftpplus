@@ -79,9 +79,10 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
     }
 
     private JsonObject serverAnswer(SSHFactory.Builder fb) {
-        String serverAnswerString = AppConfigurationLocal.getInstance().submitAsString(fb.build(), 10);
+        String serverAnswerString = AppConfigurationLocal.getInstance().submitAsString(fb.build(), 15);
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(fb.getCommandSSH(), serverAnswerString);
+        messageToUser.info(getClass().getSimpleName(), fb.toString(), jsonObject.toString());
         return jsonObject;
     }
 

@@ -50,7 +50,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     static Object executeOnExecutor(Object o, long timeOut) throws InvokeIllegalException {
-        ExecutorService service = Executors.newFixedThreadPool(7);
+        ExecutorService service = Executors.newFixedThreadPool(3);
         if (o instanceof Runnable) {
             service.execute((Runnable) o);
         }
@@ -115,7 +115,8 @@ public interface AppConfigurationLocal extends Runnable {
 
     default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
         String result = "null";
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        ThreadConfig.cleanQueue(callableQuestion);
+        ExecutorService executor = Executors.newFixedThreadPool(3);
         Future<String> submit = executor.submit(callableQuestion);
         try {
             String s = submit.get(timeOutInSec, TimeUnit.SECONDS);
@@ -124,7 +125,6 @@ public interface AppConfigurationLocal extends Runnable {
             }
             else {
                 result = MessageFormat.format("{0} submit is {1}", getClass().getSimpleName(), false);
-                ThreadConfig.cleanQueue(callableQuestion);
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
@@ -134,7 +134,6 @@ public interface AppConfigurationLocal extends Runnable {
         finally {
             System.out.println(MessageFormat.format("{0} = {1} is done: {2}", result, callableQuestion.getClass().getName(), submit.isDone()));
         }
-
         return result;
     }
 }
