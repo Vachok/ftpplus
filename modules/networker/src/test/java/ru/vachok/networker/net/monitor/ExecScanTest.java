@@ -70,9 +70,9 @@ import java.util.concurrent.LinkedBlockingDeque;
     public void testRun() {
         File fileTestVlan = new File("test-213.scan");
         ExecScan scan = new ExecScan(213, 214, "10.200.", fileTestVlan, true);
-        AppConfigurationLocal.getInstance().execute(scan, 6);
+        AppConfigurationLocal.getInstance().execute(scan, 11);
         try {
-            Thread.sleep(7000);
+            Thread.sleep(5000);
         }
         catch (InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));

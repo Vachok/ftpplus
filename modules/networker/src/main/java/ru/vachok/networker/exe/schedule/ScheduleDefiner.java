@@ -34,7 +34,7 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         NetScanService scanOnlineRun = NetScanService.getInstance(NetScanService.SCAN_ONLINE);
         NetScanService diapazonScanRun = NetScanService.getInstance(NetScanService.DIAPAZON);
         Runnable popSmtpTest = new MailPOPTester();
-        Runnable openvpnStatusFileMaker = ()->new VpnHelper().getStatus();
+        Runnable openvpnStatusFileMaker = new VpnHelper();
         ThreadConfig thrConfig = AppComponents.threadConfig();
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         schedule(scanOnlineRun, 3);

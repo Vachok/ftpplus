@@ -6,7 +6,6 @@ package ru.vachok.networker.exe;
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
@@ -23,7 +22,6 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.events.MyEvent;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -33,7 +31,6 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.Date;
 import java.util.concurrent.*;
 
 
@@ -70,8 +67,6 @@ public final class ThreadConfig implements AppConfigurationLocal {
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
 
     private Runnable r = new Thread();
-
-    private int timeWait = 15;
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
         setScheduler();
@@ -135,8 +130,7 @@ public final class ThreadConfig implements AppConfigurationLocal {
         BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
         if (isRemove) {
-            ApplicationEvent nameEvt = new MyEvent(runnable);
-            messageToUser.info(ThreadConfig.class.getSimpleName(), "cleanQueue", new Date(nameEvt.getTimestamp()).toString() + " : " + nameEvt.getSource());
+            messageToUser.info(ThreadConfig.class.getSimpleName(), "Runnable removed: ", runnable.getClass().toGenericString());
         }
     }
 
@@ -161,14 +155,13 @@ public final class ThreadConfig implements AppConfigurationLocal {
         BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         for (Runnable r : executorQueue) {
             if (r.equals(callable)) {
-                messageToUser.warn(ThreadConfig.class.getClass().getSimpleName(), "TASK_SCHEDULER removed:", r.toString());
+                messageToUser.warn(ThreadConfig.class.getClass().getSimpleName(), "Callable removed:", r.getClass().toGenericString());
                 executorQueue.remove(r);
             }
         }
     }
 
     public ThreadPoolTaskExecutor getTaskExecutor(int timeWait) {
-        this.timeWait = timeWait;
         return getTaskExecutor();
     }
 

@@ -632,7 +632,7 @@ public enum ConstantsFor {
      */
     public static boolean argNORUNExist(String... runOnlyOn) {
         boolean retBool = false;
-        File file = new File(APP_ARG_NOSCAN + ".reason");
+        File file = new File(FileNames.ARG_NO_RUN);
         Map<String, String> appArgs = IntoApplication.getAppArgs();
         for (String s : runOnlyOn) {
             if (!s.isEmpty() && UsefulUtilities.thisPC().toLowerCase().contains(s.toLowerCase())) {
@@ -644,7 +644,7 @@ public enum ConstantsFor {
         if (!appArgs.isEmpty()) {
             if (appArgs.containsKey(APP_ARG_NOSCAN)) {
                 retBool = true;
-                FileSystemWorker.writeFile(file.getAbsolutePath(), FileNames.ARG_NO_RUN);
+                FileSystemWorker.writeFile(file.getAbsolutePath(), new Date().toString());
             }
         }
         file.deleteOnExit();

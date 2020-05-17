@@ -114,5 +114,7 @@ public enum FileNames {
 
     public static final String SSH_LOG = "ssh.log";
 
-    public static final String ARG_NO_RUN = "APP_ARG";
+    public static final String ARG_NO_RUN = "app.arg";
+
+    public static final String AVAILABLE_CHARSETS_TXT = "availableCharsets.txt";
 }

@@ -9,11 +9,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -24,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 /**
  @see VpnHelperTest
  @since 21.03.2020 (12:34) */
-public class VpnHelper extends SshActs {
+public class VpnHelper extends SshActs implements Runnable {
 
 
     private static final String GET_STATUS_COMMAND = "cat openvpn-status;exit";
@@ -38,7 +40,9 @@ public class VpnHelper extends SshActs {
     private String keyName;
 
     public void getStatus() {
-        String result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", ModelAttributeNames.ATT_RESULT, whatSrvNeed(), execSSHCommand(GET_STATUS_COMMAND));
+        SSHFactory.Builder factoryB = new SSHFactory.Builder(whatSrvNeed(), GET_STATUS_COMMAND, this.getClass().getSimpleName());
+        String result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", ModelAttributeNames.ATT_RESULT, whatSrvNeed(), AppConfigurationLocal.getInstance()
+            .submitAsString(factoryB.build(), 5));
         if (result.contains("AppConfigurationLocal")) {
             result = MessageFormat
                 .format("Error loading. Next trying to connect... {0} times tried\n{1}: {2}", connectCounter, whatSrvNeed(), GET_STATUS_COMMAND);
@@ -110,6 +114,11 @@ public class VpnHelper extends SshActs {
             }
         }
         return stringBuilder.toString();
+    }
+
+    @Override
+    public void run() {
+        getStatus();
     }
 
     @Override

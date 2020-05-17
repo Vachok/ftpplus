@@ -6,6 +6,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -47,7 +48,12 @@ public class ACLDatabaseSearcherTest {
     @Test
     public void testGetResult() {
         String result;
-        dbSearcher.getResult();
+        try {
+            dbSearcher.getResult();
+        }
+        catch (IllegalArgumentException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
 
         dbSearcher.setClassOption("kudr");
         dbSearcher.getResult();

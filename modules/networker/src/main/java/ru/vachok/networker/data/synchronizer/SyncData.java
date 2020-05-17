@@ -19,11 +19,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinTask;
 
 
 /**
  @see SyncDataTest */
-public abstract class SyncData implements DataConnectTo {
+public abstract class SyncData extends ForkJoinTask implements DataConnectTo {
 
 
     public static final String INETSYNC = "InternetSync";
@@ -118,6 +119,12 @@ public abstract class SyncData implements DataConnectTo {
     int getLastLocalID(String syncDB) {
         DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.TESTING);
         return getDBID(dctInst.getDefaultConnection(syncDB), syncDB);
+    }
+
+    @Override
+    protected boolean exec() {
+        superRun();
+        return true;
     }
 
     private int getDBID(@NotNull Connection connection, String syncDB) {

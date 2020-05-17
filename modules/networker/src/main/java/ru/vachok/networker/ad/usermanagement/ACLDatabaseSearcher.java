@@ -2,6 +2,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -85,7 +86,7 @@ class ACLDatabaseSearcher extends ACLParser {
     private @NotNull String getParsedResult() {
         int patternMapSize = foundPatternMap();
         String patternsToSearch = MessageFormat
-                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
+            .format("{0}. Lines = {1}/{2}", AbstractForms.fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
         String retMap = new TForms().fromArray(getMapRights()).replaceAll("\\Q : \\E", "\n");
         String retStr = patternsToSearch + "\n" + retMap;
         return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));

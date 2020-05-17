@@ -26,19 +26,17 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ForkJoinTask;
 
 
 /**
  @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
 @SuppressWarnings("ClassUnconnectedToPackage")
-public class AppInfoOnLoad implements Runnable {
+public final class AppInfoOnLoad implements Runnable {
 
 
     private static final AppInfoOnLoad INST = new AppInfoOnLoad();
-
-    private static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
 
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
@@ -66,15 +64,15 @@ public class AppInfoOnLoad implements Runnable {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
-        FileSystemWorker.writeFile(AVAILABLECHARSETS_TXT, avCharsetsStr);
+        FileSystemWorker.writeFile(FileNames.AVAILABLE_CHARSETS_TXT, avCharsetsStr);
         if (NetScanService.isReach("10.10.111.65")) {
-            SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
-            AppConfigurationLocal.getInstance().execute(syncData::superRun);
+            ForkJoinTask syncData = SyncData.getInstance(SyncData.INETSYNC);
+            messageToUser.info(AbstractForms.fromArray(AppConfigurationLocal.executeInWorkStealingPool(syncData, 10)));
         }
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
 
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setCurrentProvider, 0, 2, TimeUnit.MINUTES);
+        AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, 2);
 
         try {
             infoForU();
@@ -87,7 +85,7 @@ public class AppInfoOnLoad implements Runnable {
             messageToUser.info(getClass().getSimpleName(), "isMemOk", isMemOk + ": " + Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE);
             if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
                 SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-                AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 3600);
+                AppConfigurationLocal.executeInWorkStealingPool(syncDataBcp, 3600);
             }
             else {
                 MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())

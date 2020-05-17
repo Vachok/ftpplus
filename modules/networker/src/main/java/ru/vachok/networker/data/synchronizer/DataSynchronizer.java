@@ -44,11 +44,23 @@ public class DataSynchronizer extends SyncData {
 
     private File dbObj = new File(dbToSync);
 
+    private static final Map<Long, String> rawResults = new ConcurrentHashMap<>();
+
     private int totalRows = 0;
 
     private int dbsTotal = 0;
 
     DataSynchronizer() {
+    }
+
+    @Override
+    public Object getRawResult() {
+        return rawResults;
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        rawResults.put(System.currentTimeMillis(), String.valueOf(value));
     }
 
     @Override
@@ -172,6 +184,7 @@ public class DataSynchronizer extends SyncData {
                 this.dbsTotal += 1;
                 this.dbToSync = dbName + "." + tblName;
                 this.dbObj = new File(dbToSync);
+                setRawResult(dbsTotal);
                 try {
                     if (ConstantsFor.argNORUNExist()) {
                         messageToUser.error(FileSystemWorker.readFile(FileNames.ARG_NO_RUN));

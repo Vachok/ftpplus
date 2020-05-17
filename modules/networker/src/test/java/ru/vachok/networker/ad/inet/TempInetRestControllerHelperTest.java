@@ -42,6 +42,7 @@ public class TempInetRestControllerHelperTest {
         object.add("hour", "1");
         object.add(ConstantsFor.OPTION, option);
         object.add(ConstantsFor.WHOCALLS, "test");
+        object.add(ConstantsFor.PARAM_NAME_CODE, Integer.MAX_VALUE);
         return tempInetRestControllerHelper.getResult(object);
     }
 

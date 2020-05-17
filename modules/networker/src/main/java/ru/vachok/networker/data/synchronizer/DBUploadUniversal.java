@@ -30,6 +30,16 @@ class DBUploadUniversal extends SyncData {
 
     private String dbToSync;
 
+    @Override
+    public Object getRawResult() {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.getRawResult( Object ) at 17.05.2020 - (13:10)");
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.setRawResult( void ) at 17.05.2020 - (13:10)");
+    }
+
     DBUploadUniversal(Collection toUploadCollection, String dbToSync) {
         this.toUploadCollection = toUploadCollection;
         this.dbToSync = dbToSync;

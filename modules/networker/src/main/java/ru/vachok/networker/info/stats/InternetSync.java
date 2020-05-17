@@ -32,6 +32,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -43,6 +44,8 @@ public class InternetSync extends SyncData implements Runnable {
     private String ipAddr;
 
     private final Connection connection;
+
+    private static final Map<Long, String> RES_MAP = new ConcurrentHashMap<>();
 
     private String dbFullName;
 
@@ -66,6 +69,16 @@ public class InternetSync extends SyncData implements Runnable {
         }
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public Object getRawResult() {
+        return RES_MAP;
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        RES_MAP.put(System.currentTimeMillis(), String.valueOf(value));
     }
 
     @Override
@@ -119,6 +132,7 @@ public class InternetSync extends SyncData implements Runnable {
                 this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
                 createLckFile();
                 String syncMe = syncData();
+                setRawResult(syncMe);
                 new File(FileNames.WEEKLY_LCK).delete();
                 messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
             }
