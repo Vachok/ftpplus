@@ -24453,3 +24453,32 @@ ls "/etc/"
 put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
 ls "/etc/"
 connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.42
+connected to 192.168.13.42
+ls "/"
+connection to 192.168.13.42 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!
+no connection to disconnect: '192.168.13.30'
