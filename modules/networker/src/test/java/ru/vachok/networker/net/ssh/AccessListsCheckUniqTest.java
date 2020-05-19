@@ -15,6 +15,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -26,29 +27,29 @@ import java.util.concurrent.*;
  @since 30.07.2019 (11:21) */
 @SuppressWarnings("ThrowCaughtLocally")
 public class AccessListsCheckUniqTest {
-    
-    
+
+
     private static final File FILE = new File(FileNames.INET_UNIQ);
-    
+
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    private boolean isHome = getIsHome();
-    
-    private AccessListsCheckUniq accessListsCheckUniq = new AccessListsCheckUniq();
-    
+
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+
+    private final boolean isHome = getIsHome();
+
+    private final AccessListsCheckUniq accessListsCheckUniq = new AccessListsCheckUniq();
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testRun() {
         boolean delete = true;
@@ -73,25 +74,31 @@ public class AccessListsCheckUniqTest {
         }
         FILE.deleteOnExit();
     }
-    
+
     @Test
     public void testTestToString() {
         String toStr = new AccessListsCheckUniq().toString();
         Assert.assertTrue(toStr.contains("AccessListsCheckUniq["), toStr);
     }
-    
+
     @SuppressWarnings("BooleanMethodNameMustStartWithQuestion")
     private boolean getIsHome() {
         boolean isHome = UsefulUtilities.thisPC().toLowerCase().contains("home");
         if (isHome) {
             try {
                 throw new InvokeIllegalException("Not running at home PC");
-                
+
             }
             catch (InvokeIllegalException e) {
                 Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
         }
         return isHome;
+    }
+
+    @Test
+    public void testCall() {
+        String s = AppConfigurationLocal.getInstance().submitAsString(accessListsCheckUniq, 10);
+        System.out.println("s = " + s);
     }
 }

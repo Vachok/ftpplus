@@ -3,21 +3,26 @@
 package ru.vachok.networker.net.ssh;
 
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.restapi.RestApiHelper;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 
@@ -31,10 +36,14 @@ public class AccessListsCheckUniq implements Callable<String> {
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile(" && ");
 
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, AccessListsCheckUniq.class.getSimpleName());
 
-    private Collection<String> fileNames = new ArrayList<>();
+    private final Collection<String> fileNames = new ArrayList<>();
+
+    protected static final String SQUIDLIMITED = "squidlimited";
+
+    protected static final String TEMPFULL = "tempfull";
 
     private void parseListFiles() {
         Map<String, String> usersIPFromPFLists = getInetUniqMap();
@@ -60,7 +69,34 @@ public class AccessListsCheckUniq implements Callable<String> {
 
     @Override
     public String call() {
+        if (new File(ConstantsFor.AUTHORIZATION).exists()) {
+            compareWithRest();
+        }
         return connectTo();
+    }
+
+    private void compareWithRest() {
+        Set<String> resSet = new HashSet<>();
+        for (JsonValue jsonValue : genArray().values()) {
+            RestApiHelper instance = RestApiHelper.getInstance(RestApiHelper.SSH);
+            JsonObject result = (JsonObject) Json.parse(instance.getResult(jsonValue.asObject()));
+            System.out.println("result = " + result);
+        }
+    }
+
+    private JsonArray genArray() {
+        JsonObject jsonObject = new JsonObject();
+        JsonArray jsonValues = new JsonArray();
+        String authString = FileSystemWorker.readRawFile(ConstantsFor.AUTHORIZATION);
+        jsonObject.add(ConstantsFor.AUTHORIZATION, authString.substring(0, (authString.length() - 2)));
+        jsonObject.add(ConstantsFor.PARAM_NAME_CODE, Integer.MAX_VALUE);
+        jsonObject.add(ConstantsFor.PARAM_NAME_SERVER, getSRVNeed());
+        String[] listNames = {TEMPFULL, PfListsCtr.ATT_VIPNET, SQUIDLIMITED, ConstantsFor.JSON_OBJECT_SQUID};
+        for (String listName : listNames) {
+            jsonObject.add(ConstantsFor.PARM_NAME_COMMAND, String.format("sudo cat /etc/pf/%s & exit", listName));
+            jsonValues.add(jsonObject);
+        }
+        return jsonValues;
     }
 
     private @NotNull String connectTo() {
@@ -86,13 +122,7 @@ public class AccessListsCheckUniq implements Callable<String> {
 
     private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {
         sshFactory.setCommandSSH(getList);
-        Future<String> stringCallable = Executors.newSingleThreadExecutor().submit(sshFactory);
-        try {
-            stringBuilder.append(stringCallable.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
+        stringBuilder.append(AppConfigurationLocal.getInstance().submitAsString(sshFactory, 4)).append("\n");
         Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
         String fileName = FILENAME_PATTERN.split(FILENAME_COMPILE.split(getList)[1])[0] + ".list";
         fileNames.add(fileName);

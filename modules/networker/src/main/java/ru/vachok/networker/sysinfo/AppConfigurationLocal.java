@@ -10,7 +10,6 @@ import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
 
 import java.text.MessageFormat;
-import java.util.Map;
 import java.util.concurrent.*;
 
 
@@ -69,10 +68,15 @@ public interface AppConfigurationLocal extends Runnable {
         return stringBuilder.toString();
     }
 
-    static Map<Long, String> executeInWorkStealingPool(ForkJoinTask<?> fjTask, long timeOutMin) {
-        ForkJoinPool service = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() - 2);
-        ForkJoinTask<?> fork = service.submit(fjTask).fork();
-        return (Map<Long, String>) fork.getRawResult();
+    static Object executeInWorkStealingPool(ForkJoinTask<?> fjTask, long timeOutMin) {
+        ForkJoinPool service = ThreadConfig.getForkJoin();
+        ForkJoinTask<?> fork = service.submit(fjTask);
+        try {
+            return fork.get(timeOutMin, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | TimeoutException | ExecutionException e) {
+            return e;
+        }
     }
 
     default void execute(Runnable runnable) {

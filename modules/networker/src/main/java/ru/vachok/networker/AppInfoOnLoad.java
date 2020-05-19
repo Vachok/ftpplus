@@ -67,7 +67,7 @@ public final class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLE_CHARSETS_TXT, avCharsetsStr);
         if (NetScanService.isReach("10.10.111.65")) {
             ForkJoinTask syncData = SyncData.getInstance(SyncData.INETSYNC);
-            messageToUser.info(AbstractForms.fromArray(AppConfigurationLocal.executeInWorkStealingPool(syncData, 10)));
+            AppConfigurationLocal.executeInWorkStealingPool(syncData, 10);
         }
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);

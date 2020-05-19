@@ -66,11 +66,17 @@ public final class ThreadConfig implements AppConfigurationLocal {
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
 
+    private static final ForkJoinPool FJP = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() - 2);
+
     private Runnable r = new Thread();
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
         setScheduler();
         return TASK_SCHEDULER;
+    }
+
+    public static ForkJoinPool getForkJoin() {
+        return FJP;
     }
 
     private void setScheduler() {
