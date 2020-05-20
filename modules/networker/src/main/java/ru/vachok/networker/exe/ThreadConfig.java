@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
-import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -39,7 +38,6 @@ import java.util.concurrent.*;
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
-@Service("ThreadConfig")
 public final class ThreadConfig implements AppConfigurationLocal {
 
 
@@ -66,7 +64,15 @@ public final class ThreadConfig implements AppConfigurationLocal {
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
 
-    private static final ForkJoinPool FJP = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() - 2);
+    private static final ForkJoinPool FJP = (ForkJoinPool) Executors.newWorkStealingPool(getAvailProc());
+
+    private static int getAvailProc() {
+        int proc = Runtime.getRuntime().availableProcessors() - 2;
+        if (proc <= 0) {
+            proc = 1;
+        }
+        return proc;
+    }
 
     private Runnable r = new Thread();
 
