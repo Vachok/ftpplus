@@ -306,8 +306,8 @@ public class SSHFactory implements Callable<String> {
         }
         try {
             this.respChannel = session.openChannel(sessionType);
-            if (!this.commandSSH.endsWith(";exit")) {
-                this.commandSSH = commandSSH + ";exit";
+            if (!this.commandSSH.endsWith(";exit") || !this.commandSSH.endsWith("& exit")) {
+                this.commandSSH = commandSSH + "& exit";
             }
             ((ChannelExec) respChannel).setCommand(commandSSH);
         }

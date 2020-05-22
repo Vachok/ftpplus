@@ -18,7 +18,6 @@ import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -345,7 +344,7 @@ public final class PcNamesScanner implements NetScanService {
         initProperties.getProps().setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
         InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
         File file = new File(FileNames.SCAN_TMP);
-        new ScannerUSR().run();
+        new PcNamesScanner.ScannerUSR().run();
         messageToUser.info(this.getClass().getSimpleName(), file.getAbsolutePath(), String.valueOf(fileScanTMPCreate(false)));
         defineNewTask();
     }
@@ -392,11 +391,13 @@ public final class PcNamesScanner implements NetScanService {
         @Override
         public void run() {
             try {
-                messageToUser.warn(this.getClass().getSimpleName(), FileNames.INETSTATSIP_CSV, Stats.getIpsInet() + " kb");
                 scanIt();
             }
-            catch (RuntimeException | InvokeIllegalException e) {
+            catch (RuntimeException e) {
                 messageToUser.error("ScannerUSR.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
+            catch (InvokeIllegalException ignore) {
+                messageToUser.warn(PcNamesScanner.ScannerUSR.class.getSimpleName(), ignore.getMessage(), " see line: 400 ***");
             }
             finally {
                 messageToUser.info("ScannerUSR.run", new ScanMessagesCreator().fillUserPCForWEBModel(), "From Finally");
@@ -463,7 +464,7 @@ public final class PcNamesScanner implements NetScanService {
         }
 
         private void scanIt() throws InvokeIllegalException {
-            if (ConstantsFor.argNORUNExist()) {
+            if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
                 throw new InvokeIllegalException(UsefulUtilities.thisPC());
             }
             ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
