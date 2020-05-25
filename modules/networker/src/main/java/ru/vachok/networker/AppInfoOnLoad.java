@@ -85,7 +85,7 @@ public final class AppInfoOnLoad implements Runnable {
             messageToUser.info(getClass().getSimpleName(), "isMemOk", isMemOk + ": " + Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE);
             if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
                 SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-                AppConfigurationLocal.executeInWorkStealingPool(syncDataBcp, 36);
+                AppConfigurationLocal.getInstance().execute(syncDataBcp, 36);
             }
             else {
                 MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())

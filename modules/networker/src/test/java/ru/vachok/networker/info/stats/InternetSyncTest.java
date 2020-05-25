@@ -84,10 +84,8 @@ public class InternetSyncTest {
             }
         }
 
-        String syncResult = AppConfigurationLocal.getInstance().submitAsString(()->syncData.syncData(), 15);
-
-        Assert.assertTrue(syncResult.contains("No original FILE! 10.200.213.85.csv"), syncResult);
-
+        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 60);
+        Assert.assertTrue(o.toString().contains("No original FILE! 10.200.213.85.csv"), o.toString());
     }
 
     @Test

@@ -38,52 +38,29 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  @see InternetSyncTest
  @since 13.10.2019 (13:21) */
-public class InternetSync extends SyncData implements Runnable {
+public class InternetSync extends SyncData {
 
-
-    private String ipAddr;
 
     private final Connection connection;
 
     private static final Map<Long, String> RES_MAP = new ConcurrentHashMap<>();
 
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetSync.class.getSimpleName());
+
+    private String ipAddr;
+
     private String dbFullName;
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetSync.class.getSimpleName());
+    public InternetSync(@NotNull String type) {
+        super();
+        this.ipAddr = type;
+        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
+    }
 
     @Override
     public String getDbToSync() {
         return ipAddr;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("InternetSync{");
-        sb.append("ipAddr='").append(ipAddr).append('\'');
-        sb.append(", dbFullName='").append(dbFullName).append('\'');
-        try {
-            sb.append(", connection=").append(AbstractForms.fromArray(connection.getTypeMap()));
-        }
-        catch (SQLException ignore) {
-            //15.10.2019 (9:29)
-        }
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
-    public Object getRawResult() {
-        return RES_MAP;
-    }
-
-    @Override
-    protected void setRawResult(Object value) {
-        RES_MAP.put(System.currentTimeMillis(), String.valueOf(value));
-    }
-
-    @Override
-    public Map<String, String> makeColumns() {
-        throw new UnsupportedOperationException("See readSQLCreateQuery");
     }
 
     @Override
@@ -115,33 +92,19 @@ public class InternetSync extends SyncData implements Runnable {
         return retInt;
     }
 
-    /**
-     @see InternetSyncTest#testSuperRun()
-     */
-    @Override
-    public void superRun() {
-        if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
-            throw new IllegalStateException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
-        }
-        String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
-        File[] inetFiles = new File(inetstatsPathStr).listFiles();
-        for (File inetFile : Objects.requireNonNull(inetFiles, ()->MessageFormat.format("No files in {0}", inetstatsPathStr))) {
-            String fileName = inetFile.getName();
-            if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-                this.ipAddr = fileName.replace(".csv", "");
-                this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-                createLckFile();
-                String syncMe = syncData();
-                setRawResult(syncMe);
-                new File(FileNames.WEEKLY_LCK).delete();
-                messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
-            }
-        }
-    }
-
     @Override
     public void setOption(Object option) {
         throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.setOption( void ) at 13.10.2019 - (13:21)");
+    }
+
+    @Override
+    public Object getRawResult() {
+        return RES_MAP;
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        RES_MAP.put(System.currentTimeMillis(), String.valueOf(value));
     }
 
     /**
@@ -170,6 +133,102 @@ public class InternetSync extends SyncData implements Runnable {
     }
 
     @Override
+    public int hashCode() {
+        int result = ipAddr != null ? ipAddr.hashCode() : 0;
+        result = 31 * result + (connection != null ? connection.hashCode() : 0);
+        result = 31 * result + (dbFullName != null ? dbFullName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof InternetSync)) {
+            return false;
+        }
+
+        InternetSync sync = (InternetSync) o;
+
+        if (ipAddr != null ? !ipAddr.equals(sync.ipAddr) : sync.ipAddr != null) {
+            return false;
+        }
+        if (connection != null ? !connection.equals(sync.connection) : sync.connection != null) {
+            return false;
+        }
+        return dbFullName != null ? dbFullName.equals(sync.dbFullName) : sync.dbFullName == null;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("InternetSync{");
+        sb.append("ipAddr='").append(ipAddr).append('\'');
+        sb.append(", dbFullName='").append(dbFullName).append('\'');
+        try {
+            sb.append(", connection=").append(AbstractForms.fromArray(connection.getTypeMap()));
+        }
+        catch (SQLException ignore) {
+            //15.10.2019 (9:29)
+        }
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
+    public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        superRun();
+    }
+
+    /**
+     @see InternetSyncTest#testSuperRun()
+     */
+    @Override
+    public void superRun() {
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
+            throw new IllegalStateException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
+        }
+        String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
+        File[] inetFiles = new File(inetstatsPathStr).listFiles();
+        for (File inetFile : Objects.requireNonNull(inetFiles, ()->MessageFormat.format("No files in {0}", inetstatsPathStr))) {
+            String fileName = inetFile.getName();
+            if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+                this.ipAddr = fileName.replace(".csv", "");
+                if (exec()) {
+                    join();
+                }
+            }
+        }
+    }
+
+    @Override
+    protected boolean exec() {
+        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+        createLckFile();
+        String syncMe = syncData();
+        setRawResult(syncMe);
+        messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
+        return new File(FileNames.WEEKLY_LCK).delete();
+    }
+
+    private void createLckFile() {
+        File fileLck = new File(FileNames.WEEKLY_LCK);
+        fileLck.deleteOnExit();
+        try {
+            fileLck.createNewFile();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
+
+    /**
+     @return
+
+     @see InternetSyncTest#testSyncData()
+     */
+    @Override
     public String syncData() {
         Path rootPath = Paths.get(".");
         Path filePath = Paths.get(rootPath.toAbsolutePath().normalize()
@@ -187,31 +246,47 @@ public class InternetSync extends SyncData implements Runnable {
             .format("{0} created {1} rows. Comment NEW: {2}", txtRenamed, jsonCreated, setComment());
     }
 
-    @Contract(pure = true)
-    private static long parseDate(String dateAsString) {
-        long result;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE MMM dd kk:mm:ss zzz yyyy", Locale.ENGLISH);
-        try {
-            Date parsedDate = simpleDateFormat.parse(dateAsString);
-            result = parsedDate.getTime();
-        }
-        catch (ParseException e) {
-            result = -1;
-        }
-        return result;
+    @NotNull
+    private String renameToTXT(Path filePath) throws InvokeIllegalException {
+        String retStr;
+        int records = countRecords(filePath);
+        Path cpPath = filePath.toAbsolutePath().normalize().getParent();
+        cpPath = Paths.get(cpPath.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "ok" + ConstantsFor.FILESYSTEM_SEPARATOR + filePath.getFileName().toString()
+            .replace(".csv", String.format("-%d.txt", records)));
+        retStr = FileSystemWorker.copyOrDelFileWithPath(filePath.toFile(), cpPath, true);
+        UpakFiles upakFiles = new UpakFiles();
+        upakFiles.createZip(Objects.requireNonNull(cpPath.getParent().toFile().listFiles(), ConstantsFor.ERR_NOFILES));
+
+        return retStr;
     }
 
+    private String getCurrentUserPC() {
+        String pcName = PCInfo.checkValidNameWithoutEatmeat(ipAddr);
+        String userAndPCName = UserInfo.getInstance(pcName).getInfoAbout(pcName);
+        if (userAndPCName.contains("'")) {
+            userAndPCName = userAndPCName.split("\\Q'\\E")[0];
+        }
+        String splitterStr = "\n class";
+        if (userAndPCName.contains(splitterStr)) {
+            userAndPCName = userAndPCName.split(splitterStr)[0];
+        }
+        return userAndPCName;
+    }
 
-
-    private void createLckFile() {
-        File fileLck = new File(FileNames.WEEKLY_LCK);
-        fileLck.deleteOnExit();
+    private int countRecords(Path filePath) {
+        int i;
         try {
-            fileLck.createNewFile();
+            i = FileSystemWorker.countStringsInFile(filePath);
         }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
+        catch (RuntimeException e) {
+            i = -666;
         }
+        return i;
+    }
+
+    @Override
+    public Map<String, String> makeColumns() {
+        throw new UnsupportedOperationException("See readSQLCreateQuery");
     }
 
     private int createJSON(@NotNull Queue<String> fileQueue) {
@@ -265,6 +340,54 @@ public class InternetSync extends SyncData implements Runnable {
 
     }
 
+    protected String checkComment() {
+        String tableComment = "Not found";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("information_schema.tables")) {
+            String dbName = dbFullName.replace(ConstantsFor.DB_INETSTATS, "");
+            final String sql = String.format("SELECT TABLE_COMMENT FROM information_schema.TABLES WHERE TABLE_NAME LIKE '%s';", dbName);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    tableComment = resultSet.getString(1);
+
+                }
+            }
+        }
+        catch (SQLException e) {
+            tableComment = SyncData.INETSYNC + " checkComment " + e.getMessage() + " see line: 89";
+        }
+        return tableComment;
+    }
+
+    @NotNull
+    private String setComment() {
+        String comment = "Changing table comment";
+        final String sql = String.format("ALTER TABLE %s COMMENT='%s';", dbFullName, getCurrentUserPC());
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbFullName)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                return MessageFormat.format("{0} is {1}", sql, preparedStatement.executeUpdate());
+            }
+        }
+        catch (SQLException e) {
+            return MessageFormat.format("InternetSync.setComment() : {0} see line: 76", e.getMessage());
+        }
+    }
+
+    private JsonObject parseAsObject(String str) {
+        JsonObject jsonObject = new JsonObject();
+        try {
+            jsonObject = Json.parse(str).asObject();
+            return jsonObject;
+        }
+        catch (RuntimeException e) {
+            jsonObject.add(ConstantsFor.DBCOL_STAMP, "1");
+            jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "");
+            jsonObject.add(ConstantsFor.DBCOL_BYTES, "1");
+            jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
+            return jsonObject;
+        }
+    }
+
     private int sendToDatabase(@NotNull JsonObject object) {
         int result = 0;
         @SuppressWarnings("DuplicateStringLiteralInspection") final String sql = String
@@ -308,135 +431,6 @@ public class InternetSync extends SyncData implements Runnable {
         return result;
     }
 
-    private JsonObject parseAsObject(String str) {
-        JsonObject jsonObject = new JsonObject();
-        try {
-            jsonObject = Json.parse(str).asObject();
-            return jsonObject;
-        }
-        catch (RuntimeException e) {
-            jsonObject.add(ConstantsFor.DBCOL_STAMP, "1");
-            jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "");
-            jsonObject.add(ConstantsFor.DBCOL_BYTES, "1");
-            jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
-            return jsonObject;
-        }
-    }
-
-    protected String checkComment() {
-        String tableComment = "Not found";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("information_schema.tables")) {
-            String dbName = dbFullName.replace(ConstantsFor.DB_INETSTATS, "");
-            final String sql = String.format("SELECT TABLE_COMMENT FROM information_schema.TABLES WHERE TABLE_NAME LIKE '%s';", dbName);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    tableComment = resultSet.getString(1);
-
-                }
-            }
-        }
-        catch (SQLException e) {
-            tableComment = SyncData.INETSYNC + " checkComment " + e.getMessage() + " see line: 89";
-        }
-        return tableComment;
-    }
-
-    private int countRecords(Path filePath) {
-        int i;
-        try {
-            i = FileSystemWorker.countStringsInFile(filePath);
-        }
-        catch (RuntimeException e) {
-            i = -666;
-        }
-        return i;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = ipAddr != null ? ipAddr.hashCode() : 0;
-        result = 31 * result + (connection != null ? connection.hashCode() : 0);
-        result = 31 * result + (dbFullName != null ? dbFullName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof InternetSync)) {
-            return false;
-        }
-
-        InternetSync sync = (InternetSync) o;
-
-        if (ipAddr != null ? !ipAddr.equals(sync.ipAddr) : sync.ipAddr != null) {
-            return false;
-        }
-        if (connection != null ? !connection.equals(sync.connection) : sync.connection != null) {
-            return false;
-        }
-        return dbFullName != null ? dbFullName.equals(sync.dbFullName) : sync.dbFullName == null;
-    }
-
-    public InternetSync(@NotNull String type) {
-        super();
-        this.ipAddr = type;
-        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
-    }
-
-
-
-    @NotNull
-    private String setComment() {
-        String comment = "Changing table comment";
-        final String sql = String.format("ALTER TABLE %s COMMENT='%s';", dbFullName, getCurrentUserPC());
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbFullName)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                return MessageFormat.format("{0} is {1}", sql, preparedStatement.executeUpdate());
-            }
-        }
-        catch (SQLException e) {
-            return MessageFormat.format("InternetSync.setComment() : {0} see line: 76", e.getMessage());
-        }
-    }
-
-    private String getCurrentUserPC() {
-        String pcName = PCInfo.checkValidNameWithoutEatmeat(ipAddr);
-        String userAndPCName = UserInfo.getInstance(pcName).getInfoAbout(pcName);
-        if (userAndPCName.contains("'")) {
-            userAndPCName = userAndPCName.split("\\Q'\\E")[0];
-        }
-        String splitterStr = "\n class";
-        if (userAndPCName.contains(splitterStr)) {
-            userAndPCName = userAndPCName.split(splitterStr)[0];
-        }
-        return userAndPCName;
-    }
-
-    @NotNull
-    private String renameToTXT(Path filePath) throws InvokeIllegalException {
-        String retStr;
-        int records = countRecords(filePath);
-        Path cpPath = filePath.toAbsolutePath().normalize().getParent();
-        cpPath = Paths.get(cpPath.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "ok" + ConstantsFor.FILESYSTEM_SEPARATOR + filePath.getFileName().toString()
-            .replace(".csv", String.format("-%d.txt", records)));
-        retStr = FileSystemWorker.copyOrDelFileWithPath(filePath.toFile(), cpPath, true);
-        UpakFiles upakFiles = new UpakFiles();
-        upakFiles.createZip(Objects.requireNonNull(cpPath.getParent().toFile().listFiles(), ConstantsFor.ERR_NOFILES));
-
-        return retStr;
-    }
-
-    @Override
-    public void run() {
-        Thread.currentThread().setName(this.getClass().getSimpleName());
-        superRun();
-    }
-
     @NotNull
     private String readSQLCreateQuery() {
         return "CREATE TABLE if not exists `ipAddr` (\n" +
@@ -455,6 +449,20 @@ public class InternetSync extends SyncData implements Runnable {
             "ROW_FORMAT=COMPRESSED\n" +
             ";\n".replace(ConstantsFor.FIELDNAME_ADDR, this.ipAddr.replaceAll("\\Q.\\E", "_"))
                 .replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
+    }
+
+    @Contract(pure = true)
+    private static long parseDate(String dateAsString) {
+        long result;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE MMM dd kk:mm:ss zzz yyyy", Locale.ENGLISH);
+        try {
+            Date parsedDate = simpleDateFormat.parse(dateAsString);
+            result = parsedDate.getTime();
+        }
+        catch (ParseException e) {
+            result = -1;
+        }
+        return result;
     }
 
 

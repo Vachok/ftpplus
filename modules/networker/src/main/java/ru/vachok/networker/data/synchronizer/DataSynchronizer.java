@@ -54,6 +54,11 @@ public class DataSynchronizer extends SyncData {
     }
 
     @Override
+    public void run() {
+        superRun();
+    }
+
+    @Override
     public Object getRawResult() {
         return rawResults;
     }

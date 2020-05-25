@@ -32,6 +32,11 @@ public class OneServerSync extends SyncData {
     }
 
     @Override
+    public void run() {
+        superRun();
+    }
+
+    @Override
     public Object getRawResult() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.OneServerSync.getRawResult( Object ) at 17.05.2020 - (13:10)");
     }

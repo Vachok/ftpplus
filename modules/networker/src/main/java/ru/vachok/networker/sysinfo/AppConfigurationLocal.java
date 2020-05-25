@@ -40,7 +40,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     static Object executeInWorkStealingPool(Callable<?> o, long timeOut) {
-        ForkJoinPool service = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() - 2);
+        ForkJoinPool service = AppComponents.threadConfig().getForkJoin();
         Object ret;
         try {
             ret = service.submit(o).get(timeOut, TimeUnit.SECONDS);
@@ -71,11 +71,18 @@ public interface AppConfigurationLocal extends Runnable {
     static Object executeInWorkStealingPool(ForkJoinTask<?> fjTask, long timeOutMin) {
         ForkJoinPool service = ThreadConfig.getForkJoin();
         ForkJoinTask<?> fork = service.submit(fjTask);
+        Object o = null;
         try {
-            return fork.get(timeOutMin, TimeUnit.SECONDS);
+            o = fork.get(timeOutMin, TimeUnit.SECONDS);
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
-            return e;
+            e.printStackTrace();
+        }
+        if (o != null) {
+            return o;
+        }
+        else {
+            return "executeInWorkStealingPool : o is null";
         }
     }
 
