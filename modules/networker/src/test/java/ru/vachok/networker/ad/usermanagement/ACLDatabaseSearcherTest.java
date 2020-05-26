@@ -61,7 +61,7 @@ public class ACLDatabaseSearcherTest {
         srcPat.add("kudr");
         dbSearcher.setClassOption(srcPat);
         result = dbSearcher.getResult();
-        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 2000000"), result);
+        Assert.assertTrue(result.contains("Выставки_Встречи_Проекты"), result);
         Assert.assertTrue(result.contains("\\\\srv-fs.eatmeat.ru\\common_new\\Общие_документы_МК\\13_Служба_персонала\\Общая\\БП"), result);
         dbSearcher.setClassOption(1);
         result = dbSearcher.getResult();

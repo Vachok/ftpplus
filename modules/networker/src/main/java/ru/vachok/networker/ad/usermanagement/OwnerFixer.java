@@ -1,7 +1,9 @@
 package ru.vachok.networker.ad.usermanagement;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -48,15 +50,6 @@ public class OwnerFixer extends SimpleFileVisitor<Path> implements Runnable {
     }
 
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("OwnerFixer{");
-        sb.append(", resultsList=").append(resultsList.size());
-        sb.append(ConstantsFor.JSON_PARAM_NAME_STARTPATH).append(startPath);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         if (attrs.isDirectory()) {
             checkRights(dir);
@@ -95,5 +88,13 @@ public class OwnerFixer extends SimpleFileVisitor<Path> implements Runnable {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("resultsList", AbstractForms.fromArray(resultsList));
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_STARTPATH, startPath.normalize().toAbsolutePath().toString());
+        return jsonObject.toString();
     }
 }

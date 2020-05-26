@@ -48,6 +48,6 @@ public class OwnerFixerTest {
     @Test
     public void testTestToString() {
         OwnerFixer ownerFixer = new OwnerFixer(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
-        Assert.assertEquals(ownerFixer.toString(), "OwnerFixer{, resultsList=0, startPath=\\\\srv-fs\\it$$\\ХЛАМ\\testClean}");
+        Assert.assertEquals(ownerFixer.toString(), "{\"resultsList\":\"\",\"startPath\":\"\\\\\\\\srv-fs\\\\it$$\\\\ХЛАМ\\\\testClean\"}");
     }
 }
