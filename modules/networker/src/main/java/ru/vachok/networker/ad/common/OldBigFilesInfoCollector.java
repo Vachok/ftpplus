@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.eclipsesource.json.JsonObject;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -95,7 +96,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
             new File(FileNames.WALKER_LCK).delete();
         }
         catch (IOException | InvokeIllegalException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray((Exception) e));
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         finally {
             this.reportUser = stringBuilder.toString();
@@ -113,18 +114,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         result = 31 * result + (int) (totalFilesSize ^ (totalFilesSize >>> 32));
         result = 31 * result + (int) (filesMatched ^ (filesMatched >>> 32));
         return result;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("OldBigFilesInfoCollector{");
-        sb.append("totalFilesSize=").append(totalFilesSize);
-        sb.append(", startPath='").append(startPath).append('\'');
-        sb.append(", filesMatched=").append(filesMatched);
-        sb.append(", filesCounter=").append(filesCounter);
-        sb.append(", dirsCounter=").append(dirsCounter);
-        sb.append('}');
-        return sb.toString();
     }
 
     private OldBigFilesInfoCollector.WalkerCommon getWalker() throws InvokeIllegalException {
@@ -230,6 +219,18 @@ public class OldBigFilesInfoCollector implements Callable<String> {
             .size() > ConstantsFor.MBYTE * oldfileminimumsizemb;
     }
 
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("reportUser", reportUser + "'");
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_STARTPATH, startPath + "'");
+        jsonObject.add("dirsCounter", dirsCounter);
+        jsonObject.add("filesCounter", filesCounter);
+        jsonObject.add("totalFilesSize", totalFilesSize);
+        jsonObject.add("filesMatched", filesMatched);
+        return jsonObject.toString();
+    }
+
     private class WalkerCommon extends SimpleFileVisitor<Path> {
 
 
@@ -272,7 +273,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
 
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) {
-            messageToUser.warn(exc.getMessage() + " file: " + file.toAbsolutePath().normalize());
             return FileVisitResult.CONTINUE;
         }
 
@@ -280,7 +280,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             String toString = MessageFormat.format("Dirs: {0}, files: {2}/{3}. Size {4} MB. Current dir: {1}", dirsCounter, dir.toAbsolutePath()
                 .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
-            messageToUser.info(getClass().getSimpleName(), MessageFormat.format("hash:{0}", hashCode()), toString);
+            messageToUser.info(toString);
             return FileVisitResult.CONTINUE;
         }
     }
