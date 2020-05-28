@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class VpnHelper extends SshActs implements Runnable {
 
 
-    private static final String GET_STATUS_COMMAND = "cat openvpn-status & exit";
+    private static final String GET_STATUS_COMMAND = "cat openvpn-status;exit";
 
     private static final String URL_WITH_KEYS = ConstantsFor.GIT_SERVER + "/?p=.git;a=tree;f=vpn/keys/keys;h=e2ff30b915f6277e541cc9415b7ce025fc0b11f4;hb=HEAD";
 
