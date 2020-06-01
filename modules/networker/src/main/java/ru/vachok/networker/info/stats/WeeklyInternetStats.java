@@ -100,17 +100,15 @@ class WeeklyInternetStats implements Runnable, Stats {
 
     @Override
     public void run() {
-        long iPsWithInet = 0;
+
+        long iPsWithInet;
         try {
             iPsWithInet = readIPsWithInet(false);
+            messageToUser.info(getClass().getSimpleName(), String.valueOf(iPsWithInet), " iPsWithInet");
         }
-        catch (RuntimeException | InvokeIllegalException e) {
+        catch (RuntimeException e) {
             messageToUser.error("WeeklyInternetStats.run", e.getMessage(), AbstractForms.networkerTrace(e));
         }
-        String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
-        String titleMsg = new File(FileNames.INETSTATSIP_CSV).getAbsolutePath();
-        String bodyMsg = MessageFormat.format(" = {0} size in kb", iPsWithInet);
-        messageToUser.info(headerMsg, titleMsg, bodyMsg);
         try {
             execDo();
         }
@@ -124,11 +122,8 @@ class WeeklyInternetStats implements Runnable, Stats {
 
      @see WeeklyInternetStatsTest#testReadIPsWithInet
      */
-    long readIPsWithInet(boolean isNoSquidNeedRead) throws InvokeIllegalException {
+    long readIPsWithInet(boolean isNoSquidNeedRead) {
         Thread.currentThread().setName("readIPsWithInet");
-        if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
-            throw new InvokeIllegalException(UsefulUtilities.thisPC());
-        }
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {

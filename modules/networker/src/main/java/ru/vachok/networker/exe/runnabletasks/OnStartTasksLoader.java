@@ -111,11 +111,11 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
             Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-            AppConfigurationLocal.getInstance().execute((Runnable) stats);
+            ((Runnable) stats).run();
             stats = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT);
             try {
                 String pcStats = stats.call();
-                System.out.println("pcStats = " + pcStats);
+                messageToUser.info(pcStats);
             }
             catch (RuntimeException e) {
                 messageToUser.error(MessageFormat.format("AppInfoOnLoad.getWeekPCStats {0} - {1}", e.getClass().getTypeName(), e.getMessage()));

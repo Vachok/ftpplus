@@ -24513,3 +24513,10 @@ connected to 192.168.13.30
 ls "/etc/"
 put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
 connection to 192.168.13.30 closed - bye bye!
+CONNECT \176.62.185.148
+connected to 176.62.185.148
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+connection to 176.62.185.148 closed - bye bye!

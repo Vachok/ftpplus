@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -183,24 +184,6 @@ public class SSHFactory implements Callable<String> {
         }
     }
 
-    private InputStream connect() throws IOException {
-        boolean isConnected;
-        try {
-            setRespChannelToField();
-        }
-        catch (RuntimeException e) {
-            setRespChannelToField();
-            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        try {
-            respChannel.connect(ConstantsFor.SSH_TIMEOUT);
-        }
-        catch (JSchException | RuntimeException e) {
-            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        return respChannel.getInputStream();
-    }
-
     @Override
     public String toString() {
         JsonObject jsonObject = new JsonObject();
@@ -211,14 +194,67 @@ public class SSHFactory implements Callable<String> {
         return jsonObject.toString();
     }
 
+    private InputStream connect() throws IOException {
+        boolean isConnected;
+        try {
+            setRespChannelToField();
+        }
+        catch (RuntimeException e) {
+            setRespChannelToField();
+            messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        try {
+            respChannel.connect(ConstantsFor.SSH_TIMEOUT);
+        }
+        catch (JSchException | RuntimeException e) {
+            messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        return respChannel.getInputStream();
+    }
+
+    private void setRespChannelToField() {
+        Thread.currentThread().setName(MessageFormat.format("SSH-by-{0}", classCaller));
+        JSch jSch = new JSch();
+        String classMeth = "SSHFactory.setRespChannelToField";
+        try {
+            this.session = createSession(jSch);
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        try {
+            session.connect(ConstantsFor.SSH_TIMEOUT);
+            messageToUser.info(classMeth, classCaller, session.getServerVersion() + " is connect: " + session.isConnected());
+        }
+        catch (JSchException | RuntimeException e) {
+            messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        finally {
+            checkCommandForExit();
+        }
+        try {
+            this.respChannel = session.openChannel(sessionType);
+            ((ChannelExec) respChannel).setCommand(commandSSH);
+        }
+        catch (JSchException e) {
+            messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        finally {
+            Objects.requireNonNull(respChannel);
+            messageToUser.info(classMeth, respChannel.toString(), String.valueOf(respChannel.isConnected()));
+        }
+
+    }
+
     /**
      @param jSch {@link #setRespChannelToField()}
      @return {@link #session}
 
      @throws IllegalStateException if {@link #session} is null
      */
-    private Session createSession(JSch jSch) {
+    private Session createSession(JSch jSch) throws InvokeIllegalException {
         Session sessionLoc = null;
+        Properties properties = getConProps();
         try {
             sessionLoc = jSch.getSession(userName, getConnectToSrv());
         }
@@ -232,10 +268,11 @@ public class SSHFactory implements Callable<String> {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         if (sessionLoc != null) {
+            sessionLoc.setConfig(properties);
             return sessionLoc;
         }
         else {
-            throw new IllegalStateException(getConnectToSrv() + " session null!");
+            throw new InvokeIllegalException(getConnectToSrv() + " session null!");
         }
     }
 
@@ -291,30 +328,15 @@ public class SSHFactory implements Callable<String> {
         return pemFile.getAbsolutePath();
     }
 
-    private void setRespChannelToField() {
-        Thread.currentThread().setName(MessageFormat.format("SSH:{0}:{1}", connectToSrv, classCaller));
-        JSch jSch = new JSch();
-        String classMeth = "SSHFactory.setRespChannelToField";
-        this.session = createSession(jSch);
-        Properties properties = getConProps();
-        try {
-            session.setConfig(properties);
-            session.connect(ConstantsFor.SSH_TIMEOUT);
-        }
-        catch (JSchException | RuntimeException e) {
-            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        try {
-            this.respChannel = session.openChannel(sessionType);
-            if (!this.commandSSH.endsWith(";exit") || !this.commandSSH.endsWith("& exit")) {
+    private void checkCommandForExit() {
+        if (!this.commandSSH.endsWith(";exit")) {
+            if (this.commandSSH.endsWith(" & exit")) {
+                this.commandSSH = commandSSH.replace(" & exit", ";exit");
+            }
+            else {
                 this.commandSSH = commandSSH + ";exit";
             }
-            ((ChannelExec) respChannel).setCommand(commandSSH);
         }
-        catch (JSchException e) {
-            FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        Objects.requireNonNull(respChannel);
     }
 
     private InetAddress triedIP() {
