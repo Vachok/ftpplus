@@ -32,7 +32,6 @@ public class TempInetRestControllerHelperTest {
     public void addInet() {
         String resultAdd = testGetInetResult(ConstantsFor.ADD);
         Assert.assertTrue(resultAdd.contains("INVALID USER"), resultAdd);
-        Assert.assertTrue(resultAdd.contains("8.8.8.8"), resultAdd);
     }
 
     private String testGetInetResult(String option) {
