@@ -528,7 +528,7 @@ public enum ConstantsFor {
 
     public static final String SSH_COM_CAT_VIPNET = "sudo cat /etc/pf/vipnet;exit";
 
-    public static final String[] SSH_LIST_COMMANDS = {SSH_CAT_24HRSLIST, SSH_CAT_PFSQUID, SSH_CAT_PFSQUID, SSH_CAT_PROXYFULL, SSH_COM_CAT_VIPNET};
+    public static final String[] SSH_LIST_COMMANDS = {SSH_CAT_24HRSLIST, SSH_CAT_PFSQUID, SSH_SHOW_SQUIDLIMITED, SSH_CAT_PROXYFULL, SSH_COM_CAT_VIPNET};
 
     public static final String JSON_LIST_LIMITSQUID = "limitSquid";
 

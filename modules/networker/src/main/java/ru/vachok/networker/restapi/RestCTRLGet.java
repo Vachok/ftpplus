@@ -265,7 +265,6 @@ public class RestCTRLGet {
 
     private JsonArray getSSHListsResult() {
         JsonArray retArr = new JsonArray();
-        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
         AppConfigurationLocal.getInstance().execute(()->{
             ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
         });
