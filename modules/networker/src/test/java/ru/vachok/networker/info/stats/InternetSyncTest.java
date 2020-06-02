@@ -43,7 +43,7 @@ public class InternetSyncTest {
 
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(InternetSync.class.getSimpleName(), System.nanoTime());
 
-    private SyncData syncData;
+    private InternetSync syncData;
 
     private Connection connection;
 
@@ -61,7 +61,7 @@ public class InternetSyncTest {
 
     @BeforeMethod
     public void initSync() {
-        syncData = SyncData.getInstance("10.200.213.85");
+        syncData = (InternetSync) SyncData.getInstance("10.200.213.85");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
 
@@ -114,7 +114,7 @@ public class InternetSyncTest {
     @Test
     @Ignore
     public void testCreateTable$$COPY() {
-        String tableCreate = ((InternetSync) syncData).createTable("10.200.213.200");
+        String tableCreate = syncData.createTable("10.200.213.200");
         Assert.assertEquals(tableCreate, "Updated: 0. Query: \n" +
                 "CREATE TABLE if not exists `10_200_213_200` (\n" +
                 "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
@@ -227,6 +227,29 @@ public class InternetSyncTest {
         if (createJSON(fileQueue) > 0) {
             fileWork(filePath);
         }
+    }
+
+    @Test
+    public void testGetRawResult() {
+        Object result = syncData.getRawResult();
+        Assert.assertTrue(result.toString().contains("ConcurrentHashMap is empty"), result.toString());
+    }
+
+    @Test
+    public void testRun() {
+        AppConfigurationLocal.getInstance().execute(syncData, 20);
+    }
+
+    @Test
+    public void testExec() {
+        boolean isExec = (boolean) AppConfigurationLocal.getInstance().executeGet(()->syncData.exec(), 50);
+        Assert.assertTrue(isExec);
+    }
+
+    @Test
+    public void testCheckComment() {
+        String s = syncData.checkComment();
+        Assert.assertTrue(s.contains("Last online"), s);
     }
 
     private int createJSON(@NotNull Queue<String> fileQueue) {

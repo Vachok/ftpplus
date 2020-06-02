@@ -14,7 +14,6 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.PingerFromFile;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -124,7 +123,7 @@ public interface NetScanService extends Runnable {
             case PINGER_FILE:
                 return new PingerFromFile();
             case PCNAMESSCANNER:
-                return (PcNamesScanner) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_NETSCANNERSVC);
+                return (NetScanService) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_NETSCANNERSVC);
             default:
                 return new ScanOnline();
         }

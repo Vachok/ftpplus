@@ -87,11 +87,11 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default void execute(Runnable runnable) {
-        ThreadConfig.cleanQueue(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
 
     default void execute(Callable<?> callable) {
+        ThreadConfig.cleanQueue(callable);
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         executor.submit(callable);
     }
@@ -127,7 +127,6 @@ public interface AppConfigurationLocal extends Runnable {
         Object o;
         try {
             o = submit.get(timeOutSeconds, TimeUnit.SECONDS);
-            System.out.println(MessageFormat.format("submit.get() = {0}", o));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             o = e.getMessage();
