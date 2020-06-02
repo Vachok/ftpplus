@@ -55,7 +55,7 @@ public class SyncDataTest {
 
     @BeforeMethod
     public void initSync() {
-        syncData.setIdColName("idrec");
+        syncData.setIdColName(ConstantsFor.DBCOL_IDREC);
         syncData.setDbToSync(dbToSync);
 
     }

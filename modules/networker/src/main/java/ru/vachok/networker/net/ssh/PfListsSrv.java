@@ -138,10 +138,10 @@ public class PfListsSrv {
 
         pfListsInstAW.setVipNet(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
-        build.setCommandSSH(ConstantsFor.SSH_SHOW_PFSQUID);
+        build.setCommandSSH(ConstantsFor.SSH_CAT_PFSQUID);
         pfListsInstAW.setStdSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
-        build.setCommandSSH(ConstantsFor.SSH_SHOW_PROXYFULL);
+        build.setCommandSSH(ConstantsFor.SSH_CAT_PROXYFULL);
         pfListsInstAW.setFullSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_SQUIDLIMITED);

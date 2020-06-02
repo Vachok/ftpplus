@@ -137,7 +137,7 @@ public class DBPCHTMLInfoTest {
         JsonObject jsonObject = new JsonObject();
         jsonObject.set("start", System.nanoTime());
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
-            String sql = "SELECT * from velkompc WHERE AddressPP like ? and OnlineNow = 1 order by idrec desc limit 1";
+            final String sql = "SELECT * from velkompc WHERE AddressPP like ? and OnlineNow = 1 order by idrec desc limit 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -145,7 +145,7 @@ public class DBPCHTMLInfoTest {
                     while (resultSet.next()) {
                         this.pcName = resultSet.getString(ConstantsFor.DBCOL_NAMEPP);
                         jsonObject.set("setTimeOn", pcName);
-                        jsonObject.set("idrec", resultSet.getInt("idrec"));
+                        jsonObject.set(ConstantsFor.DBCOL_IDREC, resultSet.getInt(ConstantsFor.DBCOL_IDREC));
                         jsonObject.set("laston", resultSet.getTimestamp("TimeNow").getTime());
                     }
                 }

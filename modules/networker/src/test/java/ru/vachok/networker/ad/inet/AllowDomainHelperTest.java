@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.RestApiHelper;
 
 
@@ -30,7 +31,7 @@ public class AllowDomainHelperTest {
     @Test
     public void testGetResult() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add("domain", "https://www.eatmeat.ru/");
+        jsonObject.add(ConstantsFor.DOMAIN, "https://www.eatmeat.ru/");
         jsonObject.add("option", "add");
         String result = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonObject);
         System.out.println("result = " + result);

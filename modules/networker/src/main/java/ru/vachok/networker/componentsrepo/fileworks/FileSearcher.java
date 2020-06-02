@@ -51,7 +51,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     /**
      {@link List} с результатами
      */
-    private Set<String> resSet = new ConcurrentSkipListSet<>();
+    private final Set<String> resSet = new ConcurrentSkipListSet<>();
 
     private Path startFolder = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new\\");
 
@@ -181,7 +181,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     public static String dropTables() {
         try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
             for (String tableToDropName : getSearchTablesToDrop()) {
-                final String sql = String.format("drop table %s", tableToDropName);
+                final String sql = String.format(ConstantsFor.SQL_DROPTABLE, tableToDropName);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.executeUpdate();
                 }

@@ -34,37 +34,25 @@ public class AccessListsCheckUniq implements Callable<String> {
 
     private static final Pattern FILENAME_COMPILE = Pattern.compile("/pf/");
 
-    private static final Pattern FILENAME_PATTERN = Pattern.compile(" && ");
+    private static final Pattern FILENAME_PATTERN = Pattern.compile(";");
 
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, AccessListsCheckUniq.class.getSimpleName());
 
     private final Collection<String> fileNames = new ArrayList<>();
 
-    protected static final String SQUIDLIMITED = "squidlimited";
+    static final String SQUIDLIMITED = "squidlimited";
 
-    protected static final String TEMPFULL = "tempfull";
+    static final String TEMPFULL = "tempfull";
 
-    private void parseListFiles() {
-        Map<String, String> usersIPFromPFLists = getInetUniqMap();
-        for (String fileName : fileNames) {
-            Queue<String> stringDeque = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
-            while (!stringDeque.isEmpty()) {
-                String key = stringDeque.poll();
-                String put = usersIPFromPFLists.putIfAbsent(key, fileName);
-                if (put != null) {
-                    usersIPFromPFLists.put(key + " " + fileName, "NOT UNIQUE"); //пометка адресов, которые присутствуют в более чем одном списке.
-                }
-            }
+    private static final String NOT_UNIQUE = "NOT UNIQUE";
+
+    private void compareWithRest() {
+        for (JsonValue jsonValue : genArray().values()) {
+            RestApiHelper instance = RestApiHelper.getInstance(RestApiHelper.SSH);
+            JsonObject result = (JsonObject) Json.parse(instance.getResult(jsonValue.asObject()));
+            messageToUser.info(result.toString());
         }
-        StringBuilder fromArray = new StringBuilder();
-        for (Map.Entry<String, String> ipEntries : usersIPFromPFLists.entrySet()) {
-            if (ipEntries.getValue().equals("NOT UNIQUE")) {
-                fromArray.append(ipEntries.getKey()).append(" ").append(ipEntries.getValue()).append("\n");
-            }
-        }
-        messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
-        FileSystemWorker.writeFile(FileNames.INET_UNIQ, fromArray.toString());
     }
 
     @Override
@@ -73,15 +61,6 @@ public class AccessListsCheckUniq implements Callable<String> {
             compareWithRest();
         }
         return connectTo();
-    }
-
-    private void compareWithRest() {
-        Set<String> resSet = new HashSet<>();
-        for (JsonValue jsonValue : genArray().values()) {
-            RestApiHelper instance = RestApiHelper.getInstance(RestApiHelper.SSH);
-            JsonObject result = (JsonObject) Json.parse(instance.getResult(jsonValue.asObject()));
-            System.out.println("result = " + result);
-        }
     }
 
     private JsonArray genArray() {
@@ -93,7 +72,7 @@ public class AccessListsCheckUniq implements Callable<String> {
         jsonObject.add(ConstantsFor.PARAM_NAME_SERVER, getSRVNeed());
         String[] listNames = {TEMPFULL, PfListsCtr.ATT_VIPNET, SQUIDLIMITED, ConstantsFor.JSON_OBJECT_SQUID};
         for (String listName : listNames) {
-            jsonObject.add(ConstantsFor.PARM_NAME_COMMAND, String.format("sudo cat /etc/pf/%s & exit", listName));
+            jsonObject.add(ConstantsFor.PARM_NAME_COMMAND, String.format("sudo cat /etc/pf/%s;exit", listName));
             jsonValues.add(jsonObject);
         }
         return jsonValues;
@@ -103,12 +82,21 @@ public class AccessListsCheckUniq implements Callable<String> {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), ConstantsFor.SSH_UNAMEA, getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
-        String[] commandsToGetList = {ConstantsFor.SSH_CAT24HRSLIST, "sudo cat /etc/pf/vipnet && exit", ConstantsFor.SSH_SHOW_PFSQUID, ConstantsFor.SSH_SHOW_SQUIDLIMITED, ConstantsFor.SSH_SHOW_PROXYFULL};
+        String[] commandsToGetList = {ConstantsFor.SSH_COM_CAT_VIPNET, ConstantsFor.SSH_CAT_PFSQUID, ConstantsFor.SSH_SHOW_SQUIDLIMITED, ConstantsFor.SSH_CAT_PROXYFULL};
         for (String getList : commandsToGetList) {
             makePfListFiles(getList, sshFactory, stringBuilder);
         }
         parseListFiles();
         return stringBuilder.toString();
+    }
+
+    private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {
+        sshFactory.setCommandSSH(getList);
+        stringBuilder.append(AppConfigurationLocal.getInstance().submitAsString(sshFactory, 4)).append("\n");
+        List<String> listUsers = FileSystemWorker.readFileToList(sshFactory.getTempFile().toAbsolutePath().toString());
+        String fileName = FILENAME_PATTERN.split(FILENAME_COMPILE.split(getList)[1])[0] + ".list";
+        fileNames.add(fileName);
+        FileSystemWorker.writeFile(fileName, listUsers.stream());
     }
 
     private static String getSRVNeed() {
@@ -120,13 +108,31 @@ public class AccessListsCheckUniq implements Callable<String> {
         }
     }
 
-    private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {
-        sshFactory.setCommandSSH(getList);
-        stringBuilder.append(AppConfigurationLocal.getInstance().submitAsString(sshFactory, 4)).append("\n");
-        Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
-        String fileName = FILENAME_PATTERN.split(FILENAME_COMPILE.split(getList)[1])[0] + ".list";
-        fileNames.add(fileName);
-        FileSystemWorker.writeFile(fileName, stringSet.stream());
+    private void parseListFiles() {
+        Map<String, String> usersIPFromPFLists = getInetUniqMap();
+        for (String fileName : fileNames) {
+            Queue<String> fileQueue = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
+            while (!fileQueue.isEmpty()) {
+                String key = fileQueue.poll();
+                if (key.contains("#")) {
+                    key = key.split("#")[0].trim();
+                }
+                String put = usersIPFromPFLists.putIfAbsent(key, fileName);
+                if (put != null && !key.isEmpty()) {
+                    usersIPFromPFLists.put(key + " " + fileName, NOT_UNIQUE); //пометка адресов, которые присутствуют в более чем одном списке.
+                }
+            }
+        }
+        StringBuilder fromArray = new StringBuilder();
+        for (Map.Entry<String, String> ipEntries : usersIPFromPFLists.entrySet()) {
+            if (ipEntries.getValue().equals(NOT_UNIQUE)) {
+                String keyNotUnique = ipEntries.getKey();
+                fromArray.append(keyNotUnique).append(" ").append(":");
+                fromArray.append(usersIPFromPFLists.get(keyNotUnique.split(" ")[0])).append("\n");
+            }
+        }
+        messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
+        FileSystemWorker.writeFile(FileNames.INET_UNIQ, fromArray.toString());
     }
 
     @Contract(pure = true)
@@ -137,7 +143,7 @@ public class AccessListsCheckUniq implements Callable<String> {
     @Override
     public String toString() {
         return new StringJoiner(",\n", AccessListsCheckUniq.class.getSimpleName() + "[\n", "\n]")
-                .add("fileNames = " + fileNames.size())
+            .add("fileNames = " + fileNames.size())
                 .toString();
     }
 }

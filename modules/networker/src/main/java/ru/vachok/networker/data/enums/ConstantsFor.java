@@ -9,6 +9,7 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -263,11 +264,11 @@ public enum ConstantsFor {
 
     public static final String STR_ACTIONPERFORMED = ".actionPerformed";
 
-    public static final String SSH_SHOW_PFSQUID = "sudo cat /etc/pf/squid && exit";
+    public static final String SSH_CAT_PFSQUID = "sudo cat /etc/pf/squid;exit";
 
-    public static final String SSH_SHOW_SQUIDLIMITED = "sudo cat /etc/pf/squidlimited && exit";
+    public static final String SSH_SHOW_SQUIDLIMITED = "sudo cat /etc/pf/squidlimited;exit";
 
-    public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
+    public static final String SSH_CAT_PROXYFULL = "sudo cat /etc/pf/tempfull;exit";
 
     public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
 
@@ -433,9 +434,9 @@ public enum ConstantsFor {
 
     public static final String SSH_ETCPF = " /etc/pf/";
 
-    public static final String SSH_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
+    public static final String SSH_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure;exit";
 
-    public static final String SSH_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
+    public static final String SSH_CAT_24HRSLIST = "sudo cat /etc/pf/24hrs;exit";
 
     public static final String DB_FIELD_WHENQUERIED = "whenQueried";
 
@@ -464,10 +465,6 @@ public enum ConstantsFor {
     public static final String ISNTRESOLVED = "Login isn't resolved";
 
     public static final String USERS = ": Users";
-
-    public static final String DB_LANMONITOR = "lan.monitor";
-
-    public static final String DBFIELD_TSTAMP = "tstamp";
 
     public static final String DBFIELD_CONTROLIP = "controlIp";
 
@@ -529,7 +526,9 @@ public enum ConstantsFor {
 
     public static final String PARAM_NAME_CODE = "code";
 
-    public static final String[] SSH_LIST_COMMANDS = {"sudo ps ax;exit", "sudo cat /etc/pf/vipnet;exit", "sudo cat /etc/pf/tempfull;exit", "sudo cat /etc/pf/24hrs;exit", "sudo cat /etc/pf/squid;exit", "sudo cat /etc/pf/squidlimited;exit"};
+    public static final String SSH_COM_CAT_VIPNET = "sudo cat /etc/pf/vipnet;exit";
+
+    public static final String[] SSH_LIST_COMMANDS = {SSH_CAT_24HRSLIST, SSH_CAT_PFSQUID, SSH_CAT_PFSQUID, SSH_CAT_PROXYFULL, SSH_COM_CAT_VIPNET};
 
     public static final String JSON_LIST_LIMITSQUID = "limitSquid";
 
@@ -543,17 +542,15 @@ public enum ConstantsFor {
 
     public static final String VACHOK_VACHOK_RU = "vachok@vachok.ru";
 
-    public static final String FIREBASE = "firebase";
+    public static final String FIREBASE = InitProperties.FIREBASE;
 
     public static final String OWNER = "owner";
-
-    public static final String TEMPNET = "tempnet";
 
     public static final String NETWORKER = "ru.vachok.networker";
 
     public static final String SSHADD = "/sshadd";
 
-    public static final String SSHCOM_GETALLOWDOMAINS = "sudo cat /etc/pf/allowdomain && exit";
+    public static final String SSHCOM_GETALLOWDOMAINS = "sudo cat /etc/pf/allowdomain;exit";
 
     public static final String FILES = "Files: ";
 

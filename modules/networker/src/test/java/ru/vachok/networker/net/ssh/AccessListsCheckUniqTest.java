@@ -98,7 +98,7 @@ public class AccessListsCheckUniqTest {
 
     @Test
     public void testCall() {
-        String s = AppConfigurationLocal.getInstance().submitAsString(accessListsCheckUniq, 10);
+        String s = AppConfigurationLocal.getInstance().submitAsString(accessListsCheckUniq, 30);
         System.out.println("s = " + s);
     }
 }

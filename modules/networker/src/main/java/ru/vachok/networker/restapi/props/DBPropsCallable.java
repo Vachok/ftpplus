@@ -117,7 +117,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     @Override
     public boolean delProps() {
         final String sql = "DELETE FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
-        try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("mem.properties")) {
+        try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 p.setString(1, propsDBID);
                 int update = p.executeUpdate();
@@ -171,7 +171,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     if (resultSet.getString("javaid").equalsIgnoreCase(propsId[1])) {
-                        properties.put(resultSet.getString("property"), resultSet.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY));
+                        properties.put(resultSet.getString(ConstantsFor.DBCOL_PROPERTY), resultSet.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY));
                     }
                 }
             }
