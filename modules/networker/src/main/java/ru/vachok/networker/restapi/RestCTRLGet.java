@@ -338,7 +338,7 @@ public class RestCTRLGet {
     }
 
     private JsonObject genJSON(SSHFactory.Builder sshB) {
-        String srvAnswer = AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5);
+        String srvAnswer = AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 8);
         JsonObject jsonObject = new JsonObject();
         if (srvAnswer.contains("<br>")) {
             String[] split = srvAnswer.split("<br>");
