@@ -28,29 +28,29 @@ import java.util.Date;
  @see MailPOPTester
  @since 27.06.2019 (10:42) */
 public class MailPOPTesterTest {
-    
-    
+
+
     private static final Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
 
-    private TestConfigure testConfigure = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+    private final TestConfigure testConfigure = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+
     private String userName;
-    
+
     private char[] passChars;
-    
-    private File fileForAppend = new File("err" + System.getProperty(PropertiesNames.SYS_SEPARATOR) + "mail.err");
+
+    private final File fileForAppend = new File("err" + System.getProperty(PropertiesNames.SYS_SEPARATOR) + "mail.err");
 
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigure.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigure.after();
     }
-    
+
     @Test(enabled = false)
     public void realTesting() {
         MailTester mailTester = new MailPOPTester();
@@ -61,10 +61,10 @@ public class MailPOPTesterTest {
             Assert.assertNull(e, e.getMessage());
         }
     }
-    
+
     @Test(enabled = false)
     public void testTestInput() throws MessagingException {
-        
+
         Store mailSessionStore = null;
         try {
             mailSessionStore = MAIL_SESSION.getStore();
@@ -73,7 +73,7 @@ public class MailPOPTesterTest {
         catch (MessagingException e) {
             Assert.assertNull(e, e.getMessage());
         }
-        
+
         Folder inboxFolder = null;
         try {
             Folder defaultFolder = mailSessionStore.getDefaultFolder();
@@ -96,7 +96,7 @@ public class MailPOPTesterTest {
             Assert.assertNull(e, e.getMessage());
         }
     }
-    
+
     @Test(enabled = false)
     public void testTestOutput() throws MessagingException {
         Transport sessionTransport = MAIL_SESSION.getTransport();
@@ -107,13 +107,13 @@ public class MailPOPTesterTest {
         sessionTransport.connect();
         sessionTransport.sendMessage(testMessage, new InternetAddress[]{new InternetAddress("m.v.spirin@velkomfood.ru"), new InternetAddress("netvisor@eatmeat.ru")});
     }
-    
+
     @Test(enabled = false)
     public void testTestComplex() throws MessagingException {
         testTestOutput();
         testTestInput();
     }
-    
+
     @Test
     public void logFileReader() {
         MailTester mailTester = new MailPOPTester();
@@ -121,7 +121,7 @@ public class MailPOPTesterTest {
             String objectToFileResult = FileSystemWorker.appendObjectToFile(fileForAppend, mailTester.testComplex());
             Assert.assertTrue(objectToFileResult.contains(fileForAppend.getName()));
             Files.deleteIfExists(fileForAppend.toPath().toAbsolutePath().normalize());
-    
+
         }
         catch (MessagingException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
