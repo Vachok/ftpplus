@@ -20,6 +20,7 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -29,7 +30,6 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -133,7 +133,7 @@ public class SSHFactory implements Callable<String> {
         byte[] bytes = new byte[ConstantsFor.KBYTE];
         int readBytes;
         try (InputStream connect = connect()) {
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connect))) {
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connect, StandardCharsets.UTF_8))) {
                 bufferedReader.lines().forEach(recQueue::add);
             }
             this.respChannel.disconnect();
@@ -152,19 +152,16 @@ public class SSHFactory implements Callable<String> {
             if (this.respChannel.isConnected()) {
                 this.respChannel.disconnect();
             }
+            if (this.session.isConnected()) {
+                this.session.disconnect();
+            }
             while (!recQueue.isEmpty()) {
                 stringBuilder.append(recQueue.poll()).append("<br>\n");
             }
             FileSystemWorker.writeFile(tempFile.toAbsolutePath().normalize().toString(), stringBuilder.toString());
-            Executors.newSingleThreadExecutor()
-                .execute(()->IntoApplication.makeEvent(MessageFormat.format("SSH : {0} command {1} to {2}\n{3} is {4}\n{5} is {6}\nTemporary file: {7}",
-                    this.classCaller, this.commandSSH, this.connectToSrv,
-                    this.respChannel.getClass().getSimpleName(), this.respChannel.isClosed(),
-                    this.session.getClass().getSimpleName(), this.session.isConnected(),
-                    this.tempFile.normalize().toAbsolutePath().toString()
-                )));
+            this.session = null;
+            this.respChannel = null;
         }
-
         return stringBuilder.toString();
     }
 
@@ -239,11 +236,8 @@ public class SSHFactory implements Callable<String> {
         catch (JSchException e) {
             messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
-        finally {
-            Objects.requireNonNull(respChannel);
-            messageToUser.info(classMeth, respChannel.toString(), String.valueOf(respChannel.isConnected()));
-        }
-
+        int chID = Objects.requireNonNull(respChannel).getId();
+        messageToUser.info(getClass().getSimpleName(), this.classCaller, MessageFormat.format("{0} id {1}", this.respChannel.getClass().getSimpleName(), chID));
     }
 
     /**

@@ -37,11 +37,11 @@ public class SshActsTest {
             }
         });
         try {
-            String domainAddString = domainAddStringFuture.get(30, TimeUnit.SECONDS);
+            String domainAddString = domainAddStringFuture.get(20, TimeUnit.SECONDS);
             Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);
-            System.out.println("domainAddString = " + domainAddString);
         }
         catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
@@ -54,7 +54,7 @@ public class SshActsTest {
         SshActs sshActs = new SshActs();
         Future<String> allowDomainDelString = AppComponents.threadConfig().getTaskExecutor().submit(sshActs::allowDomainDel);
         try {
-            String s = allowDomainDelString.get(30, TimeUnit.SECONDS);
+            String s = allowDomainDelString.get(20, TimeUnit.SECONDS);
             Assert.assertFalse(s.contains(VELKOMFOOD), s);
         }
         catch (InterruptedException e) {
@@ -70,6 +70,6 @@ public class SshActsTest {
     public void testWhatSrvNeed() {
         SshActs sshActs = new SshActs();
         String srvNeed = sshActs.whatSrvNeed();
-        Assert.assertEquals(srvNeed, "192.168.13.42");
+        Assert.assertEquals(srvNeed, "srv-git.eatmeat.ru");
     }
 }
