@@ -36,7 +36,7 @@ public class PfListsSrvTest {
     @Test
     public void testGetCommandForNatStr() {
         String str = pfListsSrv.getCommandForNatStr();
-        Assert.assertEquals(str, "sudo cat /etc/pf/allowdomain && exit");
+        Assert.assertEquals(str, "sudo cat /etc/pf/allowdomain;exit");
     }
 
     @Test

@@ -26275,3 +26275,52 @@ connected to 192.168.13.30
 ls "/etc/"
 put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
 connection to 192.168.13.30 closed - bye bye!
+----------
+Connect to: (04.06.2020 10:44:28)
+hostname=91.210.86.34
+username=uplo
+startdir=
+91.210.86.34=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PORT 10,10,111,57,227,162
+200 Port command successful
+LIST
+150 Opening data channel for directory listing of "/"
+Загрузка
+Прервано пользователем.
+QUIT
+425 Can't open data connection for transfer of "/"
