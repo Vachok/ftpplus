@@ -26324,3 +26324,269 @@ LIST
 Прервано пользователем.
 QUIT
 425 Can't open data connection for transfer of "/"
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!
+----------
+Connect to: (05.06.2020 12:03:58)
+hostname=91.210.86.34
+username=uplo
+startdir=
+91.210.86.34=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PORT 10,10,111,57,207,166
+200 Port command successful
+LIST
+150 Opening data channel for directory listing of "/"
+Загрузка
+Прервано пользователем.
+QUIT
+1:----------
+1:Connect to: (05.06.2020 12:04:12)
+1:hostname=srv-edge2010
+1:username=uplo
+1:startdir=
+425 Can't open data connection for transfer of "/"
+----------
+Connect to: (05.06.2020 12:04:15)
+hostname=srv-edge2010
+username=uplo
+startdir=
+srv-edge2010=192.168.13.43
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PORT 10,10,111,57,207,168
+200 Port command successful
+LIST
+150 Opening data channel for directory listing of "/"
+Загрузка
+Ожидание ответа сервера...
+226 Successfully transferred "/"
+CWD EDI_IN
+250 CWD successful. "/EDI_IN" is current directory.
+Чтение каталога...
+PORT 10,10,111,57,207,169
+200 Port command successful
+LIST
+150 Opening data channel for directory listing of "/EDI_IN"
+Загрузка
+Ожидание ответа сервера...
+226 Successfully transferred "/EDI_IN"
+CDUP
+200 CDUP successful. "/" is current directory.
+PWD
+257 "/" is current directory.
+QUIT
+221 Goodbye
+----------
+Connect to: (05.06.2020 12:04:43)
+hostname=91.210.86.34
+username=uplo
+startdir=
+91.210.86.34=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (91,210,86,34,174,249)
+Прервано пользователем.
+PORT 10,10,111,57,207,173
+200 Port command successful
+LIST
+150 Opening data channel for directory listing of "/"
+Загрузка
+Прервано пользователем.
+QUIT
+Чтение каталога...
+425 Can't open data connection for transfer of "/"
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/pflog/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/pflog/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/pflog/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/pflog/"
+get "/usr/home/kudr/pflog/pflog" "D:\pflog\pflog"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/pflog/"
+ls "/usr/home/kudr/pflog/"
+get "/usr/home/kudr/pflog/pflog.0.bz2" "d:\Temp\_tc\pflog.0.bz2"
+connection to 192.168.13.30 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!
+----------
+Connect to: (05.06.2020 12:17:46)
+hostname=91.210.86.34
+username=uplo
+startdir=
+91.210.86.34=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (91,210,86,34,174,141)
+LIST
+150 Opening data channel for directory listing of "/"
+Загрузка
+Ожидание ответа сервера...
+226 Successfully transferred "/"
+QUIT
+221 Goodbye
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+connection to 192.168.13.30 closed - bye bye!

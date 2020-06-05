@@ -186,11 +186,11 @@ public final class ThreadConfig implements AppConfigurationLocal {
     }
 
     private void setExecutor() {
-        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         TASK_EXECUTOR.setCorePoolSize(10);
         TASK_EXECUTOR.setQueueCapacity(500);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(5);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(10);
         TASK_EXECUTOR.setThreadPriority(7);
         TASK_EXECUTOR.setThreadNamePrefix("E_");
         TASK_EXECUTOR.setAllowCoreThreadTimeOut(true);

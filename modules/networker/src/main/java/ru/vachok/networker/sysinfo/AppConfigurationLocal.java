@@ -3,7 +3,6 @@ package ru.vachok.networker.sysinfo;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.ThreadTimeout;
@@ -148,7 +147,7 @@ public interface AppConfigurationLocal extends Runnable {
     default String submitAsString(Callable<String> callable, int timeOutInSec) {
         ThreadConfig.cleanQueue(callable);
         String result = "null";
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+        ThreadPoolExecutor executor = ThreadConfig.getI().getTaskExecutor().getThreadPoolExecutor();
         Future<String> submit = executor.submit(callable);
         try {
             String s = submit.get(timeOutInSec, TimeUnit.SECONDS);
