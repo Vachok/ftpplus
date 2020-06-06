@@ -103,7 +103,6 @@ public final class AppInfoOnLoad implements Runnable {
         try {
             Runnable runInfoForU = ()->FileSystemWorker
                 .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
-            messageToUser.info(UsefulUtilities.getIISLogSize());
             AppConfigurationLocal.getInstance().execute(runInfoForU);
         }
         catch (RuntimeException e) {

@@ -11,7 +11,6 @@ import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
 
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.concurrent.*;
 
 
@@ -117,11 +116,11 @@ public interface AppConfigurationLocal extends Runnable {
         ScheduledThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         executorQueue.removeIf(runnable1->runnable1.equals(runnable));
-        long initialDelay = new Date(timeFirstRun).getTime();
+        long initialDelay = timeFirstRun - System.currentTimeMillis();
         if (initialDelay < 0) {
-            initialDelay = 0;
+            initialDelay = 10;
         }
-        poolExecutor.scheduleWithFixedDelay(runnable, initialDelay - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
+        poolExecutor.scheduleWithFixedDelay(runnable, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
     default Object executeGet(Callable<?> callable, int timeOutSeconds) {
