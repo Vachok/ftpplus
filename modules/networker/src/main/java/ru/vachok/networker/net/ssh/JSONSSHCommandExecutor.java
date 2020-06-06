@@ -29,7 +29,7 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
     public String getResult(@NotNull JsonObject jsonObject) {
         messageToUser.info(AbstractForms.fromArray(jsonObject));
         JsonObject jsonObjectResult = connectToSrv(jsonObject);
-        jsonObjectResult.add(ConstantsFor.PARAM_NAME_SERVER, serverName);
+        jsonObjectResult.add(ConstantsFor.JSON_PARAM_NAME_SERVER, serverName);
         return jsonObjectResult.toString();
     }
 
@@ -56,33 +56,24 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
     }
 
     private JsonObject makeActions(JsonObject jsonObject) {
-        if (jsonObject.names().contains(ConstantsFor.PARAM_NAME_SERVER)) {
-            JsonValue value = jsonObject.get(ConstantsFor.PARAM_NAME_SERVER);
+        if (jsonObject.names().contains(ConstantsFor.JSON_PARAM_NAME_SERVER)) {
+            JsonValue value = jsonObject.get(ConstantsFor.JSON_PARAM_NAME_SERVER);
             this.serverName = value.asString();
         }
         String commandForSH = "uname -a;uptime;";
         if (jsonObject.names().contains(ConstantsFor.PARM_NAME_COMMAND)) {
-            String commandFromJSON = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
-            if (commandFromJSON.contains("ps ax")) {
-                commandForSH = commandForSH + ";exit";
-            }
-            else {
-                commandForSH = commandFromJSON;
-            }
+            commandForSH = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
         }
         SSHFactory.Builder sshFB = new SSHFactory.Builder(serverName, commandForSH, getClass().getSimpleName());
         MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName()).info(serverName, commandForSH, getClass().getSimpleName());
-        String finalServerName = serverName;
-        AppConfigurationLocal.getInstance()
-            .execute(()->messageToUser.info(new SSHFactory.Builder(finalServerName, "uname -a;uptime;exit", getClass().getSimpleName()).build().call()));
         return serverAnswer(sshFB);
     }
 
     private JsonObject serverAnswer(SSHFactory.Builder fb) {
-        String serverAnswerString = AppConfigurationLocal.getInstance().submitAsString(fb.build(), 15);
+        String serverAnswerString = AppConfigurationLocal.getInstance().submitAsString(fb.build(), 21);
         JsonObject jsonObject = new JsonObject();
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_SERVER, this.serverName);
         jsonObject.add(fb.getCommandSSH(), serverAnswerString);
-        messageToUser.info(getClass().getSimpleName(), fb.toString(), jsonObject.toString());
         return jsonObject;
     }
 

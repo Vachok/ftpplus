@@ -77,11 +77,6 @@ import java.util.concurrent.LinkedBlockingDeque;
         catch (InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        finally {
-            Assert.assertTrue(fileTestVlan.exists());
-            fileTestVlan.deleteOnExit();
-        }
-
     }
 
     @Test

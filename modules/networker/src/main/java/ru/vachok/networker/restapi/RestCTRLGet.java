@@ -59,6 +59,8 @@ public class RestCTRLGet {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRLGet.class.getSimpleName());
 
+    private static final String GLOBAL_STATUS = "SELECT * FROM `information_schema`.`GLOBAL_STATUS` WHERE `VARIABLE_VALUE`>0 ORDER BY `VARIABLE_NAME`;";
+
     @GetMapping("/sshgetdomains")
     public String getAllowDomains() {
         ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
@@ -114,10 +116,21 @@ public class RestCTRLGet {
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
-    private void printDiskInfoToFile() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        String path = FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 30));
-        messageToUser.info(path);
+    @GetMapping("/db")
+    public String dbInfoRest() {
+
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
+             PreparedStatement preparedStatement = connection.prepareStatement(GLOBAL_STATUS);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            Map<String, String> showMap = new TreeMap<>();
+            while (resultSet.next()) {
+                showMap.put(resultSet.getString("VARIABLE_NAME"), resultSet.getString("VARIABLE_VALUE"));
+            }
+            return AbstractForms.fromArray(showMap);
+        }
+        catch (SQLException e) {
+            return e.getMessage() + " \n<br>\n" + AbstractForms.fromArray(e);
+        }
     }
 
     @GetMapping(GETOLDFILES)
@@ -129,21 +142,10 @@ public class RestCTRLGet {
         return oldBigFilesInfoCollector.getFromDatabase();
     }
 
-    @GetMapping("/db")
-    public String dbInfoRest() {
-        String sql = "SELECT * FROM `information_schema`.`GLOBAL_STATUS` WHERE `VARIABLE_VALUE`>0 ORDER BY `VARIABLE_NAME`;";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            Map<String, String> showMap = new TreeMap<>();
-            while (resultSet.next()) {
-                showMap.put(resultSet.getString("VARIABLE_NAME"), resultSet.getString("VARIABLE_VALUE"));
-            }
-            return AbstractForms.fromArray(showMap);
-        }
-        catch (SQLException e) {
-            return e.getMessage() + " \n<br>\n" + AbstractForms.fromArray(e);
-        }
+    private void printDiskInfoToFile() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        String path = FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 21));
+        messageToUser.info(path);
     }
 
     @GetMapping("/file")

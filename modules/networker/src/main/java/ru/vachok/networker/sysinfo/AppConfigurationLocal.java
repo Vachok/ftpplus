@@ -4,12 +4,14 @@ package ru.vachok.networker.sysinfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.ThreadTimeout;
 import ru.vachok.networker.exe.runnabletasks.OnStartTasksLoader;
 import ru.vachok.networker.exe.schedule.ScheduleDefiner;
 
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.concurrent.*;
 
 
@@ -19,6 +21,8 @@ public interface AppConfigurationLocal extends Runnable {
 
 
     String ON_START_LOADER = "OnStartTasksLoader";
+
+    BlockingQueue<Callable> workQ = new LinkedBlockingQueue<>();
 
     String SCHEDULE_DEFINER = "ScheduleDefiner";
 
@@ -68,12 +72,12 @@ public interface AppConfigurationLocal extends Runnable {
         return stringBuilder.toString();
     }
 
-    static Object executeInWorkStealingPool(ForkJoinTask<?> fjTask, long timeOutMin) {
+    static Object executeInWorkStealingPool(ForkJoinTask<?> fjTask, long timeOutSec) {
         ForkJoinPool service = ThreadConfig.getForkJoin();
         ForkJoinTask<?> fork = service.submit(fjTask);
         Object o = null;
         try {
-            o = fork.get(timeOutMin, TimeUnit.SECONDS);
+            o = fork.get(timeOutSec, TimeUnit.SECONDS);
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
             e.printStackTrace();
@@ -113,11 +117,11 @@ public interface AppConfigurationLocal extends Runnable {
         ScheduledThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         executorQueue.removeIf(runnable1->runnable1.equals(runnable));
-        long initialDelay = timeFirstRun - System.currentTimeMillis();
+        long initialDelay = new Date(timeFirstRun).getTime();
         if (initialDelay < 0) {
             initialDelay = 0;
         }
-        poolExecutor.scheduleWithFixedDelay(runnable, initialDelay, period, TimeUnit.MILLISECONDS);
+        poolExecutor.scheduleWithFixedDelay(runnable, initialDelay - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
     }
 
     default Object executeGet(Callable<?> callable, int timeOutSeconds) {
@@ -145,25 +149,32 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default String submitAsString(Callable<String> callable, int timeOutInSec) {
-        ThreadConfig.cleanQueue(callable);
-        String result = "null";
-        ThreadPoolExecutor executor = ThreadConfig.getI().getTaskExecutor().getThreadPoolExecutor();
-        Future<String> submit = executor.submit(callable);
+        String result = MessageFormat.format("{0} size of threads queue", workQ.size());
+        ExecutorService serviceOneLaunch = Executors.newSingleThreadExecutor();
+        Future<String> submit = serviceOneLaunch.submit(callable);
         try {
             String s = submit.get(timeOutInSec, TimeUnit.SECONDS);
             if (submit.isDone()) {
                 result = s;
             }
             else {
-                result = MessageFormat.format("{0} submit is {1}", getClass().getSimpleName(), false);
+                result = submit.getClass().getSimpleName() + ": " + submit.cancel(true);
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
             result = MessageFormat
-                .format("{0} try to run: {1} ({2})", AppConfigurationLocal.class.getSimpleName(), e.getMessage(), callable.getClass().getSimpleName());
+                .format("{0} error {1}: {2}", callable.getClass().getSimpleName(), e.getClass().getSimpleName(), e.getMessage());
         }
         finally {
-            System.out.println(MessageFormat.format("{0} = {1} is done: {2}", result, callable.getClass().getName(), submit.isDone()));
+            String submitDone;
+            if (submit.isDone()) {
+                submitDone = "DONE";
+            }
+            else {
+                submitDone = ConstantsFor.STR_ERROR;
+            }
+            System.out.println(MessageFormat.format("{0}: {1}\nresult = {2}", submit.getClass().getSimpleName(), submitDone, result));
+            serviceOneLaunch.shutdown();
         }
         return result;
     }

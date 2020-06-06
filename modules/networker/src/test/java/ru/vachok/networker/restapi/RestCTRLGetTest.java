@@ -7,6 +7,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -77,8 +78,16 @@ public class RestCTRLGetTest {
 
     @Test
     public void testSshRest() {
-        String sshStr = restCTRLGet.sshRest(new MockHttpServletRequest());
-        Assert.assertTrue(sshStr.contains("stdSquid"), sshStr);
+        try {
+            Thread.sleep(1500);
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        finally {
+            String sshStr = restCTRLGet.sshRest(new MockHttpServletRequest());
+            Assert.assertTrue(sshStr.contains("stdSquid"), sshStr);
+        }
     }
 
     @Test

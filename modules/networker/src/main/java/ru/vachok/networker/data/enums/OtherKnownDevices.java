@@ -29,8 +29,6 @@ public enum OtherKnownDevices {
 
     public static final String DO0213_KUDR = "do0213.eatmeat.ru";
 
-    public static final String NO0027_KUDROLD = "no0027.eatmeat.ru";
-
     public static final String IP_BANKOMAT_INSIDE = "10.200.217.250"; //ip source-binding on 10.200.200.1
 
     public static final String IP_BANKOMAT_OUTSIDE = "192.168.14.20";
@@ -41,10 +39,6 @@ public enum OtherKnownDevices {
 
     public static final String SRV_RUPS00 = "rups00.eatmeat.ru";
 
-    public static final String DO0045_KIRILL = "do0045.eatmeat.ru";
-
-    public static final String DO0055_IKORN = "do0055.eatmeat.ru";
-
     public static final String HOSTNAME_HOME = "home";
 
     public static final String IP_SRVMYSQL_HOME = "10.10.111.65";
@@ -52,6 +46,4 @@ public enum OtherKnownDevices {
     public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
 
     public static final String SRV_INETSTAT = "srv-inetstat.eatmeat.ru";
-
-    public static final String SRV_NAT = SwitchesWiFi.RUPSGATE;
 }

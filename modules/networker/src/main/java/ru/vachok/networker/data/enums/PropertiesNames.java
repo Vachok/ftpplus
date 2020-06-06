@@ -100,4 +100,6 @@ public enum PropertiesNames {
     public static final String COMPUTERNAME = "COMPUTERNAME";
 
     public static final String JSONNAME_CLASS = "Class";
+
+    public static final String LISTS_GET_TIMEOUT = "listtimeout";
 }

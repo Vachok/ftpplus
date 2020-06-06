@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.RestApiHelper;
 
 
 public class TempInetRestControllerHelperTest {
@@ -31,7 +32,7 @@ public class TempInetRestControllerHelperTest {
     @Test
     public void addInet() {
         String resultAdd = testGetInetResult(ConstantsFor.ADD);
-        Assert.assertTrue(resultAdd.contains("INVALID USER"), resultAdd);
+        Assert.assertTrue(resultAdd.contains(RestApiHelper.INVALID_USER), resultAdd);
     }
 
     private String testGetInetResult(String option) {
@@ -41,14 +42,14 @@ public class TempInetRestControllerHelperTest {
         object.add("hour", "1");
         object.add(ConstantsFor.OPTION, option);
         object.add(ConstantsFor.WHOCALLS, "test");
-        object.add(ConstantsFor.PARAM_NAME_CODE, Integer.MAX_VALUE);
+        object.add(ConstantsFor.JSON_PARAM_NAME_CODE, Integer.MAX_VALUE);
         return tempInetRestControllerHelper.getResult(object);
     }
 
     @Test
     public void delInet() {
         String resultAdd = testGetInetResult(ConstantsFor.DELETE);
-        Assert.assertTrue(resultAdd.contains("INVALID USER"), resultAdd);
+        Assert.assertTrue(resultAdd.contains(RestApiHelper.INVALID_USER), resultAdd);
         Assert.assertFalse(resultAdd.contains("8.8.8.8"), resultAdd);
     }
 }

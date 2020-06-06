@@ -108,16 +108,6 @@ public class ServiceInfoCtrl {
         }
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
-            .add("pageFooter = " + pageFooter)
-            .add("visitor = " + visitor)
-            .add("authReq = " + authReq)
-            .add(new AppComponents().getFirebaseApp().getName())
-            .toString();
-    }
-
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
@@ -261,6 +251,16 @@ public class ServiceInfoCtrl {
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
             .append("<p>")
+            .toString();
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
+            .add("pageFooter = " + pageFooter)
+            .add("visitor = " + visitor)
+            .add("authReq = " + authReq)
+            .add(new AppComponents().getFirebaseApp().getName())
             .toString();
     }
 

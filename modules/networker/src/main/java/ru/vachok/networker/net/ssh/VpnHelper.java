@@ -1,6 +1,7 @@
 package ru.vachok.networker.net.ssh;
 
 
+import com.eclipsesource.json.JsonObject;
 import okhttp3.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -14,19 +15,21 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
+
+import static ru.vachok.networker.net.ssh.SshActs.whatSrvNeed;
 
 
 /**
  @see VpnHelperTest
  @since 21.03.2020 (12:34) */
-public class VpnHelper extends SshActs implements Runnable {
+public class VpnHelper implements Runnable {
 
 
     private static final String GET_STATUS_COMMAND = "cat openvpn-status;exit";
@@ -53,7 +56,7 @@ public class VpnHelper extends SshActs implements Runnable {
             }
             else {
                 result = MessageFormat.format("No connection to {0}. Tried {1} times.\nCommand: {2}", whatSrvNeed(), connectCounter, GET_STATUS_COMMAND);
-                messageToUser.warn(getClass().getSimpleName(), "No connection ", FileSystemWorker.writeFile(FileNames.OPENVPN_STATUS, result));
+                FileSystemWorker.writeFile(FileNames.OPENVPN_STATUS, result);
             }
         }
         else {
@@ -81,13 +84,13 @@ public class VpnHelper extends SshActs implements Runnable {
         return result;
     }
 
-    @NotNull
-    private OkHttpClient buildClient() {
-        OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
-        okBuild.connectTimeout(3, TimeUnit.SECONDS);
-        okBuild.readTimeout(15, TimeUnit.SECONDS);
-        okBuild.eventListener(new VpnHelper.CallFAILListener());
-        return okBuild.build();
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonObject.add("connectCounter", connectCounter);
+        jsonObject.add("keyName='", keyName);
+        return jsonObject.toString();
     }
 
     @NotNull
@@ -121,10 +124,13 @@ public class VpnHelper extends SshActs implements Runnable {
         getStatus();
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", VpnHelper.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+    @NotNull
+    private OkHttpClient buildClient() {
+        OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
+        okBuild.connectTimeout(2, TimeUnit.SECONDS);
+        okBuild.readTimeout(19, TimeUnit.SECONDS);
+        okBuild.eventListener(new VpnHelper.CallFAILListener());
+        return okBuild.build();
     }
 
     private static class CallFAILListener extends EventListener {
@@ -132,7 +138,7 @@ public class VpnHelper extends SshActs implements Runnable {
 
         @Override
         public void callFailed(@NotNull Call call, @NotNull IOException ioe) {
-            messageToUser.error("VpnHelper.callFailed", ioe.getMessage(), AbstractForms.networkerTrace(ioe.getStackTrace()));
+            messageToUser.error("VpnHelper.callFailed", ioe.getMessage(), AbstractForms.fromArray(ioe));
         }
     }
 }

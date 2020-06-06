@@ -2,6 +2,7 @@ package ru.vachok.networker.ad.inet;
 
 
 import com.eclipsesource.json.JsonObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -34,6 +35,6 @@ public class AllowDomainHelperTest {
         jsonObject.add(ConstantsFor.DOMAIN, "https://www.eatmeat.ru/");
         jsonObject.add("option", "add");
         String result = RestApiHelper.getInstance(RestApiHelper.DOMAIN).getResult(jsonObject);
-        System.out.println("result = " + result);
+        Assert.assertTrue(result.contains("Bad AUTH for"), result);
     }
 }

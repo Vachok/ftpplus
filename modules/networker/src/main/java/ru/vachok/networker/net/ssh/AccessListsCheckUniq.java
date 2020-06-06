@@ -68,8 +68,8 @@ public class AccessListsCheckUniq implements Callable<String> {
         JsonArray jsonValues = new JsonArray();
         String authString = FileSystemWorker.readRawFile(ConstantsFor.AUTHORIZATION);
         jsonObject.add(ConstantsFor.AUTHORIZATION, authString.substring(0, (authString.length() - 2)));
-        jsonObject.add(ConstantsFor.PARAM_NAME_CODE, Integer.MAX_VALUE);
-        jsonObject.add(ConstantsFor.PARAM_NAME_SERVER, getSRVNeed());
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_CODE, Integer.MAX_VALUE);
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_SERVER, getSRVNeed());
         String[] listNames = {TEMPFULL, PfListsCtr.ATT_VIPNET, SQUIDLIMITED, ConstantsFor.JSON_OBJECT_SQUID};
         for (String listName : listNames) {
             jsonObject.add(ConstantsFor.PARM_NAME_COMMAND, String.format("sudo cat /etc/pf/%s;exit", listName));

@@ -5,7 +5,6 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.events.MyEvent;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -56,7 +55,6 @@ public abstract class AbstractForms {
     }
 
     public static String fromArray(Throwable e) {
-        MyEvent event = new MyEvent(e);
         return T_FORMS.fromArray(e);
     }
 

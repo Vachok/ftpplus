@@ -51,6 +51,6 @@ public class VpnHelperTest {
     @Test
     public void testTestToString() {
         String s = vpnHelper.toString();
-        Assert.assertTrue(s.contains("VpnHelper["), s);
+        Assert.assertTrue(s.contains("\"class\":\"VpnHelper\""), s);
     }
 }

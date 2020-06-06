@@ -524,7 +524,7 @@ public enum ConstantsFor {
 
     public static final String ADD = "add";
 
-    public static final String PARAM_NAME_CODE = "code";
+    public static final String JSON_PARAM_NAME_CODE = "code";
 
     public static final String SSH_COM_CAT_VIPNET = "sudo cat /etc/pf/vipnet;exit";
 
@@ -556,7 +556,7 @@ public enum ConstantsFor {
 
     public static final String EXTENDED = " QUICK EXTENDED;";
 
-    public static final String PARAM_NAME_SERVER = "server";
+    public static final String JSON_PARAM_NAME_SERVER = "server";
 
     public static final String PARM_NAME_COMMAND = "command";
 

@@ -10,6 +10,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.RestApiHelper;
 
 import java.io.File;
@@ -41,10 +43,10 @@ public class JSONSSHCommandExecutorTest {
         JsonObject jsonObject = Json.parse(FileSystemWorker.readRawFile(FILE_TEST_JSON.getAbsolutePath())).asObject();
         String result = sshExec.getResult(jsonObject);
         Assert.assertTrue(result.contains("!_passwords.xlsx"), result);
-        jsonObject.add("code", "1601");
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_CODE, "2001");
         result = sshExec.getResult(jsonObject);
         Assert.assertTrue(result.contains("\"ls\""), result);
-        jsonObject.add("server", "srv-inetstat.eatmeat.ru");
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_SERVER, OtherKnownDevices.SRV_INETSTAT);
         result = sshExec.getResult(jsonObject);
         Assert.assertTrue(result.contains("\"server\":\"srv-inetstat.eatmeat.ru\""), result);
     }

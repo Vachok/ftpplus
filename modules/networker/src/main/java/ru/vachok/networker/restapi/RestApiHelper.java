@@ -76,12 +76,12 @@ public interface RestApiHelper {
 
     default boolean checkCodeVersion(@NotNull JsonObject jsonObject) {
         int codeVer = 1600;
-        if (jsonObject.names().contains(ConstantsFor.PARAM_NAME_CODE)) {
+        if (jsonObject.names().contains(ConstantsFor.JSON_PARAM_NAME_CODE)) {
             try {
-                codeVer = jsonObject.getInt(ConstantsFor.PARAM_NAME_CODE, codeVer);
+                codeVer = jsonObject.getInt(ConstantsFor.JSON_PARAM_NAME_CODE, codeVer);
             }
             catch (RuntimeException e) {
-                codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.PARAM_NAME_CODE, "1600"));
+                codeVer = Integer.parseInt(jsonObject.getString(ConstantsFor.JSON_PARAM_NAME_CODE, "2000"));
             }
         }
         return codeVer >= (Integer.parseInt(InitProperties.getTheProps().getProperty("minMobAppVersion")));
