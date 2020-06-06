@@ -2,7 +2,6 @@ package ru.vachok.networker.exe.schedule;
 
 
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ad.inet.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
@@ -43,7 +42,6 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         schedule((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 5);
         schedule(openvpnStatusFileMaker, 1);
         schedule(this::sendStats, 60);
-        AppInfoOnLoad.getMiniLogger().add(thrConfig.toString());
     }
 
     private void startIntervalTasks() {
@@ -58,13 +56,11 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         Stats instance = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT);
         AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay((Runnable) instance, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay((Runnable) stats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        AppInfoOnLoad.getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
     }
 
     private static void scheduleIISLogClean(Date nextStartDay) {
         Runnable iisCleaner = new MailIISLogsCleaner();
         AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        AppInfoOnLoad.getMiniLogger().add(nextStartDay + " MailIISLogsCleaner() start\n");
     }
 
     private void sendStats() {

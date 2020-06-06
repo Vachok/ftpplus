@@ -9,7 +9,6 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.RestApiHelper;
-import ru.vachok.networker.restapi.RestCTRLGet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -25,10 +24,6 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, JSONSSHCommandExecutor.class.getSimpleName());
 
     private String serverName = SshActs.whatSrvNeed();
-
-    public JSONSSHCommandExecutor() {
-        AppConfigurationLocal.getInstance().execute(RestCTRLGet::getSSHListsResult);
-    }
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {

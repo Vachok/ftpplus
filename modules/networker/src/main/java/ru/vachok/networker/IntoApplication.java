@@ -91,7 +91,8 @@ public class IntoApplication {
             UsefulUtilities.startTelnet();
         }
         if (args.length > 0) {
-            new ArgsReader(args).run();
+            ArgsReader reader = new ArgsReader(args);
+            AppConfigurationLocal.getInstance().execute(reader);
         }
         else {
             checkTray();
@@ -178,7 +179,7 @@ public class IntoApplication {
         return appIdNew;
     }
 
-    static void appInfoStarter() {
+    private static void appInfoStarter() {
         @NotNull Runnable infoAndSched = AppInfoOnLoad.getI();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
     }

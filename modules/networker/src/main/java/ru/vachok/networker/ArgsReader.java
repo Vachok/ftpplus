@@ -78,9 +78,6 @@ class ArgsReader implements Runnable {
         catch (IllegalStateException e) {
             messageToUser.error(MessageFormat.format("ArgsReader.readArgs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        finally {
-            IntoApplication.appInfoStarter();
-        }
     }
 
     private static void fillArgsMap() {

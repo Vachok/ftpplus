@@ -4,7 +4,6 @@ package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.data.NetKeeper;
@@ -14,10 +13,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -30,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 public class ActionExit extends AbstractAction {
 
 
-    public static final String ALLDEV_MAP = "alldev.map";
+    private static final String ALLDEV_MAP = "alldev.map";
 
     private final String reason;
 
@@ -45,10 +40,9 @@ public class ActionExit extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         messageToUser.infoNoTitles(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED);
         try (FileOutputStream fileOutputStream = new FileOutputStream(ALLDEV_MAP)) {
-            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, NetKeeper.class));
-            submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            new ExitApp(reason, fileOutputStream, NetKeeper.class).run();
         }
-        catch (Error | IOException | InterruptedException | TimeoutException | ExecutionException ex) {
+        catch (Error | IOException ex) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
             System.exit(ConstantsFor.EXIT_STATUSBAD);

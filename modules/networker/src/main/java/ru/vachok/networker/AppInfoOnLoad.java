@@ -26,7 +26,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ForkJoinTask;
 
 
 /**
@@ -66,8 +65,7 @@ public final class AppInfoOnLoad implements Runnable {
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
         FileSystemWorker.writeFile(FileNames.AVAILABLE_CHARSETS_TXT, avCharsetsStr);
         if (NetScanService.isReach("10.10.111.65")) {
-            ForkJoinTask syncData = SyncData.getInstance(SyncData.INETSYNC);
-            AppConfigurationLocal.executeInWorkStealingPool(syncData, 10);
+            AppConfigurationLocal.executeInWorkStealingPool(SyncData.getInstance(SyncData.INETSYNC), 10);
         }
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
