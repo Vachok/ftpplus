@@ -75,7 +75,7 @@ public interface RestApiHelper {
     }
 
     default boolean checkCodeVersion(@NotNull JsonObject jsonObject) {
-        int codeVer = 1600;
+        int codeVer = 2000;
         if (jsonObject.names().contains(ConstantsFor.JSON_PARAM_NAME_CODE)) {
             try {
                 codeVer = jsonObject.getInt(ConstantsFor.JSON_PARAM_NAME_CODE, codeVer);

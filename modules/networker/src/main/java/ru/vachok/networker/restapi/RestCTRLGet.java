@@ -19,7 +19,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -42,7 +41,6 @@ import java.util.concurrent.Executors;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
 import static ru.vachok.networker.restapi.RestCTRLPost.GETOLDFILES;
 
 
@@ -116,6 +114,22 @@ public class RestCTRLGet {
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
+    public static JsonArray getSSHListsResult() {
+        JsonArray retArr = new JsonArray();
+        AppConfigurationLocal.getInstance().execute(()->{
+            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
+        });
+        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
+            JsonObject jsonElements = new JsonObject();
+            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, RestCTRLGet.class.getSimpleName());
+            String objName = sshCommand.split(";")[0].replace(SUDO_CAT_ETC_PF, "");
+            objName = findObjName(objName);
+            jsonElements.add(objName, genJSON(sshB));
+            retArr.add(jsonElements);
+        }
+        return retArr;
+    }
+
     @GetMapping("/db")
     public String dbInfoRest() {
 
@@ -140,12 +154,6 @@ public class RestCTRLGet {
             .getBean(OldBigFilesInfoCollector.class.getSimpleName());
         AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
         return oldBigFilesInfoCollector.getFromDatabase();
-    }
-
-    private void printDiskInfoToFile() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        String path = FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 21));
-        messageToUser.info(path);
     }
 
     @GetMapping("/file")
@@ -220,13 +228,6 @@ public class RestCTRLGet {
 
     @GetMapping("/getsshlists")
     public String sshRest(HttpServletRequest request) {
-        int verCode;
-        try {
-            verCode = Integer.parseInt(request.getHeader(ConstantsFor.AUTHORIZATION));
-        }
-        catch (RuntimeException e) {
-            return sshRest0();
-        }
         StringBuilder sshAns = new StringBuilder();
         JsonArray resultArr = getSSHListsResult();
         JsonObject sshParamNames = new JsonObject();
@@ -246,78 +247,8 @@ public class RestCTRLGet {
         return resultArr.toString();
     }
 
-    private String sshRest0() {
-        StringBuilder sshAns = new StringBuilder();
-        JsonArray resultArr = oldCreateArr();
-        JsonObject sshParamNames = new JsonObject();
-        sshAns.append("\n\n\n");
-        sshAns.append(resultArr.size()).append(" size of ").append(JsonArray.class.getCanonicalName()).append("\n");
-        for (JsonValue jsonValue : resultArr.values()) {
-            Object[] objNames = jsonValue.asObject().names().toArray();
-            for (Object name : objNames) {
-                sshAns.append(name.toString()).append(":");
-                sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
-                sshParamNames.add(name.toString(), "toString:getString");
-            }
-        }
-        sshAns.append("\n\n\n");
-        MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
-        return resultArr.toString();
-    }
-
-    private JsonArray getSSHListsResult() {
-        JsonArray retArr = new JsonArray();
-        AppConfigurationLocal.getInstance().execute(()->{
-            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
-        });
-
-        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
-            JsonObject jsonElements = new JsonObject();
-            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
-            String objName = sshCommand.split(";")[0].replace(SUDO_CAT_ETC_PF, "");
-            objName = findObjName(objName);
-            jsonElements.add(objName, genJSON(sshB));
-            retArr.add(jsonElements);
-        }
-        return retArr;
-    }
-
-    private JsonArray oldCreateArr() {
-        JsonArray retArr = new JsonArray();
-        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
-        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
-            JsonObject jsonElements = new JsonObject();
-            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
-            String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
-            if (objName.toLowerCase().contains("full")) {
-                objName = ConstantsFor.JSON_OBJECT_FULL_SQUID;
-            }
-            else if (objName.contentEquals(ConstantsFor.JSON_OBJECT_SQUID)) {
-                objName = ConstantsFor.JSON_OBJECT_STD_SQUID;
-            }
-            else if (objName.toLowerCase().contains("lim")) {
-                objName = ConstantsFor.JSON_LIST_LIMITSQUID;
-            }
-            else if (objName.contains("24")) {
-                objName = ConstantsFor.JSON_LIST_24HRS;
-            }
-            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
-            retArr.add(jsonElements);
-        }
-        if (pfLists.getPfRules() != null && !pfLists.getPfRules().isEmpty()) {
-            JsonObject pfRules = new JsonObject();
-            pfRules.add(ConstantsFor.JSON_OBJECT_RULES, pfLists.getPfRules());
-            if (pfLists.getPfNat() != null && !pfLists.getPfNat().isEmpty()) {
-                JsonObject pfNat = new JsonObject();
-                pfNat.add(ConstantsFor.JSON_OBJECT_NAT, pfLists.getPfNat());
-                retArr.add(pfNat);
-                retArr.add(pfRules);
-            }
-        }
-        return retArr;
-    }
-
-    private String findObjName(String objName) {
+    @SuppressWarnings("IfStatementWithTooManyBranches")
+    private static String findObjName(String objName) {
         if (objName.toLowerCase().contains("full")) {
             objName = ConstantsFor.JSON_OBJECT_FULL_SQUID;
         }
@@ -339,7 +270,7 @@ public class RestCTRLGet {
         return objName;
     }
 
-    private JsonObject genJSON(SSHFactory.Builder sshB) {
+    private static JsonObject genJSON(SSHFactory.Builder sshB) {
         String srvAnswer = AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 8);
         JsonObject jsonObject = new JsonObject();
         if (srvAnswer.contains("<br>")) {
@@ -355,6 +286,12 @@ public class RestCTRLGet {
             jsonObject.add(sshB.getCommandSSH().replace(SUDO_CAT_ETC_PF, ""), srvAnswer.replace("<br>\n", "\n"));
         }
         return jsonObject;
+    }
+
+    private void printDiskInfoToFile() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        String path = FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 21));
+        messageToUser.info(path);
     }
 
     @GetMapping("/props")

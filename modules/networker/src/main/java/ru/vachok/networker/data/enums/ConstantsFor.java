@@ -568,7 +568,7 @@ public enum ConstantsFor {
 
     public static final String VPN_LIST = "OpenVPN CLIENT LIST";
 
-    public static final int SSH_TIMEOUT = 863990;
+    public static final int SSH_TIMEOUT = 863;
 
     public static final String JSON_OBJECT_FULL_SQUID = "fullSquid";
 

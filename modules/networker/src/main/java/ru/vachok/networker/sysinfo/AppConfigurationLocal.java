@@ -149,7 +149,7 @@ public interface AppConfigurationLocal extends Runnable {
 
     default String submitAsString(Callable<String> callable, int timeOutInSec) {
         String result = MessageFormat.format("{0} size of threads queue", workQ.size());
-        ExecutorService serviceOneLaunch = Executors.newSingleThreadExecutor();
+        ExecutorService serviceOneLaunch = Executors.newCachedThreadPool();
         Future<String> submit = serviceOneLaunch.submit(callable);
         try {
             String s = submit.get(timeOutInSec, TimeUnit.SECONDS);
