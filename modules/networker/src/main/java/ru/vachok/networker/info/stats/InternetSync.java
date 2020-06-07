@@ -144,7 +144,7 @@ public class InternetSync extends SyncData {
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-        exec();
+        join();
     }
 
     @Override
@@ -225,9 +225,7 @@ public class InternetSync extends SyncData {
             String fileName = inetFile.getName();
             if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
                 this.ipAddr = fileName.replace(".csv", "");
-                if (exec()) {
-                    join();
-                }
+                exec();
             }
         }
     }
