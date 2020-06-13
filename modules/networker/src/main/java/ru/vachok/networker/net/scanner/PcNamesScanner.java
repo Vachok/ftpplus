@@ -82,6 +82,7 @@ public final class PcNamesScanner implements NetScanService {
     @Override
     public int hashCode() {
         int result = (int) (startClassTime ^ (startClassTime >>> 32));
+        result = 31 * result + lastNetScan.hashCode();
         result = 31 * result + (int) (lastScanStamp ^ (lastScanStamp >>> 32));
         result = 31 * result + thePc.hashCode();
         return result;
@@ -102,6 +103,9 @@ public final class PcNamesScanner implements NetScanService {
             return false;
         }
         if (lastScanStamp != scanner.lastScanStamp) {
+            return false;
+        }
+        if (!lastNetScan.equals(scanner.lastNetScan)) {
             return false;
         }
         return thePc.equals(scanner.thePc);
@@ -314,16 +318,18 @@ public final class PcNamesScanner implements NetScanService {
 
     private void isMapSizeBigger(int thisTotalPC) throws InvokeIllegalException {
         if (ConstantsFor.argNORUNExist()) {
-            throw new InvokeIllegalException(UsefulUtilities.thisPC());
+            throw new InvokeIllegalException(MessageFormat.format("On {0} {1} is NOT RUNNING!", UsefulUtilities.thisPC(), NetScanService.PCNAMESSCANNER));
         }
-        try {
-            checkPC(thisTotalPC);
-        }
-        catch (RuntimeException e) {
-            messageToUser.error(MessageFormat.format("PcNamesScanner.isMapSizeBigger {0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
-        }
-        finally {
-            noFileExists();
+        else {
+            try {
+                checkPC(thisTotalPC);
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(MessageFormat.format("PcNamesScanner.isMapSizeBigger {0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+            }
+            finally {
+                noFileExists();
+            }
         }
     }
 
@@ -339,13 +345,10 @@ public final class PcNamesScanner implements NetScanService {
     }
 
     private void noFileExists() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.FILE);
         Thread.currentThread().setName(thePc);
-        initProperties.getProps().setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
         InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-        File file = new File(FileNames.SCAN_TMP);
         new PcNamesScanner.ScannerUSR().run();
-        messageToUser.info(this.getClass().getSimpleName(), file.getAbsolutePath(), String.valueOf(fileScanTMPCreate(false)));
+        messageToUser.info(this.getClass().getSimpleName(), scanFile.getAbsolutePath(), String.valueOf(fileScanTMPCreate(false)));
         defineNewTask();
     }
 
