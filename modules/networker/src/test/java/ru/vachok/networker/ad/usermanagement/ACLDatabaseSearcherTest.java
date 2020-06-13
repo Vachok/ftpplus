@@ -65,7 +65,7 @@ public class ACLDatabaseSearcherTest {
         Assert.assertTrue(result.contains("\\\\srv-fs.eatmeat.ru\\common_new\\Общие_документы_МК\\13_Служба_персонала\\Общая\\БП"), result);
         dbSearcher.setClassOption(1);
         result = dbSearcher.getResult();
-        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 1"), result);
+        Assert.assertTrue(result.contains("Z01.ПАПКИ_ОБМЕНА"), result);
     }
 
     @Test
