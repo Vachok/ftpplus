@@ -47,6 +47,8 @@ public class AccessListsCheckUniq implements Callable<String> {
 
     private static final String NOT_UNIQUE = "NOT UNIQUE";
 
+    private static final File FILE_TO_WRITE = new File(FileNames.INET_UNIQ);
+
     private void compareWithRest() {
         for (JsonValue jsonValue : genArray().values()) {
             RestApiHelper instance = RestApiHelper.getInstance(RestApiHelper.SSH);
@@ -55,8 +57,14 @@ public class AccessListsCheckUniq implements Callable<String> {
         }
     }
 
+    /**
+     @see AccessListsCheckUniqTest#testCall()
+     */
     @Override
     public String call() {
+        if (FILE_TO_WRITE.exists()) {
+            FILE_TO_WRITE.delete();
+        }
         if (new File(ConstantsFor.AUTHORIZATION).exists()) {
             compareWithRest();
         }
@@ -128,11 +136,14 @@ public class AccessListsCheckUniq implements Callable<String> {
             if (ipEntries.getValue().equals(NOT_UNIQUE)) {
                 String keyNotUnique = ipEntries.getKey();
                 fromArray.append(keyNotUnique).append(" ").append(":");
-                fromArray.append(usersIPFromPFLists.get(keyNotUnique.split(" ")[0])).append("\n");
+                String listName = usersIPFromPFLists.get(keyNotUnique.split(" ")[0]);
+                fromArray.append(listName).append("\n");
+                String toFile = keyNotUnique + " " + listName;
+                messageToUser.warn(toFile);
+                FileSystemWorker.appendObjectToFile(FILE_TO_WRITE, toFile);
             }
         }
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
-        FileSystemWorker.writeFile(FileNames.INET_UNIQ, fromArray.toString());
     }
 
     @Contract(pure = true)

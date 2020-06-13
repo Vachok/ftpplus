@@ -592,6 +592,12 @@ public enum ConstantsFor {
 
     public static final String JSON_PARAM_NAME_STARTPATH = "startPath";
 
+    public static final String JSON_PARAM_NAME_USER = "user";
+
+    public static final String JSON_PARAM_NAME_BAD_AUTH = "BAD AUTH";
+
+    public static final String JSON_PARAM_NAME_REQUEST_JSON = "request_json";
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     @NotNull

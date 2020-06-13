@@ -21,13 +21,12 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 public class JSONSSHCommandExecutor implements RestApiHelper {
 
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, JSONSSHCommandExecutor.class.getSimpleName());
-
     private String serverName = SshActs.whatSrvNeed();
+
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, JSONSSHCommandExecutor.class.getSimpleName());
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
-        messageToUser.info(AbstractForms.fromArray(jsonObject));
         JsonObject jsonObjectResult = connectToSrv(jsonObject);
         jsonObjectResult.add(ConstantsFor.JSON_PARAM_NAME_SERVER, serverName);
         return jsonObjectResult.toString();
@@ -43,14 +42,15 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
                 result = makeActions(jsonObject);
             }
             catch (RuntimeException e) {
-                result.add(e.getClass().getSimpleName(), AbstractForms.networkerTrace(e));
+                messageToUser.warn(JSONSSHCommandExecutor.class.getSimpleName(), e.getMessage(), " see line: 41 ***");
+                result.add(ConstantsFor.STR_ERROR, e.getClass().getSimpleName() + " " + e.getMessage() + ": \n" + AbstractForms.fromArray(e));
             }
         }
         else {
-            result.add("BAD AUTH", getClass().getSimpleName());
-            result.add("user", userValid);
-            result.add("code", codeValid);
-            result.add("request_json", jsonObject.toString());
+            result.add(ConstantsFor.JSON_PARAM_NAME_BAD_AUTH, getClass().getSimpleName());
+            result.add(ConstantsFor.JSON_PARAM_NAME_USER, userValid);
+            result.add(ConstantsFor.JSON_PARAM_NAME_CODE, codeValid);
+            result.add(ConstantsFor.JSON_PARAM_NAME_REQUEST_JSON, jsonObject.toString());
         }
         return result;
     }
@@ -65,7 +65,6 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
             commandForSH = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
         }
         SSHFactory.Builder sshFB = new SSHFactory.Builder(serverName, commandForSH, getClass().getSimpleName());
-        MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName()).info(serverName, commandForSH, getClass().getSimpleName());
         return serverAnswer(sshFB);
     }
 

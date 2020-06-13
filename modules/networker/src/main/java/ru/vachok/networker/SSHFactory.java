@@ -125,8 +125,6 @@ public class SSHFactory implements Callable<String> {
 
     @Override
     public String call() {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setName(classCaller + "SSH");
         chkTempFile();
         StringBuilder stringBuilder = new StringBuilder();
         Queue<String> recQueue = new LinkedList<>();
@@ -138,7 +136,7 @@ public class SSHFactory implements Callable<String> {
             }
             this.respChannel.disconnect();
             this.session.disconnect();
-            messageToUser.info("CALL FROM CLASS: ", classCaller, MessageFormat.format("Command {1} ok on server: {0}", connectToSrv, commandSSH));
+            messageToUser.info(classCaller, "SSHFactory.call", MessageFormat.format("Command {1} ok on server: {0}", connectToSrv, commandSSH));
         }
         catch (IOException | RuntimeException e) {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
@@ -171,7 +169,7 @@ public class SSHFactory implements Callable<String> {
                 this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
             }
             catch (IOException e) {
-                messageToUser.error("SSHFactory.call", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                messageToUser.warn(SSHFactory.class.getSimpleName(), e.getMessage(), " see line: 172 ***");
             }
             finally {
                 if (this.tempFile != null) {
