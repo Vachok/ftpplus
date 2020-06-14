@@ -54,8 +54,32 @@ public class DataSynchronizer extends SyncData {
     }
 
     @Override
-    public String getDbToSync() {
-        return dbToSync;
+    public void run() {
+        superRun();
+    }
+
+    @Override
+    public Object getRawResult() {
+        return rawResults;
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        rawResults.put(System.currentTimeMillis(), String.valueOf(value));
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (startStamp ^ (startStamp >>> 32));
+        result = 31 * result + dbToSync.hashCode();
+        result = 31 * result + columnName.hashCode();
+        result = 31 * result + dataConnectTo.hashCode();
+        result = 31 * result + colNames.hashCode();
+        result = 31 * result + columnsNum;
+        result = 31 * result + dbObj.hashCode();
+        result = 31 * result + totalRows;
+        result = 31 * result + dbsTotal;
+        return result;
     }
 
     @Override
@@ -242,25 +266,29 @@ public class DataSynchronizer extends SyncData {
         stringBuilder.append(sql).append("\n");
         int uploadedCount;
         Queue<JsonObject> jsonObjects = new LinkedList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                String[] columns = getColumns(preparedStatement);
-                this.columnsNum = columns.length;
-                stringBuilder.append(Arrays.toString(columns)).append("\n");
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    Files.deleteIfExists(dbObj.toPath());
-                    while (resultSet.next()) {
-                        JsonObject jsonObject = new JsonObject();
-                        for (int i = 0; i < columns.length; i++) {
-                            jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
+        if ((!dbToSync.contains(".inetstats") && !dbToSync.contains(ConstantsFor.DB_PCUSERAUTO_FULL))) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbToSync)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setQueryTimeout((int) TimeUnit.MINUTES.toSeconds(7));
+                    String[] columns = getColumns(preparedStatement);
+                    this.columnsNum = columns.length;
+                    stringBuilder.append(Arrays.toString(columns)).append("\n");
+                    FileSystemWorker.writeFile(dbToSync, AbstractForms.fromArray(preparedStatement.getMetaData()).toString());
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        Files.deleteIfExists(dbObj.toPath());
+                        while (resultSet.next()) {
+                            JsonObject jsonObject = new JsonObject();
+                            for (int i = 0; i < columns.length; i++) {
+                                jsonObject.add(columns[i].split(",")[0], resultSet.getString(i + 1));
+                            }
+                            jsonObjects.add(jsonObject);
                         }
-                        jsonObjects.add(jsonObject);
                     }
                 }
             }
-        }
-        catch (SQLException | IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+            catch (SQLException | IOException e) {
+                messageToUser.warn(DataSynchronizer.class.getSimpleName(), e.getMessage(), " see line: 264 ***");
+            }
         }
         uploadedCount = uploadCollection(jsonObjects, dbToSync);
         if (uploadedCount != -666) {

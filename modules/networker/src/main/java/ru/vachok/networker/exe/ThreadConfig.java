@@ -38,7 +38,7 @@ import java.util.concurrent.*;
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
-public class ThreadConfig implements AppConfigurationLocal {
+public final class ThreadConfig implements AppConfigurationLocal {
 
 
     /**
@@ -75,46 +75,6 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
     private Runnable r = new Thread();
-
-    /**
-     @return {@link #TASK_EXECUTOR}
-     */
-    public ThreadPoolTaskExecutor getTaskExecutor() {
-        setExecutor();
-        return TASK_EXECUTOR;
-    }
-
-    public static @NotNull String thrNameSet(String className) {
-
-        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
-        String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
-        String upStr = String.format("%.01f", localUptime);
-
-        upStr += "m";
-        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
-            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
-            upStr = String.format("%.02f", localUptime);
-            upStr += "h";
-        }
-        String thrName = className + ";" + upStr + ";" + delaysCount;
-        Thread.currentThread().setName(thrName);
-        return thrName;
-    }
-
-    @Override
-    public void run() {
-        throw new TODOException("just do it!");
-    }
-
-    private void setExecutor() {
-        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
-        TASK_EXECUTOR.setQueueCapacity(500);
-        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
-        TASK_EXECUTOR.setThreadPriority(7);
-        TASK_EXECUTOR.setThreadNamePrefix("E-");
-    }
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
         setScheduler();
@@ -178,26 +138,62 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
 
-    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Runnable runnable) {
-        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
+    public static void cleanQueue(Runnable runnable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+        boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
+        if (isRemove) {
+            messageToUser.info(ThreadConfig.class.getSimpleName(), "Runnable removed: ", runnable.getClass().toGenericString());
+        }
+    }
+
+    public static @NotNull String thrNameSet(String className) {
+
+        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
+        String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
+        String upStr = String.format("%.01f", localUptime);
+
+        upStr += "m";
+        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
+            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
+            upStr = String.format("%.02f", localUptime);
+            upStr += "h";
+        }
+        String thrName = className + ";" + upStr + ";" + delaysCount;
+        Thread.currentThread().setName(thrName);
+        return thrName;
+    }
+
+    public static void cleanQueue(Callable callable) {
+        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         for (Runnable r : executorQueue) {
-            if (r.equals(runnable) || r instanceof DBMessenger) {
-                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
+            if (r.equals(callable)) {
+                messageToUser.warn(ThreadConfig.class.getClass().getSimpleName(), "Callable removed:", r.getClass().toGenericString());
                 executorQueue.remove(r);
             }
         }
     }
 
-    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Callable callable) {
-        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
-        for (Runnable r : executorQueue) {
-            if (r.equals(callable) || r instanceof DBMessenger) {
-                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
-                executorQueue.remove(r);
-            }
-        }
+    public ThreadPoolTaskExecutor getTaskExecutor(int timeWait) {
+        return getTaskExecutor();
+    }
+
+    /**
+     @return {@link #TASK_EXECUTOR}
+     */
+    public ThreadPoolTaskExecutor getTaskExecutor() {
+        setExecutor();
+        return TASK_EXECUTOR;
+    }
+
+    private void setExecutor() {
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        TASK_EXECUTOR.setCorePoolSize(10);
+        TASK_EXECUTOR.setQueueCapacity(500);
+        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(10);
+        TASK_EXECUTOR.setThreadPriority(7);
+        TASK_EXECUTOR.setThreadNamePrefix("E_");
+        TASK_EXECUTOR.setAllowCoreThreadTimeOut(true);
     }
 
     /**

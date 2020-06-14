@@ -37,7 +37,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
 
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private String fileName = FileNames.VELKOMPCUSERAUTO_TXT;
+    private final String fileName = FileNames.VELKOM_PCUSERAUTO_TXT;
 
     private final List<String> pcAndUser = new ArrayList<>();
 
@@ -87,6 +87,37 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
         String retStr = "total pc: " + selectFrom;
         messageToUser.info(getClass().getSimpleName(), "pc stats: ", retStr);
         return retStr;
+    }
+
+    /**
+     Writes file: {@link ComputerUserResolvedStats#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOM_PCUSERAUTO_TXT}
+     <p>
+
+     @return {@link #countFreqOfUsers()}
+     */
+    @NotNull
+    private String makeStatFiles() throws InvokeIllegalException {
+        List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.VELKOM_PCUSERAUTO_TXT);
+        FileSystemWorker.writeFile(PCUSERAUTO_UNIQ, readFileAsList.parallelStream().distinct());
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + PCUSERAUTO_UNIQ;
+            FileSystemWorker.copyOrDelFile(new File(PCUSERAUTO_UNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
+        }
+        return countFreqOfUsers();
+    }
+
+    private void printResultsToFile(File file, @NotNull ResultSet r) throws IOException, SQLException {
+        try (OutputStream outputStream = new FileOutputStream(file)) {
+            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                while (r.next()) {
+                    if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
+                        String toPrint = r.getString(2) + " " + r.getString(3);
+                        PC_NAMES_IN_TABLE.add(toPrint);
+                        printStream.println(toPrint);
+                    }
+                }
+            }
+        }
     }
 
     /**

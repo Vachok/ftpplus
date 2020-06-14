@@ -46,6 +46,12 @@ public final class PcNamesScanner implements NetScanService {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
+    private static final PcNamesScanner pcNamesScanner = new PcNamesScanner();
+
+    private final File lastNetScan = new File(FileNames.LASTNETSCAN_TXT);
+
+    private static final List<String> logMini = new ArrayList<>();
+
     private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
 
     private String thePc = "";
@@ -60,6 +66,66 @@ public final class PcNamesScanner implements NetScanService {
 
     public void setThePc(String thePc) {
         this.thePc = thePc;
+    }
+
+    private PcNamesScanner() {
+        if (!lastNetScan.exists()) {
+            try {
+                messageToUser.info(getClass().getSimpleName(), lastNetScan.createNewFile() + " lastNetScan", ".createNewFile");
+            }
+            catch (IOException e) {
+                messageToUser.warn(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 77 ***");
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (startClassTime ^ (startClassTime >>> 32));
+        result = 31 * result + lastNetScan.hashCode();
+        result = 31 * result + (int) (lastScanStamp ^ (lastScanStamp >>> 32));
+        result = 31 * result + thePc.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PcNamesScanner)) {
+            return false;
+        }
+
+        PcNamesScanner scanner = (PcNamesScanner) o;
+
+        if (startClassTime != scanner.startClassTime) {
+            return false;
+        }
+        if (lastScanStamp != scanner.lastScanStamp) {
+            return false;
+        }
+        if (!lastNetScan.equals(scanner.lastNetScan)) {
+            return false;
+        }
+        return thePc.equals(scanner.thePc);
+    }
+
+    @SuppressWarnings("DuplicateStringLiteralInspection")
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("class", PcNamesScanner.class.getSimpleName());
+        jsonObject.add("thispc", UsefulUtilities.thisPC());
+        try {
+            jsonObject.add("startClassTime", startClassTime)
+                .add("lastScanStamp", new Date(lastScanStamp).toString())
+                .add(ModelAttributeNames.THEPC, thePc);
+        }
+        catch (RuntimeException e) {
+            messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 195 ***");
+        }
+        return jsonObject.toString();
     }
 
     @Override

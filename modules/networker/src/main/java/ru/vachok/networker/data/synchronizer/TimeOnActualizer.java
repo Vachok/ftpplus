@@ -48,13 +48,13 @@ public class TimeOnActualizer implements Runnable {
         else {
             pcNames.add(pcName);
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
-            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+        try (Connection connectionVelkomPC = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
+            connectionVelkomPC.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             for (String pcName : pcNames) {
                 final String sql = "SELECT idrec FROM velkompc WHERE NamePP LIKE '" + pcName
                     .replace(ConstantsFor.DOMAIN_EATMEATRU, "") + "%' AND OnlineNow = 0 ORDER BY idrec DESC LIMIT 1";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                    preparedStatement.setQueryTimeout(150);
+                try (PreparedStatement preparedStatement = connectionVelkomPC.prepareStatement(sql)) {
+                    preparedStatement.setQueryTimeout(35);
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
                             int idrec = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
@@ -122,12 +122,18 @@ public class TimeOnActualizer implements Runnable {
     private void setInPcUserDB(String pcName, Timestamp actualTimeOn) {
         final String newSql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`=?, `onNow`=? WHERE  `pcName` like '%s%%'", pcName);
         final String sql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`= ? WHERE `pcName` like '%s%%'", pcName);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setTimestamp(1, actualTimeOn);
-
-            messageToUser.info(this.getClass().getSimpleName(),
-                MessageFormat.format("setInPcUserDB executeUpdate: {0}\n", preparedStatement.executeUpdate()), preparedStatement.toString());
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(newSql)) {
+                preparedStatement.setQueryTimeout((int) ConstantsFor.DELAY);
+                preparedStatement.setTimestamp(1, actualTimeOn);
+                if (isOnNow) {
+                    preparedStatement.setInt(2, 1);
+                }
+                else {
+                    preparedStatement.setInt(2, 0);
+                }
+                preparedStatement.executeUpdate();
+            }
         }
         catch (SQLException e) {
             messageToUser.error("TimeOnActualizer.setInPcUserDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));

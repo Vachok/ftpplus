@@ -23,7 +23,9 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -33,7 +35,7 @@ import java.util.*;
 public final class AppInfoOnLoad implements Runnable {
 
 
-    public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
+    private static final AppInfoOnLoad INST = new AppInfoOnLoad();
 
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
@@ -61,14 +63,14 @@ public final class AppInfoOnLoad implements Runnable {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
-        FileSystemWorker.writeFile(AVAILABLECHARSETS_TXT, avCharsetsStr);
-        SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
+        FileSystemWorker.writeFile(FileNames.AVAILABLE_CHARSETS_TXT, avCharsetsStr);
+        if (NetScanService.isReach("10.10.111.65")) {
+            AppConfigurationLocal.executeInWorkStealingPool(SyncData.getInstance(SyncData.INETSYNC), 10);
+        }
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
 
-        AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, (int) ConstantsFor.DELAY);
-
-        AppConfigurationLocal.getInstance().execute(syncData::superRun);
+        AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, 2);
 
         try {
             infoForU();
@@ -99,8 +101,7 @@ public final class AppInfoOnLoad implements Runnable {
         try {
             Runnable runInfoForU = ()->FileSystemWorker
                 .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
-            messageToUser.info(UsefulUtilities.getIISLogSize());
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runInfoForU);
+            AppConfigurationLocal.getInstance().execute(runInfoForU);
         }
         catch (RuntimeException e) {
             messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 100 ***");

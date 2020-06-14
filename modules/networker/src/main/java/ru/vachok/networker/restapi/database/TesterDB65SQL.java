@@ -77,16 +77,13 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         }
         catch (SQLException | RuntimeException e) {
             messageToUser.warn(TesterDB65SQL.class.getSimpleName(), "getDefaultConnection", e.getMessage() + Thread.currentThread().getState().name());
-            connection = alternateConnection();
         }
-        try {
-            String url = connection.getMetaData().getURL();
-            messageToUser.info(this.getClass().getSimpleName(), "return connect to: ", url);
+        if (connection != null) {
+            return connection;
         }
-        catch (SQLException e) {
-            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 43 ***");
+        else {
+            return alternateConnection();
         }
-        return connection;
     }
 
     private Connection alternateConnection() {

@@ -123,7 +123,7 @@ public interface NetScanService extends Runnable {
             case PINGER_FILE:
                 return new PingerFromFile();
             case PCNAMESSCANNER:
-                return new PcNamesScanner();
+                return (NetScanService) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_NETSCANNERSVC);
             default:
                 return new ScanOnline();
         }

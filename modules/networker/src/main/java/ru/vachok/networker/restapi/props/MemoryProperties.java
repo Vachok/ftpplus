@@ -4,7 +4,7 @@ package ru.vachok.networker.restapi.props;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -38,7 +38,6 @@ public class MemoryProperties extends DBPropsCallable {
                     preparedStatement.setString(2, entry.getValue().toString());
                     preparedStatement.setString(3, UsefulUtilities.thisPC());
                     update += preparedStatement.executeUpdate();
-                    connection.commit();
                 }
             }
             catch (SQLException e) {
@@ -52,6 +51,51 @@ public class MemoryProperties extends DBPropsCallable {
             }
         }
         return update > 0;
+    }
+
+    @Override
+    public Properties getProps() {
+        Properties retProps = new Properties();
+        retProps.putAll(fromMemoryTable());
+        if (retProps.size() < 17) {
+            retProps.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+        }
+        return retProps;
+    }
+
+    @Override
+    public boolean delProps() {
+        InitProperties fileInst = InitProperties.getInstance(InitProperties.FILE);
+        if (fileInst.getProps().size() < 17) {
+            fileInst.setProps(getProps());
+        }
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {
+                return preparedStatement.executeUpdate() == 0;
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("MemoryProperties.delProps", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            return false;
+        }
+    }
+
+    private @NotNull Properties fromMemoryTable() {
+        Properties properties = new Properties();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from mem.properties")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        properties.put(resultSet.getString(2), resultSet.getString(3));
+                    }
+                }
+            }
+        }
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+            properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+        }
+        return properties;
     }
 
     @Contract(pure = true)

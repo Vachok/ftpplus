@@ -109,17 +109,11 @@ class WeeklyInternetStats implements Runnable, Stats {
         catch (RuntimeException e) {
             messageToUser.error("WeeklyInternetStats.run", e.getMessage(), AbstractForms.networkerTrace(e));
         }
-        String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
-        String titleMsg = new File(FileNames.INETSTATSIP_CSV).getAbsolutePath();
-        String bodyMsg = " = " + iPsWithInet + " size in kb";
-        messageToUser.info(headerMsg, titleMsg, bodyMsg);
-
-        if (Stats.isSunday()) {
-            readStatsToCSVAndDeleteFromDB();
-            AppConfigurationLocal.getInstance().execute(new WeeklyInternetStats.InetStatSorter());
+        try {
+            execDo();
         }
-        else {
-            throw new InvokeIllegalException(LocalDate.now().getDayOfWeek().name() + " not best day for stats...");
+        catch (InvokeIllegalException e) {
+            messageToUser.warn(WeeklyInternetStats.class.getSimpleName(), e.getMessage(), " see line: 118 ***");
         }
     }
 

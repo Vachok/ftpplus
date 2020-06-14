@@ -128,36 +128,15 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return NETLISTS_OFFLINES;
     }
 
-    private static void makeFilesMap() {
-        if (checkAlreadyExistingFiles()) {
+    /**
+     Все возможные IP из диапазонов {@link DiapazonScan}
 
-            File lan205 = new File(FileNames.NEWLAN205);
-            scanFiles.put(FileNames.NEWLAN205, lan205);
-
-            File lan210 = new File(FileNames.NEWLAN210);
-            scanFiles.put(FileNames.NEWLAN210, lan210);
-
-            File lan215 = new File(FileNames.NEWLAN215);
-            scanFiles.put(FileNames.NEWLAN215, lan215);
-
-            File lan220 = new File(FileNames.NEWLAN220);
-            scanFiles.put(FileNames.NEWLAN220, lan220);
-
-            File oldLan0 = new File(FileNames.OLDLANTXT0);
-            scanFiles.put(FileNames.OLDLANTXT0, oldLan0);
-
-            File oldLan1 = new File(FileNames.OLDLANTXT1);
-            scanFiles.put(FileNames.OLDLANTXT1, oldLan1);
-
-            File srv10 = new File(FileNames.SERVTXT_10SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_10SRVTXT, srv10);
-
-            File srv21 = new File(FileNames.SERVTXT_21SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_21SRVTXT, srv21);
-
-            File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
-        }
+     @return {@link #ALL_DEVICES}
+     */
+    public static BlockingDeque<String> getAllDevices() {
+        int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
+        properties.setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
+        return ALL_DEVICES;
     }
 
     @Contract(pure = true)
@@ -170,15 +149,36 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return NETLISTS_ONLINERESOLVE;
     }
 
-    /**
-     Все возможные IP из диапазонов {@link DiapazonScan}
+    private static void makeFilesMap() {
+        if (checkAlreadyExistingFiles()) {
 
-     @return {@link #ALL_DEVICES}
-     */
-    public static BlockingDeque<String> getAllDevices() {
-        int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
-        properties.setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
-        return ALL_DEVICES;
+            File lan205 = new File(FileNames.LAN_200205_TXT);
+            scanFiles.put(FileNames.LAN_200205_TXT, lan205);
+
+            File lan210 = new File(FileNames.LAN_205210_TXT);
+            scanFiles.put(FileNames.LAN_205210_TXT, lan210);
+
+            File lan215 = new File(FileNames.LAN_210215_TXT);
+            scanFiles.put(FileNames.LAN_210215_TXT, lan215);
+
+            File lan220 = new File(FileNames.LAN_213220_TXT);
+            scanFiles.put(FileNames.LAN_213220_TXT, lan220);
+
+            File oldLan0 = new File(FileNames.LAN_OLD0_TXT);
+            scanFiles.put(FileNames.LAN_OLD0_TXT, oldLan0);
+
+            File oldLan1 = new File(FileNames.LAN_OLD1_TXT);
+            scanFiles.put(FileNames.LAN_OLD1_TXT, oldLan1);
+
+            File srv10 = new File(FileNames.LAN_11V_SERV_TXT);
+            scanFiles.put(FileNames.LAN_11V_SERV_TXT, srv10);
+
+            File srv21 = new File(FileNames.LAN_21V_SERV_TXT);
+            scanFiles.put(FileNames.LAN_21V_SERV_TXT, srv21);
+
+            File srv31 = new File(FileNames.LAN_31V_SERV_TXT);
+            scanFiles.put(FileNames.LAN_31V_SERV_TXT, srv31);
+        }
     }
 
     @Contract(pure = true)

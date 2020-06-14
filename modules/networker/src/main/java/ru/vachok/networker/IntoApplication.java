@@ -56,19 +56,20 @@ public class IntoApplication {
 
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
 
-    private static ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+    private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+
+    public static String getAppIDFromContext() {
+        return configurableApplicationContext.getId();
+    }
 
     @Contract(pure = true)
-    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
-        FileSystemWorker.writeFile(IntoApplication.class.getSimpleName() + "." + configurableApplicationContext.hashCode(), AbstractForms
-            .networkerTrace(Thread.currentThread().getStackTrace()));
-        if (configurableApplicationContext != null) {
-            return configurableApplicationContext;
-        }
-        else {
-            configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
-            return configurableApplicationContext;
-        }
+    protected static ConfigurableApplicationContext getContext() {
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "getContext()", String.valueOf(configurableApplicationContext.hashCode()));
+        return configurableApplicationContext;
+    }
+
+    public static ConfigurableListableBeanFactory getBeansFactory() {
+        return configurableApplicationContext.getBeanFactory();
     }
 
     public static void main(@NotNull String[] args) {
@@ -198,20 +199,11 @@ public class IntoApplication {
             .toString();
     }
 
-    protected static void setUTF8Enc() {
-        @NotNull StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("\n\nSystem time: ").append(new Date(System.currentTimeMillis())).append(" atom time: ")
-            .append(new Date(UsefulUtilities.getAtomicTime())).append("\n\n");
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
-        System.setProperty(PropertiesNames.ENCODING, "UTF8");
-        stringBuilder.append(AbstractForms.fromArray(System.getProperties()));
-        stringBuilder.append("http://").append(new NameOrIPChecker(UsefulUtilities.thisPC()).resolveInetAddress().getHostAddress()).append(":8880/");
-        MessageToUser.getInstance(MessageToUser.EMAIL, IntoApplication.class.getSimpleName())
-            .info(UsefulUtilities.thisPC(), "appInfoStarter", stringBuilder.toString());
-    }
-
-    static void appInfoStarter() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched, 50);
+    private static void onMyApplicationEvent(ApplicationEvent event) {
+        File file = new File(event.getSource().getClass().getSimpleName() + ".stamp");
+        if (file.exists() && file.length() > ConstantsFor.MBYTE) {
+            file.delete();
+        }
+        FileSystemWorker.appendObjectToFile(file, new Date(event.getTimestamp()));
     }
 }

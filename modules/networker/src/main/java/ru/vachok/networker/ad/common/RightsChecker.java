@@ -165,23 +165,11 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         return FileVisitResult.CONTINUE;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
-        sb.append("fileLocalCommonPointOwn=").append(fileLocalCommonPointOwn);
-        sb.append(", fileLocalCommonPointRgh=").append(fileLocalCommonPointRgh);
-
-        sb.append(", filesScanned=").append(filesScanned);
-        sb.append(", dirsScanned=").append(dirsScanned);
-
-        sb.append(", startPath=").append(startPath);
-        sb.append(", logsCopyStopPath=").append(logsCopyStopPath);
-
-        sb.append('}');
-        return sb.toString();
-    }
-
-    private void copyExistsFiles(final long timeStart) {
+    private void copyExistsFiles(final long timeStart) throws InvokeIllegalException {
+        /*А вот так было надо!!!!*/
+        if (ConstantsFor.argNORUNExist()) {
+            throw new InvokeIllegalException("NO_NEED_TO_RUN");
+        }
         if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
             try {
                 Files.createDirectories(logsCopyStopPath);
@@ -228,11 +216,20 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     private class RightsWriter {
 
 
-        private String dir;
+        private final String dir;
+
+        private final long size;
 
         private final String owner;
 
-        private String acl;
+        private final String acl;
+
+        RightsWriter(String dir, long dirSize) {
+            this.dir = dir;
+            this.size = dirSize;
+            this.owner = "";
+            this.acl = "";
+        }
 
         RightsWriter(String dir, String owner, String acl) {
             this.dir = dir;

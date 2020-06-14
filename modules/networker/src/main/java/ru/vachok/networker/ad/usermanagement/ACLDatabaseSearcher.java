@@ -2,8 +2,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -67,7 +66,7 @@ class ACLDatabaseSearcher extends ACLParser {
             this.linesLimit = Integer.parseInt(classOption.toString());
         }
         else {
-            throw new InvokeIllegalException(classOption.toString());
+            searchPatterns.add(classOption.toString());
         }
     }
 

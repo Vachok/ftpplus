@@ -19,6 +19,10 @@ import java.util.*;
 public class OneServerSync extends SyncData {
 
 
+    public static final String SYNCED = "synced";
+
+    private final File file;
+
     private String dbToSync;
 
     private DataConnectTo dataConnectTo;
@@ -139,7 +143,7 @@ public class OneServerSync extends SyncData {
             messageToUser.error(e.getMessage());
         }
         finally {
-            System.out.println("dbToSync = " + dbToSync);
+            messageToUser.info(getClass().getSimpleName(), SYNCED, dbToSync);
         }
     }
 

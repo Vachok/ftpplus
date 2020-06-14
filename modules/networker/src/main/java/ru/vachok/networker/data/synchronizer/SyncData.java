@@ -161,40 +161,6 @@ public abstract class SyncData extends ForkJoinTask implements DataConnectTo, Ru
         return getDBID(dctInst.getDefaultConnection(syncDB), syncDB);
     }
 
-    private int getDBID(@NotNull Connection connection, String syncDB) {
-        int retInt = 0;
-        final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                while (resultSet.next()) {
-                    if (resultSet.last()) {
-                        retInt = resultSet.getInt(getIdColName());
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            if (e.getMessage().contains("не найден")) {
-                retInt = DataConnectTo.getInstance(DataConnectTo.FIREBASE).createTable(syncDB, Collections.EMPTY_LIST);
-            }
-            else {
-                messageToUser.error(e.getMessage() + " see line: 169 ***");
-                retInt = -666;
-            }
-        }
-        return retInt;
-    }
-
-    @Contract(pure = true)
-    private String getIdColName() {
-        return idColName;
-    }
-
-    public void setIdColName(String idColName) {
-        this.idColName = idColName;
-    }
-
     int getLastRemoteID(String syncDB) {
         return getDBID(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(syncDB), syncDB);
     }

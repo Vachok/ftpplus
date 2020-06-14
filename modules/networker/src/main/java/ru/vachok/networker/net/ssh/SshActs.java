@@ -390,19 +390,4 @@ public class SshActs {
         sb.append('}');
         return sb.toString();
     }
-
-    String execSSHCommand(String sshCommand) {
-        return AppConfigurationLocal.getInstance().submitAsString(new SSHFactory.Builder(whatSrvNeed(), sshCommand, getClass().getSimpleName()).build(), 3);
-    }
-
-    /**
-     @param server сервер, для подклчения
-     @param command команда
-     @return результат выполнения
-
-     @see VpnHelper
-     */
-    String execSSHCommand(String server, String command) {
-        return AppConfigurationLocal.getInstance().submitAsString(new SSHFactory.Builder(server, command, getClass().getSimpleName()).build(), 3);
-    }
 }

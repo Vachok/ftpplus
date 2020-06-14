@@ -20,8 +20,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.util.StringJoiner;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.net.ssh.SshActs.whatSrvNeed;
@@ -43,12 +42,17 @@ public class VpnHelper implements Runnable {
 
     private String keyName;
 
-    public String getStatus() {
-        String result;
-        try {
-            InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_VPN);
-            if (byName.isReachable(200)) {
-                result = execSSHCommand(byName.getHostAddress(), GET_STATUS_COMMAND);
+    public void getStatus() {
+        SSHFactory.Builder factoryB = new SSHFactory.Builder(whatSrvNeed(), GET_STATUS_COMMAND, this.getClass().getSimpleName());
+        String result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", ModelAttributeNames.ATT_RESULT, whatSrvNeed(), AppConfigurationLocal.getInstance()
+            .submitAsString(factoryB.build(), 5));
+        if (result.contains("AppConfigurationLocal")) {
+            result = MessageFormat
+                .format("Error loading. Next trying to connect... {0} times tried\n{1}: {2}", connectCounter, whatSrvNeed(), GET_STATUS_COMMAND);
+            messageToUser.warn(getClass().getSimpleName(), "getStatus", result);
+            this.connectCounter += 1;
+            if (this.connectCounter < 10) {
+                this.getStatus();
             }
             else {
                 result = MessageFormat.format("No connection to {0}. Tried {1} times.\nCommand: {2}", whatSrvNeed(), connectCounter, GET_STATUS_COMMAND);
@@ -59,10 +63,6 @@ public class VpnHelper implements Runnable {
             this.connectCounter = 0;
             messageToUser.info(getClass().getSimpleName(), "file written", FileSystemWorker.writeFile(FileNames.OPENVPN_STATUS, result));
         }
-        if (result.isEmpty() || !result.contains("OpenVPN CLIENT LIST")) {
-            result = result + "\n" + whatSrvNeed() + " openvpn-status: \n" + execSSHCommand(GET_STATUS_COMMAND);
-        }
-        return result;
     }
 
     public String getConfig(String keyName) {
@@ -84,13 +84,13 @@ public class VpnHelper implements Runnable {
         return result;
     }
 
-    @NotNull
-    private OkHttpClient buildClient() {
-        OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
-        okBuild.connectTimeout(5, TimeUnit.SECONDS);
-        okBuild.readTimeout(30, TimeUnit.SECONDS);
-        okBuild.callTimeout(40, TimeUnit.SECONDS);
-        return okBuild.build();
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonObject.add("connectCounter", connectCounter);
+        jsonObject.add("keyName='", keyName);
+        return jsonObject.toString();
     }
 
     @NotNull

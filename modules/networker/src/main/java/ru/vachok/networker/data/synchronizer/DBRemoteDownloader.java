@@ -30,7 +30,22 @@ class DBRemoteDownloader extends SyncData {
 
     private String dbToSync;
 
-    private List<String> jsonFromDB = new ArrayList<>();
+    private final List<String> jsonFromDB = new ArrayList<>();
+
+    @Override
+    public void run() {
+        superRun();
+    }
+
+    @Override
+    public Object getRawResult() {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.DBRemoteDownloader.getRawResult( Object ) at 17.05.2020 - (13:10)");
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.DBRemoteDownloader.setRawResult( void ) at 17.05.2020 - (13:10)");
+    }
 
     DBRemoteDownloader(int lastLocalID) {
         this.lastLocalId = lastLocalID;

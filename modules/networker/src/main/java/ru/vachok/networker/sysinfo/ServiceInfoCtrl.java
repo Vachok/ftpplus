@@ -7,7 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -15,7 +18,10 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
@@ -157,6 +163,11 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
 
+    private String getJREVers() {
+        return MessageFormat
+            .format("{0} on {1}", IntoApplication.getAppIDFromContext(), System.getProperty(PropertiesNames.JAVA_VERSION));
+    }
+
     /**
      Считает время до конца дня.
      <p>
@@ -230,6 +241,27 @@ public class ServiceInfoCtrl {
             .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
             .append("<p>").append("</details></font><br>");
         return stringBuilder.toString().replace("***", "<br>");
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
+            .add("pageFooter = " + pageFooter)
+            .add("visitor = " + visitor)
+            .add("authReq = " + authReq)
+            .add(new AppComponents().getFirebaseApp().getName())
+            .toString();
+    }
+
+    @NotNull
+    private String makeResValue() {
+        return new StringBuilder()
+            .append(MyCalen.toStringS()).append("<br><br>")
+            .append("<b><i>").append("</i></b><p><font color=\"orange\">")
+            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
+            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
+            .append("<p>")
+            .toString();
     }
 
     @GetMapping("/pcoff")

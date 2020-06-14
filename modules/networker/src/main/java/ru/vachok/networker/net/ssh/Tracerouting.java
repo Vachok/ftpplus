@@ -3,7 +3,8 @@
 package ru.vachok.networker.net.ssh;
 
 
-import com.eclipsesource.json.JsonObject;
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.database.*;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
@@ -15,6 +16,10 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
@@ -27,15 +32,20 @@ public class Tracerouting implements Callable<String> {
 
     private static final Pattern COMPILE = Pattern.compile(";");
 
-    private static final String DB_REFERENCE = "chswitch";
+    private static final String DB_REFERENCE = "ProviderName";
+
+    private String provNameResolved;
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, Tracerouting.class.getSimpleName());
 
     @Override
     public String call() throws Exception {
-        String providerTraceStr = getProviderTraceStr();
-        FirebaseDatabase.getInstance().getReference(DB_REFERENCE).addValueEventListener(new Tracerouting.ProviderChangeListener(providerTraceStr));
-        return providerTraceStr;
+        if (!ConstantsFor.argNORUNExist()) {
+            return getProviderTraceStr();
+        }
+        else {
+            return FileSystemWorker.readFile(FileNames.ARG_NO_RUN);
+        }
     }
 
     /**
@@ -63,10 +73,16 @@ public class Tracerouting implements Callable<String> {
         stringBuilder.append("<br><a href=\"/makeok\">");
         if (callForRoute.contains("91.210.85.")) {
             stringBuilder.append("<h3>FORTEX</h3>");
+            this.provNameResolved = ConstantsFor.FORTEX;
+            FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.FORTEX, new Tracerouting.ComplListener(ConstantsFor.FORTEX));
+
         }
         else {
             if (callForRoute.contains("176.62.185.129")) {
                 stringBuilder.append("<h3>ISTRANET</h3>");
+                this.provNameResolved = ConstantsFor.ISTRANET;
+                FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.ISTRANET, new Tracerouting.ComplListener(ConstantsFor.ISTRANET));
+
             }
         }
         stringBuilder.append("</a></br>");

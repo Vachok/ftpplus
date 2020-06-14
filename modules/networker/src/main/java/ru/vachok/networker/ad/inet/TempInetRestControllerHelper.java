@@ -24,6 +24,15 @@ public class TempInetRestControllerHelper extends TemporaryFullInternet implemen
     @NotNull
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        messageToUser.info(AbstractForms.fromArray(jsonObject));
+        @NotNull String result = INVALID_USER;
+        if (checkValidUID(jsonObject.getString(ConstantsFor.AUTHORIZATION, "")) & checkCodeVersion(jsonObject)) {
+            result = makeActions(jsonObject);
+        }
+        return result;
+    }
+
+    private String makeActions(JsonObject jsonObject) {
         String retStr = jsonObject.toString();
         String inputIP = jsonObject.get("ip").asString();
         String hourAsString = jsonObject.get("hour").asString();

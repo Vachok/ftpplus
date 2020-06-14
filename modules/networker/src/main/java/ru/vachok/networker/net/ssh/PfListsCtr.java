@@ -186,9 +186,9 @@ public class PfListsCtr {
         model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);
         model.addAttribute(ATT_VIPNET, pfListsInstAW.getVipNet());
-        model.addAttribute("tempfull", pfListsInstAW.getFullSquid());
-        model.addAttribute("squidlimited", pfListsInstAW.getLimitSquid());
-        model.addAttribute("squid", pfListsInstAW.getStdSquid());
+        model.addAttribute(AccessListsCheckUniq.TEMPFULL, pfListsInstAW.getFullSquid());
+        model.addAttribute(AccessListsCheckUniq.SQUIDLIMITED, pfListsInstAW.getLimitSquid());
+        model.addAttribute(ConstantsFor.JSON_OBJECT_SQUID, pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute(ConstantsFor.RULES, pfListsInstAW.getPfRules());
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));

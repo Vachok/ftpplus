@@ -93,4 +93,26 @@ public enum FileNames {
     public static final String USER_LOGIN_COUNTER_TXT = "user_login_counter.txt";
 
     public static final String CLEANSTOP_TXT = "cleanstop.txt";
+
+    public static final String WALKER_LCK = "walker.lck";
+
+    public static final String WEEKLY_LCK = "weekly.lck";
+
+    public static final String OLDFILES_LOG = "old_files.log";
+
+    public static final String SSH_ERR_LOG = "ssh_err.log";
+
+    public static final String SSH_LISTS_LOG = "ssh_lists.log";
+
+    public static final String DFINETSTAT = "dfinetstat";
+
+    public static final String OPENVPN_STATUS = "openvpn-status";
+
+    public static final String APP_START = "app.start";
+
+    public static final String SSH_LOG = "ssh.log";
+
+    public static final String ARG_NO_RUN = "app.arg";
+
+    public static final String AVAILABLE_CHARSETS_TXT = "availableCharsets.txt";
 }

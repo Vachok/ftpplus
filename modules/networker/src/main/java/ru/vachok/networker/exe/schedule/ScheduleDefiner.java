@@ -33,15 +33,15 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         NetScanService scanOnlineRun = NetScanService.getInstance(NetScanService.SCAN_ONLINE);
         NetScanService diapazonScanRun = NetScanService.getInstance(NetScanService.DIAPAZON);
         Runnable popSmtpTest = new MailPOPTester();
-
+        Runnable openvpnStatusFileMaker = new VpnHelper();
         ThreadConfig thrConfig = AppComponents.threadConfig();
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         schedule(scanOnlineRun, 3);
         schedule(popSmtpTest, (int) (ConstantsFor.DELAY * 2));
         schedule(new TemporaryFullInternet(), (int) ConstantsFor.DELAY);
-        schedule((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4);
-
-        AppInfoOnLoad.getMiniLogger().add(thrConfig.toString());
+        schedule((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 5);
+        schedule(openvpnStatusFileMaker, 1);
+        schedule(this::sendStats, 60);
     }
 
     private void startIntervalTasks() {

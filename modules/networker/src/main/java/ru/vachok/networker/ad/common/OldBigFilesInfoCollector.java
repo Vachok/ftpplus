@@ -86,6 +86,82 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         return stringBuilder.toString();
     }
 
+    @Override
+    public String call() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            OldBigFilesInfoCollector.WalkerCommon walkerCommon = getWalker();
+            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), walkerCommon));
+            new File(FileNames.WALKER_LCK).delete();
+        }
+        catch (IOException | InvokeIllegalException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        finally {
+            this.reportUser = stringBuilder.toString();
+            InitProperties.getTheProps().setProperty(OldBigFilesInfoCollector.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
+        }
+        return stringBuilder.toString();
+    }
+
+    private OldBigFilesInfoCollector.WalkerCommon getWalker() throws InvokeIllegalException {
+        File walkFile = new File(FileNames.WALKER_LCK);
+        if (walkFile.exists()) {
+            throw new InvokeIllegalException(walkFile.getAbsolutePath() + " : " + new Date(walkFile.lastModified()));
+        }
+        else {
+            try {
+                Files.createFile(walkFile.toPath());
+                walkFile.deleteOnExit();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+            return new OldBigFilesInfoCollector.WalkerCommon();
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = reportUser != null ? reportUser.hashCode() : 0;
+        result = 31 * result + startPath.hashCode();
+        result = 31 * result + (int) (dirsCounter ^ (dirsCounter >>> 32));
+        result = 31 * result + (int) (filesCounter ^ (filesCounter >>> 32));
+        result = 31 * result + (int) (totalFilesSize ^ (totalFilesSize >>> 32));
+        result = 31 * result + (int) (filesMatched ^ (filesMatched >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OldBigFilesInfoCollector)) {
+            return false;
+        }
+
+        OldBigFilesInfoCollector collector = (OldBigFilesInfoCollector) o;
+
+        if (dirsCounter != collector.dirsCounter) {
+            return false;
+        }
+        if (filesCounter != collector.filesCounter) {
+            return false;
+        }
+        if (totalFilesSize != collector.totalFilesSize) {
+            return false;
+        }
+        if (filesMatched != collector.filesMatched) {
+            return false;
+        }
+        if (reportUser != null ? !reportUser.equals(collector.reportUser) : collector.reportUser != null) {
+            return false;
+        }
+        return startPath.equals(collector.startPath);
+    }
+
     private void writeToDB(@NotNull Path file, float mByteSize, String attrArray) throws SQLException {
         DataConnectTo localDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         String[] cleanStop = ConstantsFor.getExcludedFoldersForCleaner();
@@ -204,7 +280,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             String toString = MessageFormat.format("Dirs: {0}, files: {2}/{3}. Size {4} MB. Current dir: {1}", dirsCounter, dir.toAbsolutePath()
                     .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
-            messageToUser.info(getClass().getSimpleName(), "postVisitDirectory", toString);
+            messageToUser.info(toString);
             return FileVisitResult.CONTINUE;
         }
     }
