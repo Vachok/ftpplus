@@ -37,7 +37,7 @@ public class SshActsTest {
             }
         });
         try {
-            String domainAddString = domainAddStringFuture.get(20, TimeUnit.SECONDS);
+            String domainAddString = domainAddStringFuture.get(21, TimeUnit.SECONDS);
             Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);
         }
         catch (InterruptedException e) {
@@ -54,7 +54,7 @@ public class SshActsTest {
         SshActs sshActs = new SshActs();
         Future<String> allowDomainDelString = AppComponents.threadConfig().getTaskExecutor().submit(sshActs::allowDomainDel);
         try {
-            String s = allowDomainDelString.get(20, TimeUnit.SECONDS);
+            String s = allowDomainDelString.get(21, TimeUnit.SECONDS);
             Assert.assertFalse(s.contains(VELKOMFOOD), s);
         }
         catch (InterruptedException e) {

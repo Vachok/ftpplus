@@ -132,7 +132,7 @@ public class ScanOnlineTest {
             List<String> pingedDevices = new ScanOnline().pingDevices(NetKeeper.getENUMAddresses());
             Assert.assertNotNull(pingedDevices);
             if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-                Assert.assertTrue(pingedDevices.size() == 20, MessageFormat
+                Assert.assertTrue(pingedDevices.size() == 16, MessageFormat
                     .format("{0} pingedDevices: {1}", pingedDevices.size(), AbstractForms.fromArray(pingedDevices)));
             }
             else {
