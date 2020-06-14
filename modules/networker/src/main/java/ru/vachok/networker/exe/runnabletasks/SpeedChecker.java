@@ -32,7 +32,7 @@ import static java.time.DayOfWeek.SUNDAY;
 public class SpeedChecker implements Callable<Long> {
 
 
-    public static final String DB_LIFERPGSPEED = "liferpg.speed";
+    private static final String DB_LIFERPGSPEED = "liferpg.speed";
 
     private static final Properties APP_PR = InitProperties.getTheProps();
 

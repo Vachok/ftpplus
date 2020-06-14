@@ -36,7 +36,7 @@ public class PfListsSrvTest {
     @Test
     public void testGetCommandForNatStr() {
         String str = pfListsSrv.getCommandForNatStr();
-        Assert.assertEquals(str, "sudo cat /etc/pf/allowdomain && exit");
+        Assert.assertEquals(str, "sudo cat /etc/pf/allowdomain;exit");
     }
 
     @Test
@@ -48,7 +48,7 @@ public class PfListsSrvTest {
     @Test
     public void testRunCom() {
         String s = pfListsSrv.runCom();
-        Assert.assertTrue(s.contains(".networker.vachok.ru<br>"));
+        Assert.assertTrue(s.contains("velkomfood.ru<br>"), s);
     }
 
     @Test

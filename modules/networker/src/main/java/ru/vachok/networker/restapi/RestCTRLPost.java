@@ -19,7 +19,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.net.ssh.VpnHelper;
-import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.servlet.ServletInputStream;
@@ -38,11 +37,9 @@ public class RestCTRLPost {
     private final Callable<String> domainGetter = new SSHFactory.Builder(SshActs.whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, this.getClass().getSimpleName())
         .build();
 
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRLPost.class.getSimpleName());
+    static final String GETOLDFILES = "/getoldfiles";
 
-    private static final String GETOLDFILES = "/getoldfiles";
-
-    private static final String INCORRECT_REQUEST = "Incorrect request";
+    static final String INCORRECT_REQUEST = "Incorrect request";
 
     @PostMapping(GETOLDFILES)
     public String delOldFiles(HttpServletRequest request) {
@@ -117,30 +114,21 @@ public class RestCTRLPost {
 
     @PostMapping("/sshcommandexec")
     public String sshCommandExecute(HttpServletRequest request) {
-        String result = getClass().getSimpleName();
+        String result;
         JsonObject jsonO;
         try {
             jsonO = getJSON(readRequestBytes(request));
             if (!jsonO.names().contains(ConstantsFor.AUTHORIZATION)) {
                 jsonO.add(ConstantsFor.AUTHORIZATION, request.getHeader(ConstantsFor.AUTHORIZATION));
-                result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
             }
+            result = RestApiHelper.getInstance(RestApiHelper.SSH).getResult(jsonO);
         }
-        catch (UnsupportedOperationException | NegativeArraySizeException e) {
+        catch (RuntimeException e) {
             result = MessageFormat
                 .format("RestCTRLPost.sshCommandExecute\n{0}: {1}\n{2}", e.getClass().getSimpleName(), e.getMessage(), AbstractForms
                     .networkerTrace(e.getStackTrace()));
         }
         return result;
-    }
-
-    @GetMapping(GETOLDFILES)
-    public String collectOldFiles() {
-        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
-        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
-            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
-        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
-        return oldBigFilesInfoCollector.getFromDatabase();
     }
 
     @PostMapping("/sshdel")

@@ -22,31 +22,31 @@ import java.util.*;
  @since 19.12.2018 (11:05) */
 @SuppressWarnings("ClassWithoutmessageToUser")
 public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DeleterTemp.class.getSimpleName());
-    
+
     /**
      Счётчик файлов
      */
     private int filesCounter;
-    
+
     private Path pathToDel;
-    
-    private List<String> patternsToDelFromFile = new ArrayList<>();
-    
+
+    private final List<String> patternsToDelFromFile = new ArrayList<>();
+
     public DeleterTemp(Path patToDel) {
         this.pathToDel = patToDel;
     }
-    
+
     public DeleterTemp(List<String> delPatterns) {
         this.patternsToDelFromFile.addAll(delPatterns);
         this.pathToDel = Paths.get(".");
     }
-    
+
     DeleterTemp() {
     }
-    
+
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         if (dir.toFile().getName().contains(ConstantsFor.GRADLE)) {
@@ -57,24 +57,24 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         }
         return FileVisitResult.CONTINUE;
     }
-    
+
     @Override
     public void run() {
         getList();
         deleteFiles();
     }
-    
+
     private void getList() {
         try (InputStream inputStream = new FileInputStream(new File(DeleterTemp.class.getResource("/static/config/temp_pat.cfg").getFile()));
              InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
              BufferedReader bufferedReader = new BufferedReader(reader)) {
-            bufferedReader.lines().forEach(line->patternsToDelFromFile.add(line));
+            bufferedReader.lines().forEach(patternsToDelFromFile::add);
         }
         catch (IOException e) {
             messageToUser.warn(new TForms().fromArray(e, false));
         }
     }
-    
+
     private void deleteFiles() {
         try {
             Files.walkFileTree(pathToDel, Collections.singleton(FileVisitOption.FOLLOW_LINKS), 2, this);
@@ -83,7 +83,7 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
             messageToUser.error(e.getMessage());
         }
     }
-    
+
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".txt", true);
@@ -116,10 +116,10 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         }
         return FileVisitResult.CONTINUE;
     }
-    
+
     /**
      Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
-     
+
      @param attrs {@link BasicFileAttributes}
      @return <b>true</b> = lastAccessTime - ONE_YEAR and size bigger MBYTE*2
      */
@@ -133,19 +133,19 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         }
         return retBool;
     }
-    
+
     /**
      Проверка файлика на "временность".
      <p>
      ClassPath - /BOOT-INF/classes/static/config/temp_pat.cfg <br> .\resources\static\config\temp_pat.cfg
-     
+
      @param filePath {@link Path} до файла
      @return удалять / не удалять
      */
     private boolean tempFile(Path filePath) {
         return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
     }
-    
+
     @Override
     public String toString() {
         StringJoiner stringJoiner = new StringJoiner(",\n", DeleterTemp.class.getSimpleName() + "[\n", "\n]").add("filesCounter = " + filesCounter);
@@ -158,7 +158,7 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         }
         return stringJoiner.toString();
     }
-    
+
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         ((MessageLocal) messageToUser).loggerFine(filesCounter + " files deleted.");

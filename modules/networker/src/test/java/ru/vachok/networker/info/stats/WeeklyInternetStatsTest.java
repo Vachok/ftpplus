@@ -13,6 +13,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 
@@ -69,7 +70,8 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testReadIPsWithInet() {
-        long bytesSize = stats.readIPsWithInet(false);
+        long bytesSize = 0;
+        bytesSize = stats.readIPsWithInet(false);
         Assert.assertTrue(bytesSize > 100, String.valueOf(bytesSize));
     }
 
@@ -82,6 +84,7 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testRun() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC));
         try {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(stats);
             submit.get(4, TimeUnit.SECONDS);

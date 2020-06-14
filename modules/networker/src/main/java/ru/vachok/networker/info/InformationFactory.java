@@ -17,8 +17,6 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.DatabaseInfo;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 
 
 /**
@@ -26,7 +24,7 @@ import java.lang.management.ThreadMXBean;
 public interface InformationFactory {
 
 
-    ThreadMXBean MX_BEAN_THREAD = ManagementFactory.getThreadMXBean();
+    String MX_BEAN_THREAD = "ThreadMXBean";
 
     String INET_USAGE = "inetusage";
 
@@ -83,6 +81,8 @@ public interface InformationFactory {
                 return new UniqPCInformator();
             case LISTS_CONTROLLER:
                 return listsController;
+            case MX_BEAN_THREAD:
+                return new SysInfoBeans();
             default:
                 return PCInfo.getInstance(type);
         }

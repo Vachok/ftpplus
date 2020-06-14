@@ -16,13 +16,13 @@ buildscript {
 plugins {
     id 'java'
     id 'idea'
-    id "org.springframework.boot" version "2.0.4.RELEASE"
+    id "org.springframework.boot" version "2.2.7.RELEASE"
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
     id "com.github.breadmoirai.github-release" version "2.2.6"
 }
 
 group = 'ru.vachok.networker'
-version = '8.0.2018'
+version = '8.0.2013'
 sourceCompatibility = 1.8
 
 repositories {
@@ -37,6 +37,8 @@ dependencies {
 	compile fileTree ('\\lib')
 	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
 	compile('org.springframework.boot:spring-boot-starter-web')
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.6.0'
     // https://mvnrepository.com/artifact/commons-net/commons-net
     compile group: 'commons-net', name: 'commons-net', version: '3.6'
     // https://mvnrepository.com/artifact/com.eclipsesource.minimal-json/minimal-json

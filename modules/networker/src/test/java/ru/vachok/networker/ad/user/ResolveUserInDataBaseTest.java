@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 
 import java.util.List;
@@ -49,8 +50,9 @@ public class ResolveUserInDataBaseTest {
 
     @Test
     public void testGetInfoAbout() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist());
         String infoAbout = resolveUserInDataBase.getInfoAbout("no0015.eatmeat.ru");
-        boolean strOk = Stream.of("msc", "d.yu.podbuckii", "mdc").anyMatch(infoAbout::contains);
+        boolean strOk = Stream.of("msc", "d.yu.podbuckii", "mdc", "a.s.cedilin", "n.levitskaya").anyMatch(infoAbout::contains);
         Assert.assertTrue(strOk, infoAbout);
         testAbstract();
     }
@@ -60,7 +62,7 @@ public class ResolveUserInDataBaseTest {
         List<String> loginsPC = resolveUserInDataBase.getLogins("do0132", 1);
         String logStr = AbstractForms.fromArray(loginsPC);
         Assert.assertTrue(logStr.contains("do0132"), logStr);
-        Assert.assertTrue(logStr.contains("mdc"), logStr);
+        Assert.assertTrue(logStr.contains("mdc") || logStr.contains("a.a.redkin"), logStr);
         List<String> kudrLogins = resolveUserInDataBase.getLogins("mdc", 1);
         String logStrKudr = AbstractForms.fromArray(kudrLogins);
         Assert.assertEquals(logStr, logStr);
@@ -70,18 +72,19 @@ public class ResolveUserInDataBaseTest {
     private void testAbstract() {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String infoAbout = informationFactory.getInfoAbout("a323.eatmeat.ru");
-        Assert.assertTrue(infoAbout.contains(": tbabicheva"), infoAbout);
+        Assert.assertTrue(infoAbout.contains(": opetrova") || infoAbout.contains("d.yu.podbuckii"), infoAbout);
     }
 
     @Test
     public void testGetBadCred() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("j.doe");
-        Assert.assertTrue(infoAbout.contains("Unknown"), infoAbout);
+        Assert.assertTrue(infoAbout.contains(ConstantsFor.STR_UNKNOWN), infoAbout);
         Assert.assertTrue(infoAbout.contains("j.doe"), infoAbout);
     }
 
     @Test
     public void testGetInfo() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist());
         this.resolveUserInDataBase.setClassOption("homya");
         String info = resolveUserInDataBase.getInfo();
         Assert.assertEquals(info, "10.200.217.83");

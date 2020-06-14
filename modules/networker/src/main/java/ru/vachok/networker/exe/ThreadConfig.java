@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
-import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -39,7 +38,6 @@ import java.util.concurrent.*;
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
-@Service("ThreadConfig")
 public class ThreadConfig implements AppConfigurationLocal {
 
 
@@ -66,6 +64,16 @@ public class ThreadConfig implements AppConfigurationLocal {
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
 
+    private static final ForkJoinPool FJP = (ForkJoinPool) Executors.newWorkStealingPool(getAvailProc());
+
+    private static int getAvailProc() {
+        int proc = Runtime.getRuntime().availableProcessors() - 2;
+        if (proc <= 0) {
+            proc = 1;
+        }
+        return proc;
+    }
+
     private Runnable r = new Thread();
 
     /**
@@ -76,17 +84,45 @@ public class ThreadConfig implements AppConfigurationLocal {
         return TASK_EXECUTOR;
     }
 
-    public static void cleanQueue(Runnable runnable) {
-        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
-        boolean isRemove = executorQueue.contains(runnable) && executorQueue.removeIf(r->r.equals(runnable));
-        if (isRemove) {
-            messageToUser.warn(ThreadConfig.class.getSimpleName(), "TASK_EXECUTOR removed:", runnable.getClass().getSimpleName());
+    public static @NotNull String thrNameSet(String className) {
+
+        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
+        String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
+        String upStr = String.format("%.01f", localUptime);
+
+        upStr += "m";
+        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
+            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
+            upStr = String.format("%.02f", localUptime);
+            upStr += "h";
         }
+        String thrName = className + ";" + upStr + ";" + delaysCount;
+        Thread.currentThread().setName(thrName);
+        return thrName;
+    }
+
+    @Override
+    public void run() {
+        throw new TODOException("just do it!");
+    }
+
+    private void setExecutor() {
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
+        TASK_EXECUTOR.setQueueCapacity(500);
+        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
+        TASK_EXECUTOR.setThreadPriority(7);
+        TASK_EXECUTOR.setThreadNamePrefix("E-");
     }
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
         setScheduler();
         return TASK_SCHEDULER;
+    }
+
+    public static ForkJoinPool getForkJoin() {
+        return FJP;
     }
 
     private void setScheduler() {
@@ -142,41 +178,26 @@ public class ThreadConfig implements AppConfigurationLocal {
     }
 
 
-    public static @NotNull String thrNameSet(String className) {
-
-        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
-        String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
-        String upStr = String.format("%.01f", localUptime);
-
-        upStr += "m";
-        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
-            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
-            upStr = String.format("%.02f", localUptime);
-            upStr += "h";
-        }
-        String thrName = className + ";" + upStr + ";" + delaysCount;
-        Thread.currentThread().setName(thrName);
-        return thrName;
-    }
-
-    public static void cleanQueue(Callable callable) {
-        BlockingQueue<Runnable> executorQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Runnable runnable) {
+        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
         for (Runnable r : executorQueue) {
-            if (r.equals(callable)) {
-                messageToUser.warn(ThreadConfig.class.getClass().getSimpleName(), "TASK_SCHEDULER removed:", r.toString());
+            if (r.equals(runnable) || r instanceof DBMessenger) {
+                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
+                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
                 executorQueue.remove(r);
             }
         }
     }
 
-    private void setExecutor() {
-        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
-        TASK_EXECUTOR.setQueueCapacity(500);
-        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
-        TASK_EXECUTOR.setThreadPriority(7);
-        TASK_EXECUTOR.setThreadNamePrefix("E-");
+    public void cleanQueue(@NotNull ThreadPoolExecutor poolExecutor, Callable callable) {
+        BlockingQueue<Runnable> executorQueue = poolExecutor.getQueue();
+        for (Runnable r : executorQueue) {
+            if (r.equals(callable) || r instanceof DBMessenger) {
+                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
+                        .warn(this.getClass().getSimpleName(), "execute", r.toString());
+                executorQueue.remove(r);
+            }
+        }
     }
 
     /**

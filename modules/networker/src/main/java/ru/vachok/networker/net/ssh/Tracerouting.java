@@ -3,23 +3,18 @@
 package ru.vachok.networker.net.ssh;
 
 
-import com.google.cloud.firestore.Firestore;
-import com.google.firebase.cloud.FirestoreClient;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.eclipsesource.json.JsonObject;
+import com.google.firebase.database.*;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.StringJoiner;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
@@ -32,13 +27,15 @@ public class Tracerouting implements Callable<String> {
 
     private static final Pattern COMPILE = Pattern.compile(";");
 
-    private static final String DB_REFERENCE = "ProviderName";
+    private static final String DB_REFERENCE = "chswitch";
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, Tracerouting.class.getSimpleName());
 
     @Override
     public String call() throws Exception {
-        return getProviderTraceStr();
+        String providerTraceStr = getProviderTraceStr();
+        FirebaseDatabase.getInstance().getReference(DB_REFERENCE).addValueEventListener(new Tracerouting.ProviderChangeListener(providerTraceStr));
+        return providerTraceStr;
     }
 
     /**
@@ -66,14 +63,10 @@ public class Tracerouting implements Callable<String> {
         stringBuilder.append("<br><a href=\"/makeok\">");
         if (callForRoute.contains("91.210.85.")) {
             stringBuilder.append("<h3>FORTEX</h3>");
-            FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.FORTEX, new Tracerouting.ComplListener(ConstantsFor.FORTEX));
-
         }
         else {
             if (callForRoute.contains("176.62.185.129")) {
                 stringBuilder.append("<h3>ISTRANET</h3>");
-                FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.ISTRANET, new Tracerouting.ComplListener(ConstantsFor.ISTRANET));
-
             }
         }
         stringBuilder.append("</a></br>");
@@ -87,6 +80,19 @@ public class Tracerouting implements Callable<String> {
                 stringBuilder.append(FileSystemWorker.error("SshActs.getProviderTraceStr", e));
             }
         }
+        FirebaseDatabase.getInstance().getReference(DB_REFERENCE).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                String value = snapshot.getValue(String.class);
+                String key = snapshot.getKey();
+                messageToUser.info(Tracerouting.this.getClass().getSimpleName(), "on data change", MessageFormat.format("{0}:{1}", key, value));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                messageToUser.error("Tracerouting.onCancelled", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
+            }
+        });
         return stringBuilder.toString();
     }
 

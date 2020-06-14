@@ -19,8 +19,6 @@ import java.util.*;
 public class OneServerSync extends SyncData {
 
 
-    private final File file;
-
     private String dbToSync;
 
     private DataConnectTo dataConnectTo;
@@ -29,6 +27,21 @@ public class OneServerSync extends SyncData {
         this.dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         this.dbToSync = ConstantsFor.DB_VELKOMVELKOMPC;
         this.file = new File(dbToSync);
+    }
+
+    @Override
+    public void run() {
+        superRun();
+    }
+
+    @Override
+    public Object getRawResult() {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.OneServerSync.getRawResult( Object ) at 17.05.2020 - (13:10)");
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.OneServerSync.setRawResult( void ) at 17.05.2020 - (13:10)");
     }
 
     @Override
@@ -126,7 +139,7 @@ public class OneServerSync extends SyncData {
             messageToUser.error(e.getMessage());
         }
         finally {
-            messageToUser.info(getClass().getSimpleName(), "synced", dbToSync);
+            System.out.println("dbToSync = " + dbToSync);
         }
     }
 

@@ -12,69 +12,40 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.RejectedExecutionException;
 
 
 /**
  @since 19.07.2019 (9:51) */
 class ArgsReader implements Runnable {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ArgsReader.class.getSimpleName());
-    
-    private static String[] appArgs;
-    
-    private static ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-    
-    ArgsReader(String[] appArgs) {
-        this.appArgs = appArgs;
+
+    private static final List<@NotNull String> argsList = new ArrayList<>();
+
+    private static final ConcurrentMap<String, String> APP_ARGS = new ConcurrentHashMap<>();
+
+    static ConcurrentMap<String, String> getAppArgs() {
+        return APP_ARGS;
     }
-    
+
+    ArgsReader(String[] appArgs) {
+        if (appArgs.length > 0) {
+            argsList.addAll(Arrays.asList(appArgs));
+        }
+    }
+
     @Override
     public void run() {
         fillArgsMap();
     }
-    
-    private static void fillArgsMap() {
-        List<@NotNull String> argsList = Arrays.asList(appArgs);
-        Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
-        boolean isTray = true;
-        for (int i = 0; i < argsList.size(); i++) {
-            String key = argsList.get(i);
-            String value;
-            try {
-                value = argsList.get(i + 1);
-            }
-            catch (ArrayIndexOutOfBoundsException ignore) {
-                value = "true";
-            }
-            if (!value.contains("-")) {
-                argsMap.put(key, value);
-            }
-            else {
-                if (!key.contains("-")) {
-                    argsMap.put("", "");
-                }
-                else {
-                    argsMap.put(key, "true");
-                }
-            }
-        }
-        for (Map.Entry<String, String> argValueEntry : argsMap.entrySet()) {
-            isTray = parseMapEntry(argValueEntry, exitApp);
-            if (argValueEntry.getValue().equals("test")) {
-                throw new RejectedExecutionException("TEST. VALUE");
-            }
-            if (argValueEntry.getKey().equals("test")) {
-                throw new RejectedExecutionException("TEST. KEY");
-            }
-        }
-        if (isTray && SystemTrayHelper.getI().isPresent()) {
-            ((SystemTrayHelper) SystemTrayHelper.getI().get()).trayAdd();
-        }
-        readArgs();
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ArgsReader.class.getSimpleName() + "[", "]")
+            .toString();
     }
-    
+
     private static boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
         Properties localCopyProperties = InitProperties.getTheProps();
         boolean isTray = true;
@@ -96,10 +67,9 @@ class ArgsReader implements Runnable {
         if (stringStringEntry.getKey().contains(TelnetServer.PR_LPORT)) {
             localCopyProperties.setProperty(TelnetServer.PR_LPORT, stringStringEntry.getValue());
         }
-        
         return isTray;
     }
-    
+
     private static void readArgs() {
         IntoApplication.setUTF8Enc();
         try {
@@ -108,16 +78,45 @@ class ArgsReader implements Runnable {
         catch (IllegalStateException e) {
             messageToUser.error(MessageFormat.format("ArgsReader.readArgs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        finally {
-            IntoApplication.appInfoStarter();
-        }
     }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ArgsReader{");
-        sb.append("appArgs=").append(AbstractForms.fromArray(appArgs));
-        sb.append('}');
-        return sb.toString();
+
+    private static void fillArgsMap() {
+
+        Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
+        boolean isTray = true;
+        for (int i = 0; i < argsList.size(); i++) {
+            String key = argsList.get(i);
+            String value;
+            try {
+                value = argsList.get(i + 1);
+            }
+            catch (IndexOutOfBoundsException ignore) {
+                value = "true";
+            }
+            if (!value.contains("-")) {
+                APP_ARGS.put(key, value);
+            }
+            else {
+                if (!key.contains("-")) {
+                    APP_ARGS.put("", "");
+                }
+                else {
+                    APP_ARGS.put(key, "true");
+                }
+            }
+        }
+        for (Map.Entry<String, String> argValueEntry : APP_ARGS.entrySet()) {
+            isTray = parseMapEntry(argValueEntry, exitApp);
+            if (argValueEntry.getValue().equals("test")) {
+                throw new IllegalArgumentException("TEST. VALUE");
+            }
+            if (argValueEntry.getKey().equals("test")) {
+                throw new IllegalArgumentException("TEST. KEY");
+            }
+        }
+        if (isTray && SystemTrayHelper.getI().isPresent()) {
+            ((SystemTrayHelper) SystemTrayHelper.getI().get()).trayAdd();
+        }
+        readArgs();
     }
 }

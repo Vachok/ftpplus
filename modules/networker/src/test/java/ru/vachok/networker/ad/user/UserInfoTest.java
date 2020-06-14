@@ -163,7 +163,7 @@ public class UserInfoTest {
 
     private void createTable() {
         String dbName = "pcuser";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbName)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.FIREBASE).getDefaultConnection(dbName)) {
             boolean contains = connection.getMetaData().getURL().contains("jdbc:h2:mem:velkompc") || connection.getMetaData().getURL()
                 .contains("jdbc:mysql://10.10.111.65:3306/pcuser");
             Assert.assertTrue(contains, connection.getMetaData().getURL());

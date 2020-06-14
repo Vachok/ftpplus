@@ -12,7 +12,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.Queue;
@@ -24,22 +27,22 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  @see RestoreByListToTest
  @since 12.09.2019 (10:40) */
 public class RestoreByListTo implements Callable<String> {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestoreByListTo.class.getSimpleName());
-    
-    private Path pathToCopyRestored;
-    
+
+    private final Path pathToCopyRestored;
+
     @Contract(pure = true)
     public RestoreByListTo(Path pathToCopyRestored) {
         this.pathToCopyRestored = pathToCopyRestored;
     }
-    
+
     @Override
     public String call() {
         return restoreList();
     }
-    
+
     private @NotNull String restoreList() {
         StringBuilder stringBuilder = new StringBuilder();
         Deque<String> filesForRestore = getFilesList();
@@ -53,10 +56,10 @@ public class RestoreByListTo implements Callable<String> {
         }
         return stringBuilder.toString();
     }
-    
+
     private @NotNull Deque<String> getFilesList() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
+
         Deque<String> filesForRestore = new ConcurrentLinkedDeque<>();
         final String sql = "select * from common.restore";
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_COMMONRESTORE)) {
@@ -67,7 +70,7 @@ public class RestoreByListTo implements Callable<String> {
                         if (!upstring.isEmpty()) {
                             filesForRestore.add(upstring);
                         }
-    
+
                     }
                 }
             }
@@ -84,7 +87,7 @@ public class RestoreByListTo implements Callable<String> {
             return filesForRestore;
         }
     }
-    
+
     private @NotNull String cpFiles(String first) {
         Path fileForCopyPath;
         boolean isCopyFile = false;
@@ -97,7 +100,7 @@ public class RestoreByListTo implements Callable<String> {
         }
         String parent = fileForCopyPath.getParent().getFileName().toString();
         parent = pathToCopyRestored + ConstantsFor.FILESYSTEM_SEPARATOR + parent + ConstantsFor.FILESYSTEM_SEPARATOR + fileForCopyPath.getFileName().toString();
-    
+
         File fileForCopyAsFile = new File("null");
         try {
             fileForCopyAsFile = fileForCopyPath.toFile();
@@ -113,10 +116,10 @@ public class RestoreByListTo implements Callable<String> {
         }
         return "File " + fileForCopyAsFile + " is copied to: " + parent + ". " + isCopyFile;
     }
-    
+
     private boolean delRecordFromDatabase(String toDel) {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        
+
         final String sql = "DELETE FROM common.restore WHERE upstring like ?";
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_COMMONRESTORE)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -129,7 +132,7 @@ public class RestoreByListTo implements Callable<String> {
             return false;
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("RestoreByListTo{");

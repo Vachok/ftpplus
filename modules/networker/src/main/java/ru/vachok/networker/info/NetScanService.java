@@ -5,15 +5,15 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.monitor.PingerFromFile;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -116,8 +116,6 @@ public interface NetScanService extends Runnable {
     @Contract("_ -> new")
     static @NotNull NetScanService getInstance(@NotNull String type) {
         switch (type) {
-            case PTV:
-                return new NetMonitorPTV();
             case WORK_SERVICE:
                 return new KudrWorkTime();
             case DIAPAZON:
@@ -125,7 +123,7 @@ public interface NetScanService extends Runnable {
             case PINGER_FILE:
                 return new PingerFromFile();
             case PCNAMESSCANNER:
-                return PcNamesScanner.getI();
+                return new PcNamesScanner();
             default:
                 return new ScanOnline();
         }

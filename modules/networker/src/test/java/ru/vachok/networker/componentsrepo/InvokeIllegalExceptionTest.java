@@ -4,9 +4,9 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.Contract;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 
 
 /**
@@ -14,14 +14,19 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
  @since 23.06.2019 (0:28) */
 public class InvokeIllegalExceptionTest {
 
-
     @Test
     public void getMyThrow() {
-        throwMyThrowable();
+        try {
+            throwMyThrowable();
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e);
+            Assert.assertTrue(e.getMessage().contains("THIS IS ME 23.06.2019 (0:34)"), e.getMessage());
+        }
     }
 
     @Contract(" -> fail")
     private void throwMyThrowable() {
-        throw new TODOException("29.04.2020 (12:07)");
+        throw new InvokeIllegalException("THIS IS ME 23.06.2019 (0:34)");
     }
 }

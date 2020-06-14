@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -55,9 +57,9 @@ public class DiapazonScan implements NetScanService {
      Singleton inst
      */
     @SuppressWarnings("StaticVariableOfConcreteClass")
-    private static DiapazonScan thisInst = new DiapazonScan();
+    private static final DiapazonScan thisInst = new DiapazonScan();
 
-    private long stopClassStampLong = ru.vachok.networker.restapi.props.InitProperties.getUserPref()
+    private final long stopClassStampLong = ru.vachok.networker.restapi.props.InitProperties.getUserPref()
         .getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
 
     /**
@@ -154,7 +156,14 @@ public class DiapazonScan implements NetScanService {
 
     @Override
     public void run() {
-        AppConfigurationLocal.getInstance().execute(this::startDo, TimeUnit.MINUTES.toSeconds(61));
+        AppConfigurationLocal.getInstance().execute(()->{
+            try {
+                startDo();
+            }
+            catch (InvokeIllegalException e) {
+                messageToUser.warn(DiapazonScan.class.getSimpleName(), e.getMessage(), " see line: 164 ***");
+            }
+        }, TimeUnit.MINUTES.toSeconds(61));
     }
 
     @Override
@@ -188,15 +197,15 @@ public class DiapazonScan implements NetScanService {
     private @NotNull ExecScan[] getRunnables() {
         Map<String, File> scanFiles = NetKeeper.getScanFiles();
         return new ExecScan[]{
-            new ExecScan(10, 20, "10.10.", scanFiles.get(FileNames.NEWLAN215)),
-            new ExecScan(21, 31, "10.10.", scanFiles.get(FileNames.SERVTXT_21SRVTXT)),
-            new ExecScan(31, 41, "10.10.", scanFiles.get(FileNames.SERVTXT_31SRVTXT)),
-            new ExecScan(11, 16, "192.168.", scanFiles.get(FileNames.OLDLANTXT0)),
-            new ExecScan(16, 21, "192.168.", scanFiles.get(FileNames.OLDLANTXT1)),
-                new ExecScan(200, 205, "10.200.", scanFiles.get(FileNames.NEWLAN205)),
-                new ExecScan(205, 210, "10.200.", scanFiles.get(FileNames.NEWLAN210)),
-                new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.NEWLAN215)),
-                new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.NEWLAN220)),
+            new ExecScan(10, 20, "10.10.", scanFiles.get(FileNames.LAN_210215_TXT)),
+            new ExecScan(21, 31, "10.10.", scanFiles.get(FileNames.LAN_21V_SERV_TXT)),
+            new ExecScan(31, 41, "10.10.", scanFiles.get(FileNames.LAN_31V_SERV_TXT)),
+            new ExecScan(11, 16, "192.168.", scanFiles.get(FileNames.LAN_OLD0_TXT)),
+            new ExecScan(16, 21, "192.168.", scanFiles.get(FileNames.LAN_OLD1_TXT)),
+            new ExecScan(200, 205, "10.200.", scanFiles.get(FileNames.LAN_200205_TXT)),
+            new ExecScan(205, 210, "10.200.", scanFiles.get(FileNames.LAN_205210_TXT)),
+            new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.LAN_210215_TXT)),
+            new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.LAN_213220_TXT)),
         };
     }
 
@@ -213,7 +222,10 @@ public class DiapazonScan implements NetScanService {
         }
     }
 
-    private void startDo() {
+    private void startDo() throws InvokeIllegalException {
+        if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
+            throw new InvokeIllegalException(UsefulUtilities.thisPC());
+        }
         synchronized(inetUniqueCSV) {
             if (!inetUniqueCSV.exists()) {
                 Stats.getIpsInet();
@@ -224,11 +236,7 @@ public class DiapazonScan implements NetScanService {
         }
         AppConfigurationLocal threadExecutor = AppConfigurationLocal.getInstance();
         BlockingQueue<Runnable> queueExec = ((ThreadConfig) threadExecutor).getTaskExecutor().getThreadPoolExecutor().getQueue();
-        for (Runnable runnable : queueExec) {
-            if (runnable instanceof ExecScan) {
-                queueExec.remove(runnable);
-            }
-        }
+        queueExec.removeIf(runnable->runnable instanceof ExecScan);
 
         @NotNull ExecScan[] newRunnables = getRunnables();
         for (ExecScan execScan : newRunnables) {

@@ -5,12 +5,16 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -18,28 +22,28 @@ import java.util.*;
 /**
  @since 25.07.2019 (16:41) */
 public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
-    
-    
+
+
     private final Path startPath = super.startPath;
-    
+
     private final File fileForAppend = new File(this.getClass().getSimpleName() + ".res");
-    
+
     private UserPrincipal oldUser;
-    
+
     private UserPrincipal newUser;
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserACLReplacer.class.getSimpleName());
-    
+
     private int followLinks = Integer.MAX_VALUE;
-    
-    private Set<AclEntry> currentACLEntries = new HashSet<>();
-    
-    private List<AclEntry> neededACLEntries = new ArrayList<>();
-    
+
+    private final Set<AclEntry> currentACLEntries = new HashSet<>();
+
+    private final List<AclEntry> neededACLEntries = new ArrayList<>();
+
     private int foldersCounter = 0;
-    
+
     private int filesCounter = 0;
-    
+
     UserACLReplacer(Path startPath) {
         super(startPath);
         try {
@@ -49,23 +53,23 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        
+
     }
-    
+
     protected UserACLReplacer(UserPrincipal oldUser, Path startPath, UserPrincipal newUser) {
         super(startPath);
         this.oldUser = oldUser;
         this.newUser = newUser;
         fileForAppend.delete();
     }
-    
+
     private UserACLReplacer(UserPrincipal oldUser, UserPrincipal newUser) {
         super(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"));
         this.oldUser = oldUser;
         this.newUser = newUser;
         fileForAppend.delete();
     }
-    
+
     @Override
     public void run() {
         System.out.println("oldUser = " + oldUser);
@@ -78,9 +82,9 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("UserACLReplacer.run: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        
+
     }
-    
+
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         checkOwner(dir);
@@ -104,7 +108,7 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
             return FileVisitResult.CONTINUE;
         }
     }
-    
+
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         checkOwner(file);
@@ -127,20 +131,20 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
             return FileVisitResult.CONTINUE;
         }
     }
-    
+
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         FileSystemWorker.appendObjectToFile(fileForAppend, file.toAbsolutePath().normalize().toString() + "\n" + new TForms().fromArray(exc));
         return FileVisitResult.CONTINUE;
     }
-    
+
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         FileSystemWorker.appendObjectToFile(fileForAppend,
                 MessageFormat.format("Directory: {0}, owner: {1}\n", dir, Files.getOwner(dir)));
         return FileVisitResult.CONTINUE;
     }
-    
+
     private void checkOwner(Path path) {
         currentACLEntries.clear();
         try {
@@ -155,7 +159,7 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
             messageToUser.error(MessageFormat.format("UserChanger.visitFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
-    
+
     private void checkACL(@NotNull AclEntry acl) {
         if (!acl.principal().equals(newUser) && acl.principal().equals(oldUser)) {
             AclEntry newUserACL = createACLForUserFromExistsACL(acl, newUser);
@@ -167,31 +171,31 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
             neededACLEntries.add(acl);
         }
     }
-    
+
     @Override
     public void setClassOption(Object classOption) {
         throw new TODOException("11.10.2019 (10:01)");
     }
-    
+
     @Override
     public String getResult() {
         throw new TODOException("11.10.2019 (10:01)");
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserACLReplacer{");
         sb.append("oldUser=").append(oldUser);
-        sb.append(", startPath=").append(startPath);
+        sb.append(ConstantsFor.JSON_PARAM_NAME_STARTPATH).append(startPath);
         sb.append(", newUser=").append(newUser);
         sb.append(", foldersCounter=").append(foldersCounter);
         sb.append(", filesCounter=").append(filesCounter);
         sb.append('}');
         return sb.toString();
     }
-    
+
     void setFollowLinks(int followLinks) {
         this.followLinks = followLinks;
     }
-    
+
 }

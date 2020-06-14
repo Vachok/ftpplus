@@ -7,7 +7,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 
 
 /**
@@ -33,7 +32,7 @@ public class VpnHelperTest {
     @Test
     public void testGetStatus() {
         String statusVpn = vpnHelper.getStatus();
-        Assert.assertTrue(statusVpn.contains(ConstantsFor.VPN_LIST), statusVpn);
+        Assert.assertTrue(statusVpn.contains("OpenVPN CLIENT LIST"), statusVpn);
     }
 
     /**
@@ -49,6 +48,6 @@ public class VpnHelperTest {
     @Test
     public void testTestToString() {
         String s = vpnHelper.toString();
-        Assert.assertTrue(s.contains("VpnHelper["), s);
+        Assert.assertTrue(s.contains("\"class\":\"VpnHelper\""), s);
     }
 }

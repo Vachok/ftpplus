@@ -15,13 +15,13 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.MyISAMRepair;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.synchronizer.OneServerSync;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -32,25 +32,95 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
  @see InternetSyncTest
  @since 13.10.2019 (13:21) */
-public class InternetSync extends SyncData implements Runnable {
+public class InternetSync extends SyncData {
 
-
-    private String ipAddr;
 
     private final Connection connection;
 
-    private String dbFullName;
+    private static final Map<Long, String> RES_MAP = new ConcurrentHashMap<>();
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetSync.class.getSimpleName());
+
+    private String ipAddr;
+
+    private Connection connection;
+
+    private String dbFullName;
+
+    public InternetSync(@NotNull String type) {
+        super();
+        this.ipAddr = type;
+        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
+    }
 
     @Override
     public String getDbToSync() {
         return ipAddr;
+    }
+
+    @Override
+    public void setDbToSync(String dbToSync) {
+        this.ipAddr = dbToSync;
+    }
+
+    @Override
+    public void setOption(Object option) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.setOption( void ) at 13.10.2019 - (13:21)");
+    }
+
+    @Override
+    public Object getRawResult() {
+        JsonObject jsonObject = new JsonObject();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+        if (RES_MAP.size() > 0) {
+            for (Map.Entry<Long, String> k : RES_MAP.entrySet()) {
+                jsonObject.add(simpleDateFormat.format(new Date(k.getKey())), k.getValue());
+            }
+        }
+        else {
+            jsonObject.add(simpleDateFormat.format(new Date()), MessageFormat.format("{0} is empty", RES_MAP.getClass().getSimpleName()));
+        }
+        return jsonObject;
+    }
+
+    @Override
+    protected void setRawResult(Object value) {
+        RES_MAP.put(System.currentTimeMillis(), String.valueOf(value));
+    }
+
+    @Override
+    public int hashCode() {
+        int result = ipAddr != null ? ipAddr.hashCode() : 0;
+        result = 31 * result + (connection != null ? connection.hashCode() : 0);
+        result = 31 * result + (dbFullName != null ? dbFullName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof InternetSync)) {
+            return false;
+        }
+
+        InternetSync sync = (InternetSync) o;
+
+        if (ipAddr != null ? !ipAddr.equals(sync.ipAddr) : sync.ipAddr != null) {
+            return false;
+        }
+        if (connection != null ? !connection.equals(sync.connection) : sync.connection != null) {
+            return false;
+        }
+        return dbFullName != null ? dbFullName.equals(sync.dbFullName) : sync.dbFullName == null;
     }
 
     @Override
@@ -68,14 +138,48 @@ public class InternetSync extends SyncData implements Runnable {
         return sb.toString();
     }
 
+    /**
+     @see InternetSyncTest
+     */
     @Override
-    public Map<String, String> makeColumns() {
-        throw new UnsupportedOperationException("See readSQLCreateQuery");
+    public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        join();
     }
 
     @Override
-    public void setDbToSync(String dbToSync) {
-        this.ipAddr = dbToSync;
+    public void setOption(Object option) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.setOption( void ) at 13.10.2019 - (13:21)");
+    }
+
+    @Override
+    public String syncData() {
+        Path rootPath = Paths.get(".");
+        Path filePath = Paths.get(rootPath.toAbsolutePath().normalize()
+            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddr + ".csv");
+        int jsonCreated = createJSON(FileSystemWorker.readFileToQueue(filePath));
+        String txtRenamed = renameToTXT(filePath);
+        String tblComent = checkComment();
+        if (tblComent.equals(getCurrentUserPC())) {
+            return MessageFormat.format("{0} created {1} rows. {2}", txtRenamed, jsonCreated, tblComent);
+        }
+        else {
+            return MessageFormat.format("{0} created {1} rows. Comment NEW: {2}", txtRenamed, jsonCreated, setComment());
+        }
+    }
+
+    @Contract(pure = true)
+    private static long parseDate(String dateAsString) {
+        long result;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE MMM dd kk:mm:ss zzz yyyy", Locale.ENGLISH);
+        try {
+            Date parsedDate = simpleDateFormat.parse(dateAsString);
+            result = parsedDate.getTime();
+        }
+        catch (ParseException e) {
+            result = -1;
+        }
+        return result;
     }
 
     /**
@@ -83,8 +187,6 @@ public class InternetSync extends SyncData implements Runnable {
      @param tableName ip-адрес
      @return {@link #sendToDatabase(JsonObject)}
 
-     @see InternetSyncTest#testUploadCollection()
-     */
     @Override
     public int uploadCollection(Collection stringsCollection, @NotNull String tableName) {
         int retInt = 0;
@@ -92,7 +194,7 @@ public class InternetSync extends SyncData implements Runnable {
             this.dbFullName = ConstantsFor.DB_INETSTATS + tableName.replaceAll("\\Q.\\E", "_");
         }
         else {
-            throw new IllegalArgumentException(tableName);
+            throw new InvokeIllegalException("15.10.2019 (9:42)");
         }
         List<String> collectList = new ArrayList<>(stringsCollection);
         for (String s : collectList) {
@@ -117,87 +219,11 @@ public class InternetSync extends SyncData implements Runnable {
             if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
                 this.ipAddr = fileName.replace(".csv", "");
                 this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-                createLckFile();
                 String syncMe = syncData();
-                new File(FileNames.WEEKLY_LCK).delete();
                 messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
             }
         }
-    }
 
-    @Override
-    public void setOption(Object option) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.setOption( void ) at 13.10.2019 - (13:21)");
-    }
-
-    /**
-     @param ipAddr ip-адрес
-     @see InternetSyncTest#testCreateTable()
-     */
-    protected String createTable(@NotNull String ipAddr) {
-        if (!ipAddr.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            throw new IllegalArgumentException(ipAddr);
-        }
-        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        String readFileStr = readSQLCreateQuery();
-        readFileStr = readFileStr.replace(ConstantsFor.FIELDNAME_ADDR, ipAddr.replaceAll("\\Q.\\E", "_")).replace(ConstantsFor.DBFIELD_PCNAME, getCurrentUserPC());
-        final String sql = readFileStr;
-        FileSystemWorker.appendObjectToFile(new File("create.table"), sql);
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"))) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                int executeUpdateInt = preparedStatement.executeUpdate();
-                return MessageFormat.format("Updated: {0}. Query: \n{1}", executeUpdateInt, sql);
-            }
-        }
-        catch (SQLException e) {
-            return MessageFormat
-                .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()), sql);
-        }
-    }
-
-    @Override
-    public String syncData() {
-        Path rootPath = Paths.get(".");
-        Path filePath = Paths.get(rootPath.toAbsolutePath().normalize()
-            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddr + ".csv");
-        int jsonCreated = createJSON(FileSystemWorker.readFileToQueue(filePath));
-        String txtRenamed = "null";
-        try {
-            txtRenamed = renameToTXT(filePath);
-        }
-        catch (InvokeIllegalException e) {
-            messageToUser.error("InternetSync.syncData", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        String tblComment = checkComment();
-        return tblComment.equals(getCurrentUserPC()) ? MessageFormat.format("{0} created {1} rows. {2}", txtRenamed, jsonCreated, tblComment) : MessageFormat
-            .format("{0} created {1} rows. Comment NEW: {2}", txtRenamed, jsonCreated, setComment());
-    }
-
-    @Contract(pure = true)
-    private static long parseDate(String dateAsString) {
-        long result;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE MMM dd kk:mm:ss zzz yyyy", Locale.ENGLISH);
-        try {
-            Date parsedDate = simpleDateFormat.parse(dateAsString);
-            result = parsedDate.getTime();
-        }
-        catch (ParseException e) {
-            result = -1;
-        }
-        return result;
-    }
-
-
-
-    private void createLckFile() {
-        File fileLck = new File(FileNames.WEEKLY_LCK);
-        fileLck.deleteOnExit();
-        try {
-            fileLck.createNewFile();
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
     }
 
     private int createJSON(@NotNull Queue<String> fileQueue) {
@@ -245,10 +271,132 @@ public class InternetSync extends SyncData implements Runnable {
         return updatedRows;
     }
 
-    @Override
-    public int createTable(String dbPointTable, List<String> additionalColumns) {
-        throw new UnsupportedOperationException("Creating tables already exists in this class");
+    /**
+     @param stringsCollection коллекция строк
+     @param tableName ip-адрес
+     @return {@link #sendToDatabase(JsonObject)}
 
+     @see InternetSyncTest#testUploadCollection()
+     */
+    @Override
+    public int uploadCollection(Collection stringsCollection, @NotNull String tableName) {
+        int retInt = 0;
+        if (tableName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            this.dbFullName = ConstantsFor.DB_INETSTATS + tableName.replaceAll("\\Q.\\E", "_");
+        }
+        else {
+            throw new IllegalArgumentException(tableName);
+        }
+        List<String> collectList = new ArrayList<>(stringsCollection);
+        for (String s : collectList) {
+            JsonObject jsonObject = parseAsObject(s);
+            retInt += sendToDatabase(jsonObject);
+        }
+        return retInt;
+    }
+
+    protected String checkComment() {
+        String tableComment = "Not found";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("information_schema.tables")) {
+            String dbName = dbFullName.replace(ConstantsFor.DB_INETSTATS, "");
+            final String sql = String.format("SELECT TABLE_COMMENT FROM information_schema.TABLES WHERE TABLE_NAME LIKE '%s';", dbName);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    tableComment = resultSet.getString(1);
+
+                }
+            }
+        }
+        catch (SQLException e) {
+            tableComment = SyncData.INETSYNC + " checkComment " + e.getMessage() + " see line: 89";
+        }
+        return tableComment;
+    }
+
+    private int countRecords(Path filePath) {
+        int i;
+        try {
+            i = FileSystemWorker.countStringsInFile(filePath);
+        }
+        catch (RuntimeException e) {
+            i = -666;
+        }
+        return i;
+    }
+
+    public InternetSync(@NotNull String type) {
+        super();
+        this.ipAddr = type;
+        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
+    }
+
+    /**
+     @param ipAddr ip-адрес
+     @see InternetSyncTest#testCreateTable()
+     */
+    protected String createTable(@NotNull String ipAddr) {
+        if (!ipAddr.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            throw new InvokeIllegalException(ipAddr);
+        }
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        String readFileStr = readSQLCreateQuery();
+        readFileStr = readFileStr.replace(ConstantsFor.FIELDNAME_ADDR, ipAddr.replaceAll("\\Q.\\E", "_")).replace(ConstantsFor.DBFIELD_PCNAME, getCurrentUserPC());
+        final String sql = readFileStr;
+        FileSystemWorker.appendObjectToFile(new File("create.table"), sql);
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"))) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                int executeUpdateInt = preparedStatement.executeUpdate();
+                return MessageFormat.format("Updated: {0}. Query: \n{1}", executeUpdateInt, sql);
+            }
+        }
+        catch (SQLException e) {
+            return MessageFormat
+                .format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()), sql);
+        }
+    }
+
+    @NotNull
+    private String setComment() {
+        String comment = "Changing table comment";
+        final String sql = String.format("ALTER TABLE %s COMMENT='%s';", dbFullName, getCurrentUserPC());
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbFullName)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                return MessageFormat.format("{0} is {1}", sql, preparedStatement.executeUpdate());
+            }
+        }
+        catch (SQLException e) {
+            return MessageFormat.format("InternetSync.setComment() : {0} see line: 76", e.getMessage());
+        }
+    }
+
+    private String getCurrentUserPC() {
+        String pcName = PCInfo.checkValidNameWithoutEatmeat(ipAddr);
+        String userAndPCName = UserInfo.getInstance(pcName).getInfoAbout(pcName);
+        if (userAndPCName.contains("'")) {
+            userAndPCName = userAndPCName.split("\\Q'\\E")[0];
+        }
+        String splitterStr = "\n class";
+        if (userAndPCName.contains(splitterStr)) {
+            userAndPCName = userAndPCName.split(splitterStr)[0];
+        }
+        return userAndPCName;
+    }
+
+    private JsonObject parseAsObject(String str) {
+        JsonObject jsonObject = new JsonObject();
+        try {
+            jsonObject = Json.parse(str).asObject();
+            return jsonObject;
+        }
+        catch (RuntimeException e) {
+            jsonObject.add(ConstantsFor.DBCOL_STAMP, "1");
+            jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "");
+            jsonObject.add(ConstantsFor.DBCOL_BYTES, "1");
+            jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
+            return jsonObject;
+        }
     }
 
     private int sendToDatabase(@NotNull JsonObject object) {
@@ -294,115 +442,6 @@ public class InternetSync extends SyncData implements Runnable {
         return result;
     }
 
-    private JsonObject parseAsObject(String str) {
-        JsonObject jsonObject = new JsonObject();
-        try {
-            jsonObject = (JsonObject) Json.parse(str);
-            return jsonObject;
-        }
-        catch (com.eclipsesource.json.ParseException e) {
-            jsonObject.add(ConstantsFor.DBCOL_STAMP, "1");
-            jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "");
-            jsonObject.add(ConstantsFor.DBCOL_BYTES, "1");
-            jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
-            return jsonObject;
-        }
-    }
-
-    protected String checkComment() {
-        String tableComment = "Not found";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("information_schema.tables")) {
-            String dbName = dbFullName.replace(ConstantsFor.DB_INETSTATS, "");
-            final String sql = String.format("SELECT TABLE_COMMENT FROM information_schema.TABLES WHERE TABLE_NAME LIKE '%s';", dbName);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    tableComment = resultSet.getString(1);
-
-                }
-            }
-        }
-        catch (SQLException e) {
-            tableComment = SyncData.INETSYNC + " checkComment " + e.getMessage() + " see line: 89";
-        }
-        return tableComment;
-    }
-
-    private int countRecords(Path filePath) {
-        int i;
-        try {
-            i = FileSystemWorker.countStringsInFile(filePath);
-        }
-        catch (RuntimeException e) {
-            i = -666;
-        }
-        return i;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = ipAddr != null ? ipAddr.hashCode() : 0;
-        result = 31 * result + (connection != null ? connection.hashCode() : 0);
-        result = 31 * result + (dbFullName != null ? dbFullName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof InternetSync)) {
-            return false;
-        }
-
-        InternetSync sync = (InternetSync) o;
-
-        if (ipAddr != null ? !ipAddr.equals(sync.ipAddr) : sync.ipAddr != null) {
-            return false;
-        }
-        if (connection != null ? !connection.equals(sync.connection) : sync.connection != null) {
-            return false;
-        }
-        return dbFullName != null ? dbFullName.equals(sync.dbFullName) : sync.dbFullName == null;
-    }
-
-    public InternetSync(@NotNull String type) {
-        super();
-        this.ipAddr = type;
-        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
-    }
-
-
-
-    @NotNull
-    private String setComment() {
-        String comment = "Changing table comment";
-        final String sql = String.format("ALTER TABLE %s COMMENT='%s';", dbFullName, getCurrentUserPC());
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbFullName)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                return MessageFormat.format("{0} is {1}", sql, preparedStatement.executeUpdate());
-            }
-        }
-        catch (SQLException e) {
-            return MessageFormat.format("InternetSync.setComment() : {0} see line: 76", e.getMessage());
-        }
-    }
-
-    private String getCurrentUserPC() {
-        String pcName = PCInfo.checkValidNameWithoutEatmeat(ipAddr);
-        String userAndPCName = UserInfo.getInstance(pcName).getInfoAbout(pcName);
-        if (userAndPCName.contains("'")) {
-            userAndPCName = userAndPCName.split("\\Q'\\E")[0];
-        }
-        String splitterStr = "\n class";
-        if (userAndPCName.contains(splitterStr)) {
-            userAndPCName = userAndPCName.split(splitterStr)[0];
-        }
-        return userAndPCName;
-    }
-
     @NotNull
     private String renameToTXT(Path filePath) throws InvokeIllegalException {
         String retStr;
@@ -417,10 +456,15 @@ public class InternetSync extends SyncData implements Runnable {
         return retStr;
     }
 
-    @Override
-    public void run() {
-        Thread.currentThread().setName(this.getClass().getSimpleName());
-        superRun();
+    private int countRecords(Path filePath) {
+        int i;
+        try {
+            i = FileSystemWorker.countStringsInFile(filePath);
+        }
+        catch (RuntimeException e) {
+            i = -666;
+        }
+        return i;
     }
 
     @NotNull
@@ -441,6 +485,20 @@ public class InternetSync extends SyncData implements Runnable {
             "ROW_FORMAT=COMPRESSED\n" +
             ";\n".replace(ConstantsFor.FIELDNAME_ADDR, this.ipAddr.replaceAll("\\Q.\\E", "_"))
                 .replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
+    }
+
+    @Contract(pure = true)
+    private static long parseDate(String dateAsString) {
+        long result;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE MMM dd kk:mm:ss zzz yyyy", Locale.ENGLISH);
+        try {
+            Date parsedDate = simpleDateFormat.parse(dateAsString);
+            result = parsedDate.getTime();
+        }
+        catch (ParseException e) {
+            result = -1;
+        }
+        return result;
     }
 
 

@@ -4,9 +4,12 @@ package ru.vachok.networker.data.enums;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -261,11 +264,11 @@ public enum ConstantsFor {
 
     public static final String STR_ACTIONPERFORMED = ".actionPerformed";
 
-    public static final String SSH_SHOW_PFSQUID = "sudo cat /etc/pf/squid && exit";
+    public static final String SSH_CAT_PFSQUID = "sudo cat /etc/pf/squid;exit";
 
-    public static final String SSH_SHOW_SQUIDLIMITED = "sudo cat /etc/pf/squidlimited && exit";
+    public static final String SSH_SHOW_SQUIDLIMITED = "sudo cat /etc/pf/squidlimited;exit";
 
-    public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
+    public static final String SSH_CAT_PROXYFULL = "sudo cat /etc/pf/tempfull;exit";
 
     public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
 
@@ -368,7 +371,7 @@ public enum ConstantsFor {
 
     public static final String DB_SEARCHS = "search.s";
 
-    public static final String DB_PCUSERAUTO_FULL = "velkom.pcuserauto";
+    public static final String DB_PCUSERAUTO_FULL = DataConnectTo.DBNAME_VELKOM_POINT + DB_PCUSERAUTO;
 
     public static final String RU_GLAVNAYA = "Главная";
 
@@ -431,9 +434,9 @@ public enum ConstantsFor {
 
     public static final String SSH_ETCPF = " /etc/pf/";
 
-    public static final String SSH_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
+    public static final String SSH_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure;exit";
 
-    public static final String SSH_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
+    public static final String SSH_CAT_24HRSLIST = "sudo cat /etc/pf/24hrs;exit";
 
     public static final String DB_FIELD_WHENQUERIED = "whenQueried";
 
@@ -462,10 +465,6 @@ public enum ConstantsFor {
     public static final String ISNTRESOLVED = "Login isn't resolved";
 
     public static final String USERS = ": Users";
-
-    public static final String DB_LANMONITOR = "lan.monitor";
-
-    public static final String DBFIELD_TSTAMP = "tstamp";
 
     public static final String DBFIELD_CONTROLIP = "controlIp";
 
@@ -525,14 +524,6 @@ public enum ConstantsFor {
 
     public static final String ADD = "add";
 
-    public static final String PARAM_NAME_CODE = "code";
-
-    public static final String[] SSH_LIST_COMMANDS = {"sudo ps ax;exit", "sudo cat /etc/pf/vipnet;exit", "sudo cat /etc/pf/tempfull;exit", "sudo cat /etc/pf/24hrs;exit", "sudo cat /etc/pf/squid;exit", "sudo cat /etc/pf/squidlimited;exit"};
-
-    public static final String JSON_LIST_LIMITSQUID = "limitSquid";
-
-    ;
-
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     public static final String DOMAIN = "domain";
@@ -543,49 +534,23 @@ public enum ConstantsFor {
 
     public static final String VACHOK_VACHOK_RU = "vachok@vachok.ru";
 
-    public static final String FIREBASE = "firebase";
+    public static final String FIREBASE = InitProperties.FIREBASE;
 
     public static final String OWNER = "owner";
-
-    public static final String TEMPNET = "tempnet";
 
     public static final String NETWORKER = "ru.vachok.networker";
 
     public static final String SSHADD = "/sshadd";
 
-    public static final String SSHCOM_GETALLOWDOMAINS = "sudo cat /etc/pf/allowdomain && exit";
+    public static final String SSHCOM_GETALLOWDOMAINS = "sudo cat /etc/pf/allowdomain;exit";
 
     public static final String FILES = "Files: ";
 
     public static final String EXTENDED = " QUICK EXTENDED;";
 
-    public static final String PARAM_NAME_SERVER = "server";
+    public static final String JSON_PARAM_NAME_SERVER = "server";
 
     public static final String PARM_NAME_COMMAND = "command";
-
-    public static final String RUNNING = "Walker_running";
-
-    public static final String ISTRANET = "Istranet";
-
-    public static final String FORTEX = "Fortex";
-
-    public static final String VPN_LIST = "OpenVPN CLIENT LIST";
-
-    public static final int SSH_TIMEOUT = 863990;
-
-    public static final String JSON_OBJECT_FULL_SQUID = "fullSquid";
-
-    public static final String JSON_OBJECT_RULES = "pfRules";
-
-    public static final String JSON_OBJECT_NAT = "pfNat";
-
-    public static final String JSON_OBJECT_STD_SQUID = "stdSquid";
-
-    public static final String JSON_OBJECT_VIPNET = "vipNet";
-
-    public static final String JSON_OBJECT_SQUID = "squid";
-
-    public static final String JSON_LIST_24HRS = "24hrs";
 
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
@@ -615,5 +580,29 @@ public enum ConstantsFor {
             e.printStackTrace();
         }
         return retSet;
+    }
+
+    /**
+     @see ConstantsForTest
+     */
+    public static boolean argNORUNExist(String... runOnlyOn) {
+        boolean retBool = false;
+        File file = new File(FileNames.ARG_NO_RUN);
+        Map<String, String> appArgs = IntoApplication.getAppArgs();
+        for (String s : runOnlyOn) {
+            if (!s.isEmpty() && UsefulUtilities.thisPC().toLowerCase().contains(s.toLowerCase())) {
+                retBool = true;
+                FileSystemWorker.writeFile(file.getAbsolutePath(), UsefulUtilities.thisPC() + "\n\n\n" + AbstractForms
+                    .fromArray(Thread.currentThread().getStackTrace()));
+            }
+        }
+        if (!appArgs.isEmpty()) {
+            if (appArgs.containsKey(APP_ARG_NOSCAN)) {
+                retBool = true;
+                FileSystemWorker.writeFile(file.getAbsolutePath(), new Date().toString());
+            }
+        }
+        file.deleteOnExit();
+        return retBool;
     }
 }

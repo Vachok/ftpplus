@@ -19,6 +19,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,10 +32,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -45,7 +43,7 @@ public class InternetSyncTest {
 
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(InternetSync.class.getSimpleName(), System.nanoTime());
 
-    private SyncData syncData;
+    private InternetSync syncData;
 
     private Connection connection;
 
@@ -63,7 +61,7 @@ public class InternetSyncTest {
 
     @BeforeMethod
     public void initSync() {
-        syncData = SyncData.getInstance("10.200.213.85");
+        syncData = (InternetSync) SyncData.getInstance("10.200.213.85");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
 
@@ -86,10 +84,8 @@ public class InternetSyncTest {
             }
         }
 
-        String syncResult = syncData.syncData();
-
-        Assert.assertTrue(syncResult.contains("No original FILE! 10.200.213.85.csv"), syncResult);
-
+        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 60);
+        Assert.assertTrue(o.toString().contains("No original FILE! 10.200.213.85.csv"), o.toString());
     }
 
     @Test
@@ -118,7 +114,7 @@ public class InternetSyncTest {
     @Test
     @Ignore
     public void testCreateTable$$COPY() {
-        String tableCreate = ((InternetSync) syncData).createTable("10.200.213.200");
+        String tableCreate = syncData.createTable("10.200.213.200");
         Assert.assertEquals(tableCreate, "Updated: 0. Query: \n" +
                 "CREATE TABLE if not exists `10_200_213_200` (\n" +
                 "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
@@ -191,9 +187,14 @@ public class InternetSyncTest {
 
     @Test
     public void testUploadCollection() {
-        int rowsUp = syncData.uploadCollection(Collections.singleton("test"), "test");
+        try {
+            int rowsUp = syncData.uploadCollection(Collections.singleton("test"), "test");
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         int upInt = syncData.uploadCollection(Collections
-            .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
+                .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
         Assert.assertTrue(upInt == 0);
     }
 
@@ -228,6 +229,29 @@ public class InternetSyncTest {
         if (createJSON(fileQueue) > 0) {
             fileWork(filePath);
         }
+    }
+
+    @Test
+    public void testGetRawResult() {
+        Object result = syncData.getRawResult();
+        Assert.assertTrue(result.toString().contains("ConcurrentHashMap is empty"), result.toString());
+    }
+
+    @Test
+    public void testRun() {
+        AppConfigurationLocal.getInstance().execute(syncData, 20);
+    }
+
+    @Test
+    public void testExec() {
+        boolean isExec = (boolean) AppConfigurationLocal.getInstance().executeGet(()->syncData.exec(), 50);
+        Assert.assertTrue(isExec);
+    }
+
+    @Test
+    public void testCheckComment() {
+        String s = syncData.checkComment();
+        Assert.assertTrue(s.contains("Last online"), s);
     }
 
     private int createJSON(@NotNull Queue<String> fileQueue) {

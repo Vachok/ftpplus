@@ -55,12 +55,6 @@ public class UsefulUtilitiesTest {
     }
 
     @Test
-    public void testIsPingOK() {
-        boolean isOk = UsefulUtilities.isPingOK();
-        Assert.assertTrue(isOk);
-    }
-
-    @Test
     public void testGetStringsVisit() {
         List<String> visit = UsefulUtilities.getPatternsToDeleteFilesOnStart();
         String fromArray = new TForms().fromArray(visit);

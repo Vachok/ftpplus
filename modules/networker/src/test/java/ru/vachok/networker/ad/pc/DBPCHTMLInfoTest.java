@@ -15,7 +15,6 @@ import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
@@ -24,7 +23,6 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -134,72 +132,12 @@ public class DBPCHTMLInfoTest {
 
     }
 
-    @Test
-    @Ignore
-    public void oldBobby() {
-        this.pcName = "do0.eatmeat.ru";
-        String onOff = countOnOff();
-        System.out.println("onOff = " + onOff);
-    }
-
-    @Deprecated
-    private @NotNull String countOnOff() {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(1);
-        Collection<Integer> onLine = new ArrayList<>();
-        Collection<Integer> offLine = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
-             PreparedStatement statement = connection.prepareStatement(ConstantsFor.SQL_GET_VELKOMPC_NAMEPP)) {
-            statement.setString(1, String.format("%%%s%%", pcName));
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                    if (onlineNow == 1) {
-                        onLine.add(1);
-                    }
-                    if (onlineNow == 0) {
-                        offLine.add(0);
-                    }
-                }
-                upPcUser(onLine.size(), offLine.size());
-            }
-            catch (RuntimeException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-            }
-        }
-        catch (SQLException | RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        return new DBPCHTMLInfo().htmlOnOffCreate(onLine.size(), offLine.size());
-    }
-
-    @Deprecated
-    private void upPcUser(int on, int off) {
-        String wherePcName = " WHERE `pcName` like '";
-        final String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `On`= %d%s%s%%'", on, wherePcName, pcName);
-        final String sqlOff = String.format("UPDATE `velkom`.`pcuser` SET `Off`= %d%s%s%%'", off, wherePcName, pcName);
-        final String sqlTotal = String.format("UPDATE `velkom`.`pcuser` SET `Total`= %d%s%s%%'", on + off, wherePcName, pcName);
-
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
-             PreparedStatement psOn = connection.prepareStatement(sqlOn);
-             PreparedStatement psOff = connection.prepareStatement(sqlOff);
-             PreparedStatement psTotal = connection.prepareStatement(sqlTotal);
-        ) {
-            psOn.executeUpdate();
-            psOff.executeUpdate();
-            psTotal.executeUpdate();
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-    }
-
     private void setTimeOn() {
         this.pcName = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
         JsonObject jsonObject = new JsonObject();
         jsonObject.set("start", System.nanoTime());
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
-            String sql = "SELECT * from velkompc WHERE AddressPP like ? and OnlineNow = 1 order by idrec desc limit 1";
+            final String sql = "SELECT * from velkompc WHERE AddressPP like ? and OnlineNow = 1 order by idrec desc limit 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -207,7 +145,7 @@ public class DBPCHTMLInfoTest {
                     while (resultSet.next()) {
                         this.pcName = resultSet.getString(ConstantsFor.DBCOL_NAMEPP);
                         jsonObject.set("setTimeOn", pcName);
-                        jsonObject.set("idrec", resultSet.getInt("idrec"));
+                        jsonObject.set(ConstantsFor.DBCOL_IDREC, resultSet.getInt(ConstantsFor.DBCOL_IDREC));
                         jsonObject.set("laston", resultSet.getTimestamp("TimeNow").getTime());
                     }
                 }

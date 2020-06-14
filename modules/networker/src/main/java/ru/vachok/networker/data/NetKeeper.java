@@ -128,27 +128,6 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return NETLISTS_OFFLINES;
     }
 
-    /**
-     Все возможные IP из диапазонов {@link DiapazonScan}
-
-     @return {@link #ALL_DEVICES}
-     */
-    public static BlockingDeque<String> getAllDevices() {
-        int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
-        properties.setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
-        return ALL_DEVICES;
-    }
-
-    @Contract(pure = true)
-    public static Set<String> getPcNamesForSendToDatabase() {
-        return PC_NAMES_FOR_SEND_TO_DATABASE;
-    }
-
-    @Contract(pure = true)
-    public static ConcurrentMap<String, String> getOnLinesResolve() {
-        return NETLISTS_ONLINERESOLVE;
-    }
-
     private static void makeFilesMap() {
         if (checkAlreadyExistingFiles()) {
 
@@ -179,6 +158,27 @@ public abstract class NetKeeper implements Keeper, Serializable {
             File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
             scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
         }
+    }
+
+    @Contract(pure = true)
+    public static Set<String> getPcNamesForSendToDatabase() {
+        return PC_NAMES_FOR_SEND_TO_DATABASE;
+    }
+
+    @Contract(pure = true)
+    public static ConcurrentMap<String, String> getOnLinesResolve() {
+        return NETLISTS_ONLINERESOLVE;
+    }
+
+    /**
+     Все возможные IP из диапазонов {@link DiapazonScan}
+
+     @return {@link #ALL_DEVICES}
+     */
+    public static BlockingDeque<String> getAllDevices() {
+        int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
+        properties.setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
+        return ALL_DEVICES;
     }
 
     @Contract(pure = true)

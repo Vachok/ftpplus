@@ -79,7 +79,7 @@ public class TemporaryFullInternetTest {
         final Pattern PAT_BR_N = Pattern.compile("<br>\n");
         final Pattern PAT_SHARP = Pattern.compile(" #");
 
-        SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
+        SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT_24HRSLIST);
         String tempFile = SSH_FACTORY.call();
         MINI_LOGGER.add(tempFile);
 

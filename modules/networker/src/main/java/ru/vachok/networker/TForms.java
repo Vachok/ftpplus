@@ -8,13 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
-import java.io.File;
-import java.lang.management.*;
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.WatchEvent;
@@ -33,45 +34,42 @@ import java.util.stream.Stream;
  Помощник для {@link Arrays#toString()}
  <p>
  Делает похожие действия, но сразу так, как нужно для {@link ru.vachok.networker.IntoApplication}
- 
+
  @since 06.09.2018 (9:33) */
 @SuppressWarnings("ALL")
 public class TForms {
-    
-    
+
+
     /**
      {@link LoggerFactory#getLogger(java.lang.String)}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(TForms.class.getSimpleName());
-    
+
     private static final String STR_LINE_CLASS = " line, class: ";
-    
+
     private static final String STR_VALUE = ", value: ";
-    
+
     private static final String STR_DISASTER = " occurred disaster!<br>";
-    
+
     private static final String STR_METHFILE = " method.<br>File: ";
-    
+
     private StringBuilder brStringBuilder = new StringBuilder();
-    
+
     private StringBuilder nStringBuilder = new StringBuilder();
-    
+
     @NotNull
     public static String networkerTrace(@NotNull StackTraceElement[] trace) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("\n");
-        File appendFile = new File("trace.last");
-        appendFile.delete();
         for (StackTraceElement element : trace) {
             String elem = element.toString();
             if (elem.contains(ConstantsFor.NETWORKER)) {
                 stringBuilder.append(elem).append("\n");
             }
-            FileSystemWorker.appendObjectToFile(appendFile, elem);
         }
         return stringBuilder.toString();
     }
-    
+
     public String fromArray(Properties properties) {
         InitProperties initProperties = new FileProps(ConstantsFor.APPNAME_WITHMINUS);
         initProperties.setProps(properties);
@@ -83,7 +81,7 @@ public class TForms {
         });
         return nStringBuilder.toString();
     }
-    
+
     public String fromEnum(Enumeration<?> enumStrings, boolean br) {
         nStringBuilder.append(ConstantsFor.STR_N);
         brStringBuilder.append(ConstantsFor.STR_P);
@@ -101,7 +99,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(Queue<String> stringQueue, boolean br) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
@@ -117,7 +115,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(@NotNull Cookie[] cookies, boolean br) {
         brStringBuilder.append(ConstantsFor.STR_P);
         for (Cookie c : cookies) {
@@ -133,7 +131,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(@NotNull Address[] mailAddress, boolean br) {
         for (Address address : mailAddress) {
             brStringBuilder
@@ -150,7 +148,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(@NotNull Throwable[] suppressed) {
         nStringBuilder.append("suppressed throwable!\n".toUpperCase());
         for (Throwable throwable : suppressed) {
@@ -158,7 +156,7 @@ public class TForms {
         }
         return nStringBuilder.toString();
     }
-    
+
     public String fromArrayUsers(@NotNull ConcurrentMap<?, ?> pcUsers, boolean isHTML) {
         pcUsers.forEach((x, y)->{
             nStringBuilder
@@ -180,7 +178,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(InetAddress[] allByName, boolean b) {
         brStringBuilder.append(ConstantsFor.STR_BR);
         for (InetAddress inetAddress : allByName) {
@@ -198,7 +196,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(Properties p, boolean b) {
         brStringBuilder.append(ConstantsFor.STR_P);
         p.forEach((x, y)->{
@@ -218,7 +216,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(BlockingQueue<Runnable> runnableBlockingQueue, boolean b) {
         this.nStringBuilder = new StringBuilder();
         this.brStringBuilder = new StringBuilder();
@@ -238,7 +236,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String sshCheckerMapWithDates(Map<String, Long> sshCheckerMap, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
@@ -260,26 +258,26 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(ResultSetMetaData resultSetMetaData, int colIndex, boolean isHTML) throws SQLException {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-        
+
         brStringBuilder.append(resultSetMetaData.getColumnCount() + " collumns<br>");
         nStringBuilder.append(resultSetMetaData.getColumnCount() + " collumns\n");
-        
+
         brStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(ConstantsFor.STR_BR);
         nStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(ConstantsFor.STR_N);
-        
+
         brStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(ConstantsFor.STR_BR);
         nStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(ConstantsFor.STR_N);
-        
+
         brStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(ConstantsFor.STR_BR);
         nStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(ConstantsFor.STR_N);
-        
+
         brStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(ConstantsFor.STR_BR);
         nStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(ConstantsFor.STR_N);
-        
+
         if (isHTML) {
             return brStringBuilder.toString();
         }
@@ -287,14 +285,14 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArrayW(List<WatchEvent<?>> watchEventlist, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
         watchEventlist.stream().forEach(x->{
             brStringBuilder.append(x.count()).append(" events").append(ConstantsFor.STR_BR);
             nStringBuilder.append(x.count()).append(" events").append(ConstantsFor.STR_N);
-    
+
             brStringBuilder.append(x.kind()).append(" ").append(x.context()).append(ConstantsFor.STR_BR);
             nStringBuilder.append(x.kind()).append(" ").append(x.context()).append(ConstantsFor.STR_N);
         });
@@ -305,7 +303,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(long[] threads) {
         this.nStringBuilder = new StringBuilder();
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
@@ -316,11 +314,11 @@ public class TForms {
         }
         return nStringBuilder.toString();
     }
-    
+
     public String fromArray(ThreadInfo[] infos, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-        
+
         for (ThreadInfo threadInfo : infos) {
             brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(ConstantsFor.STR_BR);
             brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(ConstantsFor.STR_N);
@@ -331,7 +329,7 @@ public class TForms {
             nStringBuilder.append(ConstantsFor.STR_N);
             try {
                 String lockInfoStr = threadInfo.getLockInfo().toString();
-    
+
                 brStringBuilder.append(lockInfoStr).append(ConstantsFor.STR_BR);
                 nStringBuilder.append(lockInfoStr).append(ConstantsFor.STR_N);
             }
@@ -339,7 +337,7 @@ public class TForms {
                 nStringBuilder.append(new TForms().fromArray(e, false));
             }
         }
-        
+
         if (isHTML) {
             return brStringBuilder.toString();
         }
@@ -347,11 +345,11 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     /**
      Парсинг элемента трэйса
      <p>
-     
+
      @param stackTraceElement {@link StackTraceElement} из {@link Exception} или {@link Throwable}
      @see #parseThrowable(Exception)
      @see #fromArray(Exception, boolean)
@@ -362,10 +360,10 @@ public class TForms {
         brStringBuilder.append(stackTraceElement.getFileName()).append(": ");
         brStringBuilder.append(stackTraceElement.toString()).append(ConstantsFor.STR_BR);
     }
-    
+
     /**
      Преобразрвание исключений.
-     
+
      @param e {@link Exception}
      @param isHTML где показывается строка. На ВЕБ или нет.
      @return {@link #brStringBuilder} или {@link #nStringBuilder}
@@ -373,7 +371,7 @@ public class TForms {
     public String fromArray(Exception e, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-    
+
         brStringBuilder.append(LocalDateTime.now()).append(ConstantsFor.STR_BR).append("<h3>").append(e.getMessage()).append(" exception message.</h3><p>");
         nStringBuilder.append(e.getClass().getSimpleName()).append(" - ").append(e.getMessage()).append("\n");
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
@@ -383,7 +381,7 @@ public class TForms {
         }
         brStringBuilder.append("<p>");
         nStringBuilder.append(ConstantsFor.STR_N).append(ConstantsFor.STR_N).append(ConstantsFor.STR_N);
-    
+
         if (e.getSuppressed().length > 0) {
             parseThrowable(e);
         }
@@ -394,12 +392,12 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     /**
      Если {@link Exception} содержит getSuppressed.
      <p>
      Парсит {@link Throwable}
-     
+
      @param e {@link Exception}
      @see TForms#fromArray(java.lang.Exception, boolean)
      */
@@ -420,7 +418,7 @@ public class TForms {
             brStringBuilder.append(ConstantsFor.STR_P);
         }
     }
-    
+
     public String fromArray(@NotNull Address[] from) {
         this.nStringBuilder = new StringBuilder();
         for (Address address : from) {
@@ -428,15 +426,15 @@ public class TForms {
         }
         return nStringBuilder.toString();
     }
-    
+
     public String fromArray(Exception e) {
         return fromArray(e, false);
     }
-    
+
     public String fromArray(Set<?> set) {
         return fromArray(set, false);
     }
-    
+
     public String fromArray(@NotNull Set<?> cacheSet, boolean br) {
         brStringBuilder.append(ConstantsFor.STR_P);
         nStringBuilder.append(ConstantsFor.STR_N);
@@ -455,15 +453,15 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(List<?> listObjects) {
         return fromArray(listObjects, false);
     }
-    
+
     public String fromArray(@NotNull List<?> objList, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-        
+
         objList.forEach(objFromList->{
             brStringBuilder
                     .append(ConstantsFor.STR_BR)
@@ -478,16 +476,16 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(Map<?, ?> files) {
         return fromArray(files, false);
     }
-    
+
     public String fromArray(Map<?, ?> mapDefObj, boolean isHTML) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
         brStringBuilder.append(ConstantsFor.STR_P);
-        
+
         for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
             try {
                 brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_BR);
@@ -497,7 +495,7 @@ public class TForms {
                 System.err.println(e.getMessage() + " in 497: " + getClass().getSimpleName());
             }
         }
-        
+
         if (isHTML) {
             brStringBuilder.append(ConstantsFor.STR_P);
             return brStringBuilder.toString();
@@ -507,15 +505,15 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(Deque<?> deque) {
         return fromArray(deque, false);
     }
-    
+
     public String fromArray(Collection<?> values, boolean isHTML) {
         return fromArray(values.stream(), isHTML);
     }
-    
+
     public String fromArray(Stream<?> objStream, boolean isHTML) {
         objStream.forEach(object->{
             brStringBuilder
@@ -525,7 +523,7 @@ public class TForms {
                     .append(ConstantsFor.STR_N)
                     .append(object);
         });
-        
+
         if (isHTML) {
             return brStringBuilder.toString();
         }
@@ -533,15 +531,15 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(Queue<?> queue) {
         return fromArray(queue, false);
     }
-    
+
     public String fromArray(Enumeration<?> enumeration) {
         return fromArray(enumeration, false);
     }
-    
+
     public String fromArray(@NotNull Enumeration<?> enumOf, boolean isHtml) {
         this.nStringBuilder = new StringBuilder();
         this.brStringBuilder = new StringBuilder();
@@ -557,18 +555,19 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(@NotNull Throwable cause) {
         this.nStringBuilder = new StringBuilder();
+        nStringBuilder.append(cause.getClass().getSimpleName()).append("\n");
         nStringBuilder.append(cause.getMessage()).append(" ").append(LocalDateTime.now()).append("\n\n");
         nStringBuilder.append(fromArray(cause.getStackTrace()));
         return nStringBuilder.toString();
     }
-    
+
     public String fromArray(StackTraceElement[] elements) {
         return fromArray(elements, false);
     }
-    
+
     public String fromArray(Object[] objects, boolean b) {
         brStringBuilder.append(ConstantsFor.STR_P);
         for (Object o : objects) {
@@ -586,34 +585,34 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     public String fromArray(Collection<?> collectToString) {
         return fromArray(collectToString, false);
     }
-    
+
     public void fromArray(@NotNull ThreadInfo[] threadInfos) {
         this.nStringBuilder = new StringBuilder();
         for (ThreadInfo threadInfo : threadInfos) {
             nStringBuilder.append(threadInfo.toString()).append("\n");
         }
     }
-    
+
     public String fromArray(String[] stringsArray) {
         return fromArray(stringsArray, false);
     }
-    
+
     public String fromArray(Object[] array) {
         return fromArray(array, false);
     }
-    
+
     public String fromArray(Preferences pref) {
         return fromArray(pref, false);
     }
-    
+
     public String fromArray(@NotNull Preferences pref, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-        
+
         brStringBuilder.append("USER PREFS").append(ConstantsFor.STR_BR);
         nStringBuilder.append("USER PREFS").append(ConstantsFor.STR_N);
         try {
@@ -634,7 +633,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

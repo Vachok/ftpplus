@@ -7,8 +7,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,6 +47,12 @@ public class RestCTRLGetTest {
     }
 
     @Test
+    public void testCollectOldFiles() {
+        String oldFilesStr = restCTRLGet.collectOldFiles();
+        Assert.assertTrue(oldFilesStr.contains("Total file size in DB now"), oldFilesStr);
+    }
+
+    @Test
     public void testUniqPC() {
         HttpServletRequest request = new MockHttpServletRequest();
         String uPc = restCTRLGet.uniqPC(request);
@@ -66,18 +74,33 @@ public class RestCTRLGetTest {
     @Test
     public void testFileShow() {
         String fileShow = restCTRLGet.fileShow(new MockHttpServletRequest());
-        Assert.assertTrue(fileShow.contains("ConstantsFor.properties"), fileShow);
+        Assert.assertTrue(fileShow.contains(FileNames.CONSTANTSFOR_PROPERTIES), fileShow);
     }
 
     @Test
     public void testSshRest() {
-        String sshStr = restCTRLGet.sshRest(new MockHttpServletRequest());
-        Assert.assertTrue(sshStr.contains("stdSquid"), sshStr);
+        try {
+            Thread.sleep(1500);
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        finally {
+            String sshStr = restCTRLGet.sshRest(new MockHttpServletRequest());
+            Assert.assertTrue(sshStr.contains("stdSquid"), sshStr);
+        }
     }
 
     @Test
     public void testTestToString() {
         String s = restCTRLGet.toString();
         Assert.assertTrue(s.contains("RestCTRLGet["), s);
+    }
+
+    @Test
+    public void testShowAppProps() {
+        String s = restCTRLGet.showAppProps();
+        Assert.assertTrue(s.contains("props_"));
+        Assert.assertTrue(s.contains("pref_"));
     }
 }

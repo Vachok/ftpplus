@@ -90,6 +90,7 @@ public class ScanOnlineTest {
 
     @Test
     public void testRun() {
+        Assert.assertFalse(ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC));
         NetScanService scanOnline = new ScanOnline();
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());
@@ -131,11 +132,11 @@ public class ScanOnlineTest {
             List<String> pingedDevices = new ScanOnline().pingDevices(NetKeeper.getENUMAddresses());
             Assert.assertNotNull(pingedDevices);
             if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-                Assert.assertTrue(pingedDevices.size() == 21, MessageFormat
+                Assert.assertTrue(pingedDevices.size() == 16, MessageFormat
                     .format("{0} pingedDevices: {1}", pingedDevices.size(), AbstractForms.fromArray(pingedDevices)));
             }
             else {
-                Assert.assertTrue(pingedDevices.size() == 20, pingedDevices.size() + " pingedDevices: " + AbstractForms.fromArray(pingedDevices));
+                Assert.assertTrue(pingedDevices.size() == 19, pingedDevices.size() + " pingedDevices: " + AbstractForms.fromArray(pingedDevices));
             }
         }
         catch (TODOException e) {

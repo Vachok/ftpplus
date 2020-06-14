@@ -3,6 +3,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -16,7 +17,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -59,22 +63,19 @@ class ACLDatabaseSearcher extends ACLParser {
 
     @Override
     public void setClassOption(Object classOption) {
-        if (classOption instanceof List) {
-            this.searchPatterns.addAll((Collection<String>) classOption);
-        }
-        else if (classOption instanceof Integer) {
+        if (classOption instanceof Integer) {
             this.linesLimit = Integer.parseInt(classOption.toString());
         }
         else {
-            throw new IllegalArgumentException(getClass().getSimpleName());
+            throw new InvokeIllegalException(classOption.toString());
         }
     }
 
     @Override
     public String getResult() {
         if (readAllACLWithSearchPatternFromDB()) {
-            String retStr = new TForms().fromArray(getMapRights().keySet());
-            retStr = retStr + "\n" + getMapRights().get(Paths.get(searchPattern));
+            String retStr = AbstractForms.fromArray(getMapRights().keySet());
+            retStr = MessageFormat.format("{0}\n{1}", retStr, getMapRights().get(Paths.get(searchPattern)));
             return retStr;
         }
         else {
@@ -85,8 +86,8 @@ class ACLDatabaseSearcher extends ACLParser {
     private @NotNull String getParsedResult() {
         int patternMapSize = foundPatternMap();
         String patternsToSearch = MessageFormat
-                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
-        String retMap = new TForms().fromArray(getMapRights()).replaceAll("\\Q : \\E", "\n");
+            .format("{0}. Lines = {1}/{2}", AbstractForms.fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
+        String retMap = AbstractForms.fromArray(getMapRights()).replaceAll("\\Q : \\E", "\n");
         String retStr = patternsToSearch + "\n" + retMap;
         return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
     }

@@ -11,13 +11,13 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  @since 21.08.2018 (14:40) */
 @Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
 @EnableAsync(proxyTargetClass = true)
-public class PcNamesScanner implements NetScanService {
+public final class PcNamesScanner implements NetScanService {
 
 
     private final long startClassTime = System.currentTimeMillis();
@@ -46,19 +46,13 @@ public class PcNamesScanner implements NetScanService {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
-    private static final PcNamesScanner pcNamesScanner = new PcNamesScanner();
+    private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
 
-    private final File lastNetScan = new File(FileNames.LASTNETSCAN_TXT);
+    private String thePc = "";
 
     public static PcNamesScanner getI() {
         return pcNamesScanner;
     }
-
-    private static final List<String> logMini = new ArrayList<>();
-
-    private long lastScanStamp = InitProperties.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
-
-    private String thePc = "";
 
     public String getThePc() {
         return thePc;
@@ -68,63 +62,14 @@ public class PcNamesScanner implements NetScanService {
         this.thePc = thePc;
     }
 
-    private PcNamesScanner() {
-        if (!lastNetScan.exists()) {
-            try {
-                lastNetScan.createNewFile();
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (startClassTime ^ (startClassTime >>> 32));
-        result = 31 * result + (int) (lastScanStamp ^ (lastScanStamp >>> 32));
-        result = 31 * result + thePc.hashCode();
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof PcNamesScanner)) {
-            return false;
-        }
-
-        PcNamesScanner scanner = (PcNamesScanner) o;
-
-        if (startClassTime != scanner.startClassTime) {
-            return false;
-        }
-        if (lastScanStamp != scanner.lastScanStamp) {
-            return false;
-        }
-        return thePc.equals(scanner.thePc);
-    }
-
-    @SuppressWarnings("DuplicateStringLiteralInspection")
-    @Override
-    public String toString() {
-        JsonObject jsonObject = new JsonObject();
-        try {
-            jsonObject.add("startClassTime", startClassTime)
-                .add("lastScanStamp", new Date(lastScanStamp).toString())
-                .add(ModelAttributeNames.THEPC, thePc);
-        }
-        catch (RuntimeException e) {
-            messageToUser.error(PcNamesScanner.class.getSimpleName(), e.getMessage(), " see line: 195 ***");
-        }
-        return jsonObject.toString();
-    }
-
     @Override
     public String getExecution() {
-        return new ScanMessagesCreator().fillUserPCForWEBModel();
+        if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
+            return "Not run on " + UsefulUtilities.thisPC();
+        }
+        else {
+            return new ScanMessagesCreator().fillUserPCForWEBModel();
+        }
     }
 
     @Override
@@ -154,7 +99,12 @@ public class PcNamesScanner implements NetScanService {
     @Override
     public void run() {
         String fileName = this.getClass().getSimpleName() + "." + hashCode();
-        isMapSizeBigger(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TOTPC, "269")));
+        try {
+            isMapSizeBigger(Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty(PropertiesNames.TOTPC, "322")));
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error("PcNamesScanner.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
         new File(fileName).deleteOnExit();
     }
 
@@ -300,15 +250,20 @@ public class PcNamesScanner implements NetScanService {
         messageToUser.info(this.getClass().getSimpleName(), "NetKeeper.getPcNamesForSendToDatabase cleared", String.valueOf(isSmallDBWritten));
     }
 
-    private void isMapSizeBigger(int thisTotalPC) {
-        try {
-            checkPC(thisTotalPC);
+    private void isMapSizeBigger(int thisTotalPC) throws InvokeIllegalException {
+        if (ConstantsFor.argNORUNExist()) {
+            throw new InvokeIllegalException(MessageFormat.format("On {0} {1} is NOT RUNNING!", UsefulUtilities.thisPC(), NetScanService.PCNAMESSCANNER));
         }
-        catch (RuntimeException e) {
-            messageToUser.error(MessageFormat.format("PcNamesScanner.isMapSizeBigger {0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
-        }
-        finally {
-            noFileExists();
+        else {
+            try {
+                checkPC(thisTotalPC);
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(MessageFormat.format("PcNamesScanner.isMapSizeBigger {0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+            }
+            finally {
+                noFileExists();
+            }
         }
     }
 
@@ -324,13 +279,10 @@ public class PcNamesScanner implements NetScanService {
     }
 
     private void noFileExists() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.FILE);
         Thread.currentThread().setName(thePc);
-        initProperties.getProps().setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
         InitProperties.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-        File file = new File(FileNames.SCAN_TMP);
-        new ScannerUSR().run();
-        messageToUser.info(this.getClass().getSimpleName(), file.getAbsolutePath(), String.valueOf(fileScanTMPCreate(false)));
+        new PcNamesScanner.ScannerUSR().run();
+        messageToUser.info(this.getClass().getSimpleName(), scanFile.getAbsolutePath(), String.valueOf(fileScanTMPCreate(false)));
         defineNewTask();
     }
 
@@ -376,11 +328,13 @@ public class PcNamesScanner implements NetScanService {
         @Override
         public void run() {
             try {
-                messageToUser.warn(this.getClass().getSimpleName(), FileNames.INETSTATSIP_CSV, Stats.getIpsInet() + " kb");
                 scanIt();
             }
             catch (RuntimeException e) {
                 messageToUser.error("ScannerUSR.run", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            }
+            catch (InvokeIllegalException ignore) {
+                messageToUser.warn(PcNamesScanner.ScannerUSR.class.getSimpleName(), ignore.getMessage(), " see line: 400 ***");
             }
             finally {
                 messageToUser.info("ScannerUSR.run", new ScanMessagesCreator().fillUserPCForWEBModel(), "From Finally");
@@ -446,7 +400,10 @@ public class PcNamesScanner implements NetScanService {
                 .toString();
         }
 
-        private void scanIt() {
+        private void scanIt() throws InvokeIllegalException {
+            if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
+                throw new InvokeIllegalException(UsefulUtilities.thisPC());
+            }
             ConcurrentNavigableMap<String, Boolean> linksMap = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
             linksMap.clear();
             InitProperties.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));

@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -29,16 +30,16 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
+        messageToUser.info(AbstractForms.fromArray(jsonObject));
         String result;
         this.jsonObject = jsonObject;
-        int codeVer = this.jsonObject.getInt("code", -1);
         String authStr = this.jsonObject.getString(ConstantsFor.AUTHORIZATION, "");
         try {
-            if (checkValidUID(authStr, codeVer)) {
+            if (checkValidUID(authStr) & checkCodeVersion(jsonObject)) {
                 result = makeActions();
             }
             else {
-                result = MessageFormat.format("Bad AUTH for {0}, code: {1}", authStr, codeVer);
+                result = MessageFormat.format("Bad AUTH for {0}, code: {1}", authStr, checkCodeVersion(jsonObject));
             }
         }
         catch (InvokeIllegalException e) {
@@ -81,5 +82,10 @@ public class AllowDomainHelper extends SshActs implements RestApiHelper {
         }
         return result;
 
+    }
+
+    @Override
+    public String toString() {
+        return jsonObject.toString();
     }
 }

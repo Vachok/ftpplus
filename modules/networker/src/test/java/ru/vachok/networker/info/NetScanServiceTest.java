@@ -45,7 +45,7 @@ public class NetScanServiceTest {
         NetScanService scanOnline = NetScanService.getInstance("do0045");
         String toStr = scanOnline.toString();
         Assert.assertTrue(toStr.contains("last ExecScan:"), toStr);
-        toStr = NetScanService.getInstance(NetScanService.PTV).toString();
-        Assert.assertTrue(toStr.contains("NetMonitorPTV{"), toStr);
+        scanOnline = NetScanService.getInstance(NetScanService.PCNAMESSCANNER);
+        Assert.assertTrue(scanOnline.toString().contains("\"class\":\"PcNamesScanner\""), scanOnline.toString());
     }
 }

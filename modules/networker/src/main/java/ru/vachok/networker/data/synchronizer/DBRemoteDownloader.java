@@ -30,7 +30,7 @@ class DBRemoteDownloader extends SyncData {
 
     private String dbToSync;
 
-    private final List<String> jsonFromDB = new ArrayList<>();
+    private List<String> jsonFromDB = new ArrayList<>();
 
     DBRemoteDownloader(int lastLocalID) {
         this.lastLocalId = lastLocalID;

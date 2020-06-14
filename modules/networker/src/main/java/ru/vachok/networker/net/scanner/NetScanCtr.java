@@ -102,7 +102,7 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.BEANNAME_NETSCANNERSVC, pcNamesScanner);
         model.addAttribute(ModelAttributeNames.THEPC, thePCVal);
         fillModel();
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "22");
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "33");
         return ModelAttributeNames.NETSCAN;
     }
 

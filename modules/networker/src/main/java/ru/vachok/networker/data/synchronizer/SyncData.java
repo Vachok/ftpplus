@@ -19,11 +19,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinTask;
 
 
 /**
  @see SyncDataTest */
-public abstract class SyncData implements DataConnectTo {
+public abstract class SyncData extends ForkJoinTask implements DataConnectTo, Runnable {
 
 
     public static final String INETSYNC = "InternetSync";
@@ -46,19 +47,35 @@ public abstract class SyncData implements DataConnectTo {
 
     public abstract void setDbToSync(String dbToSync);
 
-    @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
-        source.setDatabaseName(FileNames.DIR_INETSTATS);
-        return source;
+    public abstract void setOption(Object option);
+
+    public static int getLastRecId(DataConnectTo dataConnectTo, String dbID) {
+        return getInstance(UPUNIVERSAL).getDBID(dataConnectTo.getDefaultConnection(dbID), dbID);
     }
 
-    @Override
-    public abstract int uploadCollection(Collection stringsCollection, String tableName);
+    private int getDBID(@NotNull Connection connection, String syncDB) {
+        int retInt = 0;
+        final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
-    @Override
-    public boolean dropTable(String dbPointTable) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
+                while (resultSet.next()) {
+                    if (resultSet.last()) {
+                        retInt = resultSet.getInt(getIdColName());
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            if (e.getMessage().contains("не найден")) {
+                retInt = DataConnectTo.getInstance(DataConnectTo.TESTING).createTable(syncDB, Collections.EMPTY_LIST);
+            }
+            else {
+                messageToUser.error(e.getMessage() + " see line: 169 ***");
+                retInt = -666;
+            }
+        }
+        return retInt;
     }
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
@@ -80,14 +97,34 @@ public abstract class SyncData implements DataConnectTo {
 
     }
 
-    public abstract void setOption(Object option);
+    @Contract(pure = true)
+    private String getIdColName() {
+        return idColName;
+    }
+
+    public void setIdColName(String idColName) {
+        this.idColName = idColName;
+    }
 
     public abstract String syncData();
 
+    public abstract Map<String, String> makeColumns();
+
     public abstract void superRun();
 
-    public static int getLastRecId(DataConnectTo dataConnectTo, String dbID) {
-        return getInstance(UPUNIVERSAL).getDBID(dataConnectTo.getDefaultConnection(dbID), dbID);
+    @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
+        source.setDatabaseName(FileNames.DIR_INETSTATS);
+        return source;
+    }
+
+    @Override
+    public abstract int uploadCollection(Collection stringsCollection, String tableName);
+
+    @Override
+    public boolean dropTable(String dbPointTable) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
     }
 
     @Override
@@ -103,6 +140,12 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
 
+    @Override
+    protected boolean exec() {
+        superRun();
+        return true;
+    }
+
     /**
      @param dbPointTable dbname.table
      @param additionalColumns unstandart column names <b>with type</b>
@@ -112,8 +155,6 @@ public abstract class SyncData implements DataConnectTo {
      */
     @Override
     public abstract int createTable(String dbPointTable, List<String> additionalColumns);
-
-    public abstract Map<String, String> makeColumns();
 
     int getLastLocalID(String syncDB) {
         DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.TESTING);
@@ -135,7 +176,7 @@ public abstract class SyncData implements DataConnectTo {
         }
         catch (SQLException e) {
             if (e.getMessage().contains("не найден")) {
-                retInt = DataConnectTo.getInstance(DataConnectTo.TESTING).createTable(syncDB, Collections.EMPTY_LIST);
+                retInt = DataConnectTo.getInstance(DataConnectTo.FIREBASE).createTable(syncDB, Collections.EMPTY_LIST);
             }
             else {
                 messageToUser.error(e.getMessage() + " see line: 169 ***");

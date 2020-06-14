@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
@@ -115,6 +115,8 @@ public abstract class UsefulUtilities {
     @NotNull
     public static String getRunningInformation() {
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Version: ").append(MessageFormat
+            .format("{0} on {1}\n", InitProperties.getTheProps().getProperty(PropertiesNames.APPVERSION), System.getProperty(PropertiesNames.JAVA_VERSION)));
         stringBuilder.append("CPU information:").append("\n").append(getOS()).append("***\n\n");
         stringBuilder.append("Memory information:").append("\n").append(getMemory()).append("***\n\n");
         stringBuilder.append("Runtime information:").append("\n").append(getRuntime()).append("***\n\n");
@@ -174,11 +176,7 @@ public abstract class UsefulUtilities {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
         stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getObjectName()).append(" object name, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getThreadCount()).append(" current threads live, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
+        stringBuilder.append(InformationFactory.getInstance(InformationFactory.MX_BEAN_THREAD).getInfo());
         return stringBuilder.toString();
     }
 
@@ -270,9 +268,7 @@ public abstract class UsefulUtilities {
             return InetAddress.getLocalHost().getHostName();
         }
         catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
-            String retStr = AbstractForms.fromArray((List<?>) e);
-            FileSystemWorker.writeFile("this_pc.err", Collections.singletonList(retStr));
-            return "pc";
+            return IntoApplication.getCTXEnvironment().getProperty(PropertiesNames.COMPUTERNAME);
         }
     }
 

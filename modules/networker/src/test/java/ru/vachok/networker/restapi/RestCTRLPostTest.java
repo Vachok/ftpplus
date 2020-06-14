@@ -62,15 +62,9 @@ public class RestCTRLPostTest {
     }
 
     @Test
-    public void testCollectOldFiles() {
-        String oldFilesStr = restCTRLPost.collectOldFiles();
-        Assert.assertTrue(oldFilesStr.contains("Total file size in DB now"), oldFilesStr);
-    }
-
-    @Test
     public void testDelDomain() {
         String delDomStr = restCTRLPost.delDomain(new MockHttpServletRequest());
-        Assert.assertEquals(delDomStr, "Incorrect request");
+        Assert.assertEquals(delDomStr, RestCTRLPost.INCORRECT_REQUEST);
     }
 
     @Test

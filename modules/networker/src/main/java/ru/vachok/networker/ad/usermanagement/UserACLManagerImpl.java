@@ -138,7 +138,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserACLCommonManagerImpl{");
-        sb.append(", startPath=").append(startPath);
+        sb.append(ConstantsFor.JSON_PARAM_NAME_STARTPATH).append(startPath);
         sb.append('}');
         return sb.toString();
     }

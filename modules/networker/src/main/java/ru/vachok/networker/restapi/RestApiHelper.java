@@ -43,39 +43,6 @@ public interface RestApiHelper {
         return new RestError();
     }
 
-    default boolean checkValidUID(String headerAuthorization, int minCodeVer) {
-        boolean isValid = false;
-        List<String> validUIDs = getFromDB();
-        if (validUIDs.size() == 0) {
-            FileSystemWorker.readFileToList("uid.txt");
-        }
-        for (String validUID : validUIDs) {
-            if (headerAuthorization.equals(validUID)) {
-                isValid = true;
-                break;
-            }
-        }
-        if (minCodeVer < (Integer.parseInt(InitProperties.getTheProps().getProperty("minMobAppVersion")))) {
-            isValid = false;
-        }
-        return isValid;
-    }
-
     String getResult(@NotNull JsonObject jsonObject);
 
-    @NotNull
-    default List<String> getFromDB() {
-        List<String> validUIDs = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_UIDS_FULL);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from velkom.restuids");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                validUIDs.add(resultSet.getString("uid"));
-            }
-        }
-        catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return validUIDs;
-    }
 }

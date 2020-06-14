@@ -23,22 +23,17 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 
 /**
  @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
 @SuppressWarnings("ClassUnconnectedToPackage")
-public class AppInfoOnLoad implements Runnable {
+public final class AppInfoOnLoad implements Runnable {
 
 
-    private static final AppInfoOnLoad INST = new AppInfoOnLoad();
-
-    private static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
+    public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
 
     private static final List<String> MINI_LOGGER = new ArrayList<>();
 
@@ -67,14 +62,13 @@ public class AppInfoOnLoad implements Runnable {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         String avCharsetsStr = AbstractForms.fromArray(Charset.availableCharsets());
         FileSystemWorker.writeFile(AVAILABLECHARSETS_TXT, avCharsetsStr);
-        if (NetScanService.isReach("10.10.111.65")) {
-            SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
-            AppConfigurationLocal.getInstance().execute(syncData::superRun);
-        }
+        SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
 
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
 
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setCurrentProvider, 0, 2, TimeUnit.MINUTES);
+        AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, (int) ConstantsFor.DELAY);
+
+        AppConfigurationLocal.getInstance().execute(syncData::superRun);
 
         try {
             infoForU();
@@ -87,7 +81,7 @@ public class AppInfoOnLoad implements Runnable {
             messageToUser.info(getClass().getSimpleName(), "isMemOk", isMemOk + ": " + Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE);
             if (NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
                 SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-                AppConfigurationLocal.getInstance().execute(syncDataBcp::superRun, 3600);
+                AppConfigurationLocal.getInstance().execute(syncDataBcp, 36);
             }
             else {
                 MessageToUser.getInstance(MessageToUser.EMAIL, this.getClass().getSimpleName())
@@ -106,7 +100,7 @@ public class AppInfoOnLoad implements Runnable {
             Runnable runInfoForU = ()->FileSystemWorker
                 .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS));
             messageToUser.info(UsefulUtilities.getIISLogSize());
-            AppConfigurationLocal.getInstance().execute(runInfoForU);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runInfoForU);
         }
         catch (RuntimeException e) {
             messageToUser.warn(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 100 ***");

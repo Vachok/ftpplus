@@ -4,6 +4,7 @@ package ru.vachok.networker.ad.inet;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.text.MessageFormat;
 
@@ -37,7 +38,7 @@ public class ListsController implements InformationFactory {
     public String getInfoAbout(String aboutWhat) {
         this.sshCom = aboutWhat;
         SSHFactory factory = new SSHFactory.Builder(new AppComponents().sshActs().whatSrvNeed(), this.sshCom, this.getClass().getSimpleName()).build();
-        String lsEtcPf = factory.call();
+        String lsEtcPf = AppConfigurationLocal.getInstance().submitAsString(factory, 10);
         lsEtcPf = lsEtcPf.replaceAll("<br>", "");
         return lsEtcPf;
     }

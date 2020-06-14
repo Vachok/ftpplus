@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -119,5 +121,51 @@ public abstract class AbstractForms {
 
     public static String sshCheckerMapWithDates(Map<String, Long> map, boolean b) {
         return T_FORMS.sshCheckerMapWithDates(map, b);
+    }
+
+    public static String networkerTrace(Throwable e) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage()).append("\n");
+        stringBuilder.append(networkerTrace(e.getStackTrace()));
+        return stringBuilder.toString();
+    }
+
+    @NotNull
+    public static String networkerTrace(StackTraceElement[] trace) {
+        return T_FORMS.networkerTrace(trace);
+    }
+
+    public static String fromArray(JsonObject jsonObject) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (jsonObject == null || jsonObject.isEmpty()) {
+            stringBuilder.append("jsonObject is null of empty!");
+        }
+        else {
+            stringBuilder.append("jsonObject:").append("\n");
+            for (String name : jsonObject.names()) {
+                stringBuilder.append(name).append(":").append(jsonObject.get(name)).append("\n");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    @NotNull
+    private static String checkSu(@NotNull Throwable e) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Throwable[] suppressedIfExists = e.getSuppressed();
+        if (suppressedIfExists.length > 0) {
+            for (Throwable throwable : suppressedIfExists) {
+                stringBuilder.append(throwable.getClass().getSimpleName()).append(": ").append(throwable.getMessage()).append("\n");
+                stringBuilder.append(T_FORMS.networkerTrace(throwable.getStackTrace())).append("\n");
+                if (throwable.getSuppressed() != null) {
+                    checkSu(throwable);
+                }
+                else {
+                    stringBuilder.append("End Suppressed").append("\n");
+                }
+            }
+
+        }
+        return stringBuilder.toString();
     }
 }

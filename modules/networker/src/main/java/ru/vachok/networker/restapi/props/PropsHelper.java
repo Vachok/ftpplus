@@ -74,14 +74,6 @@ class PropsHelper {
         return APP_PR;
     }
 
-    static void reloadApplicationPropertiesFromFile() {
-        Properties fromApp = getAppPr();
-        Properties propsFromFile = InitProperties.getInstance(InitProperties.FILE).getProps();
-        fromApp.clear();
-        fromApp.putAll(propsFromFile);
-
-    }
-
     private void loadPropsFromDB() {
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         APP_PR.putAll(initProperties.getProps());

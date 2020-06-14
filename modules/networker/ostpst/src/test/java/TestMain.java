@@ -18,8 +18,8 @@ import java.util.List;
 
 
 @SuppressWarnings("ALL") public class TestMain {
-    
-    
+
+
     @Test(enabled = true)
     public void launchProg() {
         File file = new File(new String("c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost".getBytes(), Charset.forName("UTF-8")));
@@ -31,7 +31,7 @@ import java.util.List;
             Assert.assertNotNull(e);
         }
     }
-    
+
     @Test(enabled = false)
     public void complexTest() {
         String fileName = getFileName();
@@ -40,12 +40,12 @@ import java.util.List;
         Assert.assertNotNull(listFolders);
         boolean totalC = listFolders.contains("totalCounter =");
         Assert.assertTrue(totalC, "List folders incorrect");
-        
+
         String csvFileName = Paths.get(fileName).getParent().toAbsolutePath() + "\\cnt.csv";
         String saveContacts = makeConvertOrCopy.saveContacts(csvFileName);
         Assert.assertNotNull(saveContacts);
         Assert.assertTrue(new File(csvFileName).exists());
-        
+
         String saveFolders = null;
         try {
             saveFolders = makeConvertOrCopy.saveFolders();
@@ -55,18 +55,18 @@ import java.util.List;
         }
         boolean foldersTxt = saveFolders.contains(ConstantsOst.FILENAME_FOLDERSTXT);
         Assert.assertTrue(foldersTxt);
-    
+
         String showContacts = makeConvertOrCopy.showContacts();
         Assert.assertNotNull(showContacts);
-    
+
         String cleanPreviousCopy = makeConvertOrCopy.cleanPreviousCopy();
         Assert.assertNotNull(cleanPreviousCopy);
-    
+
         String parseObject = makeConvertOrCopy.getObjectItemsByID(35906);
         Assert.assertFalse(parseObject.contains("null (null)"));
-    
+
         List<String> subjList = makeConvertOrCopy.getListMessagesSubjectWithID(8578);
-    
+
         System.out.println(listFolders);
         System.out.println(saveContacts);
         System.out.println(showContacts);
@@ -74,18 +74,18 @@ import java.util.List;
         System.out.println(parseObject);
         System.out.println(new TFormsOST().fromArray(subjList));
     }
-    
+
     private void showBytes() {
         try {
-            String str8 = new String("И".getBytes(), "UTF-8");
+            String str8 = new String('И', "UTF-8");
             str8 = new CharsetEncoding("UTF-8").getStrInAnotherCharset(str8);
             byte[] bytes = str8.getBytes();
             for (int i = 0; i < bytes.length; i++) {
                 System.out.println("bytes = " + bytes[i]);
             }
             System.out.println(str8);
-    
-            String str1251 = new String("И".getBytes(), ConstantsOst.CP_WINDOWS_1251);
+
+            String str1251 = new String('И'.getBytes(), ConstantsOst.CP_WINDOWS_1251);
             str1251 = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(str1251);
             byte[] str1251Bytes = str1251.getBytes();
             for (int i = 0; i < str1251Bytes.length; i++) {
@@ -96,8 +96,8 @@ import java.util.List;
         catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        
-        byte[] inUnicode = new CharsetEncoding().getInUnicode("И");
+
+        byte[] inUnicode = new CharsetEncoding().getInUnicode('И');
         for (int i = 0; i < inUnicode.length; i++) {
             System.out.println("inUnicode = " + inUnicode[i]);
         }
@@ -108,7 +108,7 @@ import java.util.List;
             e.printStackTrace();
         }
     }
-    
+
     private String getFileName() {
         if (new File("c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost")
             .exists()) {

@@ -113,7 +113,7 @@ public abstract class UserInfo implements InformationFactory {
             .toString();
     }
 
-    private static class DatabaseWriter {
+    private static final class DatabaseWriter {
 
 
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.DatabaseWriter.class.getSimpleName());
@@ -145,7 +145,7 @@ public abstract class UserInfo implements InformationFactory {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     stringBuilder.append(execAutoResolvedUser(preparedStatement));
                 }
-                messageToUser.info(this.getClass().getSimpleName(), "writeAutoresolvedUserToDB", stringBuilder.toString());
+                messageToUser.info(this.getClass().getSimpleName(), "writeAutoResolvedUserToDB", stringBuilder.toString());
             }
             catch (SQLException | RuntimeException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuserauto (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
@@ -207,7 +207,7 @@ public abstract class UserInfo implements InformationFactory {
                 long nowMinusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
                 boolean startSmallerDelay = ConstantsFor.START_STAMP >= nowMinusDelay;
                 if (startSmallerDelay) {
-                    AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName));
+                    AppConfigurationLocal.getInstance().execute(new TimeOnActualizer(pcName, true));
                     sql = sqlOn;
                 }
                 else if (wasOffline()) {
@@ -334,7 +334,7 @@ public abstract class UserInfo implements InformationFactory {
             String pcSegment;
             //noinspection IfStatementWithTooManyBranches
             if (resolvedStrFromSet.contains("200.200")) {
-                pcSegment = "Торговый дом";
+                pcSegment = NetSegments.TD;
             }
             else if (resolvedStrFromSet.contains("200.201")) {
                 pcSegment = NetSegments.IPPHONE;

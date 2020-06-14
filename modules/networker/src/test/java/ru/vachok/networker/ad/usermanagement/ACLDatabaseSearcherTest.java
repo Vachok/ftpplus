@@ -6,6 +6,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -47,7 +48,12 @@ public class ACLDatabaseSearcherTest {
     @Test
     public void testGetResult() {
         String result;
-        dbSearcher.getResult();
+        try {
+            dbSearcher.getResult();
+        }
+        catch (IllegalArgumentException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
 
         dbSearcher.setClassOption("kudr");
         dbSearcher.getResult();
@@ -55,11 +61,11 @@ public class ACLDatabaseSearcherTest {
         srcPat.add("kudr");
         dbSearcher.setClassOption(srcPat);
         result = dbSearcher.getResult();
-        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 2000000"), result);
+        Assert.assertTrue(result.contains("Выставки_Встречи_Проекты"), result);
         Assert.assertTrue(result.contains("\\\\srv-fs.eatmeat.ru\\common_new\\Общие_документы_МК\\13_Служба_персонала\\Общая\\БП"), result);
         dbSearcher.setClassOption(1);
         result = dbSearcher.getResult();
-        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 1"), result);
+        Assert.assertTrue(result.contains("Z01.ПАПКИ_ОБМЕНА"), result);
     }
 
     @Test

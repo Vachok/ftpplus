@@ -51,7 +51,7 @@ public class PfListsCtr {
 
     private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN);
 
-    private static final String ATT_VIPNET = "vipnet";
+    public static final String ATT_VIPNET = "vipnet";
 
     /**
      {@link InitProperties#getTheProps()}
@@ -188,7 +188,7 @@ public class PfListsCtr {
         model.addAttribute(ATT_VIPNET, pfListsInstAW.getVipNet());
         model.addAttribute("tempfull", pfListsInstAW.getFullSquid());
         model.addAttribute("squidlimited", pfListsInstAW.getLimitSquid());
-        model.addAttribute(ConstantsFor.JSON_OBJECT_SQUID, pfListsInstAW.getStdSquid());
+        model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute(ConstantsFor.RULES, pfListsInstAW.getPfRules());
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));

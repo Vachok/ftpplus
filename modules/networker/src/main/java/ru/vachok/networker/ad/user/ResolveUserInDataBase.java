@@ -8,8 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -33,7 +35,7 @@ class ResolveUserInDataBase extends UserInfo {
 
     private Object aboutWhat;
 
-    private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+    private final DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
 
     @Override
     public String getInfo() {
@@ -84,27 +86,33 @@ class ResolveUserInDataBase extends UserInfo {
     @NotNull
     private List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
-                preparedStatement.setInt(2, linesLimit);
-                preparedStatement.setQueryTimeout(18);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DB_FIELD_WHENQUERIED);
-                        String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
-                            .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
-                        retList.add(addStr);
+        if (ConstantsFor.argNORUNExist()) {
+            throw new IllegalStateException(FileSystemWorker.readFile(FileNames.ARG_NO_RUN));
+        }
+        else {
+            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
+                    preparedStatement.setInt(2, linesLimit);
+                    preparedStatement.setQueryTimeout(18);
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            Timestamp timestamp = resultSet.getTimestamp(ConstantsFor.DB_FIELD_WHENQUERIED);
+                            String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
+                                .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
+                            retList.add(addStr);
+                        }
                     }
                 }
+                catch (RuntimeException e) {
+                    messageToUser
+                        .error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+                }
             }
-            catch (RuntimeException e) {
-                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
+            catch (SQLException e) {
+                retList.add(e.getMessage());
+                retList.add(AbstractForms.fromArray(e));
             }
-        }
-        catch (SQLException e) {
-            retList.add(e.getMessage());
-            retList.add(AbstractForms.fromArray(e));
         }
         return retList;
     }
@@ -189,7 +197,7 @@ class ResolveUserInDataBase extends UserInfo {
         return results;
     }
 
-    @Contract(value = "null -> false", pure = true)
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {

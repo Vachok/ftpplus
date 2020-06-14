@@ -1,6 +1,7 @@
 package ru.vachok.networker.net.ssh;
 
 
+import com.eclipsesource.json.JsonObject;
 import okhttp3.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -9,27 +10,36 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
+
+import static ru.vachok.networker.net.ssh.SshActs.whatSrvNeed;
 
 
 /**
  @see VpnHelperTest
  @since 21.03.2020 (12:34) */
-public class VpnHelper extends SshActs {
+public class VpnHelper implements Runnable {
 
 
-    private static final String GET_STATUS_COMMAND = "cat openvpn-status && exit";
+    private static final String GET_STATUS_COMMAND = "cat openvpn-status;exit";
 
     private static final String URL_WITH_KEYS = ConstantsFor.GIT_SERVER + "/?p=.git;a=tree;f=vpn/keys/keys;h=e2ff30b915f6277e541cc9415b7ce025fc0b11f4;hb=HEAD";
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, VpnHelper.class.getSimpleName());
+
+    private int connectCounter = 0;
 
     private String keyName;
 
@@ -37,18 +47,20 @@ public class VpnHelper extends SshActs {
         String result;
         try {
             InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_VPN);
-            if (byName.isReachable(300)) {
+            if (byName.isReachable(200)) {
                 result = execSSHCommand(byName.getHostAddress(), GET_STATUS_COMMAND);
             }
             else {
-                result = byName + " is not Reachable".toUpperCase();
+                result = MessageFormat.format("No connection to {0}. Tried {1} times.\nCommand: {2}", whatSrvNeed(), connectCounter, GET_STATUS_COMMAND);
+                FileSystemWorker.writeFile(FileNames.OPENVPN_STATUS, result);
             }
         }
-        catch (IOException e) {
-            result = e.getMessage();
+        else {
+            this.connectCounter = 0;
+            messageToUser.info(getClass().getSimpleName(), "file written", FileSystemWorker.writeFile(FileNames.OPENVPN_STATUS, result));
         }
-        if (result.isEmpty() || !result.contains(ConstantsFor.VPN_LIST)) {
-            result = MessageFormat.format("{0}\n{1} openvpn-status: \n{2}", result, whatSrvNeed(), execSSHCommand(GET_STATUS_COMMAND));
+        if (result.isEmpty() || !result.contains("OpenVPN CLIENT LIST")) {
+            result = result + "\n" + whatSrvNeed() + " openvpn-status: \n" + execSSHCommand(GET_STATUS_COMMAND);
         }
         return result;
     }
@@ -75,7 +87,9 @@ public class VpnHelper extends SshActs {
     @NotNull
     private OkHttpClient buildClient() {
         OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
-        okBuild.callTimeout(20, TimeUnit.SECONDS);
+        okBuild.connectTimeout(5, TimeUnit.SECONDS);
+        okBuild.readTimeout(30, TimeUnit.SECONDS);
+        okBuild.callTimeout(40, TimeUnit.SECONDS);
         return okBuild.build();
     }
 
@@ -106,8 +120,25 @@ public class VpnHelper extends SshActs {
     }
 
     @Override
-    public String toString() {
-        return new StringJoiner(",\n", VpnHelper.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+    public void run() {
+        getStatus();
+    }
+
+    @NotNull
+    private OkHttpClient buildClient() {
+        OkHttpClient.Builder okBuild = new OkHttpClient.Builder();
+        okBuild.connectTimeout(2, TimeUnit.SECONDS);
+        okBuild.readTimeout(19, TimeUnit.SECONDS);
+        okBuild.eventListener(new VpnHelper.CallFAILListener());
+        return okBuild.build();
+    }
+
+    private static class CallFAILListener extends EventListener {
+
+
+        @Override
+        public void callFailed(@NotNull Call call, @NotNull IOException ioe) {
+            messageToUser.error("VpnHelper.callFailed", ioe.getMessage(), AbstractForms.fromArray(ioe));
+        }
     }
 }

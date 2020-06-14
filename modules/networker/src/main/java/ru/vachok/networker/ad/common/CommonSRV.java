@@ -237,15 +237,15 @@ public class CommonSRV {
     }
 
     private void parseElement(Object listElement, Set<String> filesSet) {
-        if (listElement instanceof String) {
-            filesSet.add(listElement + "\n");
-        }
         if (listElement instanceof Path) {
             filesSet.add("00 " + listElement + "\n");
             if (((Path) listElement).toFile().isDirectory()) {
                 dirLevel++;
                 showDir(((Path) listElement).toFile().listFiles(), filesSet);
             }
+        }
+        else {
+            filesSet.add(listElement + "\n");
         }
     }
 

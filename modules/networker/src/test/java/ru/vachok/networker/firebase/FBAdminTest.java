@@ -7,13 +7,16 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 
+import java.io.File;
+import java.nio.file.Paths;
+
 
 /**
  @see FBAdmin */
 public class FBAdminTest {
 
 
-    private FBAdmin fbAdmin = new FBAdmin();
+    private final FBAdmin fbAdmin = new FBAdmin();
 
     @Test
     public void testInitSDK() {
@@ -46,5 +49,21 @@ public class FBAdminTest {
                 Assert.assertNull(error.toException(), error.toException().getMessage() + "\n" + AbstractForms.fromArray(error.toException()));
             }
         }));
+    }
+
+    @Test
+    public void appVerInFB() {
+        try {
+            File[] rootFiles = Paths.get(".").toFile().listFiles();
+            for (File file : rootFiles) {
+                if (file.getName().contains("jar")) {
+                    System.out.println("file = " + file);
+                }
+            }
+        }
+        catch (RuntimeException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+
     }
 }

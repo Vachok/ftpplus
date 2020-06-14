@@ -39,14 +39,24 @@ class ConcreteFolderACLWriter implements Runnable {
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ConcreteFolderACLWriter.class.getSimpleName());
 
+    private final long size;
+
     public ConcreteFolderACLWriter(Path currentPath) {
         this.currentPath = currentPath;
+        this.fileName = FileNames.FILENAME_OWNER;
+        size = 0;
+    }
+
+    ConcreteFolderACLWriter(Path dir, long size) {
+        this.currentPath = dir;
+        this.size = size;
         this.fileName = FileNames.FILENAME_OWNER;
     }
 
     ConcreteFolderACLWriter(Path dir, String fileName) {
         this.currentPath = dir;
         this.fileName = fileName;
+        size = 0;
     }
 
     @Override
@@ -79,7 +89,7 @@ class ConcreteFolderACLWriter implements Runnable {
 
         try {
             filePathStr = FileSystemWorker.writeFile(fileName, MessageFormat.format("Checked at: {2}.\nOWNER: {0}\nUsers:\n{1}",
-                owner.toString(), AbstractForms.fromArray(users.getAcl().toArray()), LocalDateTime.now()));
+                owner.toString(), new TForms().fromArray(users.getAcl().toArray()), LocalDateTime.now()));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));

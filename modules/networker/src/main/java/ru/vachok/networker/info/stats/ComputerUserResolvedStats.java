@@ -37,7 +37,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
 
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private final String fileName = FileNames.VELKOMPCUSERAUTO_TXT;
+    private String fileName = FileNames.VELKOMPCUSERAUTO_TXT;
 
     private final List<String> pcAndUser = new ArrayList<>();
 
@@ -87,37 +87,6 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
         String retStr = "total pc: " + selectFrom;
         messageToUser.info(getClass().getSimpleName(), "pc stats: ", retStr);
         return retStr;
-    }
-
-    /**
-     Writes file: {@link ComputerUserResolvedStats#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOMPCUSERAUTO_TXT}
-     <p>
-
-     @return {@link #countFreqOfUsers()}
-     */
-    @NotNull
-    private String makeStatFiles() throws InvokeIllegalException {
-        List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.VELKOMPCUSERAUTO_TXT);
-        FileSystemWorker.writeFile(PCUSERAUTO_UNIQ, readFileAsList.parallelStream().distinct());
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + PCUSERAUTO_UNIQ;
-            FileSystemWorker.copyOrDelFile(new File(PCUSERAUTO_UNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
-        }
-        return countFreqOfUsers();
-    }
-
-    private void printResultsToFile(File file, @NotNull ResultSet r) throws IOException, SQLException {
-        try (OutputStream outputStream = new FileOutputStream(file)) {
-            try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                while (r.next()) {
-                    if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
-                        String toPrint = r.getString(2) + " " + r.getString(3);
-                        PC_NAMES_IN_TABLE.add(toPrint);
-                        printStream.println(toPrint);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -176,12 +145,12 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
             }
 
         }
-        return MessageFormat.format("File {0} is {1}", FileNames.USERLOGINCOUNTER_TXT, String.valueOf(writeMapWithCount()));
+        return MessageFormat.format("File {0} is {1}", FileNames.USER_LOGIN_COUNTER_TXT, String.valueOf(writeMapWithCount()));
     }
 
     private boolean writeMapWithCount() {
         Map<String, Integer> mapWithCount = new TreeMap<>();
-        File countFile = new File(FileNames.USERLOGINCOUNTER_TXT);
+        File countFile = new File(FileNames.USER_LOGIN_COUNTER_TXT);
         boolean fileWritten = countFile.delete();
         if (fileWritten) {
             for (String pcUser : pcAndUser) {
@@ -190,7 +159,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
             }
         }
         String strToSend = AbstractForms.fromArray(mapWithCount);
-        FileSystemWorker.writeFile(FileNames.USERLOGINCOUNTER_TXT, strToSend);
+        FileSystemWorker.writeFile(FileNames.USER_LOGIN_COUNTER_TXT, strToSend);
         ru.vachok.networker.restapi.message.MessageToUser.getInstance(ru.vachok.networker.restapi.message.MessageToUser.EMAIL, this.getClass().getSimpleName())
             .info(strToSend);
         return countFile.exists();

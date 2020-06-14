@@ -49,7 +49,7 @@ public class ArchivesAutoCleanerTest {
     @Test
     @Ignore
     public void testRun() {
-        File cleanLog = new File(FileNames.CLEANERLOG_TXT);
+        File cleanLog = new File(FileNames.CLEANER_LOG_TXT);
         try {
             Files.deleteIfExists(cleanLog.toPath());
         }

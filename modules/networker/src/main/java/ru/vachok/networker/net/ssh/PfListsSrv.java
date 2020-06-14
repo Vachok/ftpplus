@@ -135,14 +135,13 @@ public class PfListsSrv {
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs && exit");
-
-        pfListsInstAW.setVipNet(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
+        pfListsInstAW.setVipNet(build.call());
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PFSQUID);
-        pfListsInstAW.setStdSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
+        pfListsInstAW.setStdSquid(build.call());
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_PROXYFULL);
-        pfListsInstAW.setFullSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));
+        pfListsInstAW.setFullSquid(build.call());
 
         build.setCommandSSH(ConstantsFor.SSH_SHOW_SQUIDLIMITED);
         pfListsInstAW.setLimitSquid(AppConfigurationLocal.getInstance().submitAsString(build, timeOusSec));

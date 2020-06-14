@@ -7,9 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -17,9 +15,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
@@ -106,16 +102,6 @@ public class ServiceInfoCtrl {
         }
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
-            .add("pageFooter = " + pageFooter)
-            .add("visitor = " + visitor)
-            .add("authReq = " + authReq)
-            .add(new AppComponents().getFirebaseApp().getName())
-            .toString();
-    }
-
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
@@ -169,10 +155,6 @@ public class ServiceInfoCtrl {
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
         stringBuilder.append(AbstractForms.fromEnum(request.getAttributeNames()).replace("<br>", "\n"));
         return stringBuilder.toString();
-    }
-
-    private String getJREVers() {
-        return System.getProperty("java.version");
     }
 
     /**
@@ -248,17 +230,6 @@ public class ServiceInfoCtrl {
             .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
             .append("<p>").append("</details></font><br>");
         return stringBuilder.toString().replace("***", "<br>");
-    }
-
-    @NotNull
-    private String makeResValue() {
-        return new StringBuilder()
-            .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append("</i></b><p><font color=\"orange\">")
-            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
-            .append("<p>")
-            .toString();
     }
 
     @GetMapping("/pcoff")

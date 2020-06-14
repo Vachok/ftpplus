@@ -101,6 +101,8 @@ public class LocalUserResolverTest {
         Assert.assertTrue(info.contains("LocalUserResolver["), info);
         info = localUserResolver.getInfoAbout(pcName);
         Assert.assertEquals(info, "Unknown PC: d00.eatmeat.ru\n" +
+            " class ru.vachok.networker.ad.pc.PCInfo Last online: Unknown PC: \n" +
+            " Unknown PC: d00.eatmeat.ru\n" +
             " class ru.vachok.networker.ad.pc.PCInfo");
     }
 

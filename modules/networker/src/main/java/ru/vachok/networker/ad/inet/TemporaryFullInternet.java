@@ -142,7 +142,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     private String sshCall() {
         StringBuilder tempString24HRSBuilder = new StringBuilder();
         try {
-            SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
+            SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT_24HRSLIST);
             String call = SSH_FACTORY.call();
             tempString24HRSBuilder.append(call);
         }
@@ -215,7 +215,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     }
 
     private void sshChecker() {
-        SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT24HRSLIST);
+        SSH_FACTORY.setCommandSSH(ConstantsFor.SSH_CAT_24HRSLIST);
         String fromSSH24HrsList = SSH_FACTORY.call();
         MINI_LOGGER.add(fromSSH24HrsList);
 

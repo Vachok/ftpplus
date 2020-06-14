@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ @see TimeOnActualizerTest */
 public class TimeOnActualizer implements Runnable {
 
 
@@ -21,8 +23,11 @@ public class TimeOnActualizer implements Runnable {
 
     private final String pcName;
 
-    public TimeOnActualizer(@NotNull String pcName) {
+    private final boolean isOnNow;
+
+    public TimeOnActualizer(@NotNull String pcName, boolean isOnNow) {
         this.pcName = pcName.replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        this.isOnNow = isOnNow;
     }
 
     @Override
@@ -43,12 +48,13 @@ public class TimeOnActualizer implements Runnable {
         else {
             pcNames.add(pcName);
         }
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_ARCHIVEVELKOMPC)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             for (String pcName : pcNames) {
                 final String sql = "SELECT idrec FROM velkompc WHERE NamePP LIKE '" + pcName
                     .replace(ConstantsFor.DOMAIN_EATMEATRU, "") + "%' AND OnlineNow = 0 ORDER BY idrec DESC LIMIT 1";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setQueryTimeout(150);
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
                             int idrec = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
@@ -96,7 +102,7 @@ public class TimeOnActualizer implements Runnable {
 
     private void actualizeDB(int idRec, String pcName) {
         final String sql = "SELECT TimeNow FROM velkompc WHERE idrec > ? AND NamePP LIKE ? AND OnlineNow=1 ORDER BY idrec asc LIMIT 1";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_ARCHIVEVELKOMPC)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setInt(1, idRec);
                 preparedStatement.setString(2, pcName);
@@ -114,13 +120,14 @@ public class TimeOnActualizer implements Runnable {
     }
 
     private void setInPcUserDB(String pcName, Timestamp actualTimeOn) {
+        final String newSql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`=?, `onNow`=? WHERE  `pcName` like '%s%%'", pcName);
         final String sql = String.format("UPDATE `velkom`.`pcuser` SET `timeon`= ? WHERE `pcName` like '%s%%'", pcName);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setQueryTimeout((int) ConstantsFor.DELAY);
-                preparedStatement.setTimestamp(1, actualTimeOn);
-                preparedStatement.executeUpdate();
-            }
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setTimestamp(1, actualTimeOn);
+
+            messageToUser.info(this.getClass().getSimpleName(),
+                MessageFormat.format("setInPcUserDB executeUpdate: {0}\n", preparedStatement.executeUpdate()), preparedStatement.toString());
         }
         catch (SQLException e) {
             messageToUser.error("TimeOnActualizer.setInPcUserDB", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));

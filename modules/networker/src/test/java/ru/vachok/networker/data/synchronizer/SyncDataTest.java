@@ -55,7 +55,7 @@ public class SyncDataTest {
 
     @BeforeMethod
     public void initSync() {
-        syncData.setIdColName("idrec");
+        syncData.setIdColName(ConstantsFor.DBCOL_IDREC);
         syncData.setDbToSync(dbToSync);
 
     }
@@ -156,7 +156,12 @@ public class SyncDataTest {
 
     @Test
     public void testSuperRun() {
-        syncData.superRun();
+        try {
+            syncData.superRun();
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 
     @Test

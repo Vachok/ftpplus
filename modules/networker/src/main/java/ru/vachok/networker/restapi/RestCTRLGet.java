@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -18,12 +19,12 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.net.ssh.SshActs;
-import ru.vachok.networker.net.ssh.VpnHelper;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,12 +35,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.TreeMap;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.data.enums.ConstantsFor.BEANNAME_PFLISTS;
+import static ru.vachok.networker.restapi.RestCTRLPost.GETOLDFILES;
 
 
 /**
@@ -52,6 +54,10 @@ public class RestCTRLGet {
     private static final String OKHTTP = "okhttp";
 
     private static final String SUDO_CAT_ETC_PF = "sudo cat /etc/pf/";
+
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RestCTRLGet.class.getSimpleName());
+
+    private static final String GLOBAL_STATUS = "SELECT * FROM `information_schema`.`GLOBAL_STATUS` WHERE `VARIABLE_VALUE`>0 ORDER BY `VARIABLE_NAME`;";
 
     @GetMapping("/sshgetdomains")
     public String getAllowDomains() {
@@ -97,23 +103,38 @@ public class RestCTRLGet {
 
     @GetMapping("/status")
     public String appStatus() {
-        String statusVpn = new VpnHelper().getStatus();
+        Executors.newSingleThreadExecutor().execute(this::printDiskInfoToFile);
+        String statusVpn = FileSystemWorker.readFile(FileNames.OPENVPN_STATUS);
         String informationSys = UsefulUtilities.getRunningInformation();
-        String sshAns = connectToSrvInetstat();
+        File fileDFInetstat = new File(FileNames.DFINETSTAT);
+        String sshAns = fileDFInetstat.getAbsolutePath();
+        if (fileDFInetstat.exists()) {
+            sshAns = new Date(fileDFInetstat.lastModified()).toString() + "\n" + FileSystemWorker.readFile(fileDFInetstat);
+        }
         return String.join("\n\n\n", statusVpn, informationSys, sshAns);
     }
 
-    private String connectToSrvInetstat() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        return AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 10)
-            .replace("Filesystem Size Used Avail Capacity Mounted on", "srv-inetstat.eatmeat.ru\n");
+    public static JsonArray getSSHListsResult() {
+        JsonArray retArr = new JsonArray();
+        AppConfigurationLocal.getInstance().execute(()->{
+            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
+        });
+        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
+            JsonObject jsonElements = new JsonObject();
+            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, RestCTRLGet.class.getSimpleName());
+            String objName = sshCommand.split(";")[0].replace(SUDO_CAT_ETC_PF, "");
+            objName = findObjName(objName);
+            jsonElements.add(objName, genJSON(sshB));
+            retArr.add(jsonElements);
+        }
+        return retArr;
     }
 
     @GetMapping("/db")
     public String dbInfoRest() {
-        String sql = "SELECT * FROM `information_schema`.`GLOBAL_STATUS` WHERE `VARIABLE_VALUE`>0 ORDER BY `VARIABLE_NAME`;";
+
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             PreparedStatement preparedStatement = connection.prepareStatement(GLOBAL_STATUS);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             Map<String, String> showMap = new TreeMap<>();
             while (resultSet.next()) {
@@ -124,6 +145,15 @@ public class RestCTRLGet {
         catch (SQLException e) {
             return e.getMessage() + " \n<br>\n" + AbstractForms.fromArray(e);
         }
+    }
+
+    @GetMapping(GETOLDFILES)
+    public String collectOldFiles() {
+        ConfigurableListableBeanFactory context = IntoApplication.getBeansFactory();
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = (OldBigFilesInfoCollector) context
+            .getBean(OldBigFilesInfoCollector.class.getSimpleName());
+        AppConfigurationLocal.getInstance().execute(oldBigFilesInfoCollector);
+        return oldBigFilesInfoCollector.getFromDatabase();
     }
 
     @GetMapping("/file")
@@ -137,10 +167,8 @@ public class RestCTRLGet {
             }
         }
         else {
-
             filesShow = getFileShow(userAgent);
         }
-
         String uAgent;
         try {
             uAgent = userAgent.toLowerCase();
@@ -156,6 +184,8 @@ public class RestCTRLGet {
 
     @NotNull
     private String getFileShow(String userAgent) {
+        @NotNull String result;
+        JsonObject jsonObject = new JsonObject();
         StringBuilder stringBuilder = new StringBuilder();
         long totalSize = 0;
         File file = Paths.get(".").toAbsolutePath().normalize().toFile();
@@ -163,39 +193,41 @@ public class RestCTRLGet {
             throw new IllegalArgumentException(file.getAbsolutePath());
         }
         else {
-            stringBuilder.append(Objects.requireNonNull(file.listFiles()).length).append(" total files\n\n");
+            String uAgent = checkAgent(userAgent);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd-kkmm");
+            jsonObject.add(file.getAbsolutePath(), Objects.requireNonNull(file.listFiles()).length);
             for (File listFile : Objects.requireNonNull(file.listFiles())) {
                 long fileSizeKB = listFile.length() / 1024;
                 totalSize = totalSize + fileSizeKB;
                 stringBuilder.append(listFile.getName()).append(" size=").append(fileSizeKB).append(" kb;");
-                String uAgent;
-                try {
-                    uAgent = userAgent.toLowerCase();
-                }
-                catch (RuntimeException e) {
-                    uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
-                }
-                if (uAgent.contains(OKHTTP)) {
-                    stringBuilder.append("\n");
-                }
-                else {
-                    stringBuilder.append("<br>");
-                }
+                jsonObject.add(listFile.getName(), MessageFormat.format("{0} kbytes {1}", fileSizeKB, simpleDateFormat.format(new Date(listFile.lastModified()))));
+                stringBuilder.append("<br>");
             }
             stringBuilder.append("\n\n").append(ConstantsFor.TOTALSIZE).append(totalSize).append(" kbytes\n");
+            jsonObject.add(ConstantsFor.TOTALSIZE, totalSize);
+            if (uAgent.contains(OKHTTP) || uAgent.toLowerCase().contains("android")) {
+                result = jsonObject.toString();
+            }
+            else {
+                result = stringBuilder.toString();
+            }
         }
-        return stringBuilder.toString();
+        return result;
+    }
+
+    private String checkAgent(String userAgent) {
+        String uAgent;
+        try {
+            uAgent = userAgent.toLowerCase();
+        }
+        catch (RuntimeException e) {
+            uAgent = MessageFormat.format("{0}\n {1}", e.getMessage(), AbstractForms.fromArray(e));
+        }
+        return uAgent;
     }
 
     @GetMapping("/getsshlists")
     public String sshRest(HttpServletRequest request) {
-        int verCode;
-        try {
-            verCode = Integer.parseInt(request.getHeader(ConstantsFor.AUTHORIZATION));
-        }
-        catch (RuntimeException e) {
-            return sshRest0();
-        }
         StringBuilder sshAns = new StringBuilder();
         JsonArray resultArr = getSSHListsResult();
         JsonObject sshParamNames = new JsonObject();
@@ -215,79 +247,8 @@ public class RestCTRLGet {
         return resultArr.toString();
     }
 
-    private String sshRest0() {
-        StringBuilder sshAns = new StringBuilder();
-        JsonArray resultArr = oldCreateArr();
-        JsonObject sshParamNames = new JsonObject();
-        sshAns.append("\n\n\n");
-        sshAns.append(resultArr.size()).append(" size of ").append(JsonArray.class.getCanonicalName()).append("\n");
-        for (JsonValue jsonValue : resultArr.values()) {
-            Object[] objNames = jsonValue.asObject().names().toArray();
-            for (Object name : objNames) {
-                sshAns.append(name.toString()).append(":");
-                sshAns.append(jsonValue.asObject().getString(name.toString(), name.toString()).replace("<br>", "")).append("\n\n");
-                sshParamNames.add(name.toString(), "toString:getString");
-            }
-        }
-        sshAns.append("\n\n\n");
-        MessageToUser.getInstance(MessageToUser.FILE, getClass().getSimpleName()).info(sshAns.toString());
-        return resultArr.toString();
-    }
-
-    private JsonArray getSSHListsResult() {
-        JsonArray retArr = new JsonArray();
-        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
-        AppConfigurationLocal.getInstance().execute(()->{
-            ((PfListsSrv) IntoApplication.getBeansFactory().getBean(ConstantsFor.BEANNAME_PFLISTSSRV)).makeListRunner();
-        });
-
-        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
-            JsonObject jsonElements = new JsonObject();
-            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
-            String objName = sshCommand.split(";")[0].replace(SUDO_CAT_ETC_PF, "");
-            objName = findObjName(objName);
-            jsonElements.add(objName, genJSON(sshB));
-            retArr.add(jsonElements);
-        }
-        return retArr;
-    }
-
-    private JsonArray oldCreateArr() {
-        JsonArray retArr = new JsonArray();
-        PfLists pfLists = (PfLists) IntoApplication.getBeansFactory().getBean(BEANNAME_PFLISTS);
-        for (String sshCommand : ConstantsFor.SSH_LIST_COMMANDS) {
-            JsonObject jsonElements = new JsonObject();
-            SSHFactory.Builder sshB = new SSHFactory.Builder(SshActs.whatSrvNeed(), sshCommand, this.getClass().getSimpleName());
-            String objName = sshCommand.split(";")[0].replace("sudo cat /etc/pf/", "");
-            if (objName.toLowerCase().contains("full")) {
-                objName = "fullSquid";
-            }
-            else if (objName.contentEquals("squid")) {
-                objName = "stdSquid";
-            }
-            else if (objName.toLowerCase().contains("lim")) {
-                objName = ConstantsFor.JSON_LIST_LIMITSQUID;
-            }
-            else if (objName.contains("24")) {
-                objName = ConstantsFor.JSON_LIST_24HRS;
-            }
-            jsonElements.add(objName, AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 2));
-            retArr.add(jsonElements);
-        }
-        if (pfLists.getPfRules() != null && !pfLists.getPfRules().isEmpty()) {
-            JsonObject pfRules = new JsonObject();
-            pfRules.add("pfRules", pfLists.getPfRules());
-            if (pfLists.getPfNat() != null && !pfLists.getPfNat().isEmpty()) {
-                JsonObject pfNat = new JsonObject();
-                pfNat.add("pfNat", pfLists.getPfNat());
-                retArr.add(pfNat);
-                retArr.add(pfRules);
-            }
-        }
-        return retArr;
-    }
-
-    private String findObjName(String objName) {
+    @SuppressWarnings("IfStatementWithTooManyBranches")
+    private static String findObjName(String objName) {
         if (objName.toLowerCase().contains("full")) {
             objName = ConstantsFor.JSON_OBJECT_FULL_SQUID;
         }
@@ -309,8 +270,8 @@ public class RestCTRLGet {
         return objName;
     }
 
-    private JsonObject genJSON(SSHFactory.Builder sshB) {
-        String srvAnswer = AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 5);
+    private static JsonObject genJSON(SSHFactory.Builder sshB) {
+        String srvAnswer = AppConfigurationLocal.getInstance().submitAsString(sshB.build(), 8);
         JsonObject jsonObject = new JsonObject();
         if (srvAnswer.contains("<br>")) {
             String[] split = srvAnswer.split("<br>");
@@ -325,6 +286,31 @@ public class RestCTRLGet {
             jsonObject.add(sshB.getCommandSSH().replace(SUDO_CAT_ETC_PF, ""), srvAnswer.replace("<br>\n", "\n"));
         }
         return jsonObject;
+    }
+
+    private void printDiskInfoToFile() {
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
+        String path = FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 21));
+        messageToUser.info(path);
+    }
+
+    @GetMapping("/props")
+    public String showAppProps() {
+        ((FilePropsLocal) InitProperties.getInstance(InitProperties.FILE)).reloadPropsFromDB();
+        Properties props = InitProperties.getTheProps();
+        Preferences pref = InitProperties.getUserPref();
+        List<String> propsPref = new ArrayList<>();
+        props.forEach((k, v)->propsPref.add("1_props_" + k + ":" + v));
+        try {
+            for (String key : pref.keys()) {
+                propsPref.add("2_pref_" + key + ":" + pref.get(key, "no value"));
+            }
+        }
+        catch (BackingStoreException e) {
+            messageToUser.warn(RestCTRLGet.class.getSimpleName(), e.getMessage(), " see line: 359 ***");
+        }
+        Collections.sort(propsPref);
+        return AbstractForms.fromArray(propsPref);
     }
 
     @Override

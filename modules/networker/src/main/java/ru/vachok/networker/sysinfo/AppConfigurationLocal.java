@@ -39,8 +39,37 @@ public interface AppConfigurationLocal extends Runnable {
         }
     }
 
+    static Object executeInWorkStealingPool(ForkJoinTask<?> o, long timeOut) {
+        ForkJoinPool service = AppComponents.threadConfig().getForkJoin();
+        Object ret;
+        try {
+            ret = service.submit(o).get(timeOut, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            ret = e;
+        }
+        finally {
+            System.out.println(getConditions(service));
+        }
+        return ret;
+    }
+
+    static String getConditions(ForkJoinPool service) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(service.getClass().getSimpleName()).append("\n");
+        stringBuilder.append(service.getActiveThreadCount()).append(" getActiveThreadCount\n");
+        stringBuilder.append(service.getAsyncMode()).append(" getAsyncMode\n");
+        stringBuilder.append(service.getParallelism()).append(" getParallelism\n");
+        stringBuilder.append(service.getQueuedSubmissionCount()).append(" getQueuedSubmissionCount\n");
+        stringBuilder.append(service.getQueuedTaskCount()).append(" getQueuedTaskCount\n");
+        stringBuilder.append(service.getRunningThreadCount()).append(" getRunningThreadCount\n");
+        stringBuilder.append(service.getStealCount()).append(" getStealCount\n");
+        stringBuilder.append(service.getUncaughtExceptionHandler()).append(" getUncaughtExceptionHandler\n");
+        return stringBuilder.toString();
+    }
+
     default void execute(Runnable runnable) {
-        AppComponents.threadConfig().cleanQueue(runnable);
+        ThreadConfig.cleanQueue(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().execute(runnable);
     }
 
@@ -52,7 +81,7 @@ public interface AppConfigurationLocal extends Runnable {
 
     default Object executeGet(Callable<?> callable, int timeOutSeconds) {
         ThreadConfig.cleanQueue(callable);
-        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor(timeOutSeconds).getThreadPoolExecutor();
         Future<?> submit = executor.submit(callable);
         Object o;
         try {
@@ -73,7 +102,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default void execute(Runnable runnable, long timeOutSeconds) {
-        ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+        ThreadPoolExecutor poolExecutor = AppComponents.threadConfig().getTaskExecutor((int) timeOutSeconds).getThreadPoolExecutor();
         ThreadConfig.cleanQueue(runnable);
         Future<?> submit = poolExecutor.submit(runnable);
         AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new ThreadTimeout(submit, timeOutSeconds));
@@ -96,8 +125,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
-        ThreadConfig.cleanQueue(callableQuestion);
-        String result;
+        String result = "null";
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> submit = executor.submit(callableQuestion);
         try {
@@ -114,8 +142,17 @@ public interface AppConfigurationLocal extends Runnable {
                 .format("{0} try to run: {1} ({2})", AppConfigurationLocal.class.getSimpleName(), e.getMessage(), callableQuestion.getClass().getSimpleName());
         }
         finally {
-            System.out.println(MessageFormat.format("executor = {0} is done: {1}", callableQuestion.getClass().getName(), submit.isDone()));
+            System.out.println(MessageFormat.format("{0} = {1} is done: {2}", result, callableQuestion.getClass().getName(), submit.isDone()));
         }
         return result;
+    }
+
+    default void executeBlock(Runnable actualizer, int timeWait) throws TimeoutException {
+        try {
+            AppComponents.threadConfig().getTaskExecutor(timeWait).submit(actualizer).get(timeWait, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 }

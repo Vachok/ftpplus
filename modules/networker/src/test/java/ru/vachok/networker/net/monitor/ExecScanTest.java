@@ -70,23 +70,18 @@ import java.util.concurrent.LinkedBlockingDeque;
     public void testRun() {
         File fileTestVlan = new File("test-213.scan");
         ExecScan scan = new ExecScan(213, 214, "10.200.", fileTestVlan, true);
-        AppConfigurationLocal.getInstance().execute(scan, 6);
+        AppConfigurationLocal.getInstance().execute(scan, 11);
         try {
-            Thread.sleep(7000);
+            Thread.sleep(5000);
         }
         catch (InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        finally {
-            Assert.assertTrue(fileTestVlan.exists());
-            fileTestVlan.deleteOnExit();
-        }
-
     }
 
     @Test
     public void oneIPScanTest() {
-        File vlanFile = new File(FileNames.SERVTXT_10SRVTXT);
+        File vlanFile = new File(FileNames.LAN_11V_SERV_TXT);
         try {
             OutputStream outputStream = new FileOutputStream(vlanFile);
             PrintStream printStream = new PrintStream(outputStream, true);
@@ -157,7 +152,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         final String FILENAME_SERVTXT = "srv.txt";
         final ThreadConfig threadConfig = AppComponents.threadConfig();
         final String FONT_BR_CLOSE = "</font><br>";
-        final File vlanFile = new File(FileNames.SERVTXT_10SRVTXT);
+        final File vlanFile = new File(FileNames.LAN_11V_SERV_TXT);
         String whatVlan = "10.200.";
 
         threadConfig.thrNameSet(String.valueOf(iThree));

@@ -86,7 +86,7 @@ public class FakeRequest implements HttpServletRequest {
 
     @Override
     public boolean isUserInRole(String role) {
-        throw new TODOException("false");
+        throw new TODOException(ConstantsFor.STR_FALSE);
     }
 
     @Override
@@ -347,12 +347,12 @@ public class FakeRequest implements HttpServletRequest {
 
     @Override
     public boolean isAsyncStarted() {
-        throw new TODOException("false");
+        throw new TODOException(ConstantsFor.STR_FALSE);
     }
 
     @Override
     public boolean isAsyncSupported() {
-        throw new TODOException("false");
+        throw new TODOException(ConstantsFor.STR_FALSE);
     }
 
     @Override
@@ -460,7 +460,7 @@ public class FakeRequest implements HttpServletRequest {
 
         @Override
         public boolean isNew() {
-            throw new TODOException("false");
+            throw new TODOException(ConstantsFor.STR_FALSE);
 
         }
     }
