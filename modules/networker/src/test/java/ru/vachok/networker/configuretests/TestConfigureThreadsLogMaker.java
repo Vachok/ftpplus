@@ -99,9 +99,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.close();
             maxMemory = runtime.totalMemory();
             freeM = runtime.freeMemory();
-        }
-        catch (IllegalStateException ignore) {
-            //03.05.2020 (10:37)
+
         }
         catch (RuntimeException e) {
             messageToUser.warn(TestConfigureThreadsLogMaker.class.getSimpleName(), e.getMessage(), " see line: 112 ***");

@@ -179,16 +179,6 @@ public class SSHFactory implements Callable<String> {
         }
     }
 
-    @Override
-    public String toString() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add(PropertiesNames.JSONNAME_CLASS, getClass().getSimpleName());
-        jsonObject.add("connectToSrv", connectToSrv);
-        jsonObject.add("classCaller", classCaller);
-        jsonObject.add("commandSSH", commandSSH);
-        return jsonObject.toString();
-    }
-
     private InputStream connect() throws IOException {
         boolean isConnected;
         try {
@@ -204,8 +194,8 @@ public class SSHFactory implements Callable<String> {
         catch (JSchException | RuntimeException e) {
             messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
-        return respChannel.getInputStream();
-    }
+            return respChannel.getInputStream();
+        }
 
     private void setRespChannelToField() {
         Thread.currentThread().setName(MessageFormat.format("SSH-by-{0}", classCaller));
@@ -268,6 +258,17 @@ public class SSHFactory implements Callable<String> {
         }
     }
 
+    private void checkCommandForExit() {
+        if (!this.commandSSH.endsWith(";exit")) {
+            if (this.commandSSH.endsWith(" & exit")) {
+                this.commandSSH = commandSSH.replace(" & exit", ";exit");
+            }
+            else {
+                this.commandSSH = commandSSH + ";exit";
+            }
+        }
+    }
+
     private Properties getConProps() {
         Properties properties = new Properties();
         try {
@@ -320,15 +321,14 @@ public class SSHFactory implements Callable<String> {
         return pemFile.getAbsolutePath();
     }
 
-    private void checkCommandForExit() {
-        if (!this.commandSSH.endsWith(";exit")) {
-            if (this.commandSSH.endsWith(" & exit")) {
-                this.commandSSH = commandSSH.replace(" & exit", ";exit");
-            }
-            else {
-                this.commandSSH = commandSSH + ";exit";
-            }
-        }
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.JSONNAME_CLASS, getClass().getSimpleName());
+        jsonObject.add("connectToSrv", connectToSrv);
+        jsonObject.add("classCaller", classCaller);
+        jsonObject.add("commandSSH", commandSSH);
+        return jsonObject.toString();
     }
 
     private InetAddress triedIP() {

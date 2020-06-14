@@ -7,9 +7,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.FileNames;
-
-import java.io.File;
 
 
 /**
@@ -34,8 +31,8 @@ public class VpnHelperTest {
 
     @Test
     public void testGetStatus() {
-        vpnHelper.getStatus();
-        Assert.assertTrue(new File(FileNames.OPENVPN_STATUS).exists());
+        String statusVpn = vpnHelper.getStatus();
+        Assert.assertTrue(statusVpn.contains("OpenVPN CLIENT LIST"), statusVpn);
     }
 
     /**

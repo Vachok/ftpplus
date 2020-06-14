@@ -48,7 +48,7 @@ public class PcNamesScannerTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System
         .nanoTime());
 
-    private static final NetScanService PC_SCANNER = NetScanService.getInstance(NetScanService.PCNAMESSCANNER);
+    private static final PcNamesScanner PC_SCANNER = new PcNamesScanner();
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
 
@@ -58,7 +58,6 @@ public class PcNamesScannerTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        this.netScanCtr = new NetScanCtr((PcNamesScanner) PC_SCANNER);
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
         }
