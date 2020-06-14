@@ -8,12 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
-import java.io.File;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -63,14 +61,11 @@ public class TForms {
     public static String networkerTrace(@NotNull StackTraceElement[] trace) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("\n");
-        File appendFile = new File("trace.last");
-        appendFile.delete();
         for (StackTraceElement element : trace) {
             String elem = element.toString();
             if (elem.contains(ConstantsFor.NETWORKER)) {
                 stringBuilder.append(elem).append("\n");
             }
-            FileSystemWorker.appendObjectToFile(appendFile, elem);
         }
         return stringBuilder.toString();
     }

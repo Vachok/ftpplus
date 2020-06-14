@@ -113,15 +113,15 @@ public class DiapazonScanTest {
     public void scanFilesTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
-        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN215), fromArray);
-        Assert.assertTrue(fromArray.contains(FileNames.OLDLANTXT0), fromArray);
-        Assert.assertTrue(fromArray.contains(FileNames.OLDLANTXT1), fromArray);
-        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN210), fromArray);
-        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN205), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.LAN_210215_TXT), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.LAN_OLD0_TXT), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.LAN_OLD1_TXT), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.LAN_205210_TXT), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.LAN_200205_TXT), fromArray);
         Assert.assertTrue(fromArray.contains("lan_21vsrv.txt"), fromArray);
         Assert.assertTrue(fromArray.contains("lan_11vsrv.txt"), fromArray);
         Assert.assertTrue(fromArray.contains("lan_31vsrv.txt"), fromArray);
-        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN220), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.LAN_213220_TXT), fromArray);
     }
 
     @BeforeClass
@@ -153,14 +153,14 @@ public class DiapazonScanTest {
             Assert.assertNull(e, e.getMessage());
         }
 
-        scanMap.putIfAbsent(FileNames.NEWLAN220, new File(FileNames.NEWLAN220));
-        scanMap.putIfAbsent(FileNames.NEWLAN205, new File(FileNames.NEWLAN205));
-        scanMap.putIfAbsent(FileNames.NEWLAN215, new File(FileNames.NEWLAN215));
-        scanMap.putIfAbsent(FileNames.OLDLANTXT0, new File(FileNames.OLDLANTXT0));
-        scanMap.putIfAbsent(FileNames.OLDLANTXT1, new File(FileNames.OLDLANTXT1));
-        scanMap.putIfAbsent(FileNames.SERVTXT_10SRVTXT, new File(FileNames.SERVTXT_10SRVTXT));
-        scanMap.putIfAbsent(FileNames.SERVTXT_21SRVTXT, new File(FileNames.SERVTXT_21SRVTXT));
-        scanMap.putIfAbsent(FileNames.SERVTXT_31SRVTXT, new File(FileNames.SERVTXT_31SRVTXT));
+        scanMap.putIfAbsent(FileNames.LAN_213220_TXT, new File(FileNames.LAN_213220_TXT));
+        scanMap.putIfAbsent(FileNames.LAN_200205_TXT, new File(FileNames.LAN_200205_TXT));
+        scanMap.putIfAbsent(FileNames.LAN_210215_TXT, new File(FileNames.LAN_210215_TXT));
+        scanMap.putIfAbsent(FileNames.LAN_OLD0_TXT, new File(FileNames.LAN_OLD0_TXT));
+        scanMap.putIfAbsent(FileNames.LAN_OLD1_TXT, new File(FileNames.LAN_OLD1_TXT));
+        scanMap.putIfAbsent(FileNames.LAN_11V_SERV_TXT, new File(FileNames.LAN_11V_SERV_TXT));
+        scanMap.putIfAbsent(FileNames.LAN_21V_SERV_TXT, new File(FileNames.LAN_21V_SERV_TXT));
+        scanMap.putIfAbsent(FileNames.LAN_31V_SERV_TXT, new File(FileNames.LAN_31V_SERV_TXT));
         return scanMap;
     }
 

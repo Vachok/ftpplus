@@ -52,7 +52,7 @@ public class ComputerUserResolvedStatsTest {
     public void testCall() {
         ComputerUserResolvedStats computerUserResolvedStats = new ComputerUserResolvedStats();
         String call = computerUserResolvedStats.call();
-        Assert.assertTrue(new File(FileNames.USERLOGINCOUNTER_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(new File(FileNames.USER_LOGIN_COUNTER_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
 
     /**
@@ -69,7 +69,7 @@ public class ComputerUserResolvedStatsTest {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         Assert.assertTrue(selectedRows > 100, MessageFormat.format("selectedRows : {0}", selectedRows));
-        Assert.assertTrue(new File(FileNames.VELKOMPCUSERAUTO_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(new File(FileNames.VELKOM_PCUSERAUTO_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
 
     @Test

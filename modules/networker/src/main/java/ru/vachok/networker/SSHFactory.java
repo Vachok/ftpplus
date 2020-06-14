@@ -57,7 +57,7 @@ public class SSHFactory implements Callable<String> {
 
     private final String classCaller;
 
-    private final File sshErr = new File(FileNames.SSH_ERR);
+    private final File sshErr = new File(FileNames.SSH_ERR_LOG);
 
     private static final String IS_CONNECTED = " session is Connected";
 

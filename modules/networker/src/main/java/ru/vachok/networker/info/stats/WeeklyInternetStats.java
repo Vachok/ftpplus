@@ -117,6 +117,22 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
     }
 
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        WeeklyInternetStats stats = (WeeklyInternetStats) o;
+
+        return totalBytes == stats.totalBytes && (fileName != null ? fileName.equals(stats.fileName) : stats.fileName == null) && (sql != null ? sql
+            .equals(stats.sql) : stats.sql == null) && informationFactory.equals(stats.informationFactory);
+    }
+
     /**
      @return inetstatsIP.csv length in bytes.
 
@@ -139,17 +155,6 @@ class WeeklyInternetStats implements Runnable, Stats {
         return new File(FileNames.INETSTATSIP_CSV).length();
     }
 
-    @Override
-    public String toString() {
-        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
-        stringJoiner.add("totalBytes = " + totalBytes);
-        if (!Stats.isSunday()) {
-            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
-            stringJoiner.add(daySunCounter());
-        }
-        return stringJoiner.toString();
-    }
-
     private void execDo() throws InvokeIllegalException {
         if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
             throw new InvokeIllegalException(UsefulUtilities.thisPC());
@@ -163,28 +168,15 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
     }
 
-    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
+        stringJoiner.add("totalBytes = " + totalBytes);
+        if (!Stats.isSunday()) {
+            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+            stringJoiner.add(daySunCounter());
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        WeeklyInternetStats stats = (WeeklyInternetStats) o;
-
-        return totalBytes == stats.totalBytes && (fileName != null ? fileName.equals(stats.fileName) : stats.fileName == null) && (sql != null ? sql
-            .equals(stats.sql) : stats.sql == null) && informationFactory.equals(stats.informationFactory);
-    }
-
-    private void readStatsToCSVAndDeleteFromDB() {
-        List<String> chkIps = FileSystemWorker.readFileToList(new File(FileNames.INETSTATSIP_CSV).getPath());
-        for (String ip : chkIps) {
-            messageToUser.info(writeObj(ip, "300000"));
-        }
-        new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
+        return stringJoiner.toString();
     }
 
     private void makeIPFile(@NotNull ResultSet resultSet, boolean isNoSquidNeedRead) throws SQLException {
@@ -206,20 +198,11 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
     }
 
-    @Override
-    public String writeObj(String ip, Object rowsLimit) {
-        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
-        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
-        String retStr = downloadConcreteIPStatistics();
-        File file = new File(fileName);
-        this.totalBytes += file.length();
-
-        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
-
-        if (Stats.isSunday() & file.length() > 10) {
-            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
-        }
-        return retStr;
+    @NotNull
+    private String daySunCounter() {
+        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
+        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
+        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
     }
 
     private void readNoSquidIPs() {
@@ -240,6 +223,30 @@ class WeeklyInternetStats implements Runnable, Stats {
             }
         }
         ipsList.forEach(ip->FileSystemWorker.appendObjectToFile(ipsWithInet, ip));
+    }
+
+    private void readStatsToCSVAndDeleteFromDB() {
+        List<String> chkIps = FileSystemWorker.readFileToList(new File(FileNames.INETSTATSIP_CSV).getPath());
+        for (String ip : chkIps) {
+            messageToUser.info(writeObj(ip, "300000"));
+        }
+        new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
+    }
+
+    @Override
+    public String writeObj(String ip, Object rowsLimit) {
+        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
+        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
+        String retStr = downloadConcreteIPStatistics();
+        File file = new File(fileName);
+        this.totalBytes += file.length();
+
+        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
+
+        if (Stats.isSunday() & file.length() > 10) {
+            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
+        }
+        return retStr;
     }
 
     private String downloadConcreteIPStatistics() {
@@ -281,19 +288,6 @@ class WeeklyInternetStats implements Runnable, Stats {
         return -1;
     }
 
-    private String getIP(String ip) {
-        try {
-            ip = ip.split("#")[0];
-        }
-        catch (IndexOutOfBoundsException e) {
-            ip = ip.replace("<br>", "");
-        }
-        finally {
-            ip = ip.replace("<br>", "");
-        }
-        return ip;
-    }
-
     private void printConcreteIPToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
         while (r.next()) {
             printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
@@ -319,11 +313,17 @@ class WeeklyInternetStats implements Runnable, Stats {
         return result;
     }
 
-    @NotNull
-    private String daySunCounter() {
-        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
-        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
-        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
+    private String getIP(String ip) {
+        try {
+            ip = ip.split("#")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            ip = ip.replace("<br>", "");
+        }
+        finally {
+            ip = ip.replace("<br>", "");
+        }
+        return ip;
     }
 
     protected void setSql() {

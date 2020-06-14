@@ -197,15 +197,15 @@ public class DiapazonScan implements NetScanService {
     private @NotNull ExecScan[] getRunnables() {
         Map<String, File> scanFiles = NetKeeper.getScanFiles();
         return new ExecScan[]{
-            new ExecScan(10, 20, "10.10.", scanFiles.get(FileNames.NEWLAN215)),
-            new ExecScan(21, 31, "10.10.", scanFiles.get(FileNames.SERVTXT_21SRVTXT)),
-            new ExecScan(31, 41, "10.10.", scanFiles.get(FileNames.SERVTXT_31SRVTXT)),
-            new ExecScan(11, 16, "192.168.", scanFiles.get(FileNames.OLDLANTXT0)),
-            new ExecScan(16, 21, "192.168.", scanFiles.get(FileNames.OLDLANTXT1)),
-                new ExecScan(200, 205, "10.200.", scanFiles.get(FileNames.NEWLAN205)),
-                new ExecScan(205, 210, "10.200.", scanFiles.get(FileNames.NEWLAN210)),
-                new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.NEWLAN215)),
-                new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.NEWLAN220)),
+            new ExecScan(10, 20, "10.10.", scanFiles.get(FileNames.LAN_210215_TXT)),
+            new ExecScan(21, 31, "10.10.", scanFiles.get(FileNames.LAN_21V_SERV_TXT)),
+            new ExecScan(31, 41, "10.10.", scanFiles.get(FileNames.LAN_31V_SERV_TXT)),
+            new ExecScan(11, 16, "192.168.", scanFiles.get(FileNames.LAN_OLD0_TXT)),
+            new ExecScan(16, 21, "192.168.", scanFiles.get(FileNames.LAN_OLD1_TXT)),
+            new ExecScan(200, 205, "10.200.", scanFiles.get(FileNames.LAN_200205_TXT)),
+            new ExecScan(205, 210, "10.200.", scanFiles.get(FileNames.LAN_205210_TXT)),
+            new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.LAN_210215_TXT)),
+            new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.LAN_213220_TXT)),
         };
     }
 

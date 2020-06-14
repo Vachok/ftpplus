@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -73,7 +74,7 @@ public class RestCTRLGetTest {
     @Test
     public void testFileShow() {
         String fileShow = restCTRLGet.fileShow(new MockHttpServletRequest());
-        Assert.assertTrue(fileShow.contains("ConstantsFor.properties"), fileShow);
+        Assert.assertTrue(fileShow.contains(FileNames.CONSTANTSFOR_PROPERTIES), fileShow);
     }
 
     @Test

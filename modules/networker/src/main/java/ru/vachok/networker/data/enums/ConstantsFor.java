@@ -598,6 +598,8 @@ public enum ConstantsFor {
 
     public static final String JSON_PARAM_NAME_REQUEST_JSON = "request_json";
 
+    public static final String UTF_8 = "UTF-8";
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
     @NotNull

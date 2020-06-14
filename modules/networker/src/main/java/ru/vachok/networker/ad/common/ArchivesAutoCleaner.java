@@ -29,14 +29,14 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ArchivesAutoCleaner.class.getClass().getSimpleName());
 
-    private static ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
+    private static final ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
 
     /**
      Первоначальная папка
      */
     private String startFolder = "";
 
-    private List<String> copyList = new ArrayList<>();
+    private final List<String> copyList = new ArrayList<>();
 
     public ArchivesAutoCleaner(boolean isTest) {
         this.startFolder = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\";
@@ -78,7 +78,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             copyList.add(file.toAbsolutePath().normalize().toString());
             Files.delete(file);
             String msg = file + " is copied!\n" + copyPath.toAbsolutePath();
-            try (OutputStream outputStream = new FileOutputStream(FileNames.CLEANERLOG_TXT, true);
+            try (OutputStream outputStream = new FileOutputStream(FileNames.CLEANER_LOG_TXT, true);
                  PrintStream printStream = new PrintStream(outputStream)) {
                 printStream.println(msg);
                 return FileVisitResult.CONTINUE;

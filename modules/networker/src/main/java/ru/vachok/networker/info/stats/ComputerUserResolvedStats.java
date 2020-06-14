@@ -37,7 +37,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
 
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private final String fileName = FileNames.VELKOMPCUSERAUTO_TXT;
+    private final String fileName = FileNames.VELKOM_PCUSERAUTO_TXT;
 
     private final List<String> pcAndUser = new ArrayList<>();
 
@@ -90,14 +90,14 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
     }
 
     /**
-     Writes file: {@link ComputerUserResolvedStats#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOMPCUSERAUTO_TXT}
+     Writes file: {@link ComputerUserResolvedStats#PCUSERAUTO_UNIQ} from {@link FileNames#VELKOM_PCUSERAUTO_TXT}
      <p>
 
      @return {@link #countFreqOfUsers()}
      */
     @NotNull
     private String makeStatFiles() throws InvokeIllegalException {
-        List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.VELKOMPCUSERAUTO_TXT);
+        List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.VELKOM_PCUSERAUTO_TXT);
         FileSystemWorker.writeFile(PCUSERAUTO_UNIQ, readFileAsList.parallelStream().distinct());
         if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
             String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + PCUSERAUTO_UNIQ;
@@ -176,12 +176,12 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
             }
 
         }
-        return MessageFormat.format("File {0} is {1}", FileNames.USERLOGINCOUNTER_TXT, String.valueOf(writeMapWithCount()));
+        return MessageFormat.format("File {0} is {1}", FileNames.USER_LOGIN_COUNTER_TXT, String.valueOf(writeMapWithCount()));
     }
 
     private boolean writeMapWithCount() {
         Map<String, Integer> mapWithCount = new TreeMap<>();
-        File countFile = new File(FileNames.USERLOGINCOUNTER_TXT);
+        File countFile = new File(FileNames.USER_LOGIN_COUNTER_TXT);
         boolean fileWritten = countFile.delete();
         if (fileWritten) {
             for (String pcUser : pcAndUser) {
@@ -190,7 +190,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
             }
         }
         String strToSend = AbstractForms.fromArray(mapWithCount);
-        FileSystemWorker.writeFile(FileNames.USERLOGINCOUNTER_TXT, strToSend);
+        FileSystemWorker.writeFile(FileNames.USER_LOGIN_COUNTER_TXT, strToSend);
         ru.vachok.networker.restapi.message.MessageToUser.getInstance(ru.vachok.networker.restapi.message.MessageToUser.EMAIL, this.getClass().getSimpleName())
             .info(strToSend);
         return countFile.exists();

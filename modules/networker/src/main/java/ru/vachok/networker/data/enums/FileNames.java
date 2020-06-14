@@ -20,7 +20,7 @@ public enum FileNames {
     /**
      Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
      */
-    public static final String VELKOMPCUSERAUTO_TXT = "velkom_pcuserauto.txt";
+    public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
     public static final String EXT_ONLIST = ".onList";
 
@@ -30,7 +30,7 @@ public enum FileNames {
 
     public static final String COMMON_RGH = "common.rgh";
 
-    public static final String CLEANERLOG_TXT = "cleaner.log.txt";
+    public static final String CLEANER_LOG_TXT = "cleaner_log.txt";
 
     public static final String EXT_PROPERTIES = ".properties";
 
@@ -42,7 +42,7 @@ public enum FileNames {
 
     public static final String FILENAME_OWNER = "owner_users.txt";
 
-    public static final String PINGRESULT = "pingresult";
+    public static final String PINGRESULT = "ping.result";
 
     public static final String UNUSED_IPS = "unused.ips";
 
@@ -55,28 +55,28 @@ public enum FileNames {
     /**
      Название файла новой подсети 10.200.х.х
      */
-    public static final String NEWLAN205 = "lan_200205.txt";
+    public static final String LAN_200205_TXT = "lan_200205.txt";
 
-    public static final String NEWLAN210 = "lan_205210.txt";
+    public static final String LAN_205210_TXT = "lan_205210.txt";
 
-    public static final String NEWLAN220 = "lan_213220.txt";
+    public static final String LAN_213220_TXT = "lan_213220.txt";
 
-    public static final String NEWLAN215 = "lan_210215.txt";
+    public static final String LAN_210215_TXT = "lan_210215.txt";
 
     /**
      Название файла старой подсети 192.168.х.х
      */
-    public static final String OLDLANTXT0 = "lan_old0.txt";
+    public static final String LAN_OLD0_TXT = "lan_old0.txt";
 
-    public static final String OLDLANTXT1 = "lan_old1.txt";
+    public static final String LAN_OLD1_TXT = "lan_old1.txt";
 
     public static final String SERVTXT = "srv.txt";
 
-    public static final String SERVTXT_31SRVTXT = "lan_31v" + SERVTXT;
+    public static final String LAN_31V_SERV_TXT = "lan_31v" + SERVTXT;
 
-    public static final String SERVTXT_21SRVTXT = "lan_21v" + SERVTXT;
+    public static final String LAN_21V_SERV_TXT = "lan_21v" + SERVTXT;
 
-    public static final String SERVTXT_10SRVTXT = "lan_11v" + SERVTXT;
+    public static final String LAN_11V_SERV_TXT = "lan_11v" + SERVTXT;
 
     public static final String EXT_TABLE = ".table";
 
@@ -90,7 +90,7 @@ public enum FileNames {
 
     public static final String CONSTANTSFOR_PROPERTIES = "ConstantsFor.properties";
 
-    public static final String USERLOGINCOUNTER_TXT = "user_login_counter.txt";
+    public static final String USER_LOGIN_COUNTER_TXT = "user_login_counter.txt";
 
     public static final String CLEANSTOP_TXT = "cleanstop.txt";
 
@@ -98,13 +98,11 @@ public enum FileNames {
 
     public static final String WEEKLY_LCK = "weekly.lck";
 
-    public static final String _STACK_TXT = "-stack.txt";
-
     public static final String OLDFILES_LOG = "old_files.log";
 
-    public static final String SSH_ERR = "ssh.err.log";
+    public static final String SSH_ERR_LOG = "ssh_err.log";
 
-    public static final String SSH_LISTS_LOG = "getsshlists.log";
+    public static final String SSH_LISTS_LOG = "ssh_lists.log";
 
     public static final String DFINETSTAT = "dfinetstat";
 
