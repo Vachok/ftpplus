@@ -125,7 +125,7 @@ public class PfListsSrv {
     private void buildFactory() throws FileNotFoundException, ExecutionException, InterruptedException, TimeoutException {
         SSHFactory.Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
-        int timeOusSec = 3;
+        int timeOusSec = 6;
         if (!new File(builderInst.getPem()).exists()) {
             throw new FileNotFoundException("NO CERTIFICATE a161.getPem...");
         }
