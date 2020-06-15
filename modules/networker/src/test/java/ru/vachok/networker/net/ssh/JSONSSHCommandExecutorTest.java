@@ -43,7 +43,7 @@ public class JSONSSHCommandExecutorTest {
         JsonObject jsonObject = Json.parse(FileSystemWorker.readRawFile(FILE_TEST_JSON.getAbsolutePath())).asObject();
         String result = sshExec.getResult(jsonObject);
         Assert.assertTrue(result.contains("!_passwords.xlsx"), result);
-        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_CODE, "2001");
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_CODE, "3001");
         result = sshExec.getResult(jsonObject);
         Assert.assertTrue(result.contains("\"ls\""), result);
         jsonObject.add(ConstantsFor.JSON_PARAM_NAME_SERVER, OtherKnownDevices.SRV_INETSTAT);
