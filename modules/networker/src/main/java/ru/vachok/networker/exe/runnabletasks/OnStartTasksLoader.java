@@ -62,7 +62,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         execute(NetScanService.getInstance(NetScanService.PCNAMESSCANNER));
         schedule(this::dbSendAppJson, 30);
         execute(this::getWeekPCStats);
-        execute(this::checkCommonSync);
+        schedule(this::checkCommonSync, 1);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     private String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
         try {
-            AppConfigurationLocal.getInstance().execute(regRuFTPLibsUploader, 60);
+            AppConfigurationLocal.getInstance().execute(regRuFTPLibsUploader, 50);
             return AppConfigurationLocal.getInstance().toString();
         }
         catch (RuntimeException e) {

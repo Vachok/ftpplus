@@ -32,7 +32,10 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -187,14 +190,9 @@ public class InternetSyncTest {
 
     @Test
     public void testUploadCollection() {
-        try {
-            int rowsUp = syncData.uploadCollection(Collections.singleton("test"), "test");
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        int rowsUp = syncData.uploadCollection(Collections.singleton("test"), "1.1.1.1");
         int upInt = syncData.uploadCollection(Collections
-                .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
+            .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
         Assert.assertTrue(upInt == 0);
     }
 
