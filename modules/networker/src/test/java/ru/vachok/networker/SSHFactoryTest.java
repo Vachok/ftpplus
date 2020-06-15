@@ -68,7 +68,7 @@ public class SSHFactoryTest {
     @Test
     public void testTestToString() {
         String toStr = sshFactory.toString();
-        Assert.assertTrue(toStr.contains("SSHFactory{"), sshFactory.toString());
+        Assert.assertTrue(toStr.contains("\"Class\":\"SSHFactory\""), sshFactory.toString());
     }
 
     @Test
