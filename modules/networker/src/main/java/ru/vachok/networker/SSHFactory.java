@@ -145,6 +145,8 @@ public class SSHFactory implements Callable<String> {
             this.respChannel.disconnect();
             this.session.disconnect();
             recQueue.add(session.isConnected() + IS_CONNECTED);
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
         finally {
             if (this.respChannel.isConnected()) {
