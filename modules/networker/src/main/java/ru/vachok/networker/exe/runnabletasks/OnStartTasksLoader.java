@@ -24,6 +24,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,6 +62,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         execute(NetScanService.getInstance(NetScanService.PCNAMESSCANNER));
         schedule(this::dbSendAppJson, 30);
         execute(this::getWeekPCStats);
+        execute(this::checkCommonSync);
     }
 
     @Override
@@ -69,6 +71,14 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         sb.append("messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
+    }
+
+    private void checkCommonSync() {
+        File file = new File("\\\\srv-fs.eatmeat.ru\\Common_new\\sync.ffs_lock");
+        if (!file.exists() || file.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) {
+            MessageToUser.getInstance(MessageToUser.DB, getClass().getSimpleName()).error(MessageFormat
+                .format("{0} is {1} or very old!", file.getName(), file.exists()));
+        }
     }
 
     private void delFilePatterns() {
