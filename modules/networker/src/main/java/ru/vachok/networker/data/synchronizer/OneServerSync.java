@@ -19,9 +19,9 @@ import java.util.*;
 public class OneServerSync extends SyncData {
 
 
-    private final File file;
-
     public static final String SYNCED = "synced";
+
+    private final File file;
 
     private String dbToSync;
 

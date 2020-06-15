@@ -159,8 +159,8 @@ public class SyncDataTest {
         try {
             syncData.superRun();
         }
-        catch (IllegalStateException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
 

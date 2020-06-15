@@ -105,17 +105,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    @Override
-    public int hashCode() {
-        int result = reportUser != null ? reportUser.hashCode() : 0;
-        result = 31 * result + startPath.hashCode();
-        result = 31 * result + (int) (dirsCounter ^ (dirsCounter >>> 32));
-        result = 31 * result + (int) (filesCounter ^ (filesCounter >>> 32));
-        result = 31 * result + (int) (totalFilesSize ^ (totalFilesSize >>> 32));
-        result = 31 * result + (int) (filesMatched ^ (filesMatched >>> 32));
-        return result;
-    }
-
     private OldBigFilesInfoCollector.WalkerCommon getWalker() throws InvokeIllegalException {
         File walkFile = new File(FileNames.WALKER_LCK);
         if (walkFile.exists()) {
@@ -131,6 +120,17 @@ public class OldBigFilesInfoCollector implements Callable<String> {
             }
             return new OldBigFilesInfoCollector.WalkerCommon();
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = reportUser != null ? reportUser.hashCode() : 0;
+        result = 31 * result + startPath.hashCode();
+        result = 31 * result + (int) (dirsCounter ^ (dirsCounter >>> 32));
+        result = 31 * result + (int) (filesCounter ^ (filesCounter >>> 32));
+        result = 31 * result + (int) (totalFilesSize ^ (totalFilesSize >>> 32));
+        result = 31 * result + (int) (filesMatched ^ (filesMatched >>> 32));
+        return result;
     }
 
     @Override
@@ -279,7 +279,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             String toString = MessageFormat.format("Dirs: {0}, files: {2}/{3}. Size {4} MB. Current dir: {1}", dirsCounter, dir.toAbsolutePath()
-                .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
+                    .normalize(), filesMatched, filesCounter, totalFilesSize / ConstantsFor.MBYTE);
             messageToUser.info(toString);
             return FileVisitResult.CONTINUE;
         }
