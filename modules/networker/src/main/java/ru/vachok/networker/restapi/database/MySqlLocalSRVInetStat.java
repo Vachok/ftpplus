@@ -7,6 +7,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.exceptions.DBConnectException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 
@@ -56,21 +58,48 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         defDataSource.setUseSSL(false);
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCreateDatabaseIfNotExist(true);
+        defDataSource.setRelaxAutoCommit(true);
+        defDataSource.setInteractiveClient(true);
+        try {
+            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(30));
+            defDataSource.setSocketTimeout((int) TimeUnit.SECONDS.toMillis(45));
+        }
+        catch (SQLException e) {
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), e.getMessage(), " see line: 60 ***");
+        }
+        return tryConnect(defDataSource);
+    }
+
+    /**
+     @param defDataSource new MysqlDataSource
+     @return {@link OtherKnownDevices#SRV_INETSTAT} {@link Connection}
+
+     @throws DBConnectException if {@link Connection} is null
+     */
+    private Connection tryConnect(MysqlDataSource defDataSource) {
         Connection connection = null;
         try {
             connection = defDataSource.getConnection();
+            connection.clearWarnings();
         }
-        catch (SQLException throwables) {
-            messageToUser.error(throwables.getMessage());
+        catch (SQLException e) {
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), e.getMessage(), " see line: 78 ***");
         }
         if (connection != null) {
             return connection;
         }
         else {
-            throw new IllegalStateException(MessageFormat.format("No connection! {0}, {1}", getClass().getSimpleName(), dbName));
+            throw new DBConnectException(dbName + "." + tableName);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
+        sb.append("\"tableName\":\"").append(tableName).append("\",");
+        sb.append("\"dbName\":\"").append(dbName).append("\"");
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
@@ -101,13 +130,50 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return retSource;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
-        sb.append("\"tableName\":\"").append(tableName).append("\",");
-        sb.append("\"dbName\":\"").append(dbName).append("\"");
-        sb.append('}');
-        return sb.toString();
+    private void checkDBNames() {
+        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
+            this.dbName = dbName.split("\\Q.\\E")[0];
+            this.tableName = dbName.split("\\Q.\\E")[1];
+        }
+        else {
+            throw new IllegalArgumentException(dbName + "." + tableName);
+        }
+    }
+
+    @Contract("_, _ -> new")
+    private @NotNull String getCreateQuery(@NotNull String dbPointTableName, List<String> additionalColumns) {
+        if (!dbPointTableName.contains(".")) {
+            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
+        }
+        String[] dbTable = dbPointTableName.split("\\Q.\\E");
+        if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
+            throw new IllegalArgumentException(dbTable[1]);
+        }
+        String engine = ConstantsFor.DBENGINE_MEMORY;
+
+        if (dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
+            engine = "MyISAM";
+        }
+        else {
+            engine = "InnoDB";
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("(\n")
+            .append("\t`idrec` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,\n")
+            .append("\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n")
+            .append("\t`upstring` VARCHAR(190) NOT NULL DEFAULT 'not set',\n")
+            .append("\t`json` TEXT NULL,\n");
+        if (!additionalColumns.isEmpty()) {
+            additionalColumns.forEach(stringBuilder::append);
+        }
+        stringBuilder.append("\tPRIMARY KEY (`idrec`),\n" +
+            "\tUNIQUE INDEX `upstring` (`upstring`)");
+        stringBuilder.append(") ENGINE=").append(engine).append(" MAX_ROWS=100000;\n");
+        return stringBuilder.toString();
     }
 
     @Override
@@ -164,41 +230,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return resultsUpload;
     }
 
-    @Contract("_, _ -> new")
-    private @NotNull String getCreateQuery(@NotNull String dbPointTableName, List<String> additionalColumns) {
-        if (!dbPointTableName.contains(".")) {
-            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
-        }
-        String[] dbTable = dbPointTableName.split("\\Q.\\E");
-        if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
-            throw new IllegalArgumentException(dbTable[1]);
-        }
-        String engine = ConstantsFor.DBENGINE_MEMORY;
 
-        if (dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
-            engine = "MyISAM";
-        }
-        else {
-            engine = "InnoDB";
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("(\n")
-            .append("\t`idrec` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,\n")
-            .append("\t`tstamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n")
-            .append("\t`upstring` VARCHAR(190) NOT NULL DEFAULT 'not set',\n")
-            .append("\t`json` TEXT NULL,\n");
-        if (!additionalColumns.isEmpty()) {
-            additionalColumns.forEach(stringBuilder::append);
-        }
-        stringBuilder.append("\tPRIMARY KEY (`idrec`),\n" +
-            "\tUNIQUE INDEX `upstring` (`upstring`)");
-        stringBuilder.append(") ENGINE=").append(engine).append(" MAX_ROWS=100000;\n");
-        return stringBuilder.toString();
-    }
 
     @Override
     public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {

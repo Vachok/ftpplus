@@ -45,7 +45,7 @@ public class JSONSSHCommandExecutorTest {
         Assert.assertTrue(result.contains("!_passwords.xlsx"), result);
         jsonObject.add(ConstantsFor.JSON_PARAM_NAME_CODE, "3001");
         result = sshExec.getResult(jsonObject);
-        Assert.assertTrue(result.contains("\"ls\""), result);
+        Assert.assertTrue(result.contains("\"ls;exit\""), result);
         jsonObject.add(ConstantsFor.JSON_PARAM_NAME_SERVER, OtherKnownDevices.SRV_INETSTAT);
         result = sshExec.getResult(jsonObject);
         Assert.assertTrue(result.contains("\"server\":\"srv-inetstat.eatmeat.ru\""), result);

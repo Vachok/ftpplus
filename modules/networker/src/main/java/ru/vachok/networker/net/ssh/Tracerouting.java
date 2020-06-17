@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.ssh;
 
 
+import com.eclipsesource.json.JsonObject;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.database.*;
@@ -13,13 +14,13 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
@@ -34,18 +35,18 @@ public class Tracerouting implements Callable<String> {
 
     private static final String DB_REFERENCE = "ProviderName";
 
-    private String provNameResolved;
-
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, Tracerouting.class.getSimpleName());
 
     @Override
-    public String call() throws Exception {
+    public String call() throws InterruptedException, ExecutionException, TimeoutException {
+        String result;
         if (!ConstantsFor.argNORUNExist()) {
-            return getProviderTraceStr();
+            result = getProviderTraceStr();
         }
         else {
-            return FileSystemWorker.readFile(FileNames.ARG_NO_RUN);
+            result = FileSystemWorker.readFile(FileNames.ARG_NO_RUN);
         }
+        return result;
     }
 
     /**
@@ -71,17 +72,18 @@ public class Tracerouting implements Callable<String> {
         Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
         String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         stringBuilder.append("<br><a href=\"/makeok\">");
+        String provNameResolved;
         if (callForRoute.contains("91.210.85.")) {
             stringBuilder.append("<h3>FORTEX</h3>");
-            this.provNameResolved = ConstantsFor.FORTEX;
-            FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.FORTEX, new Tracerouting.ComplListener(ConstantsFor.FORTEX));
+            provNameResolved = ConstantsFor.FORTEX;
+            FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.FORTEX, new Tracerouting.CompleteListener(ConstantsFor.FORTEX));
 
         }
         else {
             if (callForRoute.contains("176.62.185.129")) {
                 stringBuilder.append("<h3>ISTRANET</h3>");
-                this.provNameResolved = ConstantsFor.ISTRANET;
-                FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.ISTRANET, new Tracerouting.ComplListener(ConstantsFor.ISTRANET));
+                provNameResolved = ConstantsFor.ISTRANET;
+                FirebaseDatabase.getInstance().getReference(DB_REFERENCE).setValue(ConstantsFor.ISTRANET, new Tracerouting.CompleteListener(ConstantsFor.ISTRANET));
 
             }
         }
@@ -130,12 +132,21 @@ public class Tracerouting implements Callable<String> {
         }
     }
 
-    private class ComplListener implements DatabaseReference.CompletionListener {
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, "Tracerouting");
+        jsonObject.add(PropertiesNames.HASH, this.hashCode());
+        jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+        return jsonObject.toString();
+    }
+
+    private class CompleteListener implements DatabaseReference.CompletionListener {
 
 
         private final String prName;
 
-        ComplListener(String prName) {
+        CompleteListener(String prName) {
             this.prName = prName;
         }
 
@@ -146,24 +157,22 @@ public class Tracerouting implements Callable<String> {
             upMap.put(prName, new Date().toString());
             fireStore.collection("stats").document(DB_REFERENCE).update(upMap);
             if (error != null) {
-                messageToUser.error("ComplListener.onComplete", error.getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
+                messageToUser.error("CompleteListener.onComplete", error.getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace()));
             }
             else if (ref != null) {
                 messageToUser.info(getClass().getSimpleName(), "onComplete", ref.toString());
+            }
+            else {
+                messageToUser.warn(getClass().getTypeName(), "DatabaseReference", "null");
             }
         }
 
         @Override
         public String toString() {
-            return new StringJoiner(",\n", Tracerouting.ComplListener.class.getSimpleName() + "[\n", "\n]")
-                .add("prName = '" + prName + "'")
-                .toString();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add(PropertiesNames.CLASS, "Tracerouting.CompleteListener");
+            jsonObject.add("prName", prName);
+            return jsonObject.toString();
         }
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", Tracerouting.class.getSimpleName() + "[\n", "\n]")
-            .toString();
     }
 }

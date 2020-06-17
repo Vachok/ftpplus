@@ -57,9 +57,23 @@ public class SSHFactory implements Callable<String> {
 
     private final String classCaller;
 
+    private static final String SRV_NEED = "connectToSrv";
+
+    private static final String CLASS_CALLER = "classCaller";
+
+    private static final String SSH_FACTORY = "commandSSH";
+
     private final File sshErr = new File(FileNames.SSH_ERR_LOG);
 
     private static final String IS_CONNECTED = " session is Connected";
+
+    protected Channel respChannel;
+
+    private SSHFactory.Builder builder;
+
+    protected SSHFactory.Builder getBuilder() {
+        return builder;
+    }
 
     private String connectToSrv;
 
@@ -73,7 +87,9 @@ public class SSHFactory implements Callable<String> {
 
     private Session session;
 
-    private Channel respChannel;
+    protected void setBuilder(SSHFactory.Builder builder) {
+        this.builder = builder;
+    }
 
     private String builderToStr;
 
@@ -115,12 +131,9 @@ public class SSHFactory implements Callable<String> {
         this.commandSSH = commandSSH;
     }
 
-    protected SSHFactory(@NotNull SSHFactory.Builder builder) {
-        this.connectToSrv = builder.connectToSrv;
-        this.commandSSH = builder.commandSSH;
-        this.sessionType = builder.sessionType;
-        this.userName = builder.userName;
-        this.classCaller = builder.classCaller;
+    @Contract(pure = true)
+    protected String getConnectToSrv() {
+        return connectToSrv;
     }
 
     @Override
@@ -145,8 +158,6 @@ public class SSHFactory implements Callable<String> {
             this.respChannel.disconnect();
             this.session.disconnect();
             recQueue.add(session.isConnected() + IS_CONNECTED);
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
         }
         finally {
             if (this.respChannel.isConnected()) {
@@ -282,9 +293,13 @@ public class SSHFactory implements Callable<String> {
         return properties;
     }
 
-    @Contract(pure = true)
-    private String getConnectToSrv() {
-        return connectToSrv;
+    protected SSHFactory(@NotNull SSHFactory.Builder builder) {
+        this.connectToSrv = builder.connectToSrv;
+        this.commandSSH = builder.commandSSH;
+        this.sessionType = builder.sessionType;
+        this.userName = builder.userName;
+        this.classCaller = builder.classCaller;
+        this.builder = builder;
     }
 
     public void setConnectToSrv(String connectToSrv) {
@@ -327,9 +342,9 @@ public class SSHFactory implements Callable<String> {
     public String toString() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(PropertiesNames.JSONNAME_CLASS, getClass().getSimpleName());
-        jsonObject.add("connectToSrv", connectToSrv);
-        jsonObject.add("classCaller", classCaller);
-        jsonObject.add("commandSSH", commandSSH);
+        jsonObject.add(SRV_NEED, connectToSrv);
+        jsonObject.add(CLASS_CALLER, classCaller);
+        jsonObject.add(SSH_FACTORY, commandSSH);
         return jsonObject.toString();
     }
 
@@ -536,16 +551,16 @@ public class SSHFactory implements Callable<String> {
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("Builder{");
-            sb.append("userName='").append(userName).append('\'');
-            sb.append(", pass='").append(pass).append('\'');
-            sb.append(", sessionType='").append(sessionType).append('\'');
-            sb.append(", connectToSrv='").append(connectToSrv).append('\'');
-            sb.append(", classCaller='").append(classCaller).append('\'');
-            sb.append(", commandSSH='").append(commandSSH).append('\'');
-            sb.append(", sshFactory=").append(sshFactory);
-            sb.append('}');
-            return sb.toString();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add(PropertiesNames.CLASS, "Builder");
+            jsonObject.add(ConstantsFor.DBFIELD_USERNAME, userName);
+            jsonObject.add("pass", pass);
+            jsonObject.add("sessionType", sessionType);
+            jsonObject.add(SRV_NEED, connectToSrv);
+            jsonObject.add(CLASS_CALLER, classCaller);
+            jsonObject.add(SSH_FACTORY, commandSSH);
+            jsonObject.add("sshFactory", sshFactory.toString());
+            return jsonObject.toString();
         }
     }
 }

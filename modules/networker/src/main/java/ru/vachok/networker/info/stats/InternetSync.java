@@ -144,7 +144,7 @@ public class InternetSync extends SyncData {
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-        join();
+        exec();
     }
 
     /**
@@ -342,8 +342,6 @@ public class InternetSync extends SyncData {
         }
         return tableComment;
     }
-
-
 
     @NotNull
     private String setComment() {

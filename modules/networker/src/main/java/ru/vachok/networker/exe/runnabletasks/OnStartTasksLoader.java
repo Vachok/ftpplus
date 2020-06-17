@@ -4,6 +4,8 @@ package ru.vachok.networker.exe.runnabletasks;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
@@ -74,10 +76,11 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     }
 
     private void checkCommonSync() {
-        File file = new File("\\\\srv-fs.eatmeat.ru\\Common_new\\sync.ffs_lock");
-        if (!file.exists() || file.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)) {
-            MessageToUser.getInstance(MessageToUser.DB, getClass().getSimpleName()).error(MessageFormat
-                .format("{0} is {1} or very old!", file.getName(), file.exists()));
+        String pathName = "\\\\srv-fs.eatmeat.ru\\Common_new\\sync.ffs_lock";
+        File file = new File(pathName);
+        if (!file.exists() || file.lastModified() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(35)) {
+            DatabaseReference fssRef = FirebaseDatabase.getInstance().getReference("fss");
+            fssRef.setValue(pathName, (error, ref)->messageToUser.warn(OnStartTasksLoader.class.getSimpleName(), error.getMessage(), " see line: 84 ***"));
         }
     }
 

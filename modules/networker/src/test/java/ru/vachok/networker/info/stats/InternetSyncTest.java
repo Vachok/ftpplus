@@ -64,7 +64,7 @@ public class InternetSyncTest {
 
     @BeforeMethod
     public void initSync() {
-        syncData = (InternetSync) SyncData.getInstance("10.200.213.85");
+        syncData = (InternetSync) SyncData.getInstance("192.168.13.220");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
 
@@ -87,8 +87,8 @@ public class InternetSyncTest {
             }
         }
 
-        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 60);
-        Assert.assertTrue(o.toString().contains("No original FILE! 10.200.213.85.csv"), o.toString());
+        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 45);
+        Assert.assertTrue(o.toString().contains("No original FILE! 192.168.13.220.csv"), o.toString());
     }
 
     @Test
@@ -210,7 +210,7 @@ public class InternetSyncTest {
     @Test
     public void testToString() {
         String toStr = syncData.toString();
-        Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.85', dbFullName='inetstats.10_200_213_85', connection=\n" +
+        Assert.assertEquals(toStr, "InternetSync{ipAddr='192.168.13.220', dbFullName='inetstats.192_168_13_220', connection=\n" +
             "}");
     }
 
