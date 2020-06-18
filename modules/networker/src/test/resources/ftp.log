@@ -1970,3 +1970,11 @@ connection to 192.168.13.155 closed - bye bye!
 CONNECT \172.16.200.1
 NOT connected to 172.16.200.1
 connection to 172.16.200.1 closed - bye bye!
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+CONNECT \192.168.13.30

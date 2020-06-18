@@ -13,6 +13,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
@@ -126,7 +127,7 @@ public class PfListsSrv {
         SSHFactory.Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
         int timeOusSec = 6;
-        if (!new File(builderInst.getPem()).exists()) {
+        if (!new File(FileNames.PEM).exists()) {
             throw new FileNotFoundException("NO CERTIFICATE a161.getPem...");
         }
         if (pfListsInstAW == null) {

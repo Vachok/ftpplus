@@ -289,9 +289,8 @@ public class RestCTRLGet {
     }
 
     private void printDiskInfoToFile() {
-        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h&uname -a&exit", UsefulUtilities.class.getSimpleName());
-        String path = FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 21));
-        messageToUser.info(path);
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(OtherKnownDevices.SRV_INETSTAT, "df -h;exit", UsefulUtilities.class.getSimpleName());
+        FileSystemWorker.writeFile(FileNames.DFINETSTAT, AppConfigurationLocal.getInstance().submitAsString(sshFactoryB.build(), 21));
     }
 
     @GetMapping("/props")

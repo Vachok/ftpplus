@@ -143,7 +143,6 @@ public class UserInfoTest {
         boolean retBool = false;
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
             .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
-            createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {

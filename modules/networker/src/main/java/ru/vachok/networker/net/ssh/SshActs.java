@@ -234,9 +234,9 @@ public class SshActs {
                 .append(ConstantsFor.SSH_INITPF);
 
             String sshCom = sshComBuilder.toString();
-            String resStr = new SSHFactory.Builder(whatSrvNeed(), sshCom, getClass().getSimpleName()).build().call();
+            SSHFactory resStrB = new SSHFactory.Builder(whatSrvNeed(), sshCom, getClass().getSimpleName()).build();
 
-            stringBuilder.append(resStr.replace("\n", "<br>\n"));
+            stringBuilder.append(resStrB.call().replace("\n", "<br>\n"));
             stringBuilder.append(sshCom);
         });
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", stringBuilder.toString());

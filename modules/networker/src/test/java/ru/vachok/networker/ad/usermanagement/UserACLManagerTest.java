@@ -77,6 +77,6 @@ public class UserACLManagerTest {
         UserACLManager parsingACL = UserACLManager
             .getInstance(UserACLManager.RESTORE, Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_ЗП\\"));
         String result = parsingACL.getResult();
-        Assert.assertTrue(result.contains("tbabicheva"), result);
+        Assert.assertTrue(result.contains("opetrova"), result);
     }
 }
