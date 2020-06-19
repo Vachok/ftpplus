@@ -40,6 +40,56 @@ public class OneServerSync extends SyncData {
     }
 
     @Override
+    public void superRun() {
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_ARCHIVEVELKOMPC)) {
+            try (PreparedStatement preparedStatement = connection
+                .prepareStatement("INSERT INTO archive.velkompc (idrec, NamePP, AddressPP, SegmentPP, instr, OnlineNow, userName) values (?,?,?,?,?,?,?)")) {
+                try (InputStream inputStream = new FileInputStream(file)) {
+                    preparedStatement.setQueryTimeout(100);
+                    try (Scanner scanner = new Scanner(inputStream, ConstantsFor.UTF_8)) {
+                        while (scanner.hasNextLine()) {
+                            String line = scanner.nextLine();
+                            JsonObject parsedObj = (JsonObject) Json.parse(line);
+                            preparedStatement.setInt(1, Integer.parseInt(parsedObj.getString(ConstantsFor.DBCOL_IDREC, "0")));
+                            preparedStatement.setString(2, parsedObj.getString(ConstantsFor.DBCOL_NAMEPP, "0"));
+                            preparedStatement.setString(3, parsedObj.getString(ConstantsFor.DBCOL_ADDRPP, "0"));
+                            preparedStatement.setString(4, parsedObj.getString(ConstantsFor.DBCOL_SEGPP, "0"));
+                            try {
+                                preparedStatement.setString(5, parsedObj.getString("instr", "0"));
+                            }
+                            catch (RuntimeException ignore) {
+                                //19.06.2020 (21:06)
+                            }
+
+                            preparedStatement.setString(6, parsedObj.getString(ConstantsNet.ONLINE_NOW, "0"));
+                            preparedStatement.setString(7, parsedObj.getString(ConstantsFor.DBFIELD_USERNAME, "0"));
+                            preparedStatement.addBatch();
+                        }
+                    }
+                }
+                preparedStatement.executeBatch();
+            }
+        }
+        catch (SQLException | IOException | NumberFormatException e) {
+            messageToUser.error(e.getMessage());
+        }
+        finally {
+            messageToUser.info(getClass().getSimpleName(), SYNCED, dbToSync);
+        }
+    }
+
+    @Override
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        this.dbToSync = tableName;
+        return 0;
+    }
+
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.OneServerSync.createTable( int ) at 26.12.2019 - (19:34)");
+    }
+
+    @Override
     public Object getRawResult() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.OneServerSync.getRawResult( Object ) at 17.05.2020 - (13:10)");
     }
@@ -57,12 +107,6 @@ public class OneServerSync extends SyncData {
     @Override
     public void setDbToSync(String dbToSync) {
         this.dbToSync = dbToSync;
-    }
-
-    @Override
-    public int uploadCollection(Collection stringsCollection, String tableName) {
-        this.dbToSync = tableName;
-        return 0;
     }
 
     @Override
@@ -113,44 +157,6 @@ public class OneServerSync extends SyncData {
             superRun();
         }
         return file.getAbsolutePath();
-    }
-
-    @Override
-    public void superRun() {
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_ARCHIVEVELKOMPC)) {
-            try (PreparedStatement preparedStatement = connection
-                .prepareStatement("INSERT INTO archive.velkompc (idrec, NamePP, AddressPP, SegmentPP, instr, OnlineNow, userName) values (?,?,?,?,?,?,?)")) {
-                try (InputStream inputStream = new FileInputStream(file)) {
-                    preparedStatement.setQueryTimeout(100);
-                    try (Scanner scanner = new Scanner(inputStream)) {
-                        while (scanner.hasNextLine()) {
-                            String line = scanner.nextLine();
-                            JsonObject parsedObj = (JsonObject) Json.parse(line);
-                            preparedStatement.setInt(1, Integer.parseInt(parsedObj.getString(ConstantsFor.DBCOL_IDREC, "0")));
-                            preparedStatement.setString(2, parsedObj.getString(ConstantsFor.DBCOL_NAMEPP, "0"));
-                            preparedStatement.setString(3, parsedObj.getString(ConstantsFor.DBCOL_ADDRPP, "0"));
-                            preparedStatement.setString(4, parsedObj.getString(ConstantsFor.DBCOL_SEGPP, "0"));
-                            preparedStatement.setString(5, parsedObj.getString("instr", "0"));
-                            preparedStatement.setString(6, parsedObj.getString(ConstantsNet.ONLINE_NOW, "0"));
-                            preparedStatement.setString(7, parsedObj.getString(ConstantsFor.DBFIELD_USERNAME, "0"));
-                            preparedStatement.addBatch();
-                        }
-                    }
-                }
-                preparedStatement.executeBatch();
-            }
-        }
-        catch (SQLException | IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        finally {
-            messageToUser.info(getClass().getSimpleName(), SYNCED, dbToSync);
-        }
-    }
-
-    @Override
-    public int createTable(String dbPointTable, List<String> additionalColumns) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.OneServerSync.createTable( int ) at 26.12.2019 - (19:34)");
     }
 
     @Override

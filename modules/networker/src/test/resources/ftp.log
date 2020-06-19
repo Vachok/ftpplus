@@ -1978,3 +1978,13 @@ ls "/etc/"
 get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
 ls "/etc/"
 CONNECT \192.168.13.30
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!

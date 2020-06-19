@@ -44,7 +44,8 @@ import java.util.*;
 @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
-public class IntoApplication {
+public class
+IntoApplication {
 
 
     /**
@@ -118,7 +119,7 @@ public class IntoApplication {
         return ArgsReader.getAppArgs();
     }
 
-    static void makeEvent(Object event) {
+    private static void makeEvent(Object event) {
         ApplicationEvent myEvent = new MyEvent(event);
         File sshLog = new File(FileNames.SSH_LOG);
         if (sshLog.exists() & sshLog.length() > ConstantsFor.MBYTE) {

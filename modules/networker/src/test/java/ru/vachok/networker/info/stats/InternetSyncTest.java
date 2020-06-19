@@ -232,7 +232,7 @@ public class InternetSyncTest {
     @Test
     public void testGetRawResult() {
         Object result = syncData.getRawResult();
-        Assert.assertTrue(result.toString().contains("ConcurrentHashMap is empty"), result.toString());
+        Assert.assertTrue(result.toString().contains("192.168.13.220"), result.toString());
     }
 
     @Test

@@ -119,7 +119,7 @@ public class VpnHelper implements Runnable {
     @Override
     public String toString() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add(PropertiesNames.CLASS, getClass().getName());
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
         jsonObject.add(PropertiesNames.HASH, this.hashCode());
         jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
         jsonObject.add("connectCounter", connectCounter);
