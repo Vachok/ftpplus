@@ -6,6 +6,7 @@ import com.eclipsesource.json.JsonObject;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;
@@ -158,10 +159,42 @@ public class OneServerSync extends SyncData {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OneServerSync)) {
+            return false;
+        }
+
+        OneServerSync sync = (OneServerSync) o;
+
+        if (file != null ? !file.equals(sync.file) : sync.file != null) {
+            return false;
+        }
+        if (dbToSync != null ? !dbToSync.equals(sync.dbToSync) : sync.dbToSync != null) {
+            return false;
+        }
+        return dataConnectTo != null ? dataConnectTo.equals(sync.dataConnectTo) : sync.dataConnectTo == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = file != null ? file.hashCode() : 0;
+        result = 31 * result + (dbToSync != null ? dbToSync.hashCode() : 0);
+        result = 31 * result + (dataConnectTo != null ? dataConnectTo.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
-        return new StringJoiner(",\n", OneServerSync.class.getSimpleName() + "[\n", "\n]")
-            .add("dbToSync = '" + dbToSync + "'")
-            .add("dataConnectTo = " + dataConnectTo)
-            .toString();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonObject.add(PropertiesNames.HASH, this.hashCode());
+        jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+        jsonObject.add("file", file.getAbsolutePath());
+        jsonObject.add("dbToSync", dbToSync);
+        jsonObject.add("dataConnectTo", dataConnectTo.toString());
+        return jsonObject.toString();
     }
 }
