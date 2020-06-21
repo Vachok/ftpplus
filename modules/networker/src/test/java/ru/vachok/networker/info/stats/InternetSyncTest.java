@@ -32,7 +32,10 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -61,7 +64,7 @@ public class InternetSyncTest {
 
     @BeforeMethod
     public void initSync() {
-        syncData = (InternetSync) SyncData.getInstance("10.200.213.85");
+        syncData = (InternetSync) SyncData.getInstance("192.168.13.220");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
 
@@ -84,8 +87,8 @@ public class InternetSyncTest {
             }
         }
 
-        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 60);
-        Assert.assertTrue(o.toString().contains("No original FILE! 10.200.213.85.csv"), o.toString());
+        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 45);
+        Assert.assertTrue(o.toString().contains("No original FILE! 192.168.13.220.csv"), o.toString());
     }
 
     @Test
@@ -187,14 +190,9 @@ public class InternetSyncTest {
 
     @Test
     public void testUploadCollection() {
-        try {
-            int rowsUp = syncData.uploadCollection(Collections.singleton("test"), "test");
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        int rowsUp = syncData.uploadCollection(Collections.singleton("test"), "1.1.1.1");
         int upInt = syncData.uploadCollection(Collections
-                .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
+            .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
         Assert.assertTrue(upInt == 0);
     }
 
@@ -212,7 +210,7 @@ public class InternetSyncTest {
     @Test
     public void testToString() {
         String toStr = syncData.toString();
-        Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.85', dbFullName='inetstats.10_200_213_85', connection=\n" +
+        Assert.assertEquals(toStr, "InternetSync{ipAddr='192.168.13.220', dbFullName='inetstats.192_168_13_220', connection=\n" +
             "}");
     }
 
@@ -234,7 +232,7 @@ public class InternetSyncTest {
     @Test
     public void testGetRawResult() {
         Object result = syncData.getRawResult();
-        Assert.assertTrue(result.toString().contains("ConcurrentHashMap is empty"), result.toString());
+        Assert.assertTrue(result.toString().contains("192.168.13.220"), result.toString());
     }
 
     @Test

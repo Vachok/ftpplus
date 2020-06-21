@@ -95,6 +95,7 @@ public class AccessListsCheckUniq implements Callable<String> {
             makePfListFiles(getList, sshFactory, stringBuilder);
         }
         parseListFiles();
+        FILE_TO_WRITE.deleteOnExit();
         return stringBuilder.toString();
     }
 

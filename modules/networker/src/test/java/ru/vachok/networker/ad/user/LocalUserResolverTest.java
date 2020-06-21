@@ -7,13 +7,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 
@@ -76,21 +77,13 @@ public class LocalUserResolverTest {
     @Test
     public void testGetPCLogins() {
         String pcName = "do0045";
-        try {
-            List<String> logins1 = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->localUserResolver.getLogins(pcName, 1)).get();
-            Assert.assertTrue(logins1.size() == 1, AbstractForms.fromArray(logins1));
-            List<String> logins5 = localUserResolver.getLogins(pcName, 5);
-            String strLogins5 = AbstractForms.fromArray(logins5);
-            Assert.assertTrue(logins5.size() == 5, strLogins5);
-            Assert.assertTrue(strLogins5.contains("\\\\do0045.eatmeat.ru\\c$\\Users"));
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
+        List<String> logins1 = new ArrayList<>((Collection<? extends String>) AppConfigurationLocal.getInstance()
+            .executeGet(()->localUserResolver.getLogins(pcName, 1), 60));
+        Assert.assertTrue(logins1.size() == 1, AbstractForms.fromArray(logins1));
+        List<String> logins5 = localUserResolver.getLogins(pcName, 5);
+        String strLogins5 = AbstractForms.fromArray(logins5);
+        Assert.assertTrue(logins5.size() == 5, strLogins5);
+        Assert.assertTrue(strLogins5.contains("\\\\do0045.eatmeat.ru\\c$\\Users"));
     }
 
     @Test

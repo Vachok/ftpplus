@@ -175,9 +175,25 @@ public abstract class UsefulUtilities {
         StringBuilder stringBuilder = new StringBuilder();
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
-        stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
+        stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime, Running: ")
+            .append(countRun(runtimeMXBean)).append(" \n");
         stringBuilder.append(InformationFactory.getInstance(InformationFactory.MX_BEAN_THREAD).getInfo());
         return stringBuilder.toString();
+    }
+
+    private static String countRun(@NotNull RuntimeMXBean runtimeMXBean) {
+        float l = TimeUnit.MILLISECONDS.toMinutes(runtimeMXBean.getUptime());
+        String runTimer = l + " minutes";
+
+        if (l > 60) {
+            l = l / 60f;
+            runTimer = l + " hours";
+            if (l > 24) {
+                l = l / 24f;
+                runTimer = l + " days";
+            }
+        }
+        return runTimer;
     }
 
     /**

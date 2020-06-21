@@ -4,32 +4,43 @@ package ru.vachok.networker.net.ssh;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.RestApiHelper;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
+
+import java.util.Properties;
 
 
 /**
- Class ru.vachok.networker.net.ssh.SSHCommander
- <p>
-
+ @see JSONSSHCommandExecutorTest
  @since 14.03.2020 (13:11) */
 public class JSONSSHCommandExecutor implements RestApiHelper {
 
 
-    private String serverName = SshActs.whatSrvNeed();
-
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, JSONSSHCommandExecutor.class.getSimpleName());
+
+    private static final String COM_SSH = "uname -a;uptime;";
+
+    private static final String TAG = "JSONSSHCommandExecutor";
+
+    public JSONSSHCommandExecutor() {
+    }
 
     @Override
     public String getResult(@NotNull JsonObject jsonObject) {
         JsonObject jsonObjectResult = connectToSrv(jsonObject);
-        jsonObjectResult.add(ConstantsFor.JSON_PARAM_NAME_SERVER, serverName);
         return jsonObjectResult.toString();
+    }
+
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, TAG);
+        return jsonObject.toString();
     }
 
     private JsonObject connectToSrv(@NotNull JsonObject jsonObject) {
@@ -38,13 +49,7 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
         boolean userValid = checkValidUID(String.valueOf(jsonObject.get(ConstantsFor.AUTHORIZATION).asString()));
         boolean isValid = userValid & codeValid;
         if (isValid) {
-            try {
-                result = makeActions(jsonObject);
-            }
-            catch (RuntimeException e) {
-                messageToUser.warn(JSONSSHCommandExecutor.class.getSimpleName(), e.getMessage(), " see line: 41 ***");
-                result.add(ConstantsFor.STR_ERROR, e.getClass().getSimpleName() + " " + e.getMessage() + ": \n" + AbstractForms.fromArray(e));
-            }
+            result = makeActions(jsonObject);
         }
         else {
             result.add(ConstantsFor.JSON_PARAM_NAME_BAD_AUTH, getClass().getSimpleName());
@@ -56,31 +61,41 @@ public class JSONSSHCommandExecutor implements RestApiHelper {
     }
 
     private JsonObject makeActions(JsonObject jsonObject) {
+        String commandSSH = ConstantsFor.SSH_UNAMEA;
+        String ser = SshActs.whatSrvNeed();
         if (jsonObject.names().contains(ConstantsFor.JSON_PARAM_NAME_SERVER)) {
             JsonValue value = jsonObject.get(ConstantsFor.JSON_PARAM_NAME_SERVER);
-            this.serverName = value.asString();
+            ser = jsonObject.get(ConstantsFor.JSON_PARAM_NAME_SERVER).asString();
+            commandSSH = value.asString();
         }
-        String commandForSH = "uname -a;uptime;";
         if (jsonObject.names().contains(ConstantsFor.PARM_NAME_COMMAND)) {
-            commandForSH = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, commandForSH);
+            commandSSH = jsonObject.getString(ConstantsFor.PARM_NAME_COMMAND, COM_SSH);
         }
-        SSHFactory.Builder sshFB = new SSHFactory.Builder(serverName, commandForSH, getClass().getSimpleName());
-        return serverAnswer(sshFB);
+        return serverAnswer(commandSSH, ser);
     }
 
-    private JsonObject serverAnswer(SSHFactory.Builder fb) {
-        String serverAnswerString = AppConfigurationLocal.getInstance().submitAsString(fb.build(), 21);
+    private JsonObject serverAnswer(String commandSSH, String server) {
+        int secTimeOut = getTimeOut();
+        SSHFactory.Builder sshFactoryB = new SSHFactory.Builder(server, commandSSH, getClass().getSimpleName());
+        SSHFactory buildED = sshFactoryB.build();
+        buildED.setCommandSSH(commandSSH);
+        String serverAnswerString = AppConfigurationLocal.getInstance().submitAsString(buildED, secTimeOut);
         JsonObject jsonObject = new JsonObject();
-        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_SERVER, this.serverName);
-        jsonObject.add(fb.getCommandSSH(), serverAnswerString);
+        jsonObject.add(ConstantsFor.JSON_PARAM_NAME_SERVER, SshActs.whatSrvNeed());
+        jsonObject.add(buildED.getCommandSSH(), serverAnswerString);
         return jsonObject;
     }
 
-    @Override
-    public String toString() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add(PropertiesNames.CLASS, JSONSSHCommandExecutor.class.getSimpleName());
-        jsonObject.add("serverName", serverName);
-        return jsonObject.toString();
+    private int getTimeOut() {
+        int secTimeOut = 12;
+        try {
+            secTimeOut = Integer.parseInt(InitProperties.getTheProps().getProperty(PropertiesNames.REST_SSH_TIMEOUT));
+        }
+        catch (NumberFormatException e) {
+            Properties props = InitProperties.getTheProps();
+            props.setProperty(PropertiesNames.REST_SSH_TIMEOUT, String.valueOf(secTimeOut));
+            InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(props);
+        }
+        return secTimeOut;
     }
 }

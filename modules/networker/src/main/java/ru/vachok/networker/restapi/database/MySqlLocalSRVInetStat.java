@@ -1,14 +1,19 @@
 package ru.vachok.networker.restapi.database;
 
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.exceptions.DBConnectException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
@@ -16,25 +21,38 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 
 /**
  @see MySqlLocalSRVInetStatTest
  @since 04.09.2019 (16:42) */
+@SuppressWarnings("rawtypes")
 class MySqlLocalSRVInetStat implements DataConnectTo {
 
 
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MySqlLocalSRVInetStat.class.getSimpleName());
 
+    private Collection strings;
+
     private String dbName = ConstantsFor.STR_VELKOM;
 
     private String tableName = ConstantsFor.STR_VELKOM;
+
+    private void setFields(@NotNull String dbPointTableName) {
+        this.dbName = dbPointTableName;
+        if (!dbPointTableName.contains(".")) {
+            dbPointTableName = MessageFormat.format("{0}{1}", DBNAME_VELKOM_POINT, dbPointTableName);
+        }
+        this.dbName = dbPointTableName.split("\\Q.\\E")[0];
+        this.tableName = dbPointTableName.split("\\Q.\\E")[1];
+    }
 
     public Connection getDefaultConnection(@NotNull String dbName) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
@@ -56,21 +74,105 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         defDataSource.setUseSSL(false);
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCreateDatabaseIfNotExist(true);
-        Connection connection = null;
+        defDataSource.setRelaxAutoCommit(true);
+        defDataSource.setInteractiveClient(true);
         try {
-            connection = defDataSource.getConnection();
+            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
+            defDataSource.setSocketTimeout((int) TimeUnit.MINUTES.toMillis(20));
         }
-        catch (SQLException throwables) {
-            messageToUser.error(throwables.getMessage());
+        catch (SQLException e) {
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), e.getMessage(), " see line: 60 ***");
         }
-        if (connection != null) {
-            return connection;
+        return tryConnect(defDataSource);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = strings != null ? strings.hashCode() : 0;
+        result = 31 * result + (dbName != null ? dbName.hashCode() : 0);
+        result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        else {
-            throw new IllegalStateException(MessageFormat.format("No connection! {0}, {1}", getClass().getSimpleName(), dbName));
+        if (!(o instanceof MySqlLocalSRVInetStat)) {
+            return false;
         }
+
+        MySqlLocalSRVInetStat stat = (MySqlLocalSRVInetStat) o;
+
+        return (strings != null ? strings.equals(stat.strings) : stat.strings == null) && (dbName != null ? dbName
+            .equals(stat.dbName) : stat.dbName == null) && (tableName != null ? tableName.equals(stat.tableName) : stat.tableName == null);
+    }
+
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonObject.add(PropertiesNames.HASH, this.hashCode());
+        jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+        if (strings != null && strings.size() > 0) {
+            jsonObject.add("strings", strings.size());
+        }
+        jsonObject.add("dbName", dbName);
+        jsonObject.add("tableName", tableName);
+        return jsonObject.toString();
+    }
+
+    /**
+     @see MySqlLocalSRVInetStatTest#testUploadCollection()
+     */
+    @SuppressWarnings("JDBCPrepareStatementWithNonConstantString")
+    @Override
+    public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
+        this.strings = strings;
+        int resultsUpload = 0;
+        setFields(dbPointTableName);
+        MysqlDataSource source = getDataSource();
+        source.setDatabaseName(dbName);
+        source.setContinueBatchOnError(true);
+        source.setInteractiveClient(true);
+        JsonValue toStr = Json.parse(toString());
+        try (Connection connection = source.getConnection()) {
+            final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `json`) VALUES (?, ?)", dbName, tableName);
+            try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
+                for (Object o : strings) {
+                    String s = (String) o;
+                    if (s.length() > 190) {
+                        preparedStatementInsert.setString(1, String.valueOf(190));
+                        preparedStatementInsert.setString(2, s);
+                    }
+                    else {
+                        String noVal = "No value";
+                        preparedStatementInsert.setString(1, noVal);
+                        preparedStatementInsert.setString(2, noVal);
+                    }
+                    resultsUpload += preparedStatementInsert.executeUpdate();
+                }
+            }
+            catch (MySQLIntegrityConstraintViolationException e) {
+                if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
+                    resultsUpload += 1;
+                }
+                else {
+                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                    toStr.asObject().add(ConstantsFor.STR_ERROR, e.getMessage());
+                }
+            }
+        }
+        catch (SQLException e) {
+            resultsUpload = sqlExp(dbPointTableName, e.getMessage(), resultsUpload);
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), e.getMessage(), " see line: 218 ***");
+            toStr.asObject().add(ConstantsFor.STR_ERROR, e.getMessage());
+        }
+        finally {
+            messageToUser.info(toStr.toString());
+        }
+        return resultsUpload;
     }
 
     @Override
@@ -102,66 +204,67 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
 
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
-        sb.append("\"tableName\":\"").append(tableName).append("\",");
-        sb.append("\"dbName\":\"").append(dbName).append("\"");
-        sb.append('}');
-        return sb.toString();
+    public boolean dropTable(String dbPointTable) {
+        this.dbName = dbPointTable;
+        MysqlDataSource source = getDataSource();
+        boolean retBool = false;
+        try (Connection connection = source.getConnection();
+             Statement statement = connection.createStatement()) {
+            retBool = statement.execute(String.format(ConstantsFor.SQL_DROPTABLE, dbPointTable));
+        }
+        catch (MySQLSyntaxErrorException e) {
+            messageToUser.error(this.getClass().getSimpleName(), "MySQLSyntaxErrorException", e.getMessage() + " see line: 151");
+            messageToUser.error(ConstantsFor.TABLE + dbPointTable + " was not dropped!");
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.dropTable: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            retBool = false;
+        }
+        return retBool;
     }
 
     @Override
-    public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
-        this.dbName = dbPointTableName;
-        int resultsUpload = 0;
-
-        if (!dbPointTableName.contains(".")) {
-            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
-        }
-
-        this.dbName = dbPointTableName.split("\\Q.\\E")[0];
-        this.tableName = dbPointTableName.split("\\Q.\\E")[1];
-        final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `json`) VALUES (?, ?)", dbName, tableName);
-        MysqlDataSource source = getDataSource();
-        source.setDatabaseName(dbName);
-        source.setContinueBatchOnError(true);
-        List<String> colList = new ArrayList<>(strings);
-        try (Connection connection = source.getConnection()) {
-            try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
-                for (String s : colList) {
-                    if (s.length() > 190) {
-                        preparedStatementInsert.setString(1, String.valueOf(s.length()));
-                        preparedStatementInsert.setString(2, s);
-                    }
-                    else {
-                        preparedStatementInsert.setString(1, s);
-                        preparedStatementInsert.setString(2, this.toString());
-                    }
-                    resultsUpload += preparedStatementInsert.executeUpdate();
-                }
-            }
-            catch (MySQLIntegrityConstraintViolationException e) {
-                if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
-                    resultsUpload += 1;
-                }
-                else {
-                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-                }
+    public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
+        this.dbName = dbPointTable.split("\\Q.\\E")[0];
+        this.tableName = dbPointTable.split("\\Q.\\E")[1];
+        int createInt = 0;
+        final String createTable = getCreateQuery(dbPointTable, additionalColumns);
+        try (Connection connection = getDefaultConnection(dbName + "." + tableName);
+             Statement connectionStatement = connection.createStatement()) {
+            boolean executeUpdate = connectionStatement.execute(createTable);
+            if (executeUpdate) {
+                createInt++;
             }
         }
         catch (SQLException e) {
-            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
-                resultsUpload = createTable(dbPointTableName, Collections.EMPTY_LIST);
-                if (resultsUpload != -666) {
-                    resultsUpload += uploadCollection(strings, dbPointTableName);
-                }
-            }
-            else {
-                messageToUser
-                    .error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
-            }
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), "createTable " + e.getErrorCode(), e.getMessage() + " see line: 178");
+            createInt = -666;
         }
-        return resultsUpload;
+        return createInt;
+    }
+
+    /**
+     @param defDataSource new MysqlDataSource
+     @return {@link OtherKnownDevices#SRV_INETSTAT} {@link Connection}
+
+     @throws DBConnectException if {@link Connection} is null
+     */
+    @SuppressWarnings("JDBCResourceOpenedButNotSafelyClosed")
+    private Connection tryConnect(MysqlDataSource defDataSource) {
+        Connection connection = null;
+        try {
+            connection = defDataSource.getConnection();
+            connection.clearWarnings();
+        }
+        catch (SQLException e) {
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), e.getMessage(), " see line: 78 ***");
+        }
+        if (connection != null) {
+            return connection;
+        }
+        else {
+            throw new DBConnectException(dbName + "." + tableName);
+        }
     }
 
     @Contract("_, _ -> new")
@@ -173,7 +276,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
             throw new IllegalArgumentException(dbTable[1]);
         }
-        String engine = ConstantsFor.DBENGINE_MEMORY;
+        String engine;
 
         if (dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
             engine = "MyISAM";
@@ -200,43 +303,19 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return stringBuilder.toString();
     }
 
-    @Override
-    public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
-        this.dbName = dbPointTable.split("\\Q.\\E")[0];
-        this.tableName = dbPointTable.split("\\Q.\\E")[1];
-        int createInt = 0;
-        final String createTable = getCreateQuery(dbPointTable, additionalColumns);
-        try (Connection connection = getDefaultConnection(dbName + "." + tableName);
-             PreparedStatement preparedStatementTable = connection.prepareStatement(createTable)) {
-            int executeUpdate = preparedStatementTable.executeUpdate();
-            createInt += executeUpdate;
+    private int sqlExp(@NotNull String dbPointTableName, @NotNull String errMessage, int resultsUpload) {
+        int i = resultsUpload;
+        if (errMessage.contains(ConstantsFor.ERROR_NOEXIST)) {
+            i = createTable(dbPointTableName, Collections.EMPTY_LIST);
+            if (i != -666) {
+                i += uploadCollection(strings, dbPointTableName);
+            }
         }
-        catch (SQLException e) {
-            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), "createTable " + e.getErrorCode(), e.getMessage() + " see line: 178");
-
-            createInt = -666;
+        else {
+            messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), errMessage, " see line: 235 ***");
+            i--;
         }
-        return createInt;
-    }
-
-    @Override
-    public boolean dropTable(String dbPointTable) {
-        this.dbName = dbPointTable;
-        MysqlDataSource source = getDataSource();
-        boolean retBool = false;
-        try (Connection connection = source.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, dbPointTable))) {
-            preparedStatement.executeUpdate();
-        }
-        catch (MySQLSyntaxErrorException e) {
-            messageToUser.error(this.getClass().getSimpleName(), "MySQLSyntaxErrorException", e.getMessage() + " see line: 151");
-            messageToUser.error(ConstantsFor.TABLE + dbPointTable + " was not dropped!");
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.dropTable: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            retBool = false;
-        }
-        return retBool;
+        return i;
     }
 
 

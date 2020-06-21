@@ -15,6 +15,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.net.ssh.SshActs;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class SSHFactory implements Callable<String> {
 
 
-    private static final String DBTABLE_GENERALJSCH = "general-jsch";
+    private static final String DB_TABLE_GENERALJSCH = "general-jsch";
 
     /**
      Файл с ошибкой.
@@ -53,29 +54,45 @@ public class SSHFactory implements Callable<String> {
     private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
         .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, SSHFactory.class.getSimpleName());
 
-    private final InitProperties jschProperties = InitProperties.getInstance(DBTABLE_GENERALJSCH);
+    private final InitProperties jschProperties = InitProperties.getInstance(DB_TABLE_GENERALJSCH);
 
-    private final String classCaller;
+    private String classCaller;
+
+    private static final String SRV_NEED = "connectToSrv";
+
+    private static final String CLASS_CALLER = "classCaller";
+
+    private static final String SSH_FACTORY = "commandSSH";
 
     private final File sshErr = new File(FileNames.SSH_ERR_LOG);
 
     private static final String IS_CONNECTED = " session is Connected";
 
+    protected Channel respChannel;
+
+    @SuppressWarnings("InstanceVariableOfConcreteClass") private SSHFactory.Builder builder;
+
     private String connectToSrv;
 
     private String commandSSH;
 
-    private String sessionType;
+    private String sessionType = "exec";
 
-    private String userName;
+    private static final String ITDEPT_SSH_NAME = "ITDept";
 
     private Path tempFile;
 
     private Session session;
 
-    private Channel respChannel;
-
     private String builderToStr;
+
+    protected SSHFactory.Builder getBuilder() {
+        return builder;
+    }
+
+    protected void setBuilder(SSHFactory.Builder builder) {
+        this.builder = builder;
+    }
 
     public Path getTempFile() {
         return tempFile;
@@ -95,11 +112,7 @@ public class SSHFactory implements Callable<String> {
     }
 
     public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
+        return ITDEPT_SSH_NAME;
     }
 
     /**
@@ -116,16 +129,42 @@ public class SSHFactory implements Callable<String> {
     }
 
     protected SSHFactory(@NotNull SSHFactory.Builder builder) {
-        this.connectToSrv = builder.connectToSrv;
-        this.commandSSH = builder.commandSSH;
-        this.sessionType = builder.sessionType;
-        this.userName = builder.userName;
         this.classCaller = builder.classCaller;
+        this.builder = builder;
+    }
+
+    private SSHFactory(String cc) {
+        this.classCaller = cc;
+    }
+
+    @Contract(pure = true)
+    private String getConnectToSrv() {
+        if (this.connectToSrv == null) {
+            this.connectToSrv = SshActs.whatSrvNeed();
+        }
+        return this.connectToSrv;
+    }
+
+    private void chkTempFile() {
+        if (this.tempFile == null) {
+            try {
+                this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
+            }
+            catch (IOException e) {
+                messageToUser.warn(SSHFactory.class.getSimpleName(), e.getMessage(), " see line: 172 ***");
+            }
+            finally {
+                if (this.tempFile != null) {
+                    this.tempFile.toFile().deleteOnExit();
+                }
+            }
+        }
     }
 
     @Override
     public String call() {
         chkTempFile();
+        checkCommandForExit();
         StringBuilder stringBuilder = new StringBuilder();
         Queue<String> recQueue = new LinkedList<>();
         byte[] bytes = new byte[ConstantsFor.KBYTE];
@@ -138,7 +177,7 @@ public class SSHFactory implements Callable<String> {
             this.session.disconnect();
             messageToUser.info(classCaller, "SSHFactory.call", MessageFormat.format("Command {1} ok on server: {0}", connectToSrv, commandSSH));
         }
-        catch (IOException | RuntimeException e) {
+        catch (IOException | RuntimeException | InvokeIllegalException e) {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
             recQueue.add(e.getMessage());
             recQueue.add(AbstractForms.networkerTrace(e));
@@ -163,69 +202,36 @@ public class SSHFactory implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    private void chkTempFile() {
-        if (this.tempFile == null) {
-            try {
-                this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
+    private void checkCommandForExit() {
+        if (this.commandSSH == null) {
+            throw new IllegalStateException("commandSSH is null");
+        }
+        if (!this.commandSSH.endsWith(";exit")) {
+            if (this.commandSSH.endsWith(" & exit")) {
+                this.commandSSH = commandSSH.replace(" & exit", ";exit");
             }
-            catch (IOException e) {
-                messageToUser.warn(SSHFactory.class.getSimpleName(), e.getMessage(), " see line: 172 ***");
-            }
-            finally {
-                if (this.tempFile != null) {
-                    this.tempFile.toFile().deleteOnExit();
-                }
+            else {
+                this.commandSSH = commandSSH + ";exit";
             }
         }
     }
 
-    private InputStream connect() throws IOException {
-        boolean isConnected;
+    private InputStream connect() throws IOException, InvokeIllegalException {
+        boolean isConnected = setSessionToField();
         try {
-            setRespChannelToField();
-        }
-        catch (RuntimeException e) {
-            setRespChannelToField();
-            messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        try {
-            respChannel.connect(ConstantsFor.SSH_TIMEOUT);
+            if (isConnected) {
+                respChannel.connect();
+            }
         }
         catch (JSchException | RuntimeException e) {
             messageToUser.error("SSHFactory.connect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
+        if (respChannel != null) {
             return respChannel.getInputStream();
         }
-
-    private void setRespChannelToField() {
-        Thread.currentThread().setName(MessageFormat.format("SSH-by-{0}", classCaller));
-        JSch jSch = new JSch();
-        String classMeth = "SSHFactory.setRespChannelToField";
-        try {
-            this.session = createSession(jSch);
+        else {
+            throw new IllegalArgumentException("respChannel==null");
         }
-        catch (InvokeIllegalException e) {
-            messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        try {
-            session.connect(ConstantsFor.SSH_TIMEOUT);
-            messageToUser.info(classMeth, classCaller, session.getServerVersion() + " is connect: " + session.isConnected());
-        }
-        catch (JSchException | RuntimeException e) {
-            messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        finally {
-            checkCommandForExit();
-        }
-        try {
-            this.respChannel = session.openChannel(sessionType);
-            ((ChannelExec) respChannel).setCommand(commandSSH);
-        }
-        catch (JSchException e) {
-            messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        int chID = Objects.requireNonNull(respChannel).getId();
-        messageToUser.info(getClass().getSimpleName(), this.classCaller, MessageFormat.format("{0} id {1}", this.respChannel.getClass().getSimpleName(), chID));
     }
 
     /**
@@ -238,13 +244,13 @@ public class SSHFactory implements Callable<String> {
         Session sessionLoc = null;
         Properties properties = getConProps();
         try {
-            sessionLoc = jSch.getSession(userName, getConnectToSrv());
+            sessionLoc = jSch.getSession(ITDEPT_SSH_NAME, getConnectToSrv());
         }
         catch (JSchException e) {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
         }
         try {
-            jSch.addIdentity(getPem());
+            jSch.addIdentity(builder.getPem());
         }
         catch (JSchException | RuntimeException e) {
             FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
@@ -258,15 +264,16 @@ public class SSHFactory implements Callable<String> {
         }
     }
 
-    private void checkCommandForExit() {
-        if (!this.commandSSH.endsWith(";exit")) {
-            if (this.commandSSH.endsWith(" & exit")) {
-                this.commandSSH = commandSSH.replace(" & exit", ";exit");
-            }
-            else {
-                this.commandSSH = commandSSH + ";exit";
-            }
+    private boolean setSessionToField() throws InvokeIllegalException {
+        this.session = createSession(new JSch());
+        try {
+            this.session.connect();
+            setRespChannelToField();
         }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return this.session.isConnected();
     }
 
     private Properties getConProps() {
@@ -280,55 +287,47 @@ public class SSHFactory implements Callable<String> {
         return properties;
     }
 
-    @Contract(pure = true)
-    private String getConnectToSrv() {
-        return connectToSrv;
+    private void setRespChannelToField() {
+        Thread.currentThread().setName(MessageFormat.format("SSH-by-{0}", classCaller));
+        JSch jSch = new JSch();
+        String classMeth = "SSHFactory.setRespChannelToField";
+        try {
+            this.respChannel = session.openChannel(sessionType);
+        }
+        catch (JSchException | RuntimeException e) {
+            messageToUser.error(classMeth, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+        }
+        finally {
+            if (this.respChannel != null) {
+                ((ChannelExec) respChannel).setCommand(commandSSH);
+            }
+            else {
+                throw new IllegalStateException(session.getHost() + ":" + session.getUserName() + ":" + session.isConnected());
+            }
+        }
+        int chID = Objects.requireNonNull(respChannel).getId();
+        messageToUser.info(getClass().getSimpleName(), this.classCaller, MessageFormat.format("{0} id {1}", this.respChannel.getClass().getSimpleName(), chID));
     }
 
     public void setConnectToSrv(String connectToSrv) {
         this.connectToSrv = connectToSrv;
     }
 
-    @NotNull
-    private String getPem() {
-        File pemFile = new File("a161.pem");
-        if (pemFile.exists()) {
-            return pemFile.getAbsolutePath();
-        }
-        else {
-            MysqlDataSource source = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
-            String pemFileStr = "";
-            String sqlGetKey = "SELECT *  FROM `sshid` WHERE `pc` LIKE 'do0213'";
-            try (Connection c = source.getConnection()) {
-                try (PreparedStatement p = c.prepareStatement(sqlGetKey)) {
-                    try (ResultSet r = p.executeQuery()) {
-                        while (r.next()) {
-                            pemFileStr = r.getString("pem");
-                        }
-                        try (OutputStream outputStream = new FileOutputStream(pemFile)) {
-                            try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                                printStream.print(pemFileStr);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SQLException | IOException e) {
-                FileSystemWorker.appendObjectToFile(sshErr, new Date() + ": " + e.getMessage() + "\n" + AbstractForms.networkerTrace(e.getStackTrace()));
-            }
-        }
-        pemFile.deleteOnExit();
-        return pemFile.getAbsolutePath();
-    }
-
     @Override
     public String toString() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add(PropertiesNames.JSONNAME_CLASS, getClass().getSimpleName());
-        jsonObject.add("connectToSrv", connectToSrv);
-        jsonObject.add("classCaller", classCaller);
-        jsonObject.add("commandSSH", commandSSH);
+        jsonObject.add(SRV_NEED, connectToSrv);
+        jsonObject.add(CLASS_CALLER, classCaller);
+        jsonObject.add(SSH_FACTORY, commandSSH);
         return jsonObject.toString();
+    }
+
+    private void initFields(SSHFactory.Builder builder) {
+        this.connectToSrv = builder.connectToSrv;
+        this.commandSSH = builder.commandSSH;
+        this.sessionType = builder.sessionType;
+        this.builder = builder;
     }
 
     private InetAddress triedIP() {
@@ -351,23 +350,20 @@ public class SSHFactory implements Callable<String> {
                 System.err.println(this + " is timed out.");
                 break;
             }
-            System.out.println(showTime);
             setRespChannelToField();
         }
     }
 
     /**
-     BuildBinger.
-     <p>
-     Сам строитель.
-
      @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
      */
     @SuppressWarnings({"unused"})
     public static class Builder {
 
 
-        private String userName = "ITDept";
+        private static final String SQL_GET_KEY = "SELECT *  FROM `sshid` WHERE `pc` LIKE 'do0213'";
+
+        private String userName = ITDEPT_SSH_NAME;
 
         private String pass;
 
@@ -378,8 +374,6 @@ public class SSHFactory implements Callable<String> {
         private String classCaller;
 
         private String commandSSH;
-
-        private SSHFactory sshFactory;
 
         /**
          Gets command sshactions.
@@ -481,15 +475,46 @@ public class SSHFactory implements Callable<String> {
             return this;
         }
 
-        public String getPem() {
-            return this.sshFactory.getPem();
+        @NotNull
+        private String getPem() {
+            File pemFile = new File(FileNames.PEM);
+            if (pemFile.exists()) {
+                return pemFile.getAbsolutePath();
+            }
+            else {
+                MysqlDataSource source = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
+                String pemFileStr = "";
+                try (Connection c = source.getConnection()) {
+                    try (PreparedStatement p = c.prepareStatement(SQL_GET_KEY)) {
+                        try (ResultSet r = p.executeQuery()) {
+                            while (r.next()) {
+                                pemFileStr = r.getString("pem");
+                            }
+                            try (OutputStream outputStream = new FileOutputStream(pemFile)) {
+                                try (PrintStream printStream = new PrintStream(outputStream, true, ConstantsFor.UTF_8)) {
+                                    printStream.print(pemFileStr);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (SQLException | IOException e) {
+                    messageToUser.error("Builder.getPem", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+                }
+            }
+            pemFile.deleteOnExit();
+            return pemFile.getAbsolutePath();
         }
 
         public Builder(String connectToSrv, String commandSSH, String classCaller) {
             this.commandSSH = commandSSH;
             this.connectToSrv = connectToSrv;
             this.classCaller = classCaller;
-            this.sshFactory = new SSHFactory(this);
+        }
+
+        public Builder(String commandSSH, String classCaller) {
+            this.commandSSH = commandSSH;
+            this.classCaller = classCaller;
         }
 
         protected Builder() {
@@ -501,7 +526,12 @@ public class SSHFactory implements Callable<String> {
          @return the sshactions factory
          */
         public SSHFactory build() {
-            return sshFactory;
+            SSHFactory factory = new SSHFactory(this.classCaller);
+            factory.builder = this;
+            factory.setCommandSSH(this.commandSSH);
+            factory.setConnectToSrv(this.connectToSrv);
+            factory.classCaller = this.classCaller;
+            return factory;
         }
 
         @Override
@@ -523,27 +553,22 @@ public class SSHFactory implements Callable<String> {
 
             SSHFactory.Builder builder = (SSHFactory.Builder) o;
 
-            if (connectToSrv != null ? !connectToSrv.equals(builder.connectToSrv) : builder.connectToSrv != null) {
-                return false;
-            }
-            if (classCaller != null ? !classCaller.equals(builder.classCaller) : builder.classCaller != null) {
-                return false;
-            }
-            return commandSSH != null ? commandSSH.equals(builder.commandSSH) : builder.commandSSH == null;
+            return (connectToSrv != null ? connectToSrv.equals(builder.connectToSrv) : builder.connectToSrv == null) && (classCaller != null ? classCaller
+                .equals(builder.classCaller) : builder.classCaller == null) && (commandSSH != null ? commandSSH
+                .equals(builder.commandSSH) : builder.commandSSH == null);
         }
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("Builder{");
-            sb.append("userName='").append(userName).append('\'');
-            sb.append(", pass='").append(pass).append('\'');
-            sb.append(", sessionType='").append(sessionType).append('\'');
-            sb.append(", connectToSrv='").append(connectToSrv).append('\'');
-            sb.append(", classCaller='").append(classCaller).append('\'');
-            sb.append(", commandSSH='").append(commandSSH).append('\'');
-            sb.append(", sshFactory=").append(sshFactory);
-            sb.append('}');
-            return sb.toString();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add(PropertiesNames.CLASS, "Builder");
+            jsonObject.add(ConstantsFor.DBFIELD_USERNAME, userName);
+            jsonObject.add("pass", pass);
+            jsonObject.add("sessionType", sessionType);
+            jsonObject.add(SRV_NEED, connectToSrv);
+            jsonObject.add(CLASS_CALLER, classCaller);
+            jsonObject.add(SSH_FACTORY, commandSSH);
+            return jsonObject.toString();
         }
     }
 }

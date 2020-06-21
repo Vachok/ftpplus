@@ -111,7 +111,7 @@ public class AppComponentsTest {
             DiapazonScan instance = DiapazonScan.getInstance();
             String diapazonInfo = instance.getExecution();
             Assert.assertTrue(diapazonInfo.contains("a href=\"/showalldev\""), diapazonInfo);
-            Assert.assertTrue(instance.getStatistics().contains("12 SpecVersion"), instance.getStatistics());
+            Assert.assertTrue(instance.getStatistics().contains("13 SpecVersion"), instance.getStatistics());
         }
         catch (TaskRejectedException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

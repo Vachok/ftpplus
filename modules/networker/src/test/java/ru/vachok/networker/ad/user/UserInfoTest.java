@@ -96,7 +96,7 @@ public class UserInfoTest {
 
     }
 
-    @Test
+    @Test(enabled = false)
     public void testRenewCounter() {
         boolean isOffline = new Random().nextBoolean();
         String pcName = "test";
@@ -143,7 +143,6 @@ public class UserInfoTest {
         boolean retBool = false;
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
             .getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
-            createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
@@ -163,7 +162,7 @@ public class UserInfoTest {
 
     private void createTable() {
         String dbName = "pcuser";
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.FIREBASE).getDefaultConnection(dbName)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(dbName)) {
             boolean contains = connection.getMetaData().getURL().contains("jdbc:h2:mem:velkompc") || connection.getMetaData().getURL()
                 .contains("jdbc:mysql://10.10.111.65:3306/pcuser");
             Assert.assertTrue(contains, connection.getMetaData().getURL());
@@ -229,7 +228,7 @@ public class UserInfoTest {
         for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
             boolean contPC = nullPCLogin.split(" : ")[0].contains("a123");
             Assert.assertTrue(contPC, nullPCLogin.split(" : ")[0]);
-            boolean contName = Stream.of("i.k.romanovskii", "e.v.vinokur", "a.f.zarickii").anyMatch(s->nullPCLogin.split(" : ")[1].contains(s));
+            boolean contName = Stream.of("i.k.romanovskii", "e.v.vinokur", "a.f.zarickii", "s.k.naidenkov").anyMatch(s->nullPCLogin.split(" : ")[1].contains(s));
             Assert.assertTrue(contName, nullPCLogin.split(" : ")[1]);
         }
         UserInfo instanceDO0045 = UserInfo.getInstance("do0125");

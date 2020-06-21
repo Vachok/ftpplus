@@ -3,6 +3,7 @@ package ru.vachok.networker.sysinfo;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.ThreadTimeout;
@@ -125,7 +126,7 @@ public interface AppConfigurationLocal extends Runnable {
     }
 
     default String submitAsString(Callable<String> callableQuestion, int timeOutInSec) {
-        String result = "null";
+        String result;
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> submit = executor.submit(callableQuestion);
         try {
@@ -138,11 +139,7 @@ public interface AppConfigurationLocal extends Runnable {
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | RuntimeException e) {
-            result = MessageFormat
-                .format("{0} try to run: {1} ({2})", AppConfigurationLocal.class.getSimpleName(), e.getMessage(), callableQuestion.getClass().getSimpleName());
-        }
-        finally {
-            System.out.println(MessageFormat.format("{0} = {1} is done: {2}", result, callableQuestion.getClass().getName(), submit.isDone()));
+            result = MessageFormat.format("AppConfigurationLocal.submitAsString\n{0}\n{1}", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
         }
         return result;
     }

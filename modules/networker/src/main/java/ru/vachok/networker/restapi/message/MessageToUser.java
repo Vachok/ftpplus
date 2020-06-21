@@ -29,7 +29,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
 
     String EMAIL = "MessageEmail";
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @SuppressWarnings({"MethodWithMultipleReturnPoints", "IfStatementWithTooManyBranches"})
     @Contract("null, !null -> new")
     @NotNull
     static MessageToUser getInstance(String messengerType, @NotNull String messengerHeader) {

@@ -102,4 +102,8 @@ public enum PropertiesNames {
     public static final String JSONNAME_CLASS = "Class";
 
     public static final String LISTS_GET_TIMEOUT = "listtimeout";
+
+    public static final String REST_SSH_TIMEOUT = "restsshtimeout";
+
+    public static final String HASH = "hash";
 }

@@ -90,12 +90,12 @@ public class DataSynchronizerTest {
     public void testToString() {
         String toStr = dataSynchronizer.toString();
         Assert.assertEquals(toStr, "DataSynchronizer[\n" +
-                "dbToSync = 'velkom.velkompc',\n" +
-                "columnName = 'idrec',\n" +
-                "dataConnectTo = MySqlLocalSRVInetStat{\"tableName\":\"velkom\",\"dbName\":\"velkom\"},\n" +
-                "colNames = {},\n" +
-                "columnsNum = 0\n" +
-                "]");
+            "dbToSync = 'velkom.velkompc',\n" +
+            "columnName = 'idrec',\n" +
+            "dataConnectTo = {\"class\":\"MySqlLocalSRVInetStat\",\"hash\":-474293888,\"timestamp\":1592563575075,\"dbName\":\"velkom\",\"tableName\":\"velkom\"},\n" +
+            "colNames = {},\n" +
+            "columnsNum = 0\n" +
+            "]");
     }
 
     /**

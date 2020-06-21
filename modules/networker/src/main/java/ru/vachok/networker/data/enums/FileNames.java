@@ -115,4 +115,6 @@ public enum FileNames {
     public static final String ARG_NO_RUN = "app.arg";
 
     public static final String AVAILABLE_CHARSETS_TXT = "availableCharsets.txt";
+
+    public static final String PEM = "a161.pem";
 }

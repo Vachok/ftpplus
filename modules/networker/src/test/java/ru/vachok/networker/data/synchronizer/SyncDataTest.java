@@ -156,12 +156,7 @@ public class SyncDataTest {
 
     @Test
     public void testSuperRun() {
-        try {
-            syncData.superRun();
-        }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        syncData.superRun();
     }
 
     @Test

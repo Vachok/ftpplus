@@ -7,6 +7,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+
+import java.io.File;
 
 
 /**
@@ -29,7 +32,7 @@ public class FirebaseMessage implements MessageToUser {
     @Override
     public void info(String s, String s1, String s2) {
         try {
-            FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
+            FirebaseDatabase.getInstance().getReference(s.split("\\.")[0]).setValue(s1 + "\n" + s2, new Compl());
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
@@ -59,7 +62,7 @@ public class FirebaseMessage implements MessageToUser {
     @Override
     public void error(String s, String s1, String s2) {
         try {
-            FirebaseDatabase.getInstance().getReference(s.split(".")[0]).setValue(s1 + "\n" + s2, new Compl());
+            FirebaseDatabase.getInstance().getReference(s.split("\\.")[0]).setValue(s1 + "\n" + s2, new Compl());
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
@@ -99,7 +102,7 @@ public class FirebaseMessage implements MessageToUser {
             ref.push();
             if (error != null) {
                 String tra = AbstractForms.networkerTrace(error.toException().getStackTrace());
-                System.err.println(tra);
+                FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".err"), tra);
             }
         }
     }

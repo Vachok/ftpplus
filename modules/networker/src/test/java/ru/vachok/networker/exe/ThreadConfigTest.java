@@ -75,7 +75,7 @@ public class ThreadConfigTest {
     @Test
     public void testGetTaskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = threadConfig.getTaskExecutor();
-        Assert.assertEquals(taskExecutor.getThreadNamePrefix(), "E-");
+        Assert.assertEquals(taskExecutor.getThreadNamePrefix(), "E_");
     }
 
     @Test

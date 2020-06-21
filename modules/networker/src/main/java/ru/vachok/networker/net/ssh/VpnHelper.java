@@ -85,12 +85,9 @@ public class VpnHelper implements Runnable {
     }
 
     @Override
-    public String toString() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
-        jsonObject.add("connectCounter", connectCounter);
-        jsonObject.add("keyName='", keyName);
-        return jsonObject.toString();
+    public void run() {
+        getStatus();
+        Thread.currentThread().interrupt();
     }
 
     @NotNull
@@ -120,8 +117,14 @@ public class VpnHelper implements Runnable {
     }
 
     @Override
-    public void run() {
-        getStatus();
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonObject.add(PropertiesNames.HASH, this.hashCode());
+        jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+        jsonObject.add("connectCounter", connectCounter);
+        jsonObject.add("keyName", keyName);
+        return jsonObject.toString();
     }
 
     @NotNull

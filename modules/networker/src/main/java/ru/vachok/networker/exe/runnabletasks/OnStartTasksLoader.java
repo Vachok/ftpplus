@@ -4,6 +4,8 @@ package ru.vachok.networker.exe.runnabletasks;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
@@ -24,6 +26,7 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,6 +64,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         execute(NetScanService.getInstance(NetScanService.PCNAMESSCANNER));
         schedule(this::dbSendAppJson, 30);
         execute(this::getWeekPCStats);
+        schedule(this::checkCommonSync, 1);
     }
 
     @Override
@@ -69,6 +73,15 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
         sb.append("messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
+    }
+
+    private void checkCommonSync() {
+        String pathName = "\\\\srv-fs.eatmeat.ru\\Common_new\\sync.ffs_lock";
+        File file = new File(pathName);
+        if (!file.exists() || file.lastModified() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(35)) {
+            DatabaseReference fssRef = FirebaseDatabase.getInstance().getReference("fss");
+            fssRef.setValue(pathName, (error, ref)->messageToUser.warn(OnStartTasksLoader.class.getSimpleName(), error.getMessage(), " see line: 84 ***"));
+        }
     }
 
     private void delFilePatterns() {
@@ -96,7 +109,7 @@ public class OnStartTasksLoader implements AppConfigurationLocal {
     private String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
         try {
-            AppConfigurationLocal.getInstance().execute(regRuFTPLibsUploader, 60);
+            AppConfigurationLocal.getInstance().execute(regRuFTPLibsUploader, 50);
             return AppConfigurationLocal.getInstance().toString();
         }
         catch (RuntimeException e) {

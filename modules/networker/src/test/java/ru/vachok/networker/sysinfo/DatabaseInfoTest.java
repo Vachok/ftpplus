@@ -51,7 +51,7 @@ public class DatabaseInfoTest {
         databaseInfoInfoAbout = databaseInfo.getInfoAbout(FileNames.DIR_INETSTATS);
         Assert.assertTrue(databaseInfoInfoAbout.contains("Table: 10_200_213_85, engine: MyISAM, rows:"), databaseInfoInfoAbout);
         Assert.assertTrue(databaseInfoInfoAbout
-                .contains("Table: inetstats, engine: MEMORY, rows: 0, data: 0 kilobytes, comment: Текущая интернет статистика."), databaseInfoInfoAbout);
+            .contains("Table: 192_168_14_61, engine: MyISAM"), databaseInfoInfoAbout);
     }
 
     @Test
