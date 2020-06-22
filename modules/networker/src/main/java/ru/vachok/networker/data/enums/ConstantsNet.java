@@ -19,7 +19,7 @@ public enum ConstantsNet {
     public static final int TDPC = 15;
 
     /**
-     {@link ConstantsFor#DBPREFIX} + velkom
+     {@link ConstantsFor#U0466446_DBPREFIX} + velkom
      */
     public static final String DB_NAME = ConstantsFor.DBBASENAME_U0466446_VELKOM;
 

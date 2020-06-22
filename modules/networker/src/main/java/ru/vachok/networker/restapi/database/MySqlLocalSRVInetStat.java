@@ -56,6 +56,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
 
     public Connection getDefaultConnection(@NotNull String dbName) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
+        Connection connection = null;
         if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
             this.dbName = dbName.split("\\Q.\\E")[0];
             this.tableName = dbName.split("\\Q.\\E")[1];
@@ -79,11 +80,16 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         try {
             defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
             defDataSource.setSocketTimeout((int) TimeUnit.MINUTES.toMillis(20));
+            connection = tryConnect(defDataSource);
+        }
+        catch (DBConnectException e) {
+            messageToUser.error(tableName, e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
+            connection = DataConnectTo.getInstance(DataConnectTo.REGRUCONNECTION).getDefaultConnection(tableName);
         }
         catch (SQLException e) {
             messageToUser.warn(MySqlLocalSRVInetStat.class.getSimpleName(), e.getMessage(), " see line: 60 ***");
         }
-        return tryConnect(defDataSource);
+        return connection;
     }
 
     @Override

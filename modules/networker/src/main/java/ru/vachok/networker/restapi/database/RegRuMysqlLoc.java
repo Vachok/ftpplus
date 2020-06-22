@@ -38,6 +38,8 @@ class RegRuMysqlLoc implements DataConnectTo {
 
     private String dbName;
 
+    private String tableName;
+
     private MysqlDataSource mysqlDataSource;
 
     @Contract(pure = true)
@@ -73,7 +75,8 @@ class RegRuMysqlLoc implements DataConnectTo {
 
     @Contract(pure = true)
     RegRuMysqlLoc() {
-        this.dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
+        this.dbName = ConstantsFor.U0466446_DBPREFIX;
+        this.tableName = ConstantsFor.STR_VELKOM;
     }
 
     private @Nullable Connection conAlt(@NotNull String dbName) {
@@ -109,9 +112,9 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         if (dbName.contains(".")) {
-            this.dbName = dbName.split("\\Q.\\E")[0];
+            this.tableName = dbName.split("\\Q.\\E")[0];
         }
-        defDataSource.setDatabaseName(dbName);
+        defDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         defDataSource.setUseSSL(false);
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
@@ -119,6 +122,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setCreateDatabaseIfNotExist(true);
         try {
             this.mysqlDataSource = defDataSource;
+            messageToUser.info(tableName, defDataSource.getUser(), defDataSource.getSessionVariables());
             return defDataSource.getConnection();
         }
         catch (SQLException e) {

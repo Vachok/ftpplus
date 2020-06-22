@@ -1,11 +1,13 @@
 package ru.vachok.networker.restapi.props;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -92,7 +94,6 @@ public class MemoryProperties extends DBPropsCallable {
             }
         }
         catch (SQLException | RuntimeException e) {
-            messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
             properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
         }
         return properties;
@@ -128,5 +129,14 @@ public class MemoryProperties extends DBPropsCallable {
             messageToUser.error(MessageFormat.format("MemoryProperties.updateTable", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonObject.add(PropertiesNames.HASH, this.hashCode());
+        jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+        return jsonObject.toString();
     }
 }

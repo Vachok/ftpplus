@@ -18,7 +18,7 @@ public enum FileNames {
     public static final String INET_UNIQ = "inet.uniq";
 
     /**
-     Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
+     Выгрузка из БД {@link ConstantsFor#U0466446_DBPREFIX} {@code velkom} - pcuserauto
      */
     public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 

@@ -87,7 +87,7 @@ public enum ConstantsFor {
     /**
      Префикс имени от reg.ru
      */
-    public static final String DBPREFIX = "u0466446_";
+    public static final String U0466446_DBPREFIX = "u0466446_";
 
     /**
      Кол-во байт в килобайте

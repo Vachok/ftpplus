@@ -13,7 +13,9 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,35 +25,35 @@ import java.util.concurrent.ConcurrentHashMap;
  {@link Service} : {@link ConstantsFor#BEANNAME_MATRIX}
  <p>
  Сервис-класс для {@link MatrixCtr}.
- 
+
  @see ru.vachok.networker.accesscontrol.MatrixSRVTest
  @since 07.09.2018 (9:45)
  */
 @Service(ConstantsFor.BEANNAME_MATRIX)
 public class MatrixSRV {
-    
-    
+
+
     /**
      Логгер
      <p>
      {@link LoggerFactory#getLogger(String)}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MatrixSRV.class.getSimpleName());
-    
+
     /**
      Имя колонки в SQL_SELECT_DIST-таблице.
-     
+
      @see #getWorkPos()
      */
     private static final String SQLCOL_CHANGES = "changes";
-    
+
     /**
      Пользовательский ввод
-     
+
      @see MatrixCtr
      */
     private String workPos = "whois: ya.ru";
-    
+
     /**
      Header
      <p>
@@ -60,39 +62,39 @@ public class MatrixSRV {
      {@link MatrixCtr#showResults(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.ui.Model)}
      */
     private int countDB;
-    
+
     /**
      @return {@link #countDB}
      */
     int getCountDB() {
         return countDB;
     }
-    
+
     /**
      @param countDB {@link #countDB}
      */
     public void setCountDB(int countDB) {
         this.countDB = countDB;
     }
-    
+
     /**
      @return {@link #workPos}
      */
     public String getWorkPos() {
         return workPos;
     }
-    
+
     /**
      @param workPos {@link #workPos}
      */
     public void setWorkPos(String workPos) {
         this.workPos = workPos;
     }
-    
+
     /**
      Качает информацию из БД
      <p>
-     {@link DataConnectTo#getDefaultConnection(java.lang.String)} . База: {@link ConstantsFor#DBPREFIX} + {@link ConstantsFor#STR_VELKOM}. <br>
+     {@link DataConnectTo#getDefaultConnection(java.lang.String)} . База: {@link ConstantsFor#U0466446_DBPREFIX} + {@link ConstantsFor#STR_VELKOM}. <br>
      {@link #getInfo(ResultSet, Map)}. Метод разбит на несколько.
      <p>
      <b>{@link SQLException}:</b><br>
@@ -100,9 +102,9 @@ public class MatrixSRV {
      <p>
      {@link TForms#fromArray(java.util.Map, boolean)}. Переделываем из мапы с результатом в строку для возврата для WEB. <br>
      this.{@link #workPos} = returned {@link String}
-     
+
      @return {@link #workPos}
-     
+
      @see ru.vachok.networker.accesscontrol.MatrixSRVTest#testSearchAccessPrincipals()
      */
     public String searchAccessPrincipals(String patternToSearch) {
@@ -126,7 +128,7 @@ public class MatrixSRV {
         this.workPos = s;
         return s;
     }
-    
+
     private static String downBlob(byte[] bytes, String fileType) {
         String fileName = "theBlob." + fileType;
         File file = new File(fileName);
@@ -138,7 +140,7 @@ public class MatrixSRV {
         }
         throw new IllegalStateException("22.06.2019 (8:00)");
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MatrixSRV{");
@@ -147,7 +149,7 @@ public class MatrixSRV {
         sb.append('}');
         return sb.toString();
     }
-    
+
     private void getInfo(@NotNull ResultSet r, Map<String, String> doljAndAccess) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
         countDB += 1;

@@ -49,10 +49,15 @@ class PropsHelper {
         boolean isSmallSize = APP_PR.size() < 9;
         boolean fileReadOnly = PR_FILE.exists() && !PR_FILE.canWrite();
         if (fileReadOnly) {
-            APP_PR.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+            try {
+                APP_PR.putAll(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps());
+            }
+            catch (Exception e) {
+                APP_PR.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+            }
             isSmallSize = APP_PR.size() < 9;
             if (!isSmallSize) {
-                InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(APP_PR);
+                InitProperties.getInstance(InitProperties.FILE).setProps(APP_PR);
             }
         }
         else if (isSmallSize) {

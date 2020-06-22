@@ -136,8 +136,13 @@ public class ExitApp extends Thread implements Externalizable {
      */
     @Override
     public void run() {
-        FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC()).removeValue((error, ref)->messageToUser
-            .error("ExitApp.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+        try {
+            FirebaseDatabase.getInstance().getReference(UsefulUtilities.thisPC()).removeValue((error, ref)->messageToUser
+                .error("ExitApp.onComplete", error.toException().getMessage(), AbstractForms.networkerTrace(error.toException().getStackTrace())));
+        }
+        catch (RuntimeException e) {
+            messageToUser.warn(ExitApp.class.getSimpleName(), e.getMessage(), " see line: 141 ***");
+        }
         VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         miniLoggerLast.add(reasonExit);
         try {

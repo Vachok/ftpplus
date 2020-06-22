@@ -99,7 +99,12 @@ public class ServiceInfoCtrl {
         this.authReq = Stream.of(values).anyMatch(sP->request.getRemoteAddr().contains(sP));
         visitor = new AppComponents().visitor(request);
         if (authReq) {
-            modModMaker(model, request, visitor);
+            try {
+                modModMaker(model, request, visitor);
+            }
+            catch (RuntimeException e) {
+                messageToUser.warn(ServiceInfoCtrl.class.getSimpleName(), e.getMessage(), " see line: 105 ***");
+            }
             response.addHeader(ConstantsFor.HEAD_REFRESH, "88");
             return "vir";
         }
@@ -297,6 +302,11 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("DENY for " + request.getRemoteAddr());
         }
         return "ok";
+    }
+
+    @GetMapping("/exit")
+    public String closeExit(HttpServletRequest request) throws AccessDeniedException {
+        return closeApp(request);
     }
 
     @NotNull
