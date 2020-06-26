@@ -3,10 +3,7 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -67,15 +64,5 @@ public class ConstantsForTest {
         if (!ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
             System.out.println("ConstantsFor.REGRUHOSTING_PC!!!!!!!!!!" + false);
         }
-    }
-
-    @Test
-    public void testValues() {
-        throw new InvokeEmptyMethodException("Values created 10.05.2020 at 12:56");
-    }
-
-    @Test
-    public void testValueOf() {
-        throw new InvokeEmptyMethodException("ValueOf created 10.05.2020 at 12:56");
     }
 }

@@ -79,7 +79,7 @@ public class InternetSyncTest {
             }
         }
     
-        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 56);
+        Object o = AppConfigurationLocal.executeInWorkStealingPool(new InternetSync("192.168.13.220"), 75);
         Assert.assertTrue(o.toString().contains("No original FILE! 192.168.13.220.csv"), o.toString());
     }
 

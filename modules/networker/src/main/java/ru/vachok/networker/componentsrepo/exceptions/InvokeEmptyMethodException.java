@@ -3,7 +3,7 @@
 package ru.vachok.networker.componentsrepo.exceptions;
 
 
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 
 
 /**
@@ -11,9 +11,9 @@ import ru.vachok.networker.TForms;
 public class InvokeEmptyMethodException extends IllegalStateException {
     
     
-    private String typeName;
+    private final String typeName;
     
-    private String methodName;
+    private final String methodName;
     
     public InvokeEmptyMethodException(String typeName, String methodName) {
         this.typeName = typeName;
@@ -22,7 +22,7 @@ public class InvokeEmptyMethodException extends IllegalStateException {
     
     public InvokeEmptyMethodException(String typeName) {
         this.typeName = typeName;
-        this.methodName = new TForms().fromArray(Thread.currentThread().getStackTrace());
+        this.methodName = AbstractForms.fromArray(Thread.currentThread().getStackTrace());
     }
     
     @Override

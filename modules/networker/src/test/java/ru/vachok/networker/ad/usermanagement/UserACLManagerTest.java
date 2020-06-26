@@ -2,22 +2,15 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.*;
 
 
 /**
@@ -77,6 +70,6 @@ public class UserACLManagerTest {
         UserACLManager parsingACL = UserACLManager
             .getInstance(UserACLManager.RESTORE, Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_ЗП\\"));
         String result = parsingACL.getResult();
-        Assert.assertTrue(result.contains("opetrova") || result.contains("004.Коммерческая служба.запись"), result);
+        Assert.assertTrue(result.contains("Генеральная группа") || result.contains("004.Коммерческая служба.запись"), result);
     }
 }
