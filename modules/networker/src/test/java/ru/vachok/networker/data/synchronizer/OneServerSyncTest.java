@@ -5,9 +5,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
+
+import java.util.concurrent.TimeoutException;
 
 
 public class OneServerSyncTest {
@@ -30,7 +33,12 @@ public class OneServerSyncTest {
     @Test
     public void testSyncData() {
         OneServerSync sync = new OneServerSync();
-        Assert.assertTrue(sync.syncData().contains(ConstantsFor.DB_VELKOMVELKOMPC));
+        try {
+            AppConfigurationLocal.getInstance().executeBlock(sync, 60);
+        }
+        catch (TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
 
 }

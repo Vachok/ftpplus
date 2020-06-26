@@ -3,6 +3,7 @@ package ru.vachok.networker.data;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -22,6 +23,9 @@ public class MyISAMRepair implements InformationFactory {
     private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
 
     public String repairTable(String sql) {
+        if (!UsefulUtilities.thisPC().contains(ConstantsFor.RUPS00)) {
+            throw new IllegalStateException(UsefulUtilities.thisPC());
+        }
         final long startRepairStamp = System.currentTimeMillis();
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("*** ru.vachok.networker.data.MyISAMRepair.repairTable starting at ").append(startRepairStamp).append("\n");

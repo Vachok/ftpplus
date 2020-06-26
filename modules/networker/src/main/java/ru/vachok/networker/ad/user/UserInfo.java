@@ -418,7 +418,7 @@ public abstract class UserInfo implements InformationFactory {
             File appendTo = new File(ConstantsFor.DB_VELKOMVELKOMPC);
             if (e instanceof SQLException) {
                 messageToUser.error(getClass().getSimpleName(), methName, FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
-                if (e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
+                if (UsefulUtilities.thisPC().contains(ConstantsFor.RUPS00) && e.getMessage().contains(ConstantsFor.MARKEDASCRASHED)) {
                     String repairTable = new MyISAMRepair().repairTable(ConstantsFor.REPAIR_TABLE + ConstantsFor.DB_VELKOMVELKOMPC + ConstantsFor.EXTENDED);
                     FileSystemWorker.appendObjectToFile(appendTo, repairTable);
                 }

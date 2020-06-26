@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.eclipsesource.json.JsonObject;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
@@ -26,7 +27,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -99,6 +99,27 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     }
 
     @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        if (file.toFile().exists() && attrs.isRegularFile()) {
+            this.dirSize += file.toFile().length();
+            this.filesScanned++;
+            if (file.toFile().getName().equals(FileNames.FILENAME_OWNER)) {
+                file.toFile().delete();
+            }
+            else if (file.toFile().getName().equals(FOLDERACL_TXT)) {
+                file.toFile().delete();
+            }
+            else if (file.toFile().getName().equals(FileNames.FILENAME_OWNER + ".replacer")) {
+                file.toFile().delete();
+            }
+            else if (file.toFile().getName().equals(ConstantsFor.OWNER)) {
+                file.toFile().delete();
+            }
+        }
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         this.lastModDir = attrs.lastModifiedTime().toMillis();
         AclFileAttributeView users = Files.getFileAttributeView(dir, AclFileAttributeView.class);
@@ -120,48 +141,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         messageToUser.warn(getClass().getSimpleName(), file.toString(), AbstractForms.fromArray(exc));
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-        if (file.toFile().exists() && attrs.isRegularFile()) {
-            this.dirSize += file.toFile().length();
-            this.filesScanned++;
-            if (file.toFile().getName().equals(FileNames.FILENAME_OWNER)) {
-                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
-
-            }
-            else if (file.toFile().getName().equals(FOLDERACL_TXT)) {
-                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
-            }
-            else if (file.toFile().getName().equals(FileNames.FILENAME_OWNER + ".replacer")) {
-                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
-            }
-            else if (file.toFile().getName().equals(ConstantsFor.OWNER)) {
-                messageToUser.info(file.toString(), DELETE, String.valueOf(file.toFile().delete()));
-            }
-        }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd-kk:mm:ss");
-        StringBuilder stringBuilder = new StringBuilder()
-            .append("Dir visited = ")
-            .append(dir).append("\n")
-            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
-        long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
-        if (secondsScan == 0) {
-            secondsScan = 1;
-        }
-        stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
-        if (dir.toFile().isDirectory()) {
-            new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), this.dirSize).writeDirSize();
-            new ConcreteFolderACLWriter(dir, this.dirSize).run();
-            dir.toFile().setLastModified(lastModDir);
-        }
         return FileVisitResult.CONTINUE;
     }
 
@@ -193,6 +172,25 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
 
         FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
             this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+        StringBuilder stringBuilder = new StringBuilder()
+            .append("Dir visited = ")
+            .append(dir).append("\n")
+            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
+        long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
+        if (secondsScan == 0) {
+            secondsScan = 1;
+        }
+        stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
+        if (dir.toFile().isDirectory()) {
+            new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), this.dirSize).writeDirSize();
+            new ConcreteFolderACLWriter(dir, this.dirSize).run();
+            dir.toFile().setLastModified(lastModDir);
+        }
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
@@ -240,12 +238,15 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("RightsWriter{");
-            sb.append(", owner='").append(owner).append('\'');
-            sb.append(", dir='").append(dir).append('\'');
-            sb.append(", acl='").append(acl).append('\'');
-            sb.append('}');
-            return sb.toString();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+            jsonObject.add(PropertiesNames.HASH, this.hashCode());
+            jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+            jsonObject.add("dir", dir);
+            jsonObject.add("size", size);
+            jsonObject.add(ConstantsFor.OWNER, owner);
+            jsonObject.add("acl", acl);
+            return jsonObject.toString();
         }
 
         void writeDBCommonTable() {
@@ -293,8 +294,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
                 preparedStatement.setString(2, dir);
                 preparedStatement.executeUpdate();
             }
-            catch (SQLException e) {
-                messageToUser.warn(RightsChecker.RightsWriter.class.getSimpleName(), e.getMessage(), " see line: 293 ***");
+            catch (SQLException ignore) {
+                //26.06.2020 (22:46)
             }
         }
     }

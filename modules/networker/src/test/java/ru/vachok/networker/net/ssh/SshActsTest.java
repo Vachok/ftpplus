@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
@@ -44,8 +43,11 @@ public class SshActsTest {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        catch (ExecutionException | TimeoutException e) {
+        catch (ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        catch (TimeoutException e) {
+            System.err.println(e.getMessage());
         }
     }
 
@@ -61,8 +63,11 @@ public class SshActsTest {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        catch (TimeoutException e) {
+            System.err.println(e.getMessage());
         }
     }
 

@@ -602,6 +602,8 @@ public enum ConstantsFor {
 
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
 
+    public static final String RUPS00 = "rups00";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();

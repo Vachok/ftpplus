@@ -18,10 +18,10 @@ import java.nio.file.Paths;
  @see ConcreteFolderACLWriter
  @since 22.07.2019 (11:20) */
 public class ConcreteFolderACLWriterTest {
-    
-    
-    private final Path currentPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\");
-    
+
+
+    private final Path currentPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\");
+
     @Test
     public void testRun() {
         File fileOwner = new File(currentPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_OWNER);
@@ -34,7 +34,7 @@ public class ConcreteFolderACLWriterTest {
         String readFile = FileSystemWorker.readFile(fileOwner.getAbsolutePath());
         Assert.assertTrue(readFile.contains("BUILTIN"), readFile);
     }
-    
+
     @Test
     public void testWriteACLs() {
         new ConcreteFolderACLWriter(currentPath).run();
@@ -43,9 +43,10 @@ public class ConcreteFolderACLWriterTest {
         String readFileOwnerUsers = FileSystemWorker.readFile(ownerUsers.getAbsolutePath());
         System.out.println("readFileOwnerUsers = " + readFileOwnerUsers);
     }
-    
+
     @Test
     public void testToString1() {
-        Assert.assertTrue(new ConcreteFolderACLWriter(currentPath).toString().contains("currentPath=\\\\srv-fs\\it$$\\ХЛАМ"));
+        String s = new ConcreteFolderACLWriter(currentPath).toString();
+        Assert.assertTrue(s.contains("\"currentPath\":\"\\\\\\\\srv-fs.eatmeat.ru\\\\it$$\\\\ХЛАМ\""), s);
     }
 }

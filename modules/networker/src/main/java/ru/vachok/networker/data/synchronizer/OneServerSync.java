@@ -122,39 +122,44 @@ public class OneServerSync extends SyncData {
     @Override
     public String syncData() {
         int indexFrom = getLastRemoteID(ConstantsFor.DB_ARCHIVEVELKOMPC);
-
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync)) {
-            try (OutputStream outputStream = new FileOutputStream(dbToSync)) {
-                try (PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-                    try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + dbToSync + " WHERE idrec > " + indexFrom)) {
-                        ResultSetMetaData mData = preparedStatement.getMetaData();
-                        List<String> colNames = new ArrayList<>();
-                        for (int i = 1; i < mData.getColumnCount(); i++) {
-                            colNames.add(mData.getColumnName(i));
-                        }
-                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                            while (resultSet.next()) {
-                                JsonObject jsonObject = new JsonObject();
-                                colNames.forEach(colName->{
-                                    try {
-                                        jsonObject.set(colName, resultSet.getString(colName));
-                                    }
-                                    catch (SQLException e) {
-                                        messageToUser.warn(OneServerSync.class.getSimpleName(), e.getMessage(), " see line: 78 ***");
-                                    }
-                                });
-                                printWriter.println(jsonObject);
+        if (indexFrom < 0) {
+            throw new IllegalStateException(getClass().getSimpleName());
+        }
+        else {
+            try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync)) {
+                try (OutputStream outputStream = new FileOutputStream(dbToSync)) {
+                    try (PrintStream printWriter = new PrintStream(outputStream, true, ConstantsFor.UTF_8)) {
+                        try (PreparedStatement preparedStatement = connection
+                            .prepareStatement(String.format("SELECT * FROM %s WHERE idrec > %d", dbToSync, indexFrom))) {
+                            ResultSetMetaData mData = preparedStatement.getMetaData();
+                            List<String> colNames = new ArrayList<>();
+                            for (int i = 1; i < mData.getColumnCount(); i++) {
+                                colNames.add(mData.getColumnName(i));
+                            }
+                            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                while (resultSet.next()) {
+                                    JsonObject jsonObject = new JsonObject();
+                                    colNames.forEach(colName->{
+                                        try {
+                                            jsonObject.set(colName, resultSet.getString(colName));
+                                        }
+                                        catch (SQLException e) {
+                                            messageToUser.warn(OneServerSync.class.getSimpleName(), e.getMessage(), " see line: 78 ***");
+                                        }
+                                    });
+                                    printWriter.println(jsonObject);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        catch (SQLException | IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        finally {
-            superRun();
+            catch (SQLException | IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+            finally {
+                superRun();
+            }
         }
         return file.getAbsolutePath();
     }

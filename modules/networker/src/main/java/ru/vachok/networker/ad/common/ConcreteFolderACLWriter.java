@@ -3,12 +3,14 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
@@ -23,7 +25,6 @@ import java.security.Principal;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -53,12 +54,6 @@ class ConcreteFolderACLWriter implements Runnable {
         this.fileName = FileNames.FILENAME_OWNER;
     }
 
-    ConcreteFolderACLWriter(Path dir, String fileName) {
-        this.currentPath = dir;
-        this.fileName = fileName;
-        size = 0;
-    }
-
     @Override
     public void run() {
         try {
@@ -73,63 +68,80 @@ class ConcreteFolderACLWriter implements Runnable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonACLWriter{");
-        sb.append("currentPath=").append(currentPath);
-        sb.append('}');
-        return sb.toString();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add(PropertiesNames.CLASS, getClass().getSimpleName());
+        jsonObject.add(PropertiesNames.HASH, this.hashCode());
+        jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
+        jsonObject.add("fileName", fileName);
+        jsonObject.add("currentPath", currentPath.toString());
+        jsonObject.add("size", size);
+        return jsonObject.toString();
     }
 
     private void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(currentPath);
-        stringBuilder.append(ConstantsFor.FILESYSTEM_SEPARATOR);
-        stringBuilder.append(fileName);
-        String fileName = stringBuilder.toString();
+        String fileName = buildFileNAme();
         String filePathStr = currentPath.toAbsolutePath().normalize().toString();
-
         try {
             filePathStr = FileSystemWorker
                 .writeFile(fileName, MessageFormat.format("Checked at: {0} size ({1} meg).\nOWNER: {2}\nUsers:\n{3}", LocalDateTime.now(), size / ConstantsFor.MBYTE,
                     owner.toString(), AbstractForms.fromArray(users.getAcl().toArray())));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.warn(ConcreteFolderACLWriter.class.getSimpleName(), e.getMessage(), " see line: 82 ***");
         }
+        finally {
+            if (!filePathStr.contentEquals(String.valueOf(false))) {
+                assignAttr(filePathStr);
+            }
+        }
+    }
+
+    private @NotNull String buildFileNAme() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(currentPath);
+        stringBuilder.append(ConstantsFor.FILESYSTEM_SEPARATOR);
+        stringBuilder.append(fileName);
+        return stringBuilder.toString();
+    }
+
+    private void assignAttr(String filePathStr) {
         final File fileOwnerFile = new File(filePathStr);
         try {
             Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
             fileOwnerFile.setLastModified(MyCalen.getLongFromDate(26, 12, 1991, 17, 30));
-            setAdminOnly(fileOwnerFile);
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.warn(ConcreteFolderACLWriter.class.getSimpleName(), e.getMessage(), " see line: 93 ***");
         }
-
+        finally {
+            setAdminOnly(fileOwnerFile);
+        }
     }
 
-    private void setAdminOnly(@NotNull File fileOwnerFile) throws IOException {
-        UserPrincipal domainAdmin = Files.getOwner(currentPath.getRoot());
+    private void setAdminOnly(@NotNull File fileOwnerFile) {
+        UserPrincipal domainAdmin = null;
+        try {
+            domainAdmin = Files.getOwner(currentPath.getRoot());
+        }
+        catch (IOException e) {
+            messageToUser.warn(ConcreteFolderACLWriter.class.getSimpleName(), e.getMessage(), " see line: 111 ***");
+        }
         AclFileAttributeView attributeView = Files.getFileAttributeView(fileOwnerFile.toPath().getRoot().toAbsolutePath().normalize(), AclFileAttributeView.class);
         List<AclEntry> listACL = new ArrayList<>();
-        for (AclEntry aclEntry : attributeView.getAcl()) {
-            if (aclEntry.principal().equals(domainAdmin) || aclEntry.principal().getName().contains("СИСТЕМА") || aclEntry.principal().getName().contains("SYSTEM")) {
-                listACL.add(aclEntry);
+        try {
+            for (AclEntry aclEntry : attributeView.getAcl()) {
+                if (aclEntry.principal().equals(domainAdmin) || aclEntry.principal().getName().contains("СИСТЕМА") || aclEntry.principal().getName()
+                    .contains("SYSTEM")) {
+                    listACL.add(aclEntry);
+                }
             }
+            if (domainAdmin != null) {
+                Files.setOwner(fileOwnerFile.toPath().toAbsolutePath().normalize(), domainAdmin);
+            }
+            Files.getFileAttributeView(fileOwnerFile.toPath().toAbsolutePath().normalize(), AclFileAttributeView.class).setAcl(listACL);
         }
-        Files.setOwner(fileOwnerFile.toPath().toAbsolutePath().normalize(), domainAdmin);
-        Files.getFileAttributeView(fileOwnerFile.toPath().toAbsolutePath().normalize(), AclFileAttributeView.class).setAcl(listACL);
-    }
-
-    private @NotNull String isDelete() throws IOException {
-        boolean isOWNFileDeleted = Files.deleteIfExists(new File(FileNames.COMMON_OWN).toPath().toAbsolutePath().normalize());
-        boolean isRGHFileDeleted = Files.deleteIfExists(new File(FileNames.COMMON_RGH).toPath().toAbsolutePath().normalize());
-        return new StringBuilder()
-            .append("Starting a new instance of ")
-            .append(getClass().getSimpleName())
-            .append(" at ").append(new Date())
-            .append("\ncommon.rgh and common.own deleted : ")
-            .append(isRGHFileDeleted)
-            .append(" ")
-            .append(isOWNFileDeleted).toString();
+        catch (IOException e) {
+            messageToUser.warn(ConcreteFolderACLWriter.class.getSimpleName(), e.getMessage(), " see line: 128 ***");
+        }
     }
 }

@@ -49,10 +49,6 @@ public abstract class SyncData extends ForkJoinTask implements DataConnectTo, Ru
 
     public abstract void setOption(Object option);
 
-    public static int getLastRecId(DataConnectTo dataConnectTo, String dbID) {
-        return getInstance(UPUNIVERSAL).getDBID(dataConnectTo.getDefaultConnection(dbID), dbID);
-    }
-
     private int getDBID(@NotNull Connection connection, String syncDB) {
         int retInt = 0;
         final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
