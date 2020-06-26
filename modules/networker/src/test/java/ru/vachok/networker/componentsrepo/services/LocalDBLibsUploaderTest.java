@@ -2,10 +2,7 @@ package ru.vachok.networker.componentsrepo.services;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -53,8 +50,6 @@ public class LocalDBLibsUploaderTest {
     @Test
     public void testTestToString() {
         String toS = libsUploader.toString();
-        Assert.assertEquals(toS, "LocalDBLibsUploader[\n" +
-            "dataConnectTo = {\"class\":\"MySqlLocalSRVInetStat\",\"hash\":-474293888,\"timestamp\":1592562476836,\"dbName\":\"velkom\",\"tableName\":\"velkom\"}\n" +
-            "]");
+        Assert.assertTrue(toS.contains("{\"class\":\"MySqlLocalSRVInetStat\","));
     }
 }

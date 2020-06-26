@@ -7,9 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -23,19 +21,13 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -86,8 +78,8 @@ public class InternetSyncTest {
                 Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
         }
-
-        Object o = AppConfigurationLocal.executeInWorkStealingPool(syncData, 45);
+    
+        Object o = AppConfigurationLocal.executeInWorkStealingPool(new InternetSync("192.168.13.220"), 75);
         Assert.assertTrue(o.toString().contains("No original FILE! 192.168.13.220.csv"), o.toString());
     }
 

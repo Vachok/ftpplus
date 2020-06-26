@@ -23,16 +23,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.nio.file.*;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,10 +46,10 @@ public class InternetSync extends SyncData {
     private String ipAddr;
 
     private String dbFullName;
-
-    public InternetSync(@NotNull String type) {
+    
+    public InternetSync(@NotNull String ipAddress) {
         super();
-        this.ipAddr = type;
+        this.ipAddr = ipAddress;
         this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
     }
