@@ -635,7 +635,7 @@ public enum ConstantsFor {
     }
 
     /**
-     @see ConstantsForTest
+     @see ru.vachok.networker.ConstantsForTest#testNoRunOn()
      */
     public static boolean argNORUNExist(String... runOnlyOn) {
         boolean retBool = false;

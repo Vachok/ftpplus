@@ -29,7 +29,7 @@ public interface Stats extends InformationFactory {
         catch (IOException e) {
             System.err.println(e.getMessage());
         }
-        return WeeklyInternetStats.getInstance().readIPsWithInet(true);
+        return new WeeklyInternetStats().readIPsWithInet(true);
     }
 
     static boolean isSunday() {
@@ -41,7 +41,7 @@ public interface Stats extends InformationFactory {
     static @NotNull Stats getInstance(@NotNull String type) {
         switch (type) {
             case InformationFactory.STATS_WEEKLY_INTERNET:
-                return WeeklyInternetStats.getInstance();
+                return new WeeklyInternetStats();
             case InformationFactory.STATS_SUDNAY_PC_SORT:
                 return new ComputerUserResolvedStats();
             default:

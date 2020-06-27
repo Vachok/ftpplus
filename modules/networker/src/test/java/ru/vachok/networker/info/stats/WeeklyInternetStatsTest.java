@@ -43,7 +43,7 @@ public class WeeklyInternetStatsTest {
 
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
-    private WeeklyInternetStats stats = WeeklyInternetStats.getInstance();
+    private WeeklyInternetStats stats = new WeeklyInternetStats();
 
     @BeforeClass
     public void setUp() {

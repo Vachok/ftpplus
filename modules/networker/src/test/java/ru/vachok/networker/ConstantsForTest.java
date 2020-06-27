@@ -3,7 +3,9 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -53,10 +55,10 @@ public class ConstantsForTest {
             System.out.println("home" + true);
         }
         if (!ConstantsFor.argNORUNExist()) {
-            System.out.println(ConstantsFor.class.getCanonicalName() + " !!!!!!!!!!!!!!!!!!!!!");
+            System.out.println(ConstantsFor.class.getCanonicalName() + " !ConstantsFor.argNORUNExist()");
         }
         if (ConstantsFor.argNORUNExist()) {
-            System.out.println(ConstantsFor.class.getCanonicalName());
+            System.out.println(ConstantsFor.class.getCanonicalName() + " ConstantsFor.argNORUNExist()");
         }
         if (ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
             System.out.println("ConstantsFor.REGRUHOSTING_PC" + true);
@@ -64,5 +66,6 @@ public class ConstantsForTest {
         if (!ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC)) {
             System.out.println("ConstantsFor.REGRUHOSTING_PC!!!!!!!!!!" + false);
         }
+        Assert.assertFalse(ConstantsFor.argNORUNExist(ConstantsFor.REGRUHOSTING_PC) || ConstantsFor.argNORUNExist());
     }
 }
