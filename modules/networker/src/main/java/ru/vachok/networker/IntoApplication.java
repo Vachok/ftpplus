@@ -160,23 +160,22 @@ IntoApplication {
 
     private static String setID() {
         Properties appPr = InitProperties.getTheProps();
-        String appIdNew = MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), (int) (LocalTime.now()
-            .toSecondOfDay() / ConstantsFor.ONE_HOUR_IN_MIN));
-        appPr.setProperty(PropertiesNames.ID, appIdNew);
-        Properties valueWithJSON = getJSONProp(appIdNew);
         boolean isMem = false;
         try {
             isMem = InitProperties.getInstance(InitProperties.DB_MEMTABLE).setProps(appPr);
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             MESSAGE_LOCAL.error("IntoApplication.setID", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
             AppConfigurationLocal.getInstance().execute(new RegRuFTPLibsUploader());
             MessageToUser.getInstance(MessageToUser.TRAY, IntoApplication.class.getSimpleName())
                 .info(IntoApplication.class.getSimpleName(), "exec", "RegRuFTPLibsUploader");
         }
+        String appIdNew = MessageFormat.format("{0}.{1}-{2}", MyCalen.getWeekNumber(), LocalDate.now().getDayOfWeek().getValue(), (int) (LocalTime.now()
+            .toSecondOfDay() / ConstantsFor.ONE_HOUR_IN_MIN));
+        Properties valueWithJSON = getJSONProp(appIdNew);
         InitProperties.setPreference(PropertiesNames.APPVERSION, appIdNew);
         MessageToUser.getInstance(MessageToUser.TRAY, IntoApplication.class.getSimpleName())
-            .warn(IntoApplication.class.getSimpleName(), String.valueOf(isMem), valueWithJSON.getProperty(PropertiesNames.APPVERSION));
+            .warn(IntoApplication.class.getSimpleName(), String.valueOf(isMem), valueWithJSON.getProperty(PropertiesNames.ID));
         return appIdNew;
     }
 
