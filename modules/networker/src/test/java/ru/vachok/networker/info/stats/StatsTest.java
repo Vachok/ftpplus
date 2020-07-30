@@ -17,30 +17,30 @@ import java.time.LocalDate;
  @see Stats
  @since 25.08.2019 (17:00) */
 public class StatsTest {
-    
-    
+
+
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(StatsTest.class.getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
+
     @Test
     public void testGetInstance() {
         String toStr = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET).toString();
-        Assert.assertTrue(toStr.contains("WeeklyInternetStats["), toStr);
-    
+        Assert.assertTrue(toStr.contains("\"class\":\"WeeklyInternetStats\","), toStr);
+
         toStr = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT).toString();
         Assert.assertTrue(toStr.contains("ComputerUserResolvedStats["), toStr);
     }
-    
+
     @Test
     public void testIsSunday() {
         boolean isSun = Stats.isSunday();

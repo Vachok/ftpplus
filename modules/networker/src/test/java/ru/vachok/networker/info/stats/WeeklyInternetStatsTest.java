@@ -64,7 +64,7 @@ public class WeeklyInternetStatsTest {
             assertFalse(inetStats.contains("does not exists!"), inetStats);
         }
         else {
-            Assert.assertTrue(stats.toString().contains(LocalDate.now().getDayOfWeek().toString()), stats.toString());
+            Assert.assertTrue(stats.toString().contains(",\"timestamp\":15"), stats.toString());
         }
     }
 
@@ -135,14 +135,14 @@ public class WeeklyInternetStatsTest {
     public void testGetInfo() {
         String info = stats.getInfo();
         if (!Stats.isSunday()) {
-            Assert.assertTrue(info.contains("hours left"), info);
+            Assert.assertTrue(info.contains("\"timestamp\":15"), info);
         }
     }
 
     @Test
     public void testTestToString() {
         if (!Stats.isSunday()) {
-            Assert.assertTrue(stats.toString().contains("hours left"), stats.toString());
+            Assert.assertTrue(stats.toString().contains("\"class\":\"WeeklyInternetStats\","), stats.toString());
         }
     }
 

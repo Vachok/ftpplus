@@ -194,8 +194,8 @@ public class UserInfoTest {
         UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
         String infoInfoAbout = userInfo.getInfoAbout("pavlova");
         String[] arr = infoInfoAbout.split(" : ");
-        Assert.assertTrue(arr[0].contains("do0214"));
-        Assert.assertEquals(arr[1], "s.m.pavlova");
+        Assert.assertTrue(arr[0].contains("do0214"), arr[0]);
+        Assert.assertEquals(arr[1], "s.m.pavlova", arr[1]);
     }
 
     @Test

@@ -43,7 +43,7 @@ public class RestCTRLGetTest {
     @Test
     public void testGetAllowDomains() {
         String domains = restCTRLGet.getAllowDomains();
-        Assert.assertTrue(domains.contains(".velkomfood.ru"), domains);
+        Assert.assertTrue(domains.contains(".networker.vachok.ru"), domains);
     }
 
     @Test
