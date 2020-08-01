@@ -190,7 +190,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         retSource.setCharacterEncoding("UTF-8");
         retSource.setEncoding("UTF-8");
         retSource.setDatabaseName(this.dbName);
-        retSource.setCreateDatabaseIfNotExist(true);
         retSource.setContinueBatchOnError(true);
         retSource.setAutoReconnect(true);
         retSource.setReconnectAtTxEnd(true);

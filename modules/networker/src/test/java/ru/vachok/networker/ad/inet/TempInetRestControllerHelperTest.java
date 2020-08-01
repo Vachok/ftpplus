@@ -35,7 +35,7 @@ public class TempInetRestControllerHelperTest {
         Assert.assertTrue(resultAdd.contains(RestApiHelper.INVALID_USER), resultAdd);
     }
 
-    private String testGetInetResult(String option) {
+    private static String testGetInetResult(String option) {
         TempInetRestControllerHelper tempInetRestControllerHelper = new TempInetRestControllerHelper();
         JsonObject object = new JsonObject();
         object.add("ip", "8.8.8.8");
