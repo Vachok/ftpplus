@@ -107,9 +107,6 @@ class ConcreteFolderACLWriter implements Runnable {
         catch (IOException e) {
             messageToUser.warn(ConcreteFolderACLWriter.class.getSimpleName(), e.getMessage(), " see line: 93 ***");
         }
-        finally {
-            setAdminOnly(fileOwnerFile);
-        }
     }
 
     private void setAdminOnly(@NotNull File fileOwnerFile) {
