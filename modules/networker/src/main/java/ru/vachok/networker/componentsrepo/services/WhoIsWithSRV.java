@@ -3,12 +3,14 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.apache.commons.net.whois.WhoisClient;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -83,12 +85,20 @@ public class WhoIsWithSRV implements Callable<String> {
             whoisClient.connect(whoIsServer);
             String query = whoisClient.query(inetAddr);
             whoIsQBuilder
-                .append("<p><h4>")
-                .append(whoIsServer)
-                .append("</h4><br>")
-                .append(query.replaceAll("\n", "<br>"));
+                    .append("<p><h4>")
+                    .append(whoIsServer)
+                    .append("</h4><br>")
+                    .append(query.replaceAll("\n", "<br>"));
             whoisClient.disconnect();
         }
         return whoIsQBuilder.toString();
+    }
+    
+    @Override
+    public String toString() {
+        final JsonObject jo = new JsonObject();
+        jo.add(PropertiesNames.JSONNAME_CLASS, "WhoIsWithSRV");
+        jo.add("inetAddr", inetAddr);
+        return jo.toString();
     }
 }

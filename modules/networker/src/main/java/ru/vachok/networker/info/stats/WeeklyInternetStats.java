@@ -5,16 +5,12 @@ package ru.vachok.networker.info.stats;
 
 import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -22,16 +18,11 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 
@@ -130,7 +121,7 @@ final class WeeklyInternetStats implements Runnable, Stats {
         jsonObject.add(PropertiesNames.TIMESTAMP, System.currentTimeMillis());
         jsonObject.add("IPS_WITH_INET", IPS_WITH_INET.getAbsolutePath());
         jsonObject.add("totalBytes", totalBytes);
-        jsonObject.add("fileName", fileName);
+        jsonObject.add(PropertiesNames.FILENAME, fileName);
         jsonObject.add("sql", sql);
         jsonObject.add("informationFactory", informationFactory.toString());
         return jsonObject.toString();

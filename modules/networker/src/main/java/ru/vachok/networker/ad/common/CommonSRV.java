@@ -3,9 +3,7 @@
 package ru.vachok.networker.ad.common;
 
 
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.*;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,22 +14,14 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -63,7 +53,6 @@ public class CommonSRV {
     /**
      @return {@link #pathToRestoreAsStr}
      */
-    @SuppressWarnings("WeakerAccess")
     public String getPathToRestoreAsStr() {
         return pathToRestoreAsStr;
     }
@@ -74,12 +63,10 @@ public class CommonSRV {
 
      @return кол-во дней, за которое выполнять поиск.
      */
-    @SuppressWarnings("WeakerAccess")
     public String getPerionDays() {
         return perionDays;
     }
 
-    @SuppressWarnings("WeakerAccess")
     public String getSearchPat() {
         return searchPat;
     }
