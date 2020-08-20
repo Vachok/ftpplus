@@ -18,17 +18,17 @@ public class JsonMaker {
 
     @Test
     public void makeJSON() {
-        List<String> strings = FileSystemWorker.readFileToList("c:\\Users\\ikudryashov\\OneDrive\\Загрузки\\Как использовать магию подсознания для трансформации жизни.txt");
+        List<String> strings = FileSystemWorker.readFileToList("d:\\mds.txt");
         JsonObject jsonObject = new JsonObject();
         for (String val : strings) {
             String[] split = val.split("/");
             String name = split[split.length - 1];
             if (name.contentEquals(val)) {
-                val = "https://vaplayer.vachok.ru/mp3/Краткая история будущего/" + val;
+                val = "https://vaplayer.vachok.ru/mp3/mds/" + val;
             }
             jsonObject.add(name, val);
         }
-        FileSystemWorker.writeFile("c:\\Users\\ikudryashov\\OneDrive\\Загрузки\\Как использовать магию подсознания для трансформации жизни.json", jsonObject.toString());
+        FileSystemWorker.writeFile("d:\\mds.json", jsonObject.toString());
     }
 
 }
