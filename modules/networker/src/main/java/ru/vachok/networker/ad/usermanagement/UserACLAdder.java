@@ -2,6 +2,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -87,7 +88,7 @@ class UserACLAdder extends UserACLManagerImpl {
             this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(MessageFormat.format(ConstantsFor.ACLADDER_0_1, e.getMessage(), e.getClass().getName()));
         }
         finally {
             this.rights = rights;
@@ -100,7 +101,7 @@ class UserACLAdder extends UserACLManagerImpl {
             this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(MessageFormat.format(ConstantsFor.ACLADDER_0_1, e.getMessage(), e.getClass().getName()));
         }
         finally {
             this.rights = "rw";
@@ -110,6 +111,20 @@ class UserACLAdder extends UserACLManagerImpl {
     @Override
     public void setClassOption(Object classOption) {
         this.newUser = (UserPrincipal) classOption;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        messageToUser.warn(UserACLAdder.class.getSimpleName(), exc.getMessage(), " see line: 118 ***");
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        System.out.println("dir = " + dir);
+        System.out.println("newUser = " + newUser);
+        System.out.println("rights = " + rights);
+        return FileVisitResult.CONTINUE;
     }
 
     @Override

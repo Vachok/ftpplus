@@ -87,8 +87,9 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> {
     private static @NotNull Set<AclEntryPermission> setReadOnlyPermission() {
         Set<AclEntryPermission> permList = new LinkedHashSet<>();
         for (AclEntryPermission permission : AclEntryPermission.values()) {
-            if (!permission.toString().toLowerCase().contains("write") & !permission.toString().toLowerCase().contains(ConstantsFor.DELETE) & !permission.toString()
-                    .toLowerCase().contains("append")) {
+            if (!permission.toString().toLowerCase().contains(ConstantsFor.WRITE) & !permission.toString().toLowerCase().contains(ConstantsFor.DELETE) & !permission
+                .toString()
+                .toLowerCase().contains("append")) {
                 permList.add(permission);
             }
         }

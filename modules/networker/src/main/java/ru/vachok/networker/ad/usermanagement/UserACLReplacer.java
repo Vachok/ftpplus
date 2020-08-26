@@ -51,7 +51,7 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
             this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(MessageFormat.format(ConstantsFor.ACLADDER_0_1, e.getMessage(), e.getClass().getName()));
         }
 
     }

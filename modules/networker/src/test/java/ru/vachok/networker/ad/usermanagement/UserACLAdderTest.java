@@ -27,18 +27,16 @@ import java.sql.SQLException;
 public class UserACLAdderTest {
 
 
-    private UserACLManagerImpl commonAdder;
-
     private AclFileAttributeView attributeView;
 
     @Test
     private void booleanAddTest() {
         try {
-            UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-//            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
-            Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_ЗП");
+            UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
+            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
+//            Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\Проекты");
             UserACLManagerImpl.removeAccess(owner, startPath);
-            this.commonAdder = new UserACLAdder(startPath, owner, "ri");
+            UserACLManagerImpl commonAdder = new UserACLAdder(startPath, owner, "ri");
             Files.walkFileTree(startPath, commonAdder);
             this.attributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
             AclEntry acl;
