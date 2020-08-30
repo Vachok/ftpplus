@@ -7,16 +7,22 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.time.*;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -26,31 +32,31 @@ import java.util.concurrent.TimeUnit;
  @see AccessLogHTMLMakerTest
  @since 27.08.2019 (11:28) */
 public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
-    
-    
+
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AccessLogHTMLMaker.class.getSimpleName());
-    
+
     private String aboutWhat;
-    
-    private Map<String, String> siteResponseMap = new ConcurrentHashMap<>();
-    
-    private List<String> toWriteDenied = new ArrayList<>();
-    
-    private List<String> toWriteAllowed = new ArrayList<>();
-    
+
+    private final Map<String, String> siteResponseMap = new ConcurrentHashMap<>();
+
+    private final List<String> toWriteDenied = new ArrayList<>();
+
+    private final List<String> toWriteAllowed = new ArrayList<>();
+
     private NameOrIPChecker nIPCheck;
-    
+
     @Override
     public String getInfoAbout(String aboutWhat) {
         return fillAttribute(aboutWhat);
     }
-    
+
     @Override
     public void setClassOption(@NotNull Object classOption) {
         this.aboutWhat = (String) classOption;
         nIPCheck = new NameOrIPChecker(aboutWhat);
     }
-    
+
     @Override
     public String fillWebModel() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -62,7 +68,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         }
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
-    
+
         try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECT_DIST)) {
                 preparedStatement.setString(1, aboutWhat);
@@ -87,16 +93,16 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         }
         return stringBuilder.toString();
     }
-    
+
     @Override
     public String getInfo() {
         return aboutWhat != null ? fillWebModel() : "Set classOption! " + this.toString();
     }
-    
+
     private void resultSetWhileNext(@NotNull ResultSet r) throws SQLException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss z, E");
         String date = dateFormat.format(new Date(r.getLong("Date")));
-        
+
         String siteString = r.getString("site");
         try {
             String[] splittedSiteNoHTTP = siteString.split("//");
@@ -110,37 +116,26 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         siteResponseMap.putIfAbsent(siteString,
                 MessageFormat.format("{0} when: {1} ({2} bytes, {3} seconds)", responseString, date, r.getInt(ConstantsFor.DBCOL_BYTES), r.getInt("inte")));
     }
-    
-    @Override
-    public String fillAttribute(String attributeName) {
-        this.aboutWhat = attributeName;
-        UserInfo logUSER = UserInfo.getInstance(attributeName);
-        logUSER.setClassOption(attributeName);
-        String aboutUser = logUSER.getInfoAbout(attributeName);
-        int userSessionsTime = getUserInetSessionsTime(aboutUser);
-        
-        return MessageFormat.format("{0} время открытых сессий {1} минут.", aboutUser, userSessionsTime);
-    }
-    
+
     private @NotNull String makeReadableResults() {
         StringBuilder stringBuilder = new StringBuilder();
         Set<String> keySet = siteResponseMap.keySet();
         keySet.stream().distinct().forEachOrdered(this::parseResultSetMap);
         stringBuilder.append("DENIED SITES: <br>");
-        
+
         Collections.sort(toWriteAllowed);
         Collections.sort(toWriteDenied);
-        
+
         Collections.reverse(toWriteDenied);
         Collections.reverse(toWriteAllowed);
-        
+
         toWriteDenied.forEach(x->stringBuilder.append(x).append("<br>"));
         stringBuilder.append("<p>ALLOWED SITES: <br>");
         toWriteAllowed.forEach(x->stringBuilder.append(x).append("<br>"));
         stringBuilder.append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         return stringBuilder.toString();
     }
-    
+
     private void parseResultSetMap(String distinctKey) {
         HTMLGeneration htmlGeneration = new PageGenerationHelper();
         String valueX = siteResponseMap.get(distinctKey);
@@ -156,7 +151,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         if (!distinctKey.startsWith("http")) {
             distinctKey = ConstantsFor.HTTPS + distinctKey;
         }
-        
+
         if (valueX.contains("/5") | valueX.contains("/6")) {
             String errorSite = htmlGeneration.setColor("#fca503", valueX + " ||| " + htmlGeneration.getAsLink(distinctKey.trim(), distinctKey));
             toWriteAllowed.add(errorSite + " error!");
@@ -175,7 +170,18 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         FileSystemWorker.writeFile("denied.log", toWriteDenied.stream().sorted());
         FileSystemWorker.writeFile("allowed.log", toWriteAllowed.stream().sorted());
     }
-    
+
+    @Override
+    public String fillAttribute(String attributeName) {
+        this.aboutWhat = attributeName;
+        UserInfo logUSER = UserInfo.getInstance(attributeName);
+        logUSER.setClassOption(attributeName);
+        String aboutUser = logUSER.getInfoAbout(attributeName);
+        int userSessionsTime = getUserInetSessionsTime(aboutUser);
+
+        return MessageFormat.format("{0} время открытых сессий {1} минут.", aboutUser, userSessionsTime);
+    }
+
     @Contract(pure = true)
     private int getUserInetSessionsTime(@NotNull String aboutUser) {
         int intE = 0;
@@ -193,14 +199,14 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
             while (resultSet.next()) {
                 intE += resultSet.getInt("inte");
             }
-            
+
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("AccessLogHTMLMaker.getUserInetSessionsTime", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace())));
         }
         return (int) TimeUnit.MILLISECONDS.toMinutes(intE);
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AccessLogHTMLMaker{");
@@ -211,7 +217,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         sb.append('}');
         return sb.toString();
     }
-    
+
     @Override
     public int hashCode() {
         int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
@@ -220,7 +226,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         result = 31 * result + toWriteAllowed.hashCode();
         return result;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -229,9 +235,9 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        
+
         AccessLogHTMLMaker maker = (AccessLogHTMLMaker) o;
-        
+
         if (aboutWhat != null ? !aboutWhat.equals(maker.aboutWhat) : maker.aboutWhat != null) {
             return false;
         }

@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,24 +17,22 @@ import java.util.concurrent.ConcurrentHashMap;
  @since 02.04.2019 (10:24) */
 @SuppressWarnings("MethodWithMultipleReturnPoints")
 public abstract class InternetUse implements InformationFactory {
-    
-    
+
+
     private static final Map<String, String> TMP_INET_MAP = new ConcurrentHashMap<>();
-    
+
     private static final Map<String, String> INET_UNIQ = new ConcurrentHashMap<>();
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetUse.class.getSimpleName());
-    
+
     @Contract(pure = true)
     public static Map<String, String> get24hrsTempInetList() {
         return TMP_INET_MAP;
     }
-    
+
     @Contract(pure = true)
     public static Map<String, String> getInetUniqMap() {
         return INET_UNIQ;
     }
-    
+
     @Contract(value = " -> new")
     public static @NotNull InternetUse getInstance(@NotNull String type) {
         if (type.equals(InformationFactory.ACCESS_LOG_HTMLMAKER) || type.equals(INET_USAGE)) {
@@ -48,16 +45,16 @@ public abstract class InternetUse implements InformationFactory {
             return new AccessLogUSER();
         }
     }
-    
+
     @Override
     public abstract String getInfoAbout(String aboutWhat);
-    
+
     @Override
     public abstract void setClassOption(@NotNull Object option);
-    
+
     @Override
     public abstract String getInfo();
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("InternetUse{");
@@ -66,5 +63,5 @@ public abstract class InternetUse implements InformationFactory {
         sb.append('}');
         return sb.toString();
     }
-    
+
 }
