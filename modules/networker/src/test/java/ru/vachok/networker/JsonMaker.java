@@ -18,17 +18,17 @@ public class JsonMaker {
 
     @Test
     public void makeJSON() {
-        List<String> strings = FileSystemWorker.readFileToList("f:\\OneDrive\\Загрузки\\Kniga_vseobschih_zabluzhdeniy.txt");
+        List<String> strings = FileSystemWorker.readFileToList("c:\\Users\\ikudryashov\\OneDrive\\Загрузки\\mds.txt");
         JsonObject jsonObject = new JsonObject();
         for (String val : strings) {
             String[] split = val.split("/");
             String name = split[split.length - 1];
             if (name.contentEquals(val)) {
-                val = "https://vaplayer.vachok.ru/mp3/Kniga_vseobschih_zabluzhdeniy/" + val;
+                val = "https://vaplayer.vachok.ru/mp3/mds/" + val;
             }
             jsonObject.add(name, val);
         }
-        FileSystemWorker.writeFile("G:\\My_Proj\\VaBookPlayer\\app\\src\\main\\assets\\Kniga_vseobschih_zabluzhdeniy.json", jsonObject.toString());
+        FileSystemWorker.writeFile("C:\\Users\\ikudryashov\\AndroidStudioProjects\\player\\app\\src\\main\\assets\\mds.json", jsonObject.toString());
     }
 
 }

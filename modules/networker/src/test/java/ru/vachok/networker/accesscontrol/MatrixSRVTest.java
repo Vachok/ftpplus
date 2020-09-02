@@ -36,6 +36,6 @@ import static org.testng.Assert.assertTrue;
     public void testSearchAccessPrincipals() {
         MatrixSRV matrixSRV = new MatrixSRV();
         String accessPrincipals = matrixSRV.searchAccessPrincipals("адми");
-        assertTrue(accessPrincipals.contains("администр"));
+        assertTrue(accessPrincipals.contains("администр"), accessPrincipals);
     }
 }

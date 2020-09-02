@@ -36,9 +36,9 @@ public class SystemTrayHelper {
 
     private final TrayIcon trayIcon;
 
-    private static SystemTrayHelper trayHelper = new SystemTrayHelper();
-
-    private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    private static final SystemTrayHelper trayHelper = new SystemTrayHelper();
+    
+    private static final InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
 
     /**
      Путь к папке со значками

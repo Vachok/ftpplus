@@ -8,14 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -110,8 +107,8 @@ public class MatrixSRV {
     public String searchAccessPrincipals(String patternToSearch) {
         final String sql = new StringBuilder().append("SELECT * FROM `matrix` WHERE `Doljnost` LIKE '%").append(patternToSearch).append("%'").toString();
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
-        DataConnectTo dataConnectTo = new RegRuMysql();
-        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI();
+        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBASENAME_VELKOM_MATRIX)) {
             try (PreparedStatement statement = c.prepareStatement(sql)) {
                 try (ResultSet r = statement.executeQuery()) {
                     while (r.next()) {

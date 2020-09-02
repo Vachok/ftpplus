@@ -6,12 +6,11 @@ package ru.vachok.networker;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 import org.jetbrains.annotations.Contract;
+import ru.vachok.networker.ad.common.ArchivesCleaner;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.firebase.RealTimeChildListener;
 import ru.vachok.networker.info.InformationFactory;
@@ -23,9 +22,7 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -67,11 +64,13 @@ public final class AppInfoOnLoad implements Runnable {
         if (NetScanService.isReach("10.10.111.65")) {
             AppConfigurationLocal.executeInWorkStealingPool(SyncData.getInstance(SyncData.INETSYNC), 10);
         }
-
+    
         AppConfigurationLocal.getInstance().execute(scheduleDefiner);
-
+    
+        AppConfigurationLocal.getInstance().execute(new ArchivesCleaner());
+    
         AppConfigurationLocal.getInstance().schedule(this::setCurrentProvider, 2);
-
+    
         try {
             infoForU();
         }
