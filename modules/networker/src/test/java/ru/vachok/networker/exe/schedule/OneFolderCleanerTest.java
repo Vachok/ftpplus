@@ -13,7 +13,8 @@ import java.nio.file.Paths;
 
 /**
  @since 20.06.2019 (9:41) */
-@SuppressWarnings("ALL") public class MailIISLogsCleanerTest {
+@SuppressWarnings("ALL")
+public class OneFolderCleanerTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -32,8 +33,8 @@ import java.nio.file.Paths;
     
     @Test
     public void testRun() {
-        MailIISLogsCleaner mailIISLogsCleaner = new MailIISLogsCleaner();
-        mailIISLogsCleaner.run();
+        OneFolderCleaner oneFolderCleaner = new OneFolderCleaner();
+        oneFolderCleaner.run();
         Path path = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1");
         Assert.assertTrue(path.toFile().listFiles().length > 2);
         long filesSize = 0;

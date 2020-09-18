@@ -30,5 +30,4 @@ public class JsonMaker {
         }
         FileSystemWorker.writeFile("g:\\My_Proj\\VaBookPlayer\\app\\src\\main\\assets\\mds.json", jsonObject.toString());
     }
-
 }

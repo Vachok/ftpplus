@@ -22,13 +22,14 @@ import static java.time.DayOfWeek.SUNDAY;
 
 
 public class ScheduleDefiner implements AppConfigurationLocal {
-
+    
+    
     @Override
     public void run() {
         startPeriodicTasks();
         startIntervalTasks();
     }
-
+    
     private void startPeriodicTasks() {
         NetScanService scanOnlineRun = NetScanService.getInstance(NetScanService.SCAN_ONLINE);
         NetScanService diapazonScanRun = NetScanService.getInstance(NetScanService.DIAPAZON);
@@ -43,26 +44,31 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         schedule(openvpnStatusFileMaker, 1);
         schedule(this::sendStats, 60);
     }
-
+    
     private void startIntervalTasks() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 50, SUNDAY);
         scheduleStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
-        scheduleIISLogClean(nextStartDay);
+        scheduleClean(nextStartDay);
     }
-
+    
+    private static void scheduleClean(Date nextStartDay) {
+        int cleanTime = 14;
+        Runnable iisCleaner = new OneFolderCleaner();
+        Runnable commonEveryoneClean = new OneFolderCleaner("\\\\srv-fs.eatmeat.ru\\Common_new\\13_Служба_персонала\\Общая\\Рассылки\\", cleanTime);
+        AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        AppComponents.threadConfig().getTaskScheduler()
+                .scheduleWithFixedDelay(commonEveryoneClean, new Date(nextStartDay.getTime() - TimeUnit.MINUTES.toMillis(cleanTime)), ConstantsFor.ONE_WEEK_MILLIS);
+    
+    }
+    
     private void scheduleStats(Date nextStartDay) {
         Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
         Stats instance = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT);
         AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay((Runnable) instance, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay((Runnable) stats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
     }
-
-    private static void scheduleIISLogClean(Date nextStartDay) {
-        Runnable iisCleaner = new MailIISLogsCleaner();
-        AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-    }
-
+    
     private void sendStats() {
         InformationFactory dbInfo = InformationFactory.getInstance(InformationFactory.DATABASE_INFO);
         InformationFactory threadInfo = InformationFactory.getInstance(InformationFactory.MX_BEAN_THREAD);

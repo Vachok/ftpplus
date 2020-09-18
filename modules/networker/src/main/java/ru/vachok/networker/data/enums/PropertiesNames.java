@@ -108,4 +108,6 @@ public enum PropertiesNames {
     public static final String HASH = "hash";
     
     public static final String FILENAME = "fileName";
+    
+    public static final String COMMON_CLEAN = "cleanCommon";
 }

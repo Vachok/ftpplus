@@ -67,7 +67,7 @@
             <!--            end-->
             <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest"/>
+            <class name="ru.vachok.networker.exe.schedule.OneFolderCleanerTest"/>
             <class name="ru.vachok.networker.exe.schedule.WeekStatsTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.componentsrepo.fileworks.DeleterTemp"/>
