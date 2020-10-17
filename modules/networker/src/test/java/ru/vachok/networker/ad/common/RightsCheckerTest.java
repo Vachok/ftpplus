@@ -16,11 +16,13 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -50,15 +52,22 @@ public class RightsCheckerTest {
         testConfigureThreadsLogMaker.after();
     }
 
-    @Test
+    @Test(enabled = false)
     public void runChecker() {
         if (UsefulUtilities.thisPC().contains("mint")) {
             throw new IllegalStateException(UsefulUtilities.getRunningInformation());
         }
         RightsChecker rightsChecker = new RightsChecker(startPath, logsCopyPath);
 
-        rightsChecker.run();
-        Assert.assertTrue(Objects.requireNonNull(logsCopyPath.toFile().listFiles()).length == 2);
+        try {
+            AppConfigurationLocal.getInstance().executeBlock(rightsChecker, 60);
+        }
+        catch (TimeoutException e) {
+            messageToUser.error(e.getMessage());
+        }
+        finally {
+            Assert.assertEquals(Objects.requireNonNull(logsCopyPath.toFile().listFiles()).length, 2);
+        }
 
         File copiedOwnFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.COMMON_OWN);
         String readFile = FileSystemWorker.readFile(copiedOwnFile.getAbsolutePath());

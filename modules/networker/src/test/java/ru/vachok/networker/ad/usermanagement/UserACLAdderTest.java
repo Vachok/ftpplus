@@ -10,9 +10,15 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 
 /**
@@ -24,6 +30,7 @@ public class UserACLAdderTest {
     private AclFileAttributeView attributeView;
 
     @Test
+    @Ignore
     private void booleanAddTest() {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
