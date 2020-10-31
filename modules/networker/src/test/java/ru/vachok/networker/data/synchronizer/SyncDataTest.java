@@ -3,10 +3,7 @@ package ru.vachok.networker.data.synchronizer;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -68,6 +65,7 @@ public class SyncDataTest {
     }
 
     @Test
+    @Ignore
     public void testGetLastLocalID() {
         int lastLocalID = syncData.getLastLocalID(dbToSync);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
