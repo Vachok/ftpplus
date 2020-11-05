@@ -3,13 +3,11 @@ package ru.vachok.networker.restapi;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
 import javax.servlet.http.HttpServletRequest;
@@ -87,7 +85,7 @@ public class RestCTRLGetTest {
         }
         finally {
             String sshStr = restCTRLGet.sshRest(new MockHttpServletRequest());
-            Assert.assertTrue(sshStr.contains("stdSquid"), sshStr);
+            Assert.assertTrue(sshStr.contains(ConstantsFor.JSON_OBJECT_STD_SQUID), sshStr);
         }
     }
 

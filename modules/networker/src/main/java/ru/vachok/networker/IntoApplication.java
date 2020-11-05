@@ -20,9 +20,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.events.MyEvent;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -44,17 +42,16 @@ import java.util.*;
 @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
-public class
-IntoApplication {
-
-
+public class IntoApplication {
+    
+    
     /**
      {@link MessageLocal}
      */
     private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, IntoApplication.class.getSimpleName());
-
+    
     private static final boolean IS_TRAY_SUPPORTED = SystemTray.isSupported();
-
+    
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication(IntoApplication.class);
 
     private static final ConfigurableApplicationContext configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);

@@ -6,16 +6,13 @@ package ru.vachok.networker.ad.common;
 import org.testng.Assert;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -31,8 +28,8 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
 
 
     private static final TForms forms = new TForms();
-
-    private @NotNull Path restoreFilePattern;
+    
+    private Path restoreFilePattern;
 
     private final int restorePeriodDays = 365;
 

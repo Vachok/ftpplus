@@ -56,7 +56,9 @@ public class ScheduleDefiner implements AppConfigurationLocal {
         int cleanTime = 14;
         Runnable iisCleaner = new OneFolderCleaner();
         Runnable commonEveryoneClean = new OneFolderCleaner("\\\\srv-fs.eatmeat.ru\\Common_new\\13_Служба_персонала\\Общая\\Рассылки\\", cleanTime);
+        Runnable cleanPop3Logs = new OneFolderCleaner("\\\\srv-mail3.eatmeat.ru\\c$\\Program Files\\Microsoft\\Exchange Server\\V14\\Logging\\Pop3\\");
         AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(cleanPop3Logs, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         AppComponents.threadConfig().getTaskScheduler()
                 .scheduleWithFixedDelay(commonEveryoneClean, new Date(nextStartDay.getTime() - TimeUnit.MINUTES.toMillis(cleanTime)), ConstantsFor.ONE_WEEK_MILLIS);
     

@@ -36,16 +36,21 @@ public class OneFolderCleaner extends SimpleFileVisitor<Path> implements Runnabl
     
     private final String cleanPath;
     
-    private final long cleanDuration;
+    private final long cleanForTime;
     
     public OneFolderCleaner() {
         this.cleanPath = "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\";
-        this.cleanDuration = 5;
+        this.cleanForTime = 5;
     }
     
-    public OneFolderCleaner(String cleanPath, long cleanDuration) {
+    public OneFolderCleaner(String cleanPath, long cleanForTime) {
         this.cleanPath = cleanPath;
-        this.cleanDuration = cleanDuration;
+        this.cleanForTime = cleanForTime;
+    }
+    
+    public OneFolderCleaner(String cleanPath) {
+        this.cleanPath = cleanPath;
+        this.cleanForTime = 7;
     }
     
     @Override
@@ -57,7 +62,7 @@ public class OneFolderCleaner extends SimpleFileVisitor<Path> implements Runnabl
     
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if (attrs.isRegularFile() && attrs.creationTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(cleanDuration)) {
+        if (attrs.isRegularFile() && attrs.creationTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(cleanForTime)) {
             this.filesSize += file.toFile().length();
             toLog.add("Removing file: " + file);
             boolean deleteIfExists = Files.deleteIfExists(file);
@@ -93,7 +98,7 @@ public class OneFolderCleaner extends SimpleFileVisitor<Path> implements Runnabl
         catch (IOException e) {
             LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
-        FileSystemWorker.writeFile(cleanDuration + EXT_LOG, toLog);
+        FileSystemWorker.writeFile(cleanForTime + EXT_LOG, toLog);
     }
     
     @Override

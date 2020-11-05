@@ -1,20 +1,15 @@
 package ru.vachok.networker.ad.usermanagement;
 
 
+import com.google.gson.JsonObject;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,18 +39,20 @@ class UserACLAdder extends UserACLManagerImpl {
     public String getResult() {
         return AbstractForms.fromArray(neededACLs);
     }
-
+    
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserACLCommonAdder{");
-        sb.append(", newUser=").append(newUser);
-        sb.append(", foldersCounter=").append(foldersCounter);
-        sb.append(", filesCounter=").append(filesCounter);
-        sb.append(", neededACLs=").append(AbstractForms.fromArray(neededACLs));
-        sb.append('}');
-        return sb.toString();
+        final JsonObject jo = new JsonObject();
+        jo.addProperty(ConstantsFor.JSONNAME_CLASS, "UserACLAdder");
+        jo.addProperty(ConstantsFor.JSON_PARAM_NAME_STARTPATH, startPath.toString());
+        jo.addProperty(", rights", rights);
+        jo.addProperty(", newUser", String.valueOf(newUser));
+        jo.addProperty(", neededACLs", AbstractForms.fromArray(neededACLs));
+        jo.addProperty(", foldersCounter", foldersCounter);
+        jo.addProperty(", filesCounter", filesCounter);
+        return jo.toString();
     }
-
+    
     UserACLAdder(Path path, UserPrincipal newUser, String rights) {
         this(path);
         this.rights = rights;
@@ -121,9 +118,8 @@ class UserACLAdder extends UserACLManagerImpl {
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        System.out.println("dir = " + dir);
+        System.out.println("add = " + dir);
         System.out.println("newUser = " + newUser);
-        System.out.println("rights = " + rights);
         return FileVisitResult.CONTINUE;
     }
 

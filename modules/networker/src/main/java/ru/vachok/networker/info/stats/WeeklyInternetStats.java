@@ -29,15 +29,15 @@ import java.util.concurrent.Executors;
 /**
  @see ru.vachok.networker.info.stats.WeeklyInternetStatsTest
  @since 20.05.2019 (9:36) */
-final class WeeklyInternetStats implements Runnable, Stats {
-
-
+class WeeklyInternetStats implements Runnable, Stats {
+    
+    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.class.getSimpleName());
-
+    
     private static final File IPS_WITH_INET = new File(FileNames.INETSTATSIP_CSV);
-
+    
     private long totalBytes = 0;
-
+    
     private String fileName;
 
     private String sql;

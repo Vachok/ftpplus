@@ -14,10 +14,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.stats.data.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.StringJoiner;
@@ -33,27 +30,31 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SaveLogsToDB.class.getSimpleName());
 
     private static final int START_ID = new SaveLogsToDB().getLastRecordID();
-
-    private final ru.vachok.stats.SaveLogsToDB logsToDB = new ru.vachok.stats.SaveLogsToDB();
+    
+    @SuppressWarnings("FieldMayBeFinal") private ru.vachok.stats.SaveLogsToDB logsToDB;
 
     private int extTimeOut = 100;
-
+    
     public int getIDDifferenceWhileAppRunning() {
         int difference = getLastRecordID() - START_ID;
         InitProperties.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(difference));
         return difference;
     }
-
+    
     @Override
     public String getInfo() {
         return saveAccessLogToDatabase();
     }
-
+    
+    public SaveLogsToDB() {
+        logsToDB = new ru.vachok.stats.SaveLogsToDB();
+    }
+    
     @Override
     public String call() {
         return saveAccessLogToDatabase();
     }
-
+    
     private String saveAccessLogToDatabase() {
         final int idBefore = getLastRecordID();
         String infoAboutLogs = logsToDB.getInfoAbout(String.valueOf(extTimeOut));

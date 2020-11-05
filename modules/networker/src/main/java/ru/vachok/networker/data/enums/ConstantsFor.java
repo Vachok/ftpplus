@@ -315,9 +315,7 @@ public enum ConstantsFor {
     public static final String EATMEAT = "eatmeat";
 
     public static final String YELLOW = "yellow";
-
-    public static final String STR_FINISH = " is finish";
-
+    
     /**
      Кол-во минут в часе
      */
@@ -386,9 +384,7 @@ public enum ConstantsFor {
     public static final String LIMIT = "' LIMIT ";
 
     public static final String DB_MEMPROPERTIES = "mem.properties";
-
-    public static final String DBENGINE_MEMORY = "MEMORY";
-
+    
     public static final String DB_PERMANENT = "permanent";
 
     public static final String DB_COMMONRESTORE = "common.restore";
@@ -517,9 +513,7 @@ public enum ConstantsFor {
     public static final String APPLICATION_JSON = "application/json";
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
-
-    public static final String SRV_VPN = "srv-vpn.eatmeat.ru";
-
+    
     public static final String GIT_SERVER = "http://srv-inetstat.eatmeat.ru:1234";
 
     public static final String ADD = "add";

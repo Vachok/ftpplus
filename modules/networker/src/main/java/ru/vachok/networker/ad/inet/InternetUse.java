@@ -32,8 +32,7 @@ public abstract class InternetUse implements InformationFactory {
     public static Map<String, String> getInetUniqMap() {
         return INET_UNIQ;
     }
-
-    @Contract(value = " -> new")
+    
     public static @NotNull InternetUse getInstance(@NotNull String type) {
         if (type.equals(InformationFactory.ACCESS_LOG_HTMLMAKER) || type.equals(INET_USAGE)) {
             return new AccessLogHTMLMaker();

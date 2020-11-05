@@ -8,19 +8,10 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -73,14 +64,12 @@ class UserACLDeleter extends UserACLManagerImpl {
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        needACL.clear();
-        replaceOwner(file);
-        removeOldACL(file);
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        System.out.println("delete = " + dir);
         return FileVisitResult.CONTINUE;
     }
 

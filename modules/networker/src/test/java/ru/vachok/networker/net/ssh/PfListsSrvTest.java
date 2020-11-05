@@ -2,12 +2,10 @@ package ru.vachok.networker.net.ssh;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 
 public class PfListsSrvTest {
@@ -36,7 +34,7 @@ public class PfListsSrvTest {
     @Test
     public void testGetCommandForNatStr() {
         String str = pfListsSrv.getCommandForNatStr();
-        Assert.assertEquals(str, "sudo cat /etc/pf/allowdomain;exit");
+        Assert.assertEquals(str, ConstantsFor.SSHCOM_GETALLOWDOMAINS);
     }
 
     @Test
