@@ -27,6 +27,7 @@ import ru.vachok.networker.sysinfo.AppConfigurationLocal;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -95,9 +96,7 @@ public class ScanOnline implements NetScanService {
     @Override
     public void run() {
         AppConfigurationLocal.getInstance().execute(SwitchesAvailability::new);
-
         setMaxOnlineListFromFile();
-
         if (onlinesFile.exists()) {
             try {
                 onListFileCopyToLastAndMax();
@@ -118,23 +117,23 @@ public class ScanOnline implements NetScanService {
         }
     }
 
-    private void onListFileCopyToLastAndMax() throws InvokeIllegalException {
-        File scanOnlineLast = new File(replaceFileNamePattern);
-        if (!scanOnlineLast.exists()) {
-            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
-        }
-        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
-        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-
-        if (onLastAsTreeSet.size() < NetKeeper.getDequeOfOnlineDev().size()) {
-            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
-        }
-        if (scanOnlineLast.length() > fileMAXOnlines.length()) {
-            messageToUser.warn(onlinesFile.getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
-            scanOnlineLastBigger();
-            boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanOnlineLast, Paths.get(fileMAXOnlines.getAbsolutePath()).toAbsolutePath().normalize(), false);
-        }
-        scanOnlineLast.deleteOnExit();
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<b>Since ");
+        sb.append("<i>");
+        sb.append(new Date(InitProperties.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
+        sb.append(" last ExecScan: ");
+        sb.append("</i>");
+        sb.append(tvInfo.getInfoAbout("tv"));
+        sb.append("</b><br><br>");
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>")
+            .append(tForms.fromArray(maxOnList, true))
+            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
+        sb.append("<b>ipconfig /flushdns = </b>")
+            .append(new String(UsefulUtilities.ipFlushDNS().getBytes(StandardCharsets.UTF_8), Charset.forName(ConstantsFor.CHARSET_IBM866)))
+            .append("<br>");
+        return sb.toString();
     }
 
     private boolean writeOnLineFile() {
@@ -188,22 +187,23 @@ public class ScanOnline implements NetScanService {
         return maxOnList;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ");
-        sb.append("<i>");
-        sb.append(new Date(InitProperties.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
-        sb.append(" last ExecScan: ");
-        sb.append("</i>");
-        sb.append(tvInfo.getInfoAbout("tv"));
-        sb.append("</b><br><br>");
-        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>")
-            .append(tForms.fromArray(maxOnList, true))
-            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
-        sb.append("<b>ipconfig /flushdns = </b>").append(new String(UsefulUtilities.ipFlushDNS().getBytes(), Charset.forName(ConstantsFor.CHARSET_IBM866)))
-            .append("<br>");
-        return sb.toString();
+    private void onListFileCopyToLastAndMax() throws InvokeIllegalException {
+        File scanOnlineLast = new File(replaceFileNamePattern);
+        if (!scanOnlineLast.exists()) {
+            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
+        }
+        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
+        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
+
+        if (onLastAsTreeSet.size() < NetKeeper.getDequeOfOnlineDev().size()) {
+            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
+        }
+        if (scanOnlineLast.length() > fileMAXOnlines.length()) {
+            messageToUser.warn(onlinesFile.getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
+            scanOnlineLastBigger();
+            FileSystemWorker.copyOrDelFile(scanOnlineLast, Paths.get(fileMAXOnlines.getAbsolutePath()).toAbsolutePath().normalize(), false);
+        }
+        scanOnlineLast.deleteOnExit();
     }
 
     @Override

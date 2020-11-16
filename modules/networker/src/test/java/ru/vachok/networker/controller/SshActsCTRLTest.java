@@ -162,6 +162,6 @@ public class SshActsCTRLTest {
     public void testWhatSrvNeed() {
         SshActs sshActs = new SshActs();
         String neededSrvToConnect = sshActs.whatSrvNeed();
-        Assert.assertTrue(neededSrvToConnect.contains("13.42") || neededSrvToConnect.contains("srv-git.eatmeat.ru"), neededSrvToConnect);
+        Assert.assertTrue(neededSrvToConnect.contains("13.42") || neededSrvToConnect.contains(ConstantsFor.SRV_GIT_EATMEAT_RU), neededSrvToConnect);
     }
 }

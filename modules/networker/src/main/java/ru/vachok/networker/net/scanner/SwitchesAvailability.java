@@ -6,14 +6,12 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 
 import java.io.File;
@@ -39,20 +37,17 @@ class SwitchesAvailability implements NetScanService {
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final InvokeEmptyMethodException EMPTY_METHOD_EXCEPTION = new InvokeEmptyMethodException(SwitchesAvailability.class.getTypeName());
 
-    @SuppressWarnings("InstanceVariableOfConcreteClass")
-    private final ThreadConfig thrCfg = AppComponents.threadConfig();
-
     private final Set<String> okIP = new HashSet<>();
 
     /**
      {@link InetAddress} свчичей.
      */
-    private List<String> swAddr = new ArrayList<>();
+    private final List<String> swAddr = new ArrayList<>();
 
     private String okStr = "null";
 
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, "SwitchesAvailability");
 
     private String badStr = "It's OK!";
 
@@ -111,7 +106,6 @@ class SwitchesAvailability implements NetScanService {
     }
 
     private int diapazonPingSwitches() {
-        List<String> stringList = new ArrayList<>();
         try {
             swAddr.addAll(pingSwitch());
         }

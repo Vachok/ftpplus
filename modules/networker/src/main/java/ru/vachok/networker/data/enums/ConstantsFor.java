@@ -14,9 +14,11 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Year;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -56,24 +58,24 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String BEANNAME_CALCULATOR = "simpleCalculator";
-    
+
     /**
      Диапазон для бинов
      */
     public static final String SINGLETON = "singleton";
-    
+
     /**
      Название БД в reg.ru
      */
     public static final String DBBASENAME_U0466446_VELKOM = "u0466446_velkom";
-    
+
     public static final String DBASENAME_VELKOM_MATRIX = "velkom.matrix";
-    
+
     /**
      HTTP-header
      */
     public static final String HEAD_REFRESH = "Refresh";
-    
+
     /**
      Строка из Live Template soutm
      */
@@ -315,7 +317,7 @@ public enum ConstantsFor {
     public static final String EATMEAT = "eatmeat";
 
     public static final String YELLOW = "yellow";
-    
+
     /**
      Кол-во минут в часе
      */
@@ -384,7 +386,7 @@ public enum ConstantsFor {
     public static final String LIMIT = "' LIMIT ";
 
     public static final String DB_MEMPROPERTIES = "mem.properties";
-    
+
     public static final String DB_PERMANENT = "permanent";
 
     public static final String DB_COMMONRESTORE = "common.restore";
@@ -513,7 +515,7 @@ public enum ConstantsFor {
     public static final String APPLICATION_JSON = "application/json";
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
-    
+
     public static final String GIT_SERVER = "http://srv-inetstat.eatmeat.ru:1234";
 
     public static final String ADD = "add";
@@ -583,27 +585,29 @@ public enum ConstantsFor {
     public static final String REGRUHOSTING_PC = "regruhosting.ru";
 
     public static final String APP_ARG_NOSCAN = "noscan";
-    
+
     public static final String JSON_PARAM_NAME_STARTPATH = "startPath";
-    
+
     public static final String JSON_PARAM_NAME_USER = "user";
-    
+
     public static final String JSON_PARAM_NAME_BAD_AUTH = "BAD AUTH";
-    
+
     public static final String JSON_PARAM_NAME_REQUEST_JSON = "request_json";
-    
+
     public static final String UTF_8 = "UTF-8";
-    
+
     public static final String JSONNAME_CLASS = PropertiesNames.JSONNAME_CLASS;
-    
+
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
-    
+
     public static final String RUPS00 = "rups00";
-    
+
     public static final String ACLADDER_0_1 = "UserACLAdder.UserACLAdder: {0}, ({1})";
-    
+
     public static final String WRITE = "write";
-    
+
+    public static final String SRV_GIT_EATMEAT_RU = "srv-git.eatmeat.ru";
+
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();

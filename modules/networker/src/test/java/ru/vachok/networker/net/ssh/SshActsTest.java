@@ -75,6 +75,6 @@ public class SshActsTest {
     public void testWhatSrvNeed() {
         SshActs sshActs = new SshActs();
         String srvNeed = sshActs.whatSrvNeed();
-        Assert.assertEquals(srvNeed, "srv-git.eatmeat.ru");
+        Assert.assertEquals(srvNeed, ConstantsFor.SRV_GIT_EATMEAT_RU);
     }
 }

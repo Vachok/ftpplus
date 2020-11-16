@@ -54,6 +54,8 @@ public enum SwitchesWiFi {
 
     public static final String HP_2530_218 = "10.200.218.254";
 
+    public static final String HP_2530_219 = "10.200.219.254";
+
     public static final String HP_2530_48_ADM_YURDEP = "10.200.213.253";
 
     public static final String WTF = "10.200.215.250";
@@ -108,7 +110,7 @@ public enum SwitchesWiFi {
     /**
      Адрес локального git
      */
-    public static final String HOSTNAME_SRVGITEATMEATRU = "srv-git.eatmeat.ru";
+    public static final String HOSTNAME_SRVGITEATMEATRU = ConstantsFor.SRV_GIT_EATMEAT_RU;
 
     /**
      IP stv-git.eatmeat.ru
