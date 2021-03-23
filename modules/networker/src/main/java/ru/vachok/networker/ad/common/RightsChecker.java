@@ -38,7 +38,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
 
     private final Path logsCopyStopPath;
 
-    private final long startClass;
+    private final long startClassTime;
 
     private static final String TABLE_FULL_NAME = ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON;
 
@@ -65,13 +65,13 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         if (fileLocalCommonPointRgh.exists()) {
             messageToUser.info(DELETE, fileLocalCommonPointRgh.getAbsolutePath(), String.valueOf(fileLocalCommonPointRgh.delete()));
         }
-        startClass = System.currentTimeMillis();
+        startClassTime = System.currentTimeMillis();
     }
 
     public RightsChecker(Path start, Path logs) {
         this.startPath = start;
         this.logsCopyStopPath = logs;
-        startClass = System.currentTimeMillis();
+        startClassTime = System.currentTimeMillis();
     }
 
     @Override
@@ -170,17 +170,16 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         StringBuilder stringBuilder = new StringBuilder()
-            .append("Dir visited = ")
-            .append(dir).append("\n")
-            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
-        long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
+                .append("Dir visited = ")
+                .append(dir).append("\n")
+                .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
+        long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime);
         if (secondsScan == 0) {
             secondsScan = 1;
         }
         stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
         if (!dir.toFile().getAbsolutePath().contains("KPI") && dir.toFile().isDirectory()) {
             new RightsChecker.RightsWriter(dir.toAbsolutePath().normalize().toString(), this.dirSize).writeDirSize();
-            new ConcreteFolderACLWriter(dir, this.dirSize).run();
             dir.toFile().setLastModified(lastModDir);
         }
         return FileVisitResult.CONTINUE;

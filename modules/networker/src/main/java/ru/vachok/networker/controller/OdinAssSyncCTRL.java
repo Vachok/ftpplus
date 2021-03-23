@@ -14,6 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.CsvTxt;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 
@@ -43,7 +44,7 @@ public class OdinAssSyncCTRL {
     /**
      {@link CsvTxt}
      */
-    private CsvTxt csvTxt = new CsvTxt();
+    private final CsvTxt csvTxt = new CsvTxt();
     
     @PostMapping (GET_ODINASS)
     public String uploadFiles(@RequestParam MultipartFile file, RedirectAttributes redirectAttributes, Model model) {
@@ -91,7 +92,7 @@ public class OdinAssSyncCTRL {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OdinAssSyncCTRL{");
-        sb.append("pageFooter=").append(pageFooter);
+        sb.append(ConstantsFor.FOOTER).append(pageFooter);
         sb.append(", csvTxt=").append(csvTxt);
         sb.append('}');
         return sb.toString();

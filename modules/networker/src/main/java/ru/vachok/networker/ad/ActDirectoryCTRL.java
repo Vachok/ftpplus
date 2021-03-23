@@ -16,9 +16,8 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -43,13 +42,13 @@ public class ActDirectoryCTRL {
                     ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
 
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
-
-    private static MessageToUser messageToUser = MessageToUser
+    
+    private static final MessageToUser messageToUser = MessageToUser
             .getInstance(MessageToUser.LOCAL_CONSOLE, ActDirectoryCTRL.class.getSimpleName());
-
-    private ADSrv adSrv;
-
-    private String titleStr = "PowerShell. Применить на SRV-MAIL3";
+    
+    private final ADSrv adSrv;
+    
+    private final String titleStr = "PowerShell. Применить на SRV-MAIL3";
 
     private PhotoConverterSRV photoConverterSRV;
 
@@ -143,7 +142,7 @@ public class ActDirectoryCTRL {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ActDirectoryCTRL{");
-        sb.append("pageFooter=").append(pageFooter);
+        sb.append(ConstantsFor.FOOTER).append(pageFooter);
         sb.append(", adSrv=").append(adSrv.toString());
         sb.append(", titleStr='").append(titleStr).append('\'');
         sb.append('}');

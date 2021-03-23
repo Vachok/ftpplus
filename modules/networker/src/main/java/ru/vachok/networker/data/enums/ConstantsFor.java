@@ -14,11 +14,9 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Year;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -597,17 +595,19 @@ public enum ConstantsFor {
     public static final String UTF_8 = "UTF-8";
 
     public static final String JSONNAME_CLASS = PropertiesNames.JSONNAME_CLASS;
-
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
-
+    
     public static final String RUPS00 = "rups00";
-
+    
     public static final String ACLADDER_0_1 = "UserACLAdder.UserACLAdder: {0}, ({1})";
-
+    
     public static final String WRITE = "write";
-
+    
     public static final String SRV_GIT_EATMEAT_RU = "srv-git.eatmeat.ru";
-
+    
+    public static final String FOOTER = "pageFooter=";
+    
     @NotNull
     public static String[] getExcludedFoldersForCleaner() {
         Set<String> excludeFolders = new TreeSet<>();

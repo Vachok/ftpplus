@@ -43,11 +43,11 @@ public class ExCTRL {
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
-    private ExSRV exSRV;
+    private final ExSRV exSRV;
     
     private RuleSet ruleSet;
     
-    private ConcurrentMap<Integer, MailRule> localMap = ExSRV.getMailRules();
+    private final ConcurrentMap<Integer, MailRule> localMap = ExSRV.getMailRules();
     
     private String rawS;
     
@@ -163,7 +163,7 @@ public class ExCTRL {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ExCTRL{");
-        sb.append("pageFooter=").append(pageFooter);
+        sb.append(ConstantsFor.FOOTER).append(pageFooter);
         sb.append(", exSRV=").append(exSRV.toString());
         sb.append(", ruleSet=").append(ruleSet.toString());
         sb.append(", localMap=").append(localMap.size());

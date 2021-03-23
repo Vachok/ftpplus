@@ -8,11 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 
@@ -77,7 +76,7 @@ public class CommonCTRL {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CommonCTRL{");
-        sb.append("pageFooter=").append(pageFooter);
+        sb.append(ConstantsFor.FOOTER).append(pageFooter);
         sb.append(", commonSRV=").append(commonSRV);
         sb.append('}');
         return sb.toString();

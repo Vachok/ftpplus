@@ -4,10 +4,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.sysinfo.AppConfigurationLocal;
@@ -36,9 +33,8 @@ public class OwnerFixerTest {
     }
 
     @Test
-    @Ignore
     public void testRun() {
-        OwnerFixer ownerFixer = new OwnerFixer(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
+        OwnerFixer ownerFixer = new OwnerFixer(Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\x-common_new\\11_Фин_служба\\Внутренняя\\СЛУЖБА КОРПОРАТИВНОЙ ОТЧЕТНОСТИ\\"));
         AppConfigurationLocal.getInstance().execute(ownerFixer, 20);
         File fileOwnerFixLog = new File(OwnerFixer.class.getSimpleName() + ".res");
         Assert.assertTrue(fileOwnerFixLog.exists());

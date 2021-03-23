@@ -19,10 +19,7 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -141,25 +138,15 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         if (!(o instanceof OldBigFilesInfoCollector)) {
             return false;
         }
-
+    
         OldBigFilesInfoCollector collector = (OldBigFilesInfoCollector) o;
-
+    
         if (dirsCounter != collector.dirsCounter) {
             return false;
         }
-        if (filesCounter != collector.filesCounter) {
-            return false;
-        }
-        if (totalFilesSize != collector.totalFilesSize) {
-            return false;
-        }
-        if (filesMatched != collector.filesMatched) {
-            return false;
-        }
-        if (reportUser != null ? !reportUser.equals(collector.reportUser) : collector.reportUser != null) {
-            return false;
-        }
-        return startPath.equals(collector.startPath);
+        return filesCounter == collector.filesCounter && totalFilesSize == collector.totalFilesSize && filesMatched == collector.filesMatched && (reportUser != null ? reportUser
+                .equals(collector.reportUser) : collector.reportUser == null) && startPath
+                .equals(collector.startPath);
     }
 
     private void writeToDB(@NotNull Path file, float mByteSize, String attrArray) throws SQLException {
@@ -215,8 +202,8 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     private boolean more2MBOld(@NotNull BasicFileAttributes attrs) {
         int oldfileminimumsizemb = Integer.parseInt(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldfilessize", "10"));
         return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(Long
-            .parseLong(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldfilesperiod", "730"))) && attrs
-            .size() > ConstantsFor.MBYTE * oldfileminimumsizemb;
+                .parseLong(InitProperties.getInstance(InitProperties.DB_MEMTABLE).getProps().getProperty("oldfilesperiod", "730"))) && attrs
+                .size() > (long) ConstantsFor.MBYTE * oldfileminimumsizemb;
     }
 
     @Override
